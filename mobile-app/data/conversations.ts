@@ -1,45 +1,45 @@
 export const MATCHES = [
-  { 
-    id: '1', 
-    name: 'Sophia', 
+  {
+    id: '1',
+    name: 'Sophia',
     image: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200',
     hasStory: true,
-    isOnline: false 
+    isOnline: false
   },
-  { 
-    id: '2', 
-    name: 'Harper', 
+  {
+    id: '2',
+    name: 'Harper',
     image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200',
     hasStory: false,
-    isOnline: true 
+    isOnline: true
   },
-  { 
-    id: '3', 
-    name: 'Evelyn', 
+  {
+    id: '3',
+    name: 'Evelyn',
     image: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=200',
     hasStory: false,
-    isOnline: true 
+    isOnline: true
   },
-  { 
-    id: '4', 
-    name: 'Abigail', 
+  {
+    id: '4',
+    name: 'Abigail',
     image: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200',
     hasStory: false,
-    isOnline: false 
+    isOnline: false
   },
-  { 
-    id: '5', 
-    name: 'Ava', 
+  {
+    id: '5',
+    name: 'Ava',
     image: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=200',
     hasStory: false,
-    isOnline: false 
+    isOnline: false
   },
-  { 
-    id: '6', 
-    name: 'Isabella', 
+  {
+    id: '6',
+    name: 'Isabella',
     image: 'https://images.unsplash.com/photo-1517070208541-6ddc4d3efbcb?w=200',
     hasStory: true,
-    isOnline: true 
+    isOnline: true
   },
 ];
 
