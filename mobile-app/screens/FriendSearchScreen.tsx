@@ -18,7 +18,8 @@ const MOCK_MARKERS = [
     languages: ['Wolof', 'Français'],
     bio: 'Envie d\'un café et de discuter de nos racines.',
     images: ['https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800'],
-    location: 'Paris, France'
+    location: 'Paris, France',
+    mode: 'friendship'
   },
   { 
     id: '2', 
@@ -32,7 +33,8 @@ const MOCK_MARKERS = [
     languages: ['Arabe', 'Français', 'Anglais'],
     bio: 'Passionnée par l\'art et la culture méditerranéenne.',
     images: ['https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=800'],
-    location: 'Lyon, France'
+    location: 'Lyon, France',
+    mode: 'friendship'
   },
   { 
     id: '3', 
@@ -46,7 +48,8 @@ const MOCK_MARKERS = [
     languages: ['Baoulé', 'Français'],
     bio: 'Nouveau en ville, hâte de faire des rencontres.',
     images: ['https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=800'],
-    location: 'Bordeaux, France'
+    location: 'Bordeaux, France',
+    mode: 'friendship'
   },
 ];
 
@@ -117,7 +120,7 @@ export const FriendSearchScreen = ({ onSelectProfile }: { onSelectProfile: (user
   const MapSimulation = () => (
     <View style={[tw`absolute inset-0 bg-gray-100`, { zIndex: -1 }]}>
       <Image 
-        source={{ uri: 'https://api.mapbox.com/styles/v1/mapbox/light-v10/static/-0.1278,51.5074,13/800x1200?access_token=pk.eyJ1IjoiZGVtbyIsImEiOiJja2p4eGgzeG0wZzV5MnFvMnFvMnFvMnFvIn0.demo' }} 
+        source={{ uri: 'https://api.mapbox.com/styles/v1/mapbox/light-v10/static/-0.1278,51.5074,13/800x1200?access_token=pk.eyJ1IjoiZGVtbyIsImEiOiJja2p4eGgzeG0wZzV5MnFvMnFvMnFvMnFvMnFvIn0.demo' }} 
         style={tw`w-full h-full opacity-50`}
         resizeMode="cover"
       />

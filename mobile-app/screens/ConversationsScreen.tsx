@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, Text, ScrollView, Image, TouchableOpacity, SafeAreaView, StyleSheet, StatusBar } from 'react-native';
 import { ChevronLeft, Search, Star } from 'lucide-react-native';
-import Svg, { Path, Rect, Defs, RadialGradient, Stop } from 'react-native-svg';
+import Svg, { Path, Rect, Defs, RadialGradient, Stop, Circle } from 'react-native-svg';
 import Animated, { useAnimatedStyle, useSharedValue, withRepeat, withTiming, Easing } from 'react-native-reanimated';
 import tw from '@/lib/tailwind';
-import { MATCHES, MESSAGES } from '@/data/conversations';
+import { MATCHES, MESSAGES, ConversationMode } from '@/data/conversations';
 import { SHADOWS } from '@/lib/styles';
 
 const AnimatedSvg = Animated.createAnimatedComponent(Svg);
@@ -68,6 +68,18 @@ const NewMatchIcon = () => {
 };
 
 export const ConversationsScreen = ({ onSelectChat, onShowNotifications }: { onSelectChat?: (id: string) => void, onShowNotifications?: () => void }) => {
+  const [filter, setFilter] = useState<'all' | ConversationMode>('all');
+
+  const filteredMatches = useMemo(() => {
+    if (filter === 'all') return MATCHES;
+    return MATCHES.filter(m => m.mode === filter);
+  }, [filter]);
+
+  const filteredMessages = useMemo(() => {
+    if (filter === 'all') return MESSAGES;
+    return MESSAGES.filter(m => m.mode === filter);
+  }, [filter]);
+
   return (
     <View style={tw`flex-1 bg-[#fcfcfc]`}>
       <StatusBar barStyle="dark-content" />
@@ -93,49 +105,81 @@ export const ConversationsScreen = ({ onSelectChat, onShowNotifications }: { onS
           </TouchableOpacity>
         </View>
 
+        {/* Filter Bar */}
+        <View style={tw`px-6 pt-6 flex-row gap-2 z-10`}>
+          {[
+            { id: 'all', label: 'Tout' },
+            { id: 'love', label: 'Amour', icon: 'M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z' },
+            { id: 'friendship', label: 'Amis', icon: 'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2' }
+          ].map((item) => (
+            <TouchableOpacity 
+              key={item.id}
+              onPress={() => setFilter(item.id as any)}
+              activeOpacity={0.7}
+              style={[
+                tw`flex-row items-center gap-2 px-5 py-2.5 rounded-full border`,
+                filter === item.id 
+                  ? tw`bg-primary border-primary shadow-sm shadow-primary/20` 
+                  : tw`bg-white border-gray-100`
+              ]}
+            >
+              {item.icon && (
+                <Svg width="14" height="14" viewBox="0 0 24 24" fill={filter === item.id ? "white" : "#ff386c"}>
+                  <Path d={item.icon} />
+                </Svg>
+              )}
+              <Text style={[
+                tw`text-[13px] font-bold`, 
+                { fontFamily: 'Urbanist_700Bold', color: filter === item.id ? 'white' : '#1e1e1e' }
+              ]}>{item.label}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={tw`pb-24 pt-4`}>
           {/* Recent Match Section */}
-          <View style={tw`mt-6`}>
-            <Text style={[tw`px-6 text-[15px] font-extrabold text-textSub mb-5 tracking-wide uppercase`, { fontFamily: 'Urbanist_800ExtraBold' }]}>Recent match</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={tw`px-6`}>
-              <NewMatchIcon />
-              {MATCHES.map((match) => (
-                <TouchableOpacity 
-                  key={match.id} 
-                  style={tw`items-center gap-2 mr-5`}
-                  onPress={() => onSelectChat?.(match.id)}
-                >
-                  <View style={[
-                    tw`w-[70px] h-[70px] rounded-full p-[2.5px]`,
-                    match.hasStory && { backgroundColor: '#ff386c' }
-                  ]}>
-                    <View style={tw`flex-1 rounded-full p-[2px] bg-white`}>
-                      <Image source={{ uri: match.image }} style={tw`w-full h-full rounded-full`} resizeMode="cover" />
+          {filteredMatches.length > 0 && (
+            <View style={tw`mt-6`}>
+              <Text style={[tw`px-6 text-[15px] font-extrabold text-textSub mb-5 tracking-wide uppercase`, { fontFamily: 'Urbanist_800ExtraBold' }]}>Recent match</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={tw`px-6`}>
+                <NewMatchIcon />
+                {filteredMatches.map((match) => (
+                  <TouchableOpacity 
+                    key={match.id} 
+                    style={tw`items-center gap-2 mr-5`}
+                    onPress={() => onSelectChat?.(match.id)}
+                  >
+                    <View style={[
+                      tw`w-[70px] h-[70px] rounded-full p-[2.5px]`,
+                      match.hasStory && { backgroundColor: '#ff386c' }
+                    ]}>
+                      <View style={tw`flex-1 rounded-full p-[2px] bg-white`}>
+                        <Image source={{ uri: match.image }} style={tw`w-full h-full rounded-full`} resizeMode="cover" />
+                      </View>
+                      {match.isOnline && (
+                        <View style={tw`absolute right-[2px] bottom-[2px] w-[15px] h-[15px] bg-[#00d084] border-[2.5px] border-white rounded-full`} />
+                      )}
                     </View>
-                    {match.isOnline && (
-                      <View style={tw`absolute right-[2px] bottom-[2px] w-[15px] h-[15px] bg-[#00d084] border-[2.5px] border-white rounded-full`} />
-                    )}
-                  </View>
-                  <Text style={[tw`text-[13px] font-semibold text-textMain`, { fontFamily: 'Urbanist_600SemiBold' }]}>{match.name}</Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </View>
+                    <Text style={[tw`text-[13px] font-semibold text-textMain`, { fontFamily: 'Urbanist_600SemiBold' }]}>{match.name}</Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
+          )}
 
           {/* Messages List */}
           <View style={tw`mt-10 px-6`}>
             <View style={tw`flex-row justify-between items-center mb-6 px-1`}>
               <Text style={[tw`text-[20px] font-extrabold text-textMain`, { fontFamily: 'Urbanist_800ExtraBold' }]}>Messages</Text>
-              <TouchableOpacity style={tw`flex-row items-center gap-1.5`}>
-                <Text style={[tw`text-[15px] font-bold text-primary`, { fontFamily: 'Urbanist_700Bold' }]}>Filter</Text>
-                <Svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ff386c" strokeWidth="2.5" strokeLinecap="round">
-                  <Path d="M21 10h-8M21 6H3M21 14H3M21 18H8" />
-                </Svg>
-              </TouchableOpacity>
+              <View style={tw`flex-row items-center gap-1.5`}>
+                 <View style={tw`bg-primary/10 px-2.5 py-1 rounded-full`}>
+                    <Text style={[tw`text-[11px] font-black text-primary uppercase`, { fontFamily: 'Urbanist_800ExtraBold' }]}>{filteredMessages.length}</Text>
+                 </View>
+              </View>
             </View>
 
             <View style={tw`gap-5.5`}>
-              {MESSAGES.map((msg) => (
+              {filteredMessages.length > 0 ? filteredMessages.map((msg) => (
                 <View key={msg.id}>
                   {msg.isActive ? (
                     <TouchableOpacity 
@@ -152,7 +196,10 @@ export const ConversationsScreen = ({ onSelectChat, onShowNotifications }: { onS
                         </View>
                         <View style={tw`flex-1`}>
                           <View style={tw`flex-row justify-between items-center`}>
-                            <Text style={[tw`font-extrabold text-[17px] text-textMain`, { fontFamily: 'Urbanist_800ExtraBold' }]}>{msg.name}</Text>
+                            <View style={tw`flex-row items-center gap-2`}>
+                               <Text style={[tw`font-extrabold text-[17px] text-textMain`, { fontFamily: 'Urbanist_800ExtraBold' }]}>{msg.name}</Text>
+                               <View style={[tw`w-2 h-2 rounded-full`, msg.mode === 'friendship' ? tw`bg-black` : tw`bg-primary`]} />
+                            </View>
                             <Text style={[tw`text-xs text-textSub`, { fontFamily: 'Urbanist_500Medium' }]}>{msg.time}</Text>
                           </View>
                           <Text style={[tw`text-[14.5px] text-textMain font-medium leading-tight mt-1.5 pr-4`, { fontFamily: 'Urbanist_500Medium' }]} numberOfLines={2}>
@@ -190,6 +237,7 @@ export const ConversationsScreen = ({ onSelectChat, onShowNotifications }: { onS
                           <View style={tw`flex-row items-center gap-2`}>
                             <Text style={[tw`font-extrabold text-[17px] text-textMain`, { fontFamily: 'Urbanist_800ExtraBold' }]}>{msg.name}</Text>
                             {msg.isStarred && <Star size={13} color="#ff386c" fill="#ff386c" />}
+                            <View style={[tw`w-1.5 h-1.5 rounded-full`, msg.mode === 'friendship' ? tw`bg-black` : tw`bg-primary`]} />
                           </View>
                           <Text style={[tw`text-[12px] text-textSub`, { fontFamily: 'Urbanist_500Medium' }]}>{msg.time}</Text>
                         </View>
@@ -200,7 +248,11 @@ export const ConversationsScreen = ({ onSelectChat, onShowNotifications }: { onS
                     </TouchableOpacity>
                   )}
                 </View>
-              ))}
+              )) : (
+                <View style={tw`items-center justify-center py-10`}>
+                   <Text style={[tw`text-gray-400 font-bold`, { fontFamily: 'Urbanist_700Bold' }]}>Aucune conversation dans cette catégorie.</Text>
+                </View>
+              )}
             </View>
           </View>
         </ScrollView>

@@ -76,7 +76,7 @@ const MOCK_USERS: User[] = [
   },
 ];
 
-const ActionButtons = ({ onDislike, onLike, onSuperLike, isFriendMode }: { onDislike?: () => void; onLike?: () => void; onSuperLike?: () => void, isFriendMode?: boolean }) => (
+const ActionButtons = ({ onDislike, onLike, onSuperLike }: { onDislike?: () => void; onLike?: () => void; onSuperLike?: () => void }) => (
   <View style={tw`absolute -bottom-10 left-0 w-full flex-row justify-center items-end gap-5 px-6 z-50`}>
     <TouchableOpacity 
       onPress={onDislike}
@@ -92,7 +92,7 @@ const ActionButtons = ({ onDislike, onLike, onSuperLike, isFriendMode }: { onDis
       onPress={onLike}
       activeOpacity={0.8}
       style={[
-        tw`w-[88px] h-[88px] ${isFriendMode ? 'bg-black' : 'bg-primary'} rounded-full items-center justify-center translate-y-2`, 
+        tw`w-[88px] h-[88px] bg-primary rounded-full items-center justify-center translate-y-2`, 
         SHADOWS.floatingBtn
       ]}
     >
@@ -100,7 +100,7 @@ const ActionButtons = ({ onDislike, onLike, onSuperLike, isFriendMode }: { onDis
         <Svg width="42" height="42" viewBox="0 0 24 24" fill="white">
             <Path d="M12 2c0 0-5.5 5-5.5 11a5.5 5.5 0 0 0 11 0C17.5 7 12 2 12 2z" />
         </Svg>
-        <Svg width="18" height="18" viewBox="0 0 24 24" fill={isFriendMode ? "#000" : "#ff386c"} style={tw`absolute top-[55%]`}>
+        <Svg width="18" height="18" viewBox="0 0 24 24" fill="#ff386c" style={tw`absolute top-[55%]`}>
             <Path d="M12 12c0 0-2 1.5-2 3.5a2 2 0 0 0 4 0C14 13.5 12 12 12 12z" />
         </Svg>
       </View>
@@ -111,7 +111,7 @@ const ActionButtons = ({ onDislike, onLike, onSuperLike, isFriendMode }: { onDis
       activeOpacity={0.8}
       style={[tw`w-[62px] h-[62px] bg-white rounded-full items-center justify-center border border-gray-100`, SHADOWS.card]}
     >
-      <Svg width="28" height="28" viewBox="0 0 24 24" fill={isFriendMode ? "#111" : "#9013FE"}>
+      <Svg width="28" height="28" viewBox="0 0 24 24" fill="#9013FE">
         <Polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
       </Svg>
     </TouchableOpacity>
@@ -144,8 +144,6 @@ const Card = ({ user, actionButtons, onPress, SCREEN_WIDTH }: { user: User; acti
           style={tw`w-full h-full`}
           resizeMode="cover"
         />
-        {/* Strips removed as requested */}
-
         <LinearGradient
           colors={['transparent', 'rgba(0,0,0,0.3)', 'rgba(0,0,0,0.85)'] as [string, string, ...string[]]}
           style={tw`absolute inset-x-0 bottom-0 h-[60%]`}
@@ -159,25 +157,24 @@ const Card = ({ user, actionButtons, onPress, SCREEN_WIDTH }: { user: User; acti
         <View style={tw`absolute bottom-8 left-6 right-6`}>
           {user.origin && (
             <View style={tw`flex-row items-center gap-1.5 mb-2`}>
-              <Svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={user.mode === 'friendship' ? "#111" : "#ff386c"} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <Svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ff386c" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <Path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
                 <Line x1="4" y1="22" x2="4" y2="15" />
               </Svg>
-              <Text style={[tw`text-[14px] font-bold ${user.mode === 'friendship' ? 'text-gray-900' : 'text-primary'} uppercase tracking-wider`, { fontFamily: 'Urbanist_800ExtraBold' }]}>{user.origin}</Text>
+              <Text style={[tw`text-[14px] font-bold text-primary uppercase tracking-wider`, { fontFamily: 'Urbanist_800ExtraBold' }]}>{user.origin}</Text>
             </View>
           )}
 
           <View style={tw`flex-row items-center gap-2.5 mb-1`}>
             <Text style={[tw`text-[28px] font-extrabold text-white tracking-tight`, { fontFamily: 'Urbanist_800ExtraBold' }]}>{user.name}, {user.age}</Text>
             <View style={tw`bg-white rounded-full w-5.5 h-5.5 items-center justify-center shadow-sm`}>
-              <Svg width="14" height="14" viewBox="0 0 24 24" fill={user.mode === 'friendship' ? "#111" : "#ff386c"}>
+              <Svg width="14" height="14" viewBox="0 0 24 24" fill="#ff386c">
                 <Polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
               </Svg>
             </View>
           </View>
           <Text style={[tw`text-[16px] font-semibold text-white/90 mb-3`, { fontFamily: 'Urbanist_600SemiBold' }]}>{user.role}</Text>
 
-          {/* Location removed as requested (already in header) */}
           <Text 
             numberOfLines={1}
             style={[tw`text-[13px] text-white/70 leading-4.5`, { fontFamily: 'Urbanist_500Medium' }]}
@@ -284,7 +281,6 @@ export const SwipeCard = ({ onSelectUser, onMatch }: { onSelectUser?: (user: Use
                         <ActionButtons 
                             onLike={handleLike} 
                             onDislike={handleDislike}
-                            isFriendMode={visibleUsers[0].mode === 'friendship'}
                         />
                     } 
                 />

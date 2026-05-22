@@ -125,15 +125,22 @@ export const ProfileDetailScreen = ({ user, onBack }: ProfileDetailProps) => {
             onPress={onBack}
             style={[tw`w-16 h-16 bg-white rounded-[24px] items-center justify-center border border-gray-100`, SHADOWS.card]}
           >
-            <Svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#FF4D6D" strokeWidth="3">
+            <Svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#FF4D6D" strokeWidth={3}>
                <Path d="M18 6L6 18M6 6l12 12" />
             </Svg>
          </TouchableOpacity>
          <TouchableOpacity 
-            style={[tw`flex-1 bg-primary h-16 rounded-[24px] items-center justify-center flex-row gap-3 shadow-lg shadow-primary/30`, SHADOWS.floatingBtn]}
+            style={[
+              tw`flex-1 h-16 rounded-[24px] items-center justify-center flex-row gap-3 shadow-lg bg-primary shadow-primary/30`,
+              SHADOWS.floatingBtn
+            ]}
           >
             <Svg width="24" height="24" viewBox="0 0 24 24" fill="white">
-               <Path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+               {user.mode === 'friendship' ? (
+                 <Path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 7a4 4 0 1 0 0-8 4 4 0 0 0 0 8z" transform="translate(0, 4)" />
+               ) : (
+                 <Path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+               )}
             </Svg>
             <Text style={[tw`text-white text-lg font-black uppercase tracking-wider`, { fontFamily: 'Urbanist_800ExtraBold' }]}>Match Now</Text>
          </TouchableOpacity>
