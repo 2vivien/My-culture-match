@@ -11,6 +11,7 @@ export interface TotemAvatarProps {
   onClick?: () => void;
   className?: string;
   statusDot?: 'online' | 'offline' | 'none';
+  shape?: 'circle' | 'square' | 'hexagon';
 }
 
 const sizeValues = {
@@ -44,13 +45,19 @@ export const TotemAvatar = ({
   onClick,
   className,
   statusDot = 'none',
+  shape = 'circle',
 }: TotemAvatarProps) => {
   const sizePx = sizeValues[size] || 48;
   const glowKey = hasStory ? 'orange' : (glow || 'turquoise');
   const stops = glowStops[glowKey] || glowStops['turquoise'];
   
   // Unique ID for the SVG gradient reference
-  const gradId = `hex-grad-${size}-${glow}-${hasStory ? 'story' : 'std'}`;
+  const gradId = `avatar-grad-${size}-${glow}-${hasStory ? 'story' : 'std'}-${shape}`;
+
+  // Helper styles based on shape
+  const isCircle = shape === 'circle';
+  const isSquare = shape === 'square';
+  const isHexagon = shape === 'hexagon';
 
   return (
     <motion.div
@@ -84,28 +91,62 @@ export const TotemAvatar = ({
           </linearGradient>
         </defs>
 
-        {/* Couche 1 : Support plein blanc pointed-top (radius = 48) */}
-        <polygon
-          points="50,2 92.5,26.5 92.5,73.5 50,98 7.5,73.5 7.5,26.5"
-          fill="currentColor"
-        />
-
-        {/* Couche 2 : Contour dégradé pointed-top hexagone (radius = 44) */}
-        <polygon
-          points="50,6 89,28.5 89,71.5 50,94 11,71.5 11,28.5"
-          fill="none"
-          stroke={`url(#${gradId})`}
-          strokeWidth="3.5"
-        />
+        {isHexagon ? (
+          <>
+            {/* Couche 1 : Support plein blanc pointed-top (radius = 48) */}
+            <polygon
+              points="50,2 92.5,26.5 92.5,73.5 50,98 7.5,73.5 7.5,26.5"
+              fill="currentColor"
+            />
+            {/* Couche 2 : Contour dégradé pointed-top hexagone (radius = 44) */}
+            <polygon
+              points="50,6 89,28.5 89,71.5 50,94 11,71.5 11,28.5"
+              fill="none"
+              stroke={`url(#${gradId})`}
+              strokeWidth="3.5"
+            />
+          </>
+        ) : isSquare ? (
+          <>
+            {/* Couche 1 : Support plein blanc rounded square */}
+            <rect
+              x="2" y="2" width="96" height="96" rx="20"
+              fill="currentColor"
+            />
+            {/* Couche 2 : Contour dégradé rounded square */}
+            <rect
+              x="6" y="6" width="88" height="88" rx="16"
+              fill="none"
+              stroke={`url(#${gradId})`}
+              strokeWidth="3.5"
+            />
+          </>
+        ) : (
+          <>
+            {/* Couche 1 : Support plein blanc cercle */}
+            <circle
+              cx="50" cy="50" r="48"
+              fill="currentColor"
+            />
+            {/* Couche 2 : Contour dégradé cercle */}
+            <circle
+              cx="50" cy="50" r="44"
+              fill="none"
+              stroke={`url(#${gradId})`}
+              strokeWidth="3.5"
+            />
+          </>
+        )}
       </svg>
 
-      {/* Couche 3 : L'avatar clippé en hexagone pointed-top (inset = 13.5% pour loger exactement au centre) */}
+      {/* Couche 3 : L'avatar clippé */}
       <div
         style={{
           position: 'absolute',
-          inset: '13.5%',
+          inset: isHexagon ? '13.5%' : isSquare ? '11%' : '9%',
           overflow: 'hidden',
-          clipPath: hexClip,
+          clipPath: isHexagon ? hexClip : undefined,
+          borderRadius: isHexagon ? undefined : isSquare ? '16%' : '50%',
         }}
         className="bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center transition-colors"
       >
@@ -123,17 +164,18 @@ export const TotemAvatar = ({
         )}
       </div>
 
-      {/* Badge de Niveau : Hexagone plein indépendant en bas à droite */}
+      {/* Badge de Niveau */}
       {level !== undefined && (
         <div
           style={{
             position: 'absolute',
-            bottom: -sizePx * 0.05,
-            right: -sizePx * 0.05,
+            bottom: isHexagon ? -sizePx * 0.05 : 0,
+            right: isHexagon ? -sizePx * 0.05 : 0,
             width: sizePx * 0.32,
             height: sizePx * 0.32,
             background: '#3f37c9',
-            clipPath: hexClip,
+            clipPath: isHexagon ? hexClip : undefined,
+            borderRadius: isHexagon ? undefined : isSquare ? '25%' : '50%',
           }}
           className="flex items-center justify-center text-white font-black leading-none shadow-md z-10"
         >
@@ -148,8 +190,8 @@ export const TotemAvatar = ({
         <div
           style={{
             position: 'absolute',
-            top: sizePx * 0.02,
-            left: sizePx * 0.02,
+            top: isHexagon ? sizePx * 0.02 : sizePx * 0.04,
+            left: isHexagon ? sizePx * 0.02 : sizePx * 0.04,
             width: sizePx * 0.22,
             height: sizePx * 0.22,
             borderRadius: '50%',

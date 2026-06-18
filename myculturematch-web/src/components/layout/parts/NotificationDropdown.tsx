@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Sparkles, MessageSquare, Check, X, ShieldAlert, Heart, Calendar } from 'lucide-react';
+import { Bell, MessageCircle, Check, X, ShieldAlert, Heart, Calendar } from 'lucide-react';
 import { useUIStore } from '@/src/stores/useUIStore';
 
 interface NotificationItem {
@@ -17,18 +17,21 @@ interface NotificationItem {
   isUnread?: boolean;
 }
 
-export const NotificationDropdown: React.FC = () => {
+interface NotificationDropdownProps {
+  hideSubText?: boolean;
+}
+
+export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ hideSubText = false }) => {
   const { setNotificationsCount } = useUIStore();
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
   const [notifications, setNotifications] = useState<NotificationItem[]>([
     {
       id: '1',
       user: {
-        name: 'Pixelwave',
-        avatar: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=80&q=80',
-        action: 'Commented on',
-        target: 'Classic Car in Studio',
-        subText: 'These draggable sliders look really cool. Maybe these could be displayed when you hold shift...',
+        name: 'AinuScholar',
+        avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=80&q=80',
+        action: 'commented on your tradition',
+        target: 'Benin Voodoo rhythms study',
       },
       type: 'comment',
       time: '1h ago',
@@ -37,22 +40,22 @@ export const NotificationDropdown: React.FC = () => {
     {
       id: '2',
       user: {
-        name: 'Cute Turtle is generated',
-        avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=80&q=80',
-        action: 'Matte texture',
-        target: 'UI8 Style',
+        name: 'YamatoElder',
+        avatar: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=80&q=80',
+        action: 'liked your tradition',
+        target: 'Shinto festival restoration project',
       },
-      type: 'generation',
+      type: 'like',
       time: '1h ago',
       isUnread: true,
     },
     {
       id: '3',
       user: {
-        name: '3D object is generated',
-        avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=80&q=80',
-        action: 'Invited you to edit',
-        target: 'Minimalist Architecture Scene',
+        name: 'HakaNavigator',
+        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=80&q=80',
+        action: 'invited you to collaborate on',
+        target: 'Pacific Rhythm Matchmaking',
       },
       type: 'invite',
       time: '1h ago',
@@ -62,39 +65,36 @@ export const NotificationDropdown: React.FC = () => {
       id: '4',
       user: {
         name: 'Luna',
-        avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=80&q=80',
-        action: 'Liked',
-        target: 'Classic Car in Studio',
+        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=80&q=80',
+        action: 'liked your shared image in',
+        target: 't/AinuTribe',
       },
       type: 'like',
-      time: '2h ago',
-      isUnread: false,
-    },
-    {
-      id: '5',
-      user: {
-        name: 'Norse Voyager',
-        avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=80&q=80',
-        action: 'Invited you to',
-        target: 'Midsummer Solstice Ritual',
-      },
-      type: 'invite',
-      time: '1d ago',
+      time: '1h ago',
       isUnread: false,
     },
   ]);
+
+  // Sync count to global state store dynamically on change
+  useEffect(() => {
+    const unread = notifications.filter(n => n.isUnread).length;
+    setNotificationsCount(unread);
+  }, [notifications, setNotificationsCount]);
 
   const displayed = notifications.filter((n) => (filter === 'unread' ? n.isUnread : true));
 
   const handleAction = (id: string, actionName: 'accept' | 'decline') => {
     setNotifications((prev) => prev.filter((n) => n.id !== id));
-    // Decrease global unread notifications dynamically
-    setNotificationsCount(Math.max(0, notifications.filter(n => n.isUnread).length - 1));
   };
 
   const markAllRead = () => {
     setNotifications((prev) => prev.map((n) => ({ ...n, isUnread: false })));
-    setNotificationsCount(0);
+  };
+
+  const toggleReadState = (id: string) => {
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, isUnread: !n.isUnread } : n))
+    );
   };
 
   return (
@@ -108,7 +108,7 @@ export const NotificationDropdown: React.FC = () => {
       {/* Popover Header */}
       <div className="flex items-center justify-between pb-3 border-b border-app-border dark:border-zinc-850">
         <h3 className="font-black text-sm text-app-black dark:text-zinc-100 flex items-center gap-1.5">
-          <Sparkles className="w-4 h-4 text-amber-500 animate-pulse" />
+          <Bell className="w-4 h-4 text-[#6c63fc] dark:text-[#2dd9d9] animate-pulse" />
           Notifications
         </h3>
         <div className="flex items-center gap-2">
@@ -141,8 +141,9 @@ export const NotificationDropdown: React.FC = () => {
           displayed.map((item) => (
             <div
               key={item.id}
-              className={`p-2.5 rounded-2xl flex gap-3 transition-colors relative group ${
-                item.isUnread ? 'bg-zinc-50/50 dark:bg-zinc-900/30' : ''
+              onClick={() => toggleReadState(item.id)}
+              className={`p-2.5 rounded-2xl flex gap-3 transition-colors relative group cursor-pointer ${
+                item.isUnread ? 'bg-zinc-50/50 dark:bg-zinc-900/30 hover:bg-zinc-100/50 dark:hover:bg-zinc-850/50' : 'hover:bg-zinc-50/30 dark:hover:bg-zinc-900/20'
               }`}
             >
               {/* Badge avatar indicator overlay style */}
@@ -152,11 +153,27 @@ export const NotificationDropdown: React.FC = () => {
                   alt={item.user.name}
                   className="w-10 h-10 rounded-full object-cover border border-app-border"
                 />
-                <span className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center border-2 border-white dark:border-zinc-950">
-                  {item.type === 'comment' && <MessageSquare className="w-2.5 h-2.5 text-blue-600 bg-blue-50 dark:bg-zinc-800 w-full h-full p-0.5 rounded-full" />}
-                  {item.type === 'generation' && <Sparkles className="w-2.5 h-2.5 text-emerald-600 bg-emerald-50 dark:bg-zinc-800 w-full h-full p-0.5 rounded-full" />}
-                  {item.type === 'invite' && <Calendar className="w-2.5 h-2.5 text-purple-600 bg-purple-50 dark:bg-zinc-800 w-full h-full p-0.5 rounded-full" />}
-                  {item.type === 'like' && <Heart className="w-2.5 h-2.5 text-rose-600 bg-rose-50 dark:bg-zinc-800 w-full h-full p-0.5 rounded-full fill-rose-600" />}
+                <span className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center border border-white dark:border-zinc-950 bg-white dark:bg-zinc-950 shadow-xs">
+                  {item.type === 'comment' && (
+                    <span className="w-3.5 h-3.5 rounded-full flex items-center justify-center bg-[#E27D60]/10 dark:bg-[#E27D60]/20">
+                      <MessageCircle className="w-2 h-2 text-[#E27D60] dark:text-[#E27D60]" />
+                    </span>
+                  )}
+                  {item.type === 'generation' && (
+                    <span className="w-3.5 h-3.5 rounded-full flex items-center justify-center bg-emerald-50 dark:bg-emerald-950/50">
+                      <Bell className="w-2 h-2 text-emerald-600 dark:text-emerald-400" />
+                    </span>
+                  )}
+                  {item.type === 'invite' && (
+                    <span className="w-3.5 h-3.5 rounded-full flex items-center justify-center bg-purple-50 dark:bg-purple-950/50">
+                      <Calendar className="w-2 h-2 text-purple-600 dark:text-purple-400" />
+                    </span>
+                  )}
+                  {item.type === 'like' && (
+                    <span className="w-3.5 h-3.5 rounded-full flex items-center justify-center bg-[#E27D60]/10 dark:bg-[#E27D60]/20">
+                      <Heart className="w-2 h-2 text-[#E27D60] dark:text-[#E27D60] fill-[#E27D60] dark:fill-[#E27D60]" />
+                    </span>
+                  )}
                 </span>
               </div>
 
@@ -177,24 +194,26 @@ export const NotificationDropdown: React.FC = () => {
                   </span>
                 </p>
 
-                {item.user.subText && (
-                  <p className="text-[10px] text-app-gray/80 dark:text-zinc-500 mt-1 italic line-clamp-2 bg-white dark:bg-zinc-900/40 p-1.5 rounded-lg border border-app-border/40">
-                    {item.user.subText}
-                  </p>
-                )}
 
-                {/* Actions Accept / Decline button overlay */}
+
+                {/* Accept / Decline actions */}
                 {item.type === 'invite' && (
-                  <div className="flex gap-2 mt-2.5">
+                  <div className="flex gap-2.5 mt-2.5">
                     <button
-                      onClick={() => handleAction(item.id, 'decline')}
-                      className="px-4 py-1.5 text-[10px] font-black bg-zinc-100 dark:bg-zinc-900 hover:bg-zinc-200 dark:hover:bg-zinc-800 text-app-black dark:text-zinc-200 rounded-xl cursor-pointer transition-colors"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleAction(item.id, 'decline');
+                      }}
+                      className="px-4.5 py-2 text-xs font-black bg-[#E4E6EB] hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-750 text-app-black dark:text-zinc-200 rounded-xl cursor-pointer transition-colors"
                     >
                       Decline
                     </button>
                     <button
-                      onClick={() => handleAction(item.id, 'accept')}
-                      className="px-4 py-1.5 text-[10px] font-black bg-app-black dark:bg-white hover:opacity-90 text-white dark:text-app-black rounded-xl cursor-pointer transition-colors"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleAction(item.id, 'accept');
+                      }}
+                      className="px-4.5 py-2 text-xs font-black bg-[#1A1A1A] hover:opacity-90 dark:bg-white text-white dark:text-app-black rounded-xl cursor-pointer transition-colors"
                     >
                       Accept
                     </button>
@@ -219,7 +238,7 @@ export const NotificationDropdown: React.FC = () => {
       <div className="mt-3 pt-2.5 border-t border-app-border dark:border-zinc-850 flex items-center justify-between select-none">
         <button
           onClick={markAllRead}
-          className="text-[10px] font-bold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
+          className="text-[10px] font-bold text-[#E27D60] dark:text-[#E27D60] hover:underline cursor-pointer"
         >
           Mark all as read
         </button>

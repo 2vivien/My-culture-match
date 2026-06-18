@@ -4,8 +4,8 @@ export const COLORS = {
   appAccent: '#000000',
   appGray: '#777777',
   appBorder: '#ECECEC',
-  blue: '#2563EB',
-  red: '#EF4444',
+  blue: '#E27D60',
+  red: '#E27D60',
   purple: '#7C3AED',
 } as const;
 

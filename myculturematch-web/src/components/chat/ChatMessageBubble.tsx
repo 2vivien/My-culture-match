@@ -34,13 +34,13 @@ export const ChatMessageBubble: React.FC<BubbleProps> = ({ message }) => {
 
         {message.audioDur && (
           <div className="flex items-center gap-3 py-1 font-semibold text-xs select-none">
-            <button className="w-8 h-8 rounded-full bg-blue-500/10 text-blue-600 flex items-center justify-center cursor-pointer shrink-0">
+            <button className="w-8 h-8 rounded-full bg-[#E27D60]/10 text-[#E27D60] flex items-center justify-center cursor-pointer shrink-0">
               <Volume2 className="w-4 h-4" />
             </button>
             <div>
               <div className="flex gap-0.5 items-end h-4 w-28">
                 {[2, 4, 3, 5, 2, 6, 4, 7, 3, 5, 4, 2].map((h, i) => (
-                  <span key={i} className="bg-blue-600 dark:bg-blue-400 w-[2px] rounded-full" style={{ height: `${h * 2}px` }} />
+                  <span key={i} className="bg-[#E27D60] dark:bg-[#E27D60] w-[2px] rounded-full" style={{ height: `${h * 2}px` }} />
                 ))}
               </div>
               <p className="text-[9px] text-app-gray dark:text-zinc-400 mt-0.5">Voice Note • {message.audioDur}</p>
@@ -64,7 +64,7 @@ export const ChatMessageBubble: React.FC<BubbleProps> = ({ message }) => {
       {isMe && (
         <span className="text-[9px] text-app-gray dark:text-zinc-500 mt-1 flex items-center gap-1 select-none font-bold">
           <span>Sent</span>
-          <CheckCheck className="w-3 h-3 text-blue-600" />
+          <CheckCheck className="w-3 h-3 text-[#E27D60]" />
         </span>
       )}
     </div>

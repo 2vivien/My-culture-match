@@ -1,5 +1,37 @@
 [
   {
+    "id": "post-3",
+    "author": {
+      "id": "user-current",
+      "name": "Sofaia",
+      "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80",
+      "location": "Peru"
+    },
+    "text": "Enjoying the stunning view of Machu Picchu! So much history and spiritual energy here. 🌅⛰️",
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "likes": 12500,
+    "comments": 48,
+    "views": 25000,
+    "date": "Today",
+    "createdAt": "2026-06-18T12:00:00Z"
+  },
+  {
+    "id": "post-4",
+    "author": {
+      "id": "user-2",
+      "name": "Yuki",
+      "avatar": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80",
+      "location": "Kyoto - Japan"
+    },
+    "text": "Traditional tea ceremony in Kyoto. Every movement is a form of art and mindfulness. 🍵",
+    "image": "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=800&q=80",
+    "likes": 10400,
+    "comments": 32,
+    "views": 18200,
+    "date": "Yesterday",
+    "createdAt": "2026-06-17T15:00:00Z"
+  },
+  {
     "id": "post-1",
     "author": {
       "id": "user-1",
@@ -30,5 +62,20 @@
     "views": 1500,
     "date": "Dec 29-12-2022",
     "createdAt": "2022-12-29T11:00:00Z"
+  },
+  {
+    "id": "post-5",
+    "author": {
+      "id": "user-current",
+      "name": "Sofaia",
+      "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80",
+      "location": "Peru"
+    },
+    "text": "Just starting my journey here! What are your favorite culture traditions? Let's connect! 🌍✨",
+    "likes": 0,
+    "comments": 0,
+    "views": 12,
+    "date": "Just now",
+    "createdAt": "2026-06-18T15:00:00Z"
   }
 ]

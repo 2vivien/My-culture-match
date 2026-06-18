@@ -6,7 +6,7 @@ import { cn } from '@/src/lib/utils';
 
 export const SidebarFooter = () => {
   const { theme, toggleTheme } = useAppStore();
-  const { activeTab } = useUIStore();
+  const { activeTab, setActiveTab } = useUIStore();
   const isCollapsed = activeTab === 'Chat' || activeTab === 'Thunderbird';
 
   return (
@@ -28,6 +28,7 @@ export const SidebarFooter = () => {
       <Button
         variant="ghost"
         title="Settings"
+        onClick={() => setActiveTab('Settings')}
         className={cn(
           "w-full text-app-gray hover:text-app-black dark:text-zinc-400 dark:hover:text-white font-medium py-3 px-4 rounded-2xl",
           isCollapsed ? "justify-center p-3 w-12 mx-auto" : "justify-start gap-4"

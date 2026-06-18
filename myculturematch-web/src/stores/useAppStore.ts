@@ -9,11 +9,13 @@ interface AppState {
   feedCulture: string;
   currentUser: CurrentUser;
   selectedTotemUserId: string;
+  profileActiveTab: 'Posts' | 'Photos' | 'Videos' | 'Traditions' | 'About' | 'Saves';
   toggleTheme: () => void;
   setLocale: (locale: string) => void;
   setFeedSort: (sort: string) => void;
   setFeedCulture: (culture: string) => void;
   setSelectedTotemUserId: (id: string) => void;
+  setProfileActiveTab: (tab: 'Posts' | 'Photos' | 'Videos' | 'Traditions' | 'About' | 'Saves') => void;
 }
 
 const defaultUser: CurrentUser = {
@@ -39,11 +41,13 @@ export const useAppStore = create<AppState>()(
       feedCulture: 'Everywhere',
       currentUser: defaultUser,
       selectedTotemUserId: 'user-current',
+      profileActiveTab: 'Posts',
       toggleTheme: () => set((s) => ({ theme: s.theme === 'light' ? 'dark' : 'light' })),
       setLocale: (locale) => set({ locale }),
       setFeedSort: (feedSort) => set({ feedSort }),
       setFeedCulture: (feedCulture) => set({ feedCulture }),
       setSelectedTotemUserId: (id) => set({ selectedTotemUserId: id }),
+      setProfileActiveTab: (profileActiveTab) => set({ profileActiveTab }),
     }),
     { name: 'app-store' }
   )

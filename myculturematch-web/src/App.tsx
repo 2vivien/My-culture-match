@@ -6,6 +6,10 @@ import { MainFeedColumn } from './components/feed/MainFeedColumn';
 import { RightPanel } from './components/RightPanel';
 import { TotemProfile } from './components/totem/TotemProfile';
 import { ChatPage } from './pages/ChatPage';
+import { ExploreColumn } from './components/explore/ExploreColumn';
+import { TribuDetailView } from './components/explore/TribuDetailView';
+import { CreateTraditionView } from './components/feed/CreateTraditionView';
+import { SettingsPage } from './pages/SettingsPage';
 import { useAppStore } from './stores/useAppStore';
 import { useUIStore } from './stores/useUIStore';
 import { cn } from './lib/utils';
@@ -29,12 +33,20 @@ export default function App() {
           <Header />
 
           <div className="flex-1 overflow-hidden px-4 md:px-10 pb-4 flex gap-8">
-            {activeTab === 'Feed' || activeTab === 'Home' ? (
+            {activeTab === 'Feed' || activeTab === 'Home' || activeTab === 'Popular' || activeTab === 'Love' || activeTab === 'New' ? (
               <MainFeedColumn />
             ) : activeTab === 'Totem' ? (
               <TotemProfile />
             ) : activeTab === 'Thunderbird' || activeTab === 'Chat' ? (
               <ChatPage />
+            ) : activeTab === 'Explore' ? (
+              <ExploreColumn />
+            ) : activeTab === 'Tribu' ? (
+              <TribuDetailView />
+            ) : activeTab === 'Create' ? (
+              <CreateTraditionView />
+            ) : activeTab === 'Settings' ? (
+              <SettingsPage />
             ) : (
               <motion.div
                 initial={{ opacity: 0, scale: 0.98 }}
@@ -54,7 +66,7 @@ export default function App() {
               </motion.div>
             )}
 
-            {activeTab !== 'Chat' && activeTab !== 'Thunderbird' && <RightPanel />}
+            {(activeTab === 'Home' || activeTab === 'Feed' || activeTab === 'Popular' || activeTab === 'Love' || activeTab === 'New') && <RightPanel />}
           </div>
         </div>
       </div>

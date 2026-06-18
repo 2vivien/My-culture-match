@@ -3,12 +3,15 @@ import { useAppStore } from '@/src/stores/useAppStore';
 import { cn } from '@/src/lib/utils';
 import { Award, Globe, ChevronDown, Check } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { useUIStore } from '@/src/stores/useUIStore';
 
 const sortOptions = ['Best', 'Popular', 'New', 'Hot'];
 const cultureOptions = ['Everywhere', 'Afrique', 'Japon', 'États-Unis', 'Inde', 'France', 'Brésil'];
 
 export const FeedFilterToggle = () => {
   const { feedSort, feedCulture, setFeedSort, setFeedCulture } = useAppStore();
+  const { activeTab } = useUIStore();
+  const isSortDisabled = activeTab === 'Popular' || activeTab === 'New';
   const [openSort, setOpenSort] = useState(false);
   const [openCulture, setOpenCulture] = useState(false);
 
@@ -29,36 +32,48 @@ export const FeedFilterToggle = () => {
       {/* Sort Custom Select */}
       <div className="relative" ref={sortRef}>
         <button
-          onClick={() => { setOpenSort(!openSort); setOpenCulture(false); }}
-          className="group bg-white dark:bg-zinc-950 px-4 py-2 pl-10 pr-8 rounded-full shadow-sm border border-app-border dark:border-zinc-800 text-sm font-bold text-app-black dark:text-white flex items-center gap-2 hover:shadow-md transition-all focus:outline-none"
+          onClick={() => {
+            if (!isSortDisabled) {
+              setOpenSort(!openSort);
+              setOpenCulture(false);
+            }
+          }}
+          className={cn(
+            "group bg-white dark:bg-zinc-950 px-4 py-2 pl-10 pr-8 rounded-full shadow-sm border border-app-border dark:border-zinc-800 text-sm font-bold text-app-black dark:text-white flex items-center gap-2 transition-all focus:outline-none",
+            isSortDisabled ? "cursor-default opacity-85" : "hover:shadow-md cursor-pointer"
+          )}
         >
           <Award className="w-4 h-4 absolute left-3.5 text-app-gray group-hover:text-yellow-500 transition-colors" />
-          {feedSort}
-          <ChevronDown className={cn("w-4 h-4 absolute right-3 text-app-gray transition-transform duration-200", openSort && "rotate-180")} />
+          {isSortDisabled ? activeTab : feedSort}
+          {!isSortDisabled && (
+            <ChevronDown className={cn("w-4 h-4 absolute right-3 text-app-gray transition-transform duration-200", openSort && "rotate-180")} />
+          )}
         </button>
 
-        <AnimatePresence>
-          {openSort && (
-            <motion.div
-              initial={{ opacity: 0, y: -10, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -10, scale: 0.95 }}
-              transition={{ duration: 0.15 }}
-              className="absolute top-full left-0 mt-2 w-40 bg-white dark:bg-zinc-900 rounded-2xl shadow-xl border border-app-border dark:border-zinc-800 overflow-hidden py-2 z-50"
-            >
-              {sortOptions.map(option => (
-                <div
-                  key={option}
-                  onClick={() => { setFeedSort(option); setOpenSort(false); }}
-                  className="px-4 py-2 text-sm font-semibold text-app-black dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer flex items-center justify-between"
-                >
-                  {option}
-                  {feedSort === option && <Check className="w-4 h-4 text-app-black dark:text-white" />}
-                </div>
-              ))}
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {!isSortDisabled && (
+          <AnimatePresence>
+            {openSort && (
+              <motion.div
+                initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                transition={{ duration: 0.15 }}
+                className="absolute top-full left-0 mt-2 w-40 bg-white dark:bg-zinc-900 rounded-2xl shadow-xl border border-app-border dark:border-zinc-800 overflow-hidden py-2 z-50"
+              >
+                {sortOptions.map(option => (
+                  <div
+                    key={option}
+                    onClick={() => { setFeedSort(option); setOpenSort(false); }}
+                    className="px-4 py-2 text-sm font-semibold text-app-black dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer flex items-center justify-between"
+                  >
+                    {option}
+                    {feedSort === option && <Check className="w-4 h-4 text-app-black dark:text-white" />}
+                  </div>
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        )}
       </div>
 
       {/* Culture Custom Select */}
@@ -67,7 +82,7 @@ export const FeedFilterToggle = () => {
           onClick={() => { setOpenCulture(!openCulture); setOpenSort(false); }}
           className="group bg-white dark:bg-zinc-950 px-4 py-2 pl-10 pr-8 rounded-full shadow-sm border border-app-border dark:border-zinc-800 text-sm font-bold text-app-black dark:text-white flex items-center gap-2 hover:shadow-md transition-all focus:outline-none"
         >
-          <Globe className="w-4 h-4 absolute left-3.5 text-app-gray group-hover:text-blue-500 transition-colors" />
+          <Globe className="w-4 h-4 absolute left-3.5 text-app-gray group-hover:text-[#E27D60] transition-colors" />
           {feedCulture}
           <ChevronDown className={cn("w-4 h-4 absolute right-3 text-app-gray transition-transform duration-200", openCulture && "rotate-180")} />
         </button>

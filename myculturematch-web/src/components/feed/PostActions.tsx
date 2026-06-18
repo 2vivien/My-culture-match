@@ -18,17 +18,27 @@ export const PostActions = ({ likes, onLike }: PostActionsProps) => {
     setComment('');
   };
 
+  const formatLikes = (num: number) => {
+    if (num >= 10000) {
+      return `${(num / 1000).toFixed(0)}k`;
+    }
+    if (num >= 1000) {
+      return `${(num / 1000).toFixed(1)}k`.replace('.0', '');
+    }
+    return num;
+  };
+
   return (
     <div className="flex flex-col gap-3 pt-2 border-t border-app-border select-none w-full">
       <div className="flex items-center justify-end gap-4 text-app-gray px-2">
         <button 
           onClick={onLike} 
-          className="flex items-center gap-1.5 hover:text-red-500 transition-colors font-semibold text-sm cursor-pointer"
+          className="flex items-center gap-1.5 hover:text-[#E27D60] transition-colors font-semibold text-sm cursor-pointer"
         >
           <FlagTriangleLeft className="w-5 h-5" />
-          <span>{likes || 0} flag</span>
+          <span>{likes === 0 ? 'flag' : formatLikes(likes)}</span>
         </button>
-        <button className="flex items-center gap-1.5 hover:text-blue-500 transition-colors font-semibold text-sm cursor-pointer">
+        <button className="flex items-center gap-1.5 hover:text-[#E27D60] transition-colors font-semibold text-sm cursor-pointer">
           <MessageCircle className="w-5 h-5" />
           <span>comment</span>
         </button>
@@ -36,14 +46,14 @@ export const PostActions = ({ likes, onLike }: PostActionsProps) => {
 
       <div className="flex items-center w-full gap-3 relative mt-1">
         <Avatar src={currentUser?.avatar} alt={currentUser?.name} size="sm" />
-        <div className="flex-1 bg-[#FCFCFC] dark:bg-zinc-900 rounded-full px-4 py-2.5 flex items-center border border-app-border focus-within:ring-1 focus-within:ring-app-black/5 transition-all">
+        <div className="flex-1 bg-[#FCFCFC] dark:bg-zinc-900 rounded-full px-4 py-2.5 flex items-center border border-app-border focus-within:ring-1 focus-within:ring-[#E27D60]/20 transition-all">
           <input
             type="text"
             value={comment}
             onChange={(e) => setComment(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSendComment()}
             placeholder="Write a comment..."
-            className="bg-transparent border-none text-sm w-full focus:ring-0 outline-none placeholder-app-gray dark:text-zinc-100"
+            className="bg-transparent border-none text-sm w-full focus:ring-0 outline-none placeholder-app-gray dark:text-zinc-150"
           />
           <Button
             variant="ghost"
@@ -56,9 +66,9 @@ export const PostActions = ({ likes, onLike }: PostActionsProps) => {
           onClick={handleSendComment}
           disabled={!comment.trim()}
           size="icon"
-          className="w-10 h-10 bg-blue-600 text-white hover:bg-blue-700 hover:scale-105"
+          className="w-10 h-10 bg-[#E27D60] text-white hover:bg-[#c66b50] hover:scale-105"
         >
-          <Send className="w-4 h-4 ml-0.5" />
+          <MessageCircle className="w-4.5 h-4.5 text-white" />
         </Button>
       </div>
     </div>

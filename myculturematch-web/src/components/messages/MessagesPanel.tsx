@@ -1,4 +1,5 @@
 import { Plus, MoreHorizontal } from 'lucide-react';
+import { ThunderbirdIcon } from '@/src/components/ui/ThunderbirdIcon';
 import { useMessages } from '@/src/hooks/useMessages';
 import { MessageItem } from './MessageItem';
 import { Button } from '@/src/components/ui/button';
@@ -12,15 +13,15 @@ export const MessagesPanel = () => {
   const { setSelectedTotemUserId } = useAppStore();
 
   const handleActiveClick = () => {
-    setSelectedTotemUserId('m4'); 
-    setActiveTab('Totem');
+    setActiveTab('Thunderbird');
   };
 
   return (
     <div className="bg-white rounded-[24px] p-5 shadow-soft border border-app-border flex-1 flex flex-col select-none">
       <div className="flex items-center justify-between mb-6">
         <div onClick={handleActiveClick} className="flex items-center gap-2 border border-app-black rounded-full px-4 py-1.5 cursor-pointer hover:bg-[#FCFCFC] transition-colors">
-          <span className="font-bold text-sm text-app-black">Messages</span>
+          <ThunderbirdIcon className="w-4 h-4 text-app-black dark:text-zinc-200" />
+          <span className="font-bold text-sm text-app-black dark:text-zinc-200">Thunderbird</span>
           <TotemAvatar
             src="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=50&q=80"
             alt="active user"
@@ -46,7 +47,7 @@ export const MessagesPanel = () => {
       </div>
 
       <div className="mt-4 pt-4 border-t border-app-border text-center">
-        <Button variant="primary" className="text-xs font-semibold py-2 px-6">See all</Button>
+        <Button onClick={() => setActiveTab('Thunderbird')} variant="primary" className="text-xs font-semibold py-2 px-6">See all</Button>
       </div>
     </div>
   );

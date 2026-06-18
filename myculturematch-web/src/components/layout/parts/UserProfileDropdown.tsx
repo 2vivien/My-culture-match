@@ -4,17 +4,33 @@ import { User, Settings, LogOut, ChevronRight, Moon, Sun, ShieldCheck } from 'lu
 import { useAppStore } from '@/src/stores/useAppStore';
 import { useUIStore } from '@/src/stores/useUIStore';
 
-export const UserProfileDropdown: React.FC = () => {
+interface UserProfileDropdownProps {
+  onClose?: () => void;
+}
+
+export const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ onClose }) => {
   const { currentUser, theme, toggleTheme } = useAppStore();
   const { setActiveTab } = useUIStore();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   const handleProfileClick = () => {
     setActiveTab('Totem');
+    if (onClose) onClose();
   };
 
-  const handleLogout = () => {
-    setShowLogoutConfirm(true);
+  const handleSettingsClick = () => {
+    setActiveTab('Settings');
+    if (onClose) onClose();
+  };
+
+  const handleThemeClick = () => {
+    toggleTheme();
+    if (onClose) onClose();
+  };
+
+  const handleCancelConfirm = () => {
+    setShowLogoutConfirm(false);
+    if (onClose) onClose();
   };
 
   return (
@@ -23,7 +39,7 @@ export const UserProfileDropdown: React.FC = () => {
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: 15, scale: 0.95 }}
       transition={{ duration: 0.25, ease: 'easeOut' }}
-      className="absolute right-0 mt-3 w-80 bg-white dark:bg-zinc-950 border border-app-border dark:border-zinc-850 rounded-[24px] shadow-xl overflow-hidden z-50 p-4"
+      className="absolute right-0 mt-3 w-80 bg-white dark:bg-zinc-955 border border-app-border dark:border-zinc-850 rounded-[24px] shadow-xl overflow-hidden z-50 p-4"
     >
       <AnimatePresence mode="wait">
         {!showLogoutConfirm ? (
@@ -33,37 +49,33 @@ export const UserProfileDropdown: React.FC = () => {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 10 }}
             transition={{ duration: 0.15 }}
+            className="flex flex-col gap-3.5"
           >
-            {/* User Meta Card Header */}
-            <div className="flex items-center gap-3 pb-3 border-b border-app-border dark:border-zinc-850">
-              <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-amber-400 select-none">
-                <img
-                  src={currentUser.avatar}
-                  alt={currentUser.name}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="min-w-0 flex-1">
-                <h4 className="font-extrabold text-sm text-app-black dark:text-zinc-100 truncate">
+            {/* User Details */}
+            <div className="flex items-center gap-3 border-b border-app-border dark:border-zinc-850 pb-3.5 select-none">
+              <img
+                src={currentUser.avatar}
+                alt={currentUser.name}
+                className="w-12 h-12 rounded-full object-cover border border-app-border"
+              />
+              <div className="min-w-0">
+                <h4 className="font-black text-sm text-app-black dark:text-zinc-100 truncate leading-snug">
                   {currentUser.name}
                 </h4>
-                <p className="text-[10px] text-zinc-500 font-bold tracking-tight">
-                  Level {currentUser.level} • {currentUser.location}
+                <p className="text-[10px] text-app-gray dark:text-zinc-400 font-bold uppercase tracking-widest mt-0.5">
+                  {currentUser.location}
                 </p>
               </div>
-              <span className="text-[10px] bg-amber-500/10 text-amber-600 dark:text-amber-400 font-black px-2 py-0.5 rounded-full uppercase tracking-wider">
-                Elite
-              </span>
             </div>
 
             {/* Menu Links */}
-            <div className="mt-3 space-y-1">
+            <div className="flex flex-col gap-1">
               <button
                 onClick={handleProfileClick}
                 className="w-full text-left p-3 rounded-2xl flex items-center justify-between hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors cursor-pointer group"
               >
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-orange-100 text-orange-600 dark:bg-zinc-800 dark:text-orange-400 flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-app-gray dark:text-zinc-300 flex items-center justify-center">
                     <User className="w-4 h-4" />
                   </div>
                   <span className="text-xs font-bold text-app-black dark:text-zinc-250">
@@ -74,7 +86,7 @@ export const UserProfileDropdown: React.FC = () => {
               </button>
 
               <button
-                onClick={toggleTheme}
+                onClick={handleThemeClick}
                 className="w-full text-left p-3 rounded-2xl flex items-center justify-between hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors cursor-pointer group"
               >
                 <div className="flex items-center gap-2.5">
@@ -89,10 +101,11 @@ export const UserProfileDropdown: React.FC = () => {
               </button>
 
               <button
+                onClick={handleSettingsClick}
                 className="w-full text-left p-3 rounded-2xl flex items-center justify-between hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors cursor-pointer group"
               >
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-blue-100 text-blue-600 dark:bg-zinc-800 dark:text-blue-400 flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-xl bg-[#E27D60]/10 text-[#E27D60] dark:bg-zinc-800 dark:text-[#E27D60] flex items-center justify-center">
                     <Settings className="w-4 h-4" />
                   </div>
                   <span className="text-xs font-bold text-app-black dark:text-zinc-250">
@@ -103,18 +116,18 @@ export const UserProfileDropdown: React.FC = () => {
               </button>
 
               <button
-                onClick={handleLogout}
-                className="w-full text-left p-3 rounded-2xl flex items-center justify-between hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors cursor-pointer group text-red-600"
+                onClick={() => setShowLogoutConfirm(true)}
+                className="w-full text-left p-3 rounded-2xl flex items-center justify-between hover:bg-[#E27D60]/10 dark:hover:bg-[#E27D60]/20 transition-colors cursor-pointer group text-[#E27D60]"
               >
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-red-100 dark:bg-zinc-800 text-red-600 dark:text-red-400 flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-xl bg-[#E27D60]/15 dark:bg-zinc-800 text-[#E27D60] dark:text-[#E27D60] flex items-center justify-center">
                     <LogOut className="w-4 h-4" />
                   </div>
                   <span className="text-xs font-bold">
                     Disconnect
                   </span>
                 </div>
-                <ChevronRight className="w-4 h-4 text-red-400 group-hover:translate-x-0.5 transition-transform" />
+                <ChevronRight className="w-4 h-4 text-[#E27D60]/70 group-hover:translate-x-0.5 transition-transform" />
               </button>
             </div>
           </motion.div>
@@ -137,14 +150,14 @@ export const UserProfileDropdown: React.FC = () => {
             </p>
             <div className="flex gap-2.5 mt-5">
               <button
-                onClick={() => setShowLogoutConfirm(false)}
+                onClick={handleCancelConfirm}
                 className="flex-1 py-2 text-xs font-bold bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:text-zinc-200 rounded-xl cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 onClick={() => window.location.reload()}
-                className="flex-1 py-2 text-xs font-bold bg-red-600 hover:bg-red-700 text-white rounded-xl cursor-pointer"
+                className="flex-1 py-2 text-xs font-bold bg-[#E27D60] hover:bg-[#c66b50] text-white rounded-xl cursor-pointer"
               >
                 Log Out
               </button>

@@ -28,7 +28,7 @@ export const ConversationsListColumn: React.FC<ListColumnProps> = ({
         <div>
           <h2 className="font-bold text-base text-app-black dark:text-zinc-100 flex items-center gap-1.5">
             Messages
-            <span className="text-[10px] uppercase tracking-wider bg-blue-500/10 text-blue-600 px-2 py-0.5 rounded-full font-black">
+            <span className="text-[10px] uppercase tracking-wider bg-[#E27D60]/10 text-[#E27D60] px-2 py-0.5 rounded-full font-black">
               {conversations.filter((c) => c.online).length} Live
             </span>
           </h2>
@@ -43,7 +43,7 @@ export const ConversationsListColumn: React.FC<ListColumnProps> = ({
           placeholder="Search world connections..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full bg-[#FEFEFE] dark:bg-zinc-900 border border-app-border dark:border-zinc-800 rounded-2xl py-2 pl-9 pr-4 text-xs text-app-black dark:text-zinc-200 placeholder:text-app-gray outline-none focus:ring-1 focus:ring-blue-600 focus:border-blue-600 transition-all font-medium"
+          className="w-full bg-[#FEFEFE] dark:bg-zinc-900 border border-app-border dark:border-zinc-800 rounded-2xl py-2 pl-9 pr-4 text-xs text-app-black dark:text-zinc-200 placeholder:text-app-gray outline-none focus:ring-1 focus:ring-[#E27D60] focus:border-[#E27D60] transition-all font-medium"
         />
         <Search className="absolute left-3 top-2.5 w-4 h-4 text-app-gray" />
       </div>

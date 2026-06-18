@@ -1,17 +1,19 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useFeed } from '@/src/hooks/useFeed';
 import { FeedFilterToggle } from './FeedFilterToggle';
-import { CreatePostBox } from './CreatePostBox';
+
+import { useUIStore } from '@/src/stores/useUIStore';
 import { PostCard } from './PostCard';
 import { fadeInUp, staggerChildren } from '@/src/lib/animations';
 
 export const MainFeedColumn = () => {
   const { posts, isLoading } = useFeed();
+  const { activeTab } = useUIStore();
 
   return (
     <main className="flex-1 max-w-2xl mx-auto w-full flex flex-col gap-6 overflow-y-auto hide-scrollbar pb-10">
       <FeedFilterToggle />
-      <CreatePostBox />
+
 
       {isLoading ? (
         <div className="flex justify-center py-10">

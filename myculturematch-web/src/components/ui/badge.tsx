@@ -15,8 +15,7 @@ export const Badge = ({ children, variant = 'default', className }: BadgeProps) 
         {
           'bg-app-black text-white': variant === 'default',
           'border border-app-border bg-white text-app-black': variant === 'outline',
-          'bg-red-500 text-white shadow-sm': variant === 'red',
-          'bg-blue-600 text-white shadow-sm': variant === 'blue',
+          'bg-[#E27D60] text-white shadow-sm': variant === 'red' || variant === 'blue',
           'bg-purple-50 text-purple-600 border border-purple-100': variant === 'purple',
           'bg-gray-100 text-app-black': variant === 'gray',
         },

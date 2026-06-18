@@ -111,7 +111,7 @@ export const PostHeader = ({ author, date }: PostHeaderProps) => {
               >
                 <span className="flex items-center gap-2">
                   <Bookmark className={`w-4 h-4 ${saved ? 'text-amber-500 fill-amber-500' : 'text-app-gray'}`} />
-                  {saved ? 'Tradition Saved!' : 'Save Tradition'}
+                  {saved ? 'Tradition Saved!' : 'Save this Tradition'}
                 </span>
                 {saved && <Check className="w-3.5 h-3.5 text-amber-500" />}
               </button>
@@ -124,7 +124,7 @@ export const PostHeader = ({ author, date }: PostHeaderProps) => {
                   <Share2 className="w-4 h-4 text-app-gray" />
                   {copied ? 'Copied Link!' : 'Copy Link'}
                 </span>
-                {copied && <Check className="w-3.5 h-3.5 text-blue-500" />}
+                {copied && <Check className="w-3.5 h-3.5 text-[#E27D60]" />}
               </button>
 
               <button
@@ -132,10 +132,10 @@ export const PostHeader = ({ author, date }: PostHeaderProps) => {
                 className="w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold text-app-black dark:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-900 flex items-center justify-between cursor-pointer transition-colors"
               >
                 <span className="flex items-center gap-2">
-                  <BellOff className={`w-4 h-4 ${muted ? 'text-red-500' : 'text-app-gray'}`} />
+                  <BellOff className={`w-4 h-4 ${muted ? 'text-[#E27D60]' : 'text-app-gray'}`} />
                   {muted ? 'Muted Author' : 'Mute Notifications'}
                 </span>
-                {muted && <Check className="w-3.5 h-3.5 text-red-500" />}
+                {muted && <Check className="w-3.5 h-3.5 text-[#E27D60]" />}
               </button>
 
               <div className="border-t border-app-border/60 dark:border-zinc-850/60 my-1" />
@@ -145,7 +145,7 @@ export const PostHeader = ({ author, date }: PostHeaderProps) => {
                   alert('Thank you for making this community safe. The cultural guardians team will review this traditional transmission.');
                   setIsOpen(false);
                 }}
-                className="w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold text-red-600 dark:text-red-400 hover:bg-red-50/55 dark:hover:bg-red-950/20 flex items-center gap-2 cursor-pointer transition-colors"
+                className="w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold text-[#E27D60] dark:text-[#E27D60] hover:bg-[#E27D60]/10 dark:hover:bg-[#E27D60]/20 flex items-center gap-2 cursor-pointer transition-colors"
               >
                 <AlertTriangle className="w-4 h-4" />
                 <span>Report Content</span>

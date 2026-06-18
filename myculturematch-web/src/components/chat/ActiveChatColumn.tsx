@@ -77,7 +77,7 @@ export const ActiveChatColumn: React.FC<ActiveChatProps> = ({
               </span>
             </h3>
             <p className="text-xs text-app-gray truncate max-w-[200px] sm:max-w-[300px] leading-snug">
-              {partner.culture} • <span className="text-blue-600 dark:text-blue-400 font-semibold">{partner.lang.split(' ')[0]}</span>
+              {partner.culture} • <span className="text-[#E27D60] dark:text-[#E27D60] font-semibold">{partner.lang.split(' ')[0]}</span>
             </p>
           </div>
         </div>
@@ -92,7 +92,7 @@ export const ActiveChatColumn: React.FC<ActiveChatProps> = ({
           <button
             onClick={onToggleProfile}
             title={isProfileOpen ? 'Hide Cultural Profile' : 'Show Cultural Profile'}
-            className="w-9 h-9 border border-app-border dark:border-zinc-800 rounded-full flex items-center justify-center text-app-gray hover:text-blue-600 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors cursor-pointer"
+            className="w-9 h-9 border border-app-border dark:border-zinc-800 rounded-full flex items-center justify-center text-app-gray hover:text-[#E27D60] hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors cursor-pointer"
           >
             {isProfileOpen ? <SidebarClose className="w-4 h-4" /> : <SidebarOpen className="w-4 h-4" />}
           </button>
@@ -115,7 +115,7 @@ export const ActiveChatColumn: React.FC<ActiveChatProps> = ({
 
       {/* Input Form */}
       <form onSubmit={handleSend} className="p-4 border-t border-app-border dark:border-zinc-850 bg-white dark:bg-zinc-950 shrink-0">
-        <div className="flex items-center gap-2 bg-[#FCFCFC] dark:bg-zinc-900 border border-[#ECECEC] dark:border-zinc-800 rounded-2xl px-3 py-2 focus-within:ring-1 focus-within:ring-blue-600 focus-within:border-blue-600 transition-all">
+        <div className="flex items-center gap-2 bg-[#FCFCFC] dark:bg-zinc-900 border border-[#ECECEC] dark:border-zinc-800 rounded-2xl px-3 py-2 focus-within:ring-1 focus-within:ring-[#E27D60] focus-within:border-[#E27D60] transition-all">
           <button type="button" className="text-app-gray hover:text-app-black cursor-pointer p-1">
             <Paperclip className="w-4 h-4" />
           </button>
@@ -132,7 +132,7 @@ export const ActiveChatColumn: React.FC<ActiveChatProps> = ({
           <button type="button" className="text-app-gray hover:text-amber-500 cursor-pointer p-1">
             <Smile className="w-4 h-4" />
           </button>
-          <button type="button" className="text-app-gray hover:text-red-500 cursor-pointer p-1">
+          <button type="button" className="text-app-gray hover:text-[#E27D60] cursor-pointer p-1">
             <Mic className="w-4 h-4" />
           </button>
           
