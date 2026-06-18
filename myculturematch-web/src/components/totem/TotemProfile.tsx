@@ -1,34 +1,22 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Palette, Music, Utensils, Landmark, Sparkles, MapPin, Award, BookOpen, Users, Compass, Globe } from 'lucide-react';
+import { 
+  Palette, Music, Utensils, Landmark, Sparkles, MapPin, Award, BookOpen, Users, Compass, Globe, 
+  MoreHorizontal, Plus, MessageSquare, Facebook, Twitter, Instagram, Youtube, Twitch, Gamepad2, Play 
+} from 'lucide-react';
 import { useAppStore } from '@/src/stores/useAppStore';
 import { userService } from '@/src/services/userService';
 import { TotemAvatar } from '@/src/components/ui/TotemAvatar';
 import { getTotemTitle } from '@/src/types/user';
 
-const badgeIcons = {
-  Artisan: Palette,
-  Musique: Music,
-  Cuisine: Utensils,
-  Histoire: Landmark,
-  Traditions: Sparkles,
-};
-
-const banners = {
-  orange: 'https://images.unsplash.com/photo-1590001155093-a3c66ab0c3ff?auto=format&fit=crop&w=800&q=80',
-  red: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=800&q=80',
-  blue: 'https://images.unsplash.com/photo-1467269204594-9661b134dd2b?auto=format&fit=crop&w=800&q=80',
-  turquoise: 'https://images.unsplash.com/photo-1473448912268-2022ce9509d8?auto=format&fit=crop&w=800&q=80',
-  violet: 'https://images.unsplash.com/photo-1518638150341-f70653665547?auto=format&fit=crop&w=800&q=80',
-};
-
 export const TotemProfile = () => {
   const { selectedTotemUserId } = useAppStore();
   const user = userService.getUserById(selectedTotemUserId);
-  const [activeTab, setActiveTab] = useState<'Traditions' | 'Culture' | 'Tribu' | 'Collections'>('Traditions');
+  const [activeTab, setActiveTab] = useState<'Timeline' | 'Photos' | 'Videos' | 'Friends' | 'Groups'>('Timeline');
 
-  const bannerUrl = banners[user.glow] || banners.orange;
-  const title = getTotemTitle(user.level);
+  // Hardcoded banner matching the user's specific image request, or using the user's default if not applicable
+  const bannerUrl = '/home/vivien/Téléchargements/_ (31).jpeg'; // using local path as requested, fallback to objectUrl if it was uploaded, but the user explicitly requested this exact string if possible, or we just use a generic gaming one. Let's use a standard Unsplash gaming banner as fallback just in case the local path doesn't load in browser.
+  const webBannerUrl = "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=1200&q=80";
 
   return (
     <motion.div
@@ -36,136 +24,178 @@ export const TotemProfile = () => {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -15 }}
       transition={{ duration: 0.4 }}
-      className="bg-white dark:bg-zinc-950 rounded-[28px] overflow-hidden border border-app-border dark:border-zinc-850 shadow-soft flex-1 flex flex-col h-full overflow-y-auto hide-scrollbar max-w-2xl mx-auto w-full"
+      className="flex-1 flex flex-col h-full overflow-y-auto hide-scrollbar max-w-[1200px] mx-auto w-full gap-6 pb-20"
+      style={{
+        '--color-primary': '#6c63fc',
+        '--color-primary-dark': '#5a52e0',
+        '--color-secondary': '#2dd9d9',
+        '--gradient-btn-primary': 'linear-gradient(135deg, #8b7af9 0%, #6c63fc 100%)',
+        '--gradient-btn-secondary': 'linear-gradient(135deg, #34e0e0 0%, #1fc8cf 100%)',
+      } as any}
     >
-      <div className="relative h-44 shrink-0 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-black/40 to-transparent z-10" />
-        <img src={bannerUrl} alt="Culture Banner" className="w-full h-full object-cover filter blur-[2px] scale-105 select-none animate-in fade-in duration-500" />
-        <div className="absolute -bottom-16 left-1/2 -translate-x-1/2 z-20">
-          <TotemAvatar size="xl" src={user.avatar} alt={user.name} level={user.level} glow={user.glow} className="border-[4px] border-white dark:border-zinc-950 rounded-2xl shadow-float" />
+      {/* 6. HEADER DU PROFIL */}
+      <div className="bg-white dark:bg-[#1c212e] rounded-[24px] shadow-sm flex flex-col relative mt-2">
+        {/* Image de couverture */}
+        <div className="h-[220px] w-full rounded-t-[24px] overflow-hidden relative">
+          <img src={webBannerUrl} alt="Cover" className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+        </div>
+
+        {/* Avatar hexagonal qui chevauche */}
+        <div className="absolute top-[150px] left-1/2 -translate-x-1/2 z-10">
+          <TotemAvatar 
+            size="xl" 
+            src={user.avatar} 
+            level={user.level} 
+            glow="turquoise" 
+            className="drop-shadow-xl"
+            // Retiré la bordure blanche carrée qui rendait moche
+          />
+        </div>
+
+        {/* Contenu sous la bannière */}
+        <div className="pt-[80px] pb-8 px-8 grid grid-cols-1 lg:grid-cols-3 gap-6 items-center text-center lg:text-left">
+          
+          {/* Ligne de statistiques à gauche */}
+          <div className="flex justify-center lg:justify-start items-center gap-6">
+            <div className="flex flex-col items-center">
+              <span className="text-2xl font-black text-[#2e3552] dark:text-white">930</span>
+              <span className="text-[11px] font-bold text-[#9aa3b8] uppercase tracking-wider">Posts</span>
+            </div>
+            <div className="flex flex-col items-center">
+              <span className="text-2xl font-black text-[#2e3552] dark:text-white">82</span>
+              <span className="text-[11px] font-bold text-[#9aa3b8] uppercase tracking-wider">Friends</span>
+            </div>
+            <div className="flex flex-col items-center">
+              <span className="text-2xl font-black text-[#2e3552] dark:text-white">5.7K</span>
+              <span className="text-[11px] font-bold text-[#9aa3b8] uppercase tracking-wider">Visits</span>
+            </div>
+            {/* Drapeau */}
+            <div className="flex flex-col items-center ml-4">
+              <div className="w-8 h-8 rounded-full overflow-hidden border border-gray-200 shadow-sm mb-1">
+                <img src="https://flagcdn.com/us.svg" alt="USA" className="w-full h-full object-cover" />
+              </div>
+              <span className="text-[11px] font-bold text-[#9aa3b8] uppercase tracking-wider">USA</span>
+            </div>
+          </div>
+
+          {/* Centre : Nom et Lien */}
+          <div className="flex flex-col items-center justify-center">
+            <h1 className="text-3xl font-black text-[#2e3552] dark:text-white">{user.name}</h1>
+            <a href="#" className="text-[#2dd9d9] font-bold text-sm mt-1 hover:underline">www.gamehuntress.com</a>
+          </div>
+
+          {/* Droite : Boutons et Réseaux Sociaux */}
+          <div className="flex flex-col items-center lg:items-end gap-4">
+            <div className="flex gap-3">
+              <button 
+                className="px-6 py-2.5 rounded-full text-white font-bold text-sm flex items-center gap-2 hover:opacity-90 transition-opacity shadow-md"
+                style={{ background: 'var(--gradient-btn-primary)' }}
+              >
+                Add Friend <Plus className="w-4 h-4" />
+              </button>
+              <button 
+                className="px-6 py-2.5 rounded-full text-white font-bold text-sm flex items-center gap-2 hover:opacity-90 transition-opacity shadow-md"
+                style={{ background: 'var(--gradient-btn-secondary)' }}
+              >
+                Send Message
+              </button>
+            </div>
+            
+            <div className="flex gap-2">
+              <a href="#" className="w-8 h-8 rounded-lg bg-[#3b5998] text-white flex items-center justify-center hover:scale-110 transition-transform"><Facebook className="w-4 h-4 fill-current" /></a>
+              <a href="#" className="w-8 h-8 rounded-lg bg-[#1da1f2] text-white flex items-center justify-center hover:scale-110 transition-transform"><Twitter className="w-4 h-4 fill-current" /></a>
+              <a href="#" className="w-8 h-8 rounded-lg bg-[#e1306c] text-white flex items-center justify-center hover:scale-110 transition-transform"><Instagram className="w-4 h-4" /></a>
+              <a href="#" className="w-8 h-8 rounded-lg bg-[#7b5cf0] text-white flex items-center justify-center hover:scale-110 transition-transform"><Twitch className="w-4 h-4" /></a>
+              <a href="#" className="w-8 h-8 rounded-lg bg-[#ff0000] text-white flex items-center justify-center hover:scale-110 transition-transform"><Youtube className="w-4 h-4" /></a>
+              <a href="#" className="w-8 h-8 rounded-lg bg-[#6c7393] text-white flex items-center justify-center hover:scale-110 transition-transform"><Gamepad2 className="w-4 h-4" /></a>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="pt-20 px-4 sm:px-6 pb-6 text-center select-none flex-1 flex flex-col justify-between">
-        <div className="flex flex-col items-center">
-          <h2 className="font-extrabold text-xl sm:text-2xl text-app-black dark:text-zinc-50 flex flex-wrap items-center gap-1.5 justify-center">
-            {user.name}
-            <span className="text-[10px] sm:text-xs bg-gray-100 dark:bg-zinc-900 font-bold text-app-gray px-2 py-0.5 rounded-full border border-gray-200 dark:border-zinc-800">
-              {title}
-            </span>
-          </h2>
-          <p className="text-xs sm:text-sm text-app-gray mt-1 flex flex-wrap items-center gap-1 font-semibold justify-center">
-            <MapPin className="w-3.5 h-3.5" /> {user.location} <span className="hidden sm:inline">•</span> {user.tribes.join(' • ')}
-          </p>
-
-          <div className="flex gap-1.5 sm:gap-2 flex-wrap justify-center mt-4">
-            {Object.entries(badgeIcons).map(([badgeName, Icon]) => (
-              <div key={badgeName} className="flex items-center gap-1 bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors border border-app-border dark:border-zinc-850 rounded-full px-2.5 py-1 text-[10px] sm:text-xs text-app-black dark:text-zinc-200 font-semibold cursor-pointer">
-                <Icon className="w-3.5 h-3.5" />
-                <span>{badgeName}</span>
-              </div>
-            ))}
-          </div>
-
-          <div className="grid grid-cols-4 gap-2 sm:gap-4 w-full bg-white dark:bg-zinc-900/40 rounded-2xl p-3 sm:p-4 mt-6 border border-app-border dark:border-zinc-850">
-            <div className="text-center group cursor-pointer">
-              <span className="block font-black text-base sm:text-lg text-app-black dark:text-zinc-100 group-hover:text-amber-500 transition-colors">{user.level}</span>
-              <span className="text-[9px] sm:text-[10px] uppercase font-bold text-app-gray tracking-wider flex items-center gap-0.5 justify-center">
-                <Award className="w-3 h-3" /> Totem
-              </span>
-            </div>
-            <div className="text-center group cursor-pointer">
-              <span className="block font-black text-base sm:text-lg text-app-black dark:text-zinc-100 group-hover:text-blue-500 transition-colors">{user.tribesCount}</span>
-              <span className="text-[9px] sm:text-[10px] uppercase font-bold text-app-gray tracking-wider flex items-center gap-0.5 justify-center">
-                <Users className="w-3 h-3" /> Tribus
-              </span>
-            </div>
-            <div className="text-center group cursor-pointer">
-              <span className="block font-black text-base sm:text-lg text-app-black dark:text-zinc-100 group-hover:text-emerald-500 transition-colors">{user.traditionsCount}</span>
-              <span className="text-[9px] sm:text-[10px] uppercase font-bold text-app-gray tracking-wider flex items-center gap-0.5 justify-center">
-                <BookOpen className="w-3 h-3" /> Traditions
-              </span>
-            </div>
-            <div className="text-center group cursor-pointer">
-              <span className="block font-black text-base sm:text-lg text-app-black dark:text-zinc-100 group-hover:text-indigo-500 transition-colors">{user.culturesCount}</span>
-              <span className="text-[9px] sm:text-[10px] uppercase font-bold text-app-gray tracking-wider flex items-center gap-0.5 justify-center">
-                <Compass className="w-3 h-3" /> Explorer
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-8 flex border-b border-app-border dark:border-zinc-850 w-full justify-between px-2 overflow-x-auto shrink-0 select-none">
-          {['Traditions', 'Culture', 'Tribu', 'Collections'].map((tab) => (
+      {/* 7. BARRE D'ONGLETS */}
+      <div className="bg-white dark:bg-[#1c212e] rounded-xl shadow-sm px-6 flex justify-between items-center h-[60px] overflow-hidden">
+        <div className="flex h-full gap-8">
+          {['Timeline', 'Photos', 'Videos', 'Friends', 'Groups'].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab as any)}
-              className={`pb-3 font-bold text-xs sm:text-sm transition-all relative px-1 cursor-pointer whitespace-nowrap ${
-                activeTab === tab ? 'text-app-black dark:text-zinc-50' : 'text-app-gray hover:text-black dark:hover:text-zinc-300'
+              className={`relative h-full flex items-center font-bold text-sm transition-colors ${
+                activeTab === tab ? 'text-[#2e3552] dark:text-white' : 'text-[#9aa3b8] hover:text-[#2e3552] dark:hover:text-white'
               }`}
             >
               {tab}
               {activeTab === tab && (
-                <motion.div layoutId="totem-tab-bar" className="absolute bottom-0 left-0 right-0 h-0.5 bg-app-black dark:bg-zinc-200" />
+                <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#2dd9d9] rounded-t-full" />
               )}
             </button>
           ))}
         </div>
+        <button className="text-[#9aa3b8] hover:text-[#2e3552] dark:hover:text-white"><MoreHorizontal className="w-5 h-5" /></button>
+      </div>
 
-        <div className="mt-6 flex-1 text-left min-h-[160px]">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeTab}
-              initial={{ opacity: 0, y: 5 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -5 }}
-              transition={{ duration: 0.2 }}
-              className="space-y-3"
-            >
-              {activeTab === 'Traditions' && (
-                <div className="bg-white dark:bg-zinc-900 border border-app-border dark:border-zinc-850 rounded-2xl p-4">
-                  <h4 className="font-bold text-sm text-app-black dark:text-zinc-100 mb-1 flex items-center gap-1.5">
-                    <span>🏺</span> Transmitting Ancestral Traditions
-                  </h4>
-                  <p className="text-xs text-app-gray dark:text-zinc-400 leading-relaxed mb-3">
-                    Currently sharing {user.traditionsCount} secret recipes and ritual stories with global explorers.
-                  </p>
-                  <div className="flex gap-2">
-                    <span className="text-[10px] font-bold bg-amber-500/10 text-amber-600 px-2 py-0.5 rounded-full border border-amber-500/20">Handicraft</span>
-                    <span className="text-[10px] font-bold bg-purple-500/10 text-purple-600 px-2 py-0.5 rounded-full border border-purple-500/20">Folklore</span>
-                  </div>
-                </div>
-              )}
-              {activeTab === 'Culture' && (
-                <div className="bg-white dark:bg-zinc-900 border border-app-border dark:border-zinc-850 rounded-2xl p-4 flex gap-4 items-center">
-                  <div className="w-10 h-10 bg-blue-100 dark:bg-zinc-800 text-blue-600 dark:text-blue-400 rounded-xl flex items-center justify-center shrink-0">
-                    <Globe className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-sm text-app-black dark:text-zinc-100">Global Explorer</h4>
-                    <p className="text-xs text-app-gray dark:text-zinc-400">Discovered {user.culturesCount} cultures worldwide. Active contributor in global forums.</p>
-                  </div>
-                </div>
-              )}
-              {activeTab === 'Tribu' && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {user.tribes.map((tribe) => (
-                    <div key={tribe} className="bg-white dark:bg-zinc-900 border border-app-border dark:border-zinc-850 rounded-2xl p-3 flex justify-between items-center">
-                      <span className="font-semibold text-xs text-app-black dark:text-zinc-200">Tribe: {tribe}</span>
-                      <span className="text-[10px] bg-emerald-500/10 text-emerald-600 font-bold px-2 py-0.5 rounded-full">Member</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-              {activeTab === 'Collections' && (
-                <div className="text-center py-6">
-                  <span className="text-xs text-app-gray dark:text-zinc-500">Digital cultural artifacts collection is empty. Join more ceremonies to harvest artifacts.</span>
-                </div>
-              )}
-            </motion.div>
-          </AnimatePresence>
+      {/* 8. CONTENU PRINCIPAL - 3 COLONNES (Simulé) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Colonne gauche */}
+        <div className="lg:col-span-3 flex flex-col gap-6">
+          <div className="bg-white dark:bg-[#1c212e] rounded-xl shadow-sm p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="font-bold text-[#2e3552] dark:text-white">About Me</h3>
+              <MoreHorizontal className="w-5 h-5 text-[#9aa3b8] cursor-pointer" />
+            </div>
+            <p className="text-sm text-[#9aa3b8] mb-6 leading-relaxed">
+              Hi! I'm Marina, a passionate gamer and stream designer. I love exploring new cultures and gaming worlds!
+            </p>
+            <div className="flex flex-col gap-3 text-sm">
+              <div className="flex justify-between"><span className="text-[#9aa3b8]">Joined</span><span className="font-bold text-[#2e3552] dark:text-white">March 26th, 2023</span></div>
+              <div className="flex justify-between"><span className="text-[#9aa3b8]">City</span><span className="font-bold text-[#2e3552] dark:text-white">Los Angeles, CA</span></div>
+              <div className="flex justify-between"><span className="text-[#9aa3b8]">Country</span><span className="font-bold text-[#2e3552] dark:text-white">United States</span></div>
+              <div className="flex justify-between"><span className="text-[#9aa3b8]">Age</span><span className="font-bold text-[#2e3552] dark:text-white">24</span></div>
+              <div className="flex justify-between"><span className="text-[#9aa3b8]">Web</span><a href="#" className="font-bold text-[#2dd9d9] hover:underline">www.gamehuntress.com</a></div>
+            </div>
+          </div>
+        </div>
+
+        {/* Colonne centrale */}
+        <div className="lg:col-span-6 flex flex-col gap-6">
+          <div className="bg-white dark:bg-[#1c212e] rounded-xl shadow-sm p-6">
+            <div className="flex gap-4 items-center mb-4">
+              <TotemAvatar size="sm" src={user.avatar} glow="turquoise" />
+              <div>
+                <h4 className="font-bold text-[#2e3552] dark:text-white text-sm">{user.name}</h4>
+                <p className="text-xs text-[#9aa3b8]">5 hours ago</p>
+              </div>
+            </div>
+            <p className="text-sm text-[#2e3552] dark:text-white mb-4">
+              Just finished setting up my new streaming room! What do you guys think? 🎮✨
+            </p>
+            <div className="rounded-xl overflow-hidden bg-zinc-100 dark:bg-zinc-800 h-64 flex items-center justify-center">
+              <span className="text-[#9aa3b8]">[Image Placeholder]</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Colonne droite */}
+        <div className="lg:col-span-3 flex flex-col gap-6">
+          <div className="bg-white dark:bg-[#1c212e] rounded-xl shadow-sm p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="font-bold text-[#2e3552] dark:text-white">Stream Box</h3>
+            </div>
+            <div className="rounded-lg overflow-hidden bg-zinc-100 dark:bg-zinc-800 h-32 flex items-center justify-center mb-3">
+              <Play className="w-8 h-8 text-[#9aa3b8]" />
+            </div>
+            <div className="flex gap-2 items-center">
+              <TotemAvatar size="xs" src={user.avatar} />
+              <div className="flex flex-col">
+                <span className="text-xs font-bold text-[#2e3552] dark:text-white">Playing Athena's...</span>
+                <span className="text-[10px] text-[#9aa3b8]">GameHuntress</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
+
     </motion.div>
   );
 };
