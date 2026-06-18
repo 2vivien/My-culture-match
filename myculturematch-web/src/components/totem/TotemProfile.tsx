@@ -3,7 +3,8 @@ import { motion as framerMotion, AnimatePresence as framerAnimatePresence } from
 import { 
   Palette, Music, Utensils, Landmark, Sparkles, MapPin, Award, BookOpen, Users, Compass, Globe, 
   MoreHorizontal, Plus, MessageSquare, Facebook, Twitter, Instagram, Youtube, Twitch, Gamepad2, Play,
-  UserPlus, Image, FileText, Heart, Share2, ChevronLeft, ChevronRight, MessageCircle, Home, Layers, Settings
+  UserPlus, Image, FileText, Heart, Share2, ChevronLeft, ChevronRight, MessageCircle, Home, Layers, Settings,
+  User, Video
 } from 'lucide-react';
 import { useAppStore } from '@/src/stores/useAppStore';
 import { userService } from '@/src/services/userService';
@@ -14,7 +15,7 @@ import coverImg from '@/assets/cover.jpeg';
 export const TotemProfile = () => {
   const { selectedTotemUserId } = useAppStore();
   const user = userService.getUserById(selectedTotemUserId);
-  const [activeTab, setActiveTab] = useState<'Home' | 'Journal' | 'Timeline' | 'Connexions' | 'Photos' | 'Traditions' | 'Messages' | 'Settings'>('Timeline');
+  const [activeTab, setActiveTab] = useState<'Profile' | 'Journal' | 'Timeline' | 'Connexions' | 'Photos' | 'Videos' | 'Traditions' | 'Messages' | 'Settings'>('Timeline');
 
   // Country code helper for flagcdn
   const getCountryCode = (location: string) => {
@@ -33,11 +34,12 @@ export const TotemProfile = () => {
   };
 
   const profileTabs = [
-    { id: 'Home', icon: Home, label: 'Profile' },
+    { id: 'Profile', icon: User, label: 'Profile' },
     { id: 'Journal', icon: BookOpen, label: 'Journal' },
     { id: 'Timeline', icon: Layers, label: 'Timeline' },
     { id: 'Connexions', icon: Users, label: 'Connexions' },
     { id: 'Photos', icon: Image, label: 'Photos' },
+    { id: 'Videos', icon: Video, label: 'Videos' },
     { id: 'Traditions', icon: Award, label: 'Traditions' },
     { id: 'Messages', icon: MessageSquare, label: 'Messages' },
     { id: 'Settings', icon: Settings, label: 'Settings' }
@@ -313,6 +315,38 @@ export const TotemProfile = () => {
                   ].map((url, idx) => (
                     <div key={idx} className="aspect-square rounded-xl overflow-hidden hover:scale-105 transition-transform duration-300 shadow-sm cursor-pointer">
                       <img src={url} alt={`Gallery grid ${idx}`} className="w-full h-full object-cover" />
+                    </div>
+                  ))}
+                </div>
+              </framerMotion.div>
+            )}
+
+            {activeTab === 'Videos' && (
+              <framerMotion.div
+                key="videos"
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 10 }}
+                className="bg-white dark:bg-[#1c212e] rounded-xl shadow-sm p-6 flex flex-col gap-4"
+              >
+                <h3 className="font-bold text-[#2e3552] dark:text-white">Featured Videos</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {[
+                    { title: 'Gaming Room Tour & Setup Review', views: '1.2K views', duration: '12:45', thumb: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=300&q=80' },
+                    { title: 'Ancestral Myths - Quechua Mythology', views: '840 views', duration: '24:15', thumb: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=300&q=80' }
+                  ].map((video, idx) => (
+                    <div key={idx} className="flex flex-col gap-2 rounded-xl overflow-hidden border border-gray-100 dark:border-zinc-800 bg-gray-50/50 dark:bg-zinc-850/10 group cursor-pointer">
+                      <div className="aspect-video relative overflow-hidden bg-zinc-100">
+                        <img src={video.thumb} alt={video.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        <div className="absolute inset-0 bg-black/20 flex items-center justify-center group-hover:bg-black/40 transition-colors">
+                          <Play className="w-8 h-8 text-white fill-current drop-shadow-md" />
+                        </div>
+                        <span className="absolute bottom-2 right-2 text-[10px] font-bold text-white bg-black/60 px-1.5 py-0.5 rounded">{video.duration}</span>
+                      </div>
+                      <div className="p-3">
+                        <h4 className="font-bold text-xs text-[#2e3552] dark:text-white line-clamp-1 group-hover:text-[#6c63fc] transition-colors">{video.title}</h4>
+                        <span className="text-[10px] text-[#9aa3b8]">{video.views}</span>
+                      </div>
                     </div>
                   ))}
                 </div>

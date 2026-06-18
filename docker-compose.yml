@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  web:
+    image: node:22-alpine
+    container_name: culturematch_web
+    working_dir: /app
+    volumes:
+      - ./myculturematch-web:/app
+      # Conserver les modules node dans un volume Docker pour la performance
+      - web_node_modules:/app/node_modules
+    ports:
+      - "3000:3000"
+    command: sh -c "npm install && npm run dev"
+    environment:
+      - NODE_ENV=development
+
+  mobile:
+    image: node:22-alpine
+    container_name: culturematch_mobile
+    working_dir: /app
+    volumes:
+      - ./mobile-app:/app
+      - mobile_node_modules:/app/node_modules
+    ports:
+      - "8081:8081"
+      # Ports supplémentaires souvent utilisés par Expo pour le hot-reload
+      - "19000:19000"
+      - "19001:19001"
+      - "19002:19002"
+    command: sh -c "npm install && npx expo start --web"
+    environment:
+      - NODE_ENV=development
+      # Vous devrez peut-être définir REACT_NATIVE_PACKAGER_HOSTNAME avec votre adresse IP locale
+      # pour tester sur un appareil physique depuis l'application Expo Go.
+      # - REACT_NATIVE_PACKAGER_HOSTNAME=192.168.1.XX
+
+volumes:
+  web_node_modules:
+  mobile_node_modules:
