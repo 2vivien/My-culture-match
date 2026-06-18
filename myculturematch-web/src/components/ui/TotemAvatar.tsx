@@ -10,14 +10,15 @@ export interface TotemAvatarProps {
   hasStory?: boolean;
   onClick?: () => void;
   className?: string;
+  statusDot?: 'online' | 'offline' | 'none';
 }
 
 const sizeValues = {
   xs: 32,
-  sm: 40,
+  sm: 36,
   md: 48,
   lg: 72,
-  xl: 120,
+  xl: 140,
 };
 
 const glowStops: Record<string, { stop1: string; stop2: string; stop3: string }> = {
@@ -31,7 +32,7 @@ const glowStops: Record<string, { stop1: string; stop2: string; stop3: string }>
   none: { stop1: '#cbd5e1', stop2: '#e2e8f0', stop3: '#94a3b8' },
 };
 
-const hexClip = "polygon(25% 3%, 75% 3%, 100% 50%, 75% 97%, 25% 97%, 0% 50%)";
+const hexClip = "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)";
 
 export const TotemAvatar = ({
   src,
@@ -42,6 +43,7 @@ export const TotemAvatar = ({
   hasStory = false,
   onClick,
   className,
+  statusDot = 'none',
 }: TotemAvatarProps) => {
   const sizePx = sizeValues[size] || 48;
   const glowKey = hasStory ? 'orange' : (glow || 'turquoise');
@@ -62,17 +64,17 @@ export const TotemAvatar = ({
         className
       )}
     >
-      {/* SVG Layer: Handles Layer 1 (White/Dark main background underlay) + Layer 2 (Colorful dynamic gradient stroke) */}
+      {/* SVG Layer: Handles Layer 1 (White background underlay) + Layer 2 (Colorful dynamic gradient stroke) */}
       <svg
-        viewBox="0 0 160 160"
+        viewBox="0 0 100 100"
         style={{
           position: 'absolute',
           inset: 0,
           width: '100%',
           height: '100%',
-          filter: 'drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.08))',
+          filter: 'drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.12))',
         }}
-        className="text-white dark:text-zinc-950 transition-colors"
+        className="text-white dark:text-zinc-900 transition-colors"
       >
         <defs>
           <linearGradient id={gradId} x1="0%" y1="100%" x2="100%" y2="0%">
@@ -82,30 +84,30 @@ export const TotemAvatar = ({
           </linearGradient>
         </defs>
 
-        {/* Couche 1 : Support plein (blanc en light mode, zinc-950 en dark mode) */}
+        {/* Couche 1 : Support plein blanc pointed-top (radius = 48) */}
         <polygon
-          points="40,5 120,5 158,80 120,155 40,155 2,80"
+          points="50,2 92.5,26.5 92.5,73.5 50,98 7.5,73.5 7.5,26.5"
           fill="currentColor"
         />
 
-        {/* Couche 2 : Contour dégradé, transparent à l'intérieur */}
+        {/* Couche 2 : Contour dégradé pointed-top hexagone (radius = 44) */}
         <polygon
-          points="33,12 127,12 154,80 127,148 33,148 9,80"
+          points="50,6 89,28.5 89,71.5 50,94 11,71.5 11,28.5"
           fill="none"
           stroke={`url(#${gradId})`}
-          strokeWidth="6.5"
+          strokeWidth="3.5"
         />
       </svg>
 
-      {/* Couche 3 : L'avatar ou initiales, clippé en hexagone, centré précisément */}
+      {/* Couche 3 : L'avatar clippé en hexagone pointed-top (inset = 13.5% pour loger exactement au centre) */}
       <div
         style={{
           position: 'absolute',
-          inset: '9.5%',
+          inset: '13.5%',
           overflow: 'hidden',
           clipPath: hexClip,
         }}
-        className="bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center transition-colors"
+        className="bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center transition-colors"
       >
         {src ? (
           <img
@@ -126,19 +128,35 @@ export const TotemAvatar = ({
         <div
           style={{
             position: 'absolute',
-            bottom: -sizePx * 0.04,
-            right: -sizePx * 0.12,
+            bottom: -sizePx * 0.05,
+            right: -sizePx * 0.05,
             width: sizePx * 0.32,
-            height: sizePx * 0.28,
-            background: '#4338ca',
+            height: sizePx * 0.32,
+            background: '#3f37c9',
             clipPath: hexClip,
           }}
-          className="flex items-center justify-center text-white font-black leading-none shadow-sm z-10"
+          className="flex items-center justify-center text-white font-black leading-none shadow-md z-10"
         >
-          <span style={{ fontSize: `${Math.max(sizePx * 0.11, 8.5)}px` }}>
+          <span style={{ fontSize: `${Math.max(sizePx * 0.09, 8.5)}px` }}>
             {level}
           </span>
         </div>
+      )}
+
+      {/* Point de statut (online / offline) */}
+      {statusDot && statusDot !== 'none' && (
+        <div
+          style={{
+            position: 'absolute',
+            top: sizePx * 0.02,
+            left: sizePx * 0.02,
+            width: sizePx * 0.22,
+            height: sizePx * 0.22,
+            borderRadius: '50%',
+            background: statusDot === 'online' ? '#3ddc84' : '#ff4757',
+          }}
+          className="border border-white dark:border-zinc-950 shadow-sm z-10"
+        />
       )}
     </motion.div>
   );
