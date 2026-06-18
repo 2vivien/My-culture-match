@@ -1,0 +1,44 @@
+import { motion, AnimatePresence } from 'framer-motion';
+import { useFeed } from '@/src/hooks/useFeed';
+import { FeedFilterToggle } from './FeedFilterToggle';
+import { CreatePostBox } from './CreatePostBox';
+import { PostCard } from './PostCard';
+import { fadeInUp, staggerChildren } from '@/src/lib/animations';
+
+export const MainFeedColumn = () => {
+  const { posts, isLoading } = useFeed();
+
+  return (
+    <main className="flex-1 max-w-2xl mx-auto w-full flex flex-col gap-6 overflow-y-auto hide-scrollbar pb-10">
+      <FeedFilterToggle />
+      <CreatePostBox />
+
+      {isLoading ? (
+        <div className="flex justify-center py-10">
+          <div className="w-8 h-8 rounded-full border-4 border-app-border border-t-app-black animate-spin" />
+        </div>
+      ) : (
+        <motion.div
+          variants={staggerChildren}
+          initial="hidden"
+          animate="visible"
+          className="flex flex-col gap-6"
+        >
+          <AnimatePresence mode="popLayout">
+            {posts.map((post) => (
+              <motion.div
+                key={post.id}
+                variants={fadeInUp}
+                layout
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.3 }}
+              >
+                <PostCard post={post} />
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </motion.div>
+      )}
+    </main>
+  );
+};

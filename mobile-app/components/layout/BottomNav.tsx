@@ -1,7 +1,8 @@
 import React from 'react';
-import { View, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, TouchableOpacity } from 'react-native';
 import Svg, { Path, Rect, Circle } from 'react-native-svg';
 import tw from '@/lib/tailwind';
+import { SHADOWS } from '@/lib/styles';
 
 type Props = {
   activeTab: string;
@@ -14,13 +15,7 @@ export const BottomNav = ({ activeTab, onTabPress }: Props) => {
   return (
     <View style={[
       tw`absolute bottom-0 w-full h-[95px] bg-white flex-row justify-around items-center px-6 pb-6 rounded-t-[40px] z-50`,
-      {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: -5 },
-        shadowOpacity: 0.03,
-        shadowRadius: 20,
-        elevation: 10,
-      }
+      SHADOWS.nav
     ]}>
       {/* Home */}
       <TouchableOpacity onPress={() => onTabPress('home')} style={tw`p-2`}>

@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
-import { View, Text, TouchableOpacity, useWindowDimensions, StatusBar, Image, FlatList, StyleSheet } from 'react-native';
+import { COLORS } from '@/lib/theme';
+import { View, Text, TouchableOpacity, useWindowDimensions, StatusBar, Image, FlatList } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -11,7 +12,6 @@ import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 import Svg, { Path, Circle, Line, Polygon } from 'react-native-svg';
 import tw from '@/lib/tailwind';
 import { LinearGradient } from 'expo-linear-gradient';
-import { SHADOWS } from '@/lib/styles';
 
 const MOCK_DATA = [
   {
@@ -69,7 +69,7 @@ const MOCK_DATA = [
   }
 ];
 
-const VerificationStar = ({ color = "#ff386c", size = 14 }: { color?: string, size?: number }) => (
+const VerificationStar = ({ color = COLORS.primary, size = 14 }: { color?: string, size?: number }) => (
   <View style={[tw`rounded-full items-center justify-center bg-white shadow-sm`, { width: size * 1.5, height: size * 1.5 }]}>
     <Svg width={size} height={size} viewBox="0 0 24 24" fill={color}>
       <Polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
@@ -108,7 +108,7 @@ const LoveSwipe = ({ onMatch }: { onMatch: () => void }) => {
       backgroundColor: interpolateColor(
         matched.value,
         [0, 1],
-        ['#000000', '#ff386c']
+        ['#000000', COLORS.primary]
       ),
     };
   });
@@ -117,7 +117,7 @@ const LoveSwipe = ({ onMatch }: { onMatch: () => void }) => {
     <View style={tw`absolute right-6 bottom-44 items-center`}>
       <View style={tw`h-[120px] w-14 bg-white/20 rounded-full items-center justify-between py-2 border border-white/10`}>
         <View style={tw`w-10 h-10 bg-white rounded-full items-center justify-center`}>
-          <Svg width="20" height="20" viewBox="0 0 24 24" fill="#ff386c">
+          <Svg width="20" height="20" viewBox="0 0 24 24" fill={COLORS.primary}>
             <Path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
           </Svg>
         </View>
@@ -173,7 +173,7 @@ const FeedItem = ({ item, onSelect, width, height }: { item: any, onSelect: (use
         style={tw`absolute bottom-32 left-6 right-20`}
       >
         <View style={tw`flex-row items-center gap-1.5 mb-2`}>
-          <Svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ff386c" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <Svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={COLORS.primary} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <Path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
             <Line x1="4" y1="22" x2="4" y2="15" />
           </Svg>

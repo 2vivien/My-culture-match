@@ -1,4 +1,5 @@
 import React from 'react';
+import { COLORS } from '@/lib/theme';
 import { View, TouchableOpacity, Text } from 'react-native';
 import tw from '@/lib/tailwind';
 import { StepHeader } from '../StepHeader';
@@ -42,7 +43,7 @@ export const CriteriaStep = ({ selected, onToggle }: Props) => (
           )}
           <Text style={[
             tw`text-[15px] font-bold`, 
-            { fontFamily: 'Urbanist_700Bold', color: selected.includes(c) ? '#ff386c' : '#111' }
+            { fontFamily: 'Urbanist_700Bold', color: selected.includes(c) ? COLORS.primary : '#111' }
           ]}>
             {c}
           </Text>

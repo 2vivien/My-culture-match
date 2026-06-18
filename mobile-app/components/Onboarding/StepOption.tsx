@@ -1,4 +1,5 @@
 import React from 'react';
+import { COLORS } from '@/lib/theme';
 import { TouchableOpacity, View, Text } from 'react-native';
 import tw from '@/lib/tailwind';
 import { SHADOWS } from '@/lib/styles';
@@ -31,12 +32,12 @@ export const StepOption = ({ label, sub, icon, selected, onPress }: StepOptionPr
     <View style={tw`flex-1`}>
       <Text style={[
         tw`text-[17px] font-bold`, 
-        { fontFamily: 'Urbanist_700Bold', color: selected ? '#ff386c' : '#111' }
+        { fontFamily: 'Urbanist_700Bold', color: selected ? COLORS.primary : '#111' }
       ]}>{label}</Text>
       {sub && (
         <Text style={[
             tw`text-[13px] mt-0.5`, 
-            { fontFamily: 'Urbanist_500Medium', color: selected ? '#ff386c' : '#9CA3AF', opacity: selected ? 0.7 : 1 }
+            { fontFamily: 'Urbanist_500Medium', color: selected ? COLORS.primary : '#9CA3AF', opacity: selected ? 0.7 : 1 }
         ]}>{sub}</Text>
       )}
     </View>

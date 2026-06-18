@@ -1,4 +1,5 @@
 import React from 'react';
+import { COLORS } from '@/lib/theme';
 import { View, Text, TouchableOpacity } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import tw from '@/lib/tailwind';
@@ -27,7 +28,7 @@ export const StepNavigation = ({ step, onBack, onNext, isLast }: Props) => (
         {isLast ? 'C\'est parti' : 'Suivant'}
       </Text>
       <View style={tw`w-11 h-11 bg-white rounded-full items-center justify-center`}>
-        <Svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ff386c" strokeWidth="4">
+        <Svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={COLORS.primary} strokeWidth="4">
           <Path d="M5 12h14M12 5l7 7-7 7" />
         </Svg>
       </View>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
+import { COLORS } from '@/lib/theme';
 import { View, Text, SafeAreaView, TouchableOpacity, useWindowDimensions, StyleSheet, StatusBar } from 'react-native';
-import Svg, { Path, Rect, Defs, RadialGradient, Stop, Polygon, Line, Circle } from 'react-native-svg';
+import Svg, { Path, Rect, Defs, RadialGradient, Stop, Line, Circle } from 'react-native-svg';
 import tw from '@/lib/tailwind';
 import { SHADOWS } from '@/lib/styles';
 import { SwipeCard } from '@/components/SwipeCard';
@@ -21,8 +22,8 @@ const BackgroundShapes = () => (
           fy="0"
           gradientUnits="userSpaceOnUse"
         >
-          <Stop offset="0" stopColor="#fff0f4" stopOpacity="1" />
-          <Stop offset="1" stopColor="#fff0f4" stopOpacity="0" />
+          <Stop offset="0" stopColor="#ffffff" stopOpacity="1" />
+          <Stop offset="1" stopColor="#ffffff" stopOpacity="0" />
         </RadialGradient>
         <RadialGradient
           id="grad2"
@@ -89,7 +90,7 @@ export const IdealMatchScreen = ({ onSelectUser, onShowNotifications, onBack }: 
                     activeOpacity={0.7}
                     style={tw`flex-row items-center gap-2 bg-white px-4 py-2 rounded-full shadow-sm border border-gray-100`}
                 >
-                    <Svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ff386c" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <Svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={COLORS.primary} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                         <Path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
                         <Circle cx="12" cy="10" r="3" />
                     </Svg>

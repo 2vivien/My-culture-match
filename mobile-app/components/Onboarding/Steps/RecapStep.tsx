@@ -1,4 +1,5 @@
 import React from 'react';
+import { COLORS } from '@/lib/theme';
 import { View, Text } from 'react-native';
 import tw from '@/lib/tailwind';
 import { StepHeader } from '../StepHeader';
@@ -27,7 +28,7 @@ export const RecapStep = ({ data }: Props) => (
           <View style={tw`flex-row items-center gap-3`}>
              <View style={tw`w-8 h-8 rounded-full bg-white items-center justify-center`}>
                 <Svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                   {item.icon('#ff386c')}
+                   {item.icon(COLORS.primary)}
                 </Svg>
              </View>
              <Text style={[tw`text-gray-400 font-bold uppercase text-[10px]`, { fontFamily: 'Urbanist_700Bold' }]}>{item.label}</Text>
@@ -39,7 +40,7 @@ export const RecapStep = ({ data }: Props) => (
 
     <View style={tw`bg-primary/5 p-6 rounded-[32px] border border-primary/10`}>
        <View style={tw`flex-row items-center gap-3 mb-2`}>
-          <Svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ff386c" strokeWidth="2.5">
+          <Svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={COLORS.primary} strokeWidth="2.5">
              <Circle cx="12" cy="12" r="10" /><Path d="M12 8v4l3 3" />
           </Svg>
           <Text style={[tw`text-primary font-black uppercase text-[11px]`, { fontFamily: 'Urbanist_800ExtraBold' }]}>Comment ça marche</Text>

@@ -5,7 +5,8 @@ import {
   TouchableOpacity, 
   Image, 
   StyleSheet,
-  StatusBar
+  StatusBar,
+  Platform
 } from 'react-native';
 import Animated, { 
   useAnimatedProps,
@@ -14,9 +15,9 @@ import Animated, {
 } from 'react-native-reanimated';
 import { ChevronRight } from 'lucide-react-native';
 import Svg, { Rect } from 'react-native-svg';
+import tw from '@/lib/tailwind';
 const AnimatedRect = Animated.createAnimatedComponent(Rect);
 // removed LinearGradient overlay per request
-import tw from '@/lib/tailwind';
 
 const onboardingImages = [
   require('../assets/screensplash/screensplash1.png'),
@@ -83,7 +84,24 @@ const ProgressButton = ({ onPress, progress }: { onPress: () => void, progress: 
         
         {/* Central Dark Purple Squircle Button */}
         <View style={[
-          { width: 50, height: 50, borderRadius: 14, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOpacity: 0.18, shadowRadius: 6 },
+          { 
+            width: 50, 
+            height: 50, 
+            borderRadius: 14, 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            ...Platform.select({
+              web: {
+                boxShadow: '0px 2px 6px rgba(0, 0, 0, 0.18)',
+              },
+              default: {
+                shadowColor: '#000',
+                shadowOpacity: 0.18,
+                shadowRadius: 6,
+                shadowOffset: { width: 0, height: 2 },
+              },
+            }),
+          },
           { backgroundColor: '#312C51', elevation: 4 }
         ]}>
           <ChevronRight size={22} color="#F0C38E" strokeWidth={3} />

@@ -1,0 +1,7 @@
+[
+  { "id": "add", "name": "My Story", "isAdd": true },
+  { "id": "1", "name": "Rito", "img": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80" },
+  { "id": "2", "name": "Safala", "img": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=100&q=80" },
+  { "id": "3", "name": "Keno", "img": "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=100&q=80" },
+  { "id": "4", "name": "Dany", "img": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80" }
+]

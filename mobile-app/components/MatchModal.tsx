@@ -1,11 +1,11 @@
 import React from 'react';
-import { View, Text, StyleSheet, Modal, TouchableOpacity, Image, Dimensions } from 'react-native';
+import { COLORS } from '@/lib/theme';
+import { View, Text, Modal, TouchableOpacity, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path, Circle, Line } from 'react-native-svg';
 import tw from '@/lib/tailwind';
 import { SHADOWS } from '@/lib/styles';
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 interface MatchModalProps {
   visible: boolean;
@@ -19,10 +19,10 @@ export const MatchModal = ({ visible, onClose, user, currentUserPhoto }: MatchMo
 
   const isFriendMode = user.mode === 'friendship';
 
-  // Love mode: pinkish/white gradient. Friend mode: strict Black & White
+  // Love mode: neutral light gradient. Friend mode: strict Black & White
   const themeBgColors = (isFriendMode 
     ? ['#000000', '#111111', '#1a1a1a']
-    : ['#FFFFFF', '#FFE4E6', '#FFB1C1']) as [string, string, ...string[]]; 
+    : ['#FFFFFF', '#F9FAFB', '#F3F4F6']) as [string, string, ...string[]]; 
 
   const textColor = isFriendMode ? 'text-white' : 'text-gray-900';
   const subTextColor = isFriendMode ? 'text-gray-400' : 'text-gray-600';
@@ -81,7 +81,7 @@ export const MatchModal = ({ visible, onClose, user, currentUserPhoto }: MatchMo
                     <Path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><Circle cx="9" cy="7" r="4" /><Path d="M23 21v-2a4 4 0 0 0-3-3.87" /><Path d="M16 3.13a4 4 0 0 1 0 7.75" />
                 </Svg>
               ) : (
-                <Svg width="28" height="28" viewBox="0 0 24 24" fill="#ff386c">
+                <Svg width="28" height="28" viewBox="0 0 24 24" fill={COLORS.primary}>
                   <Path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
                 </Svg>
               )}

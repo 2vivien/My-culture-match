@@ -1,4 +1,5 @@
 import React from 'react';
+import { COLORS } from '@/lib/theme';
 import { View, TouchableOpacity, Text } from 'react-native';
 import tw from '@/lib/tailwind';
 import { StepHeader } from '../StepHeader';
@@ -62,9 +63,9 @@ export const SituationStep = ({ value, onChange }: Props) => (
           ]}
         >
           <View style={[tw`w-10 h-10 rounded-full items-center justify-center`, value === s ? tw`bg-white` : tw`bg-gray-50`]}>
-            <SituationIcon type={s} color={value === s ? '#ff386c' : '#111'} />
+            <SituationIcon type={s} color={value === s ? COLORS.primary : '#111'} />
           </View>
-          <Text style={[tw`text-sm font-bold`, { fontFamily: 'Urbanist_700Bold', color: value === s ? '#ff386c' : '#111' }]}>
+          <Text style={[tw`text-sm font-bold`, { fontFamily: 'Urbanist_700Bold', color: value === s ? COLORS.primary : '#111' }]}>
             {s}
           </Text>
         </TouchableOpacity>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { TouchableOpacity, Text, View, TouchableOpacityProps } from 'react-native';
+import { TouchableOpacity, Text, TouchableOpacityProps } from 'react-native';
 import tw from '@/lib/tailwind';
 
 type ButtonProps = TouchableOpacityProps & {

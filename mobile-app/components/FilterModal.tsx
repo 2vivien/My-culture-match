@@ -3,6 +3,7 @@ import { View, Text, Modal, TouchableOpacity, ScrollView, useWindowDimensions, T
 import Svg, { Path, Circle } from 'react-native-svg';
 import tw from '@/lib/tailwind';
 import { SHADOWS } from '@/lib/styles';
+import { COLORS } from '@/lib/theme';
 
 export interface FilterValues {
   origin: string;
@@ -28,6 +29,7 @@ export const FilterModal = ({ visible, onClose, onApply, initialFilters }: Filte
   
   const { height: windowHeight } = useWindowDimensions();
 
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (initialFilters) {
       setOrigin(initialFilters.origin);
@@ -37,6 +39,7 @@ export const FilterModal = ({ visible, onClose, onApply, initialFilters }: Filte
       setDistance(initialFilters.distance);
     }
   }, [initialFilters, visible]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const handleApply = () => {
     onApply({
@@ -151,7 +154,7 @@ export const FilterModal = ({ visible, onClose, onApply, initialFilters }: Filte
               {/* Age Range Section - Improved Interactivity feel */}
               <View style={tw`mb-8`}>
                 <View style={tw`flex-row justify-between items-center mb-4`}>
-                  <Text style={[tw`text-[11px] font-bold text-gray-400 uppercase`, { fontFamily: 'Urbanist_700Bold' }]}>Tranche d'âge</Text>
+                  <Text style={[tw`text-[11px] font-bold text-gray-400 uppercase`, { fontFamily: 'Urbanist_700Bold' }]}>{"Tranche d'âge"}</Text>
                   <View style={tw`flex-row items-center bg-primary/10 px-3 py-1 rounded-lg`}>
                     <Text style={[tw`text-sm font-black text-primary`, { fontFamily: 'Urbanist_800ExtraBold' }]}>{ageRange[0]} - {ageRange[1]}+</Text>
                   </View>
@@ -191,7 +194,7 @@ export const FilterModal = ({ visible, onClose, onApply, initialFilters }: Filte
                     >
                       <Text style={[
                         tw`text-[13px] font-bold`, 
-                        { fontFamily: 'Urbanist_700Bold', color: gender === item ? '#ff386c' : '#666' }
+                        { fontFamily: 'Urbanist_700Bold', color: gender === item ? COLORS.primary : '#666' }
                       ]}>{item}</Text>
                     </TouchableOpacity>
                   ))}

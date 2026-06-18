@@ -1,8 +1,9 @@
 import React from 'react';
+import { COLORS } from '@/lib/theme';
 import { View, TouchableOpacity, Text } from 'react-native';
 import tw from '@/lib/tailwind';
 import { StepHeader } from '../StepHeader';
-import Svg, { Path, Circle, Rect } from 'react-native-svg';
+import Svg, { Path } from 'react-native-svg';
 
 const VALUES = [
   { id: 'faith', label: 'Foi & Spiritualité' },
@@ -51,7 +52,7 @@ export const ValuesStep = ({ selected, onToggle }: Props) => (
           )}
           <Text style={[
             tw`text-[15px] font-bold`, 
-            { fontFamily: 'Urbanist_700Bold', color: selected.includes(v.label) ? '#ff386c' : '#111' }
+            { fontFamily: 'Urbanist_700Bold', color: selected.includes(v.label) ? COLORS.primary : '#111' }
           ]}>
             {v.label}
           </Text>

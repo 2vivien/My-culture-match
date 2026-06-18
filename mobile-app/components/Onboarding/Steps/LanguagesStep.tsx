@@ -1,4 +1,5 @@
 import React from 'react';
+import { COLORS } from '@/lib/theme';
 import { View, TouchableOpacity, Text } from 'react-native';
 import tw from '@/lib/tailwind';
 import { StepHeader } from '../StepHeader';
@@ -47,7 +48,7 @@ export const LanguagesStep = ({ selected, onToggle }: Props) => (
               )}
               <Text style={[
                 tw`text-sm font-bold`, 
-                { fontFamily: 'Urbanist_700Bold', color: selected.includes(l) ? '#ff386c' : '#111' }
+                { fontFamily: 'Urbanist_700Bold', color: selected.includes(l) ? COLORS.primary : '#111' }
               ]}>
                 {l}
               </Text>

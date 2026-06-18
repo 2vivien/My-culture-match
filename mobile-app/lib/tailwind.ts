@@ -1,15 +1,16 @@
 import { create } from 'twrnc';
+import { COLORS } from './theme';
 
 // Exact match with HTML tailwind.config
 const tw = create({
   theme: {
     extend: {
       colors: {
-        primary: '#ff386c',
-        primaryLight: '#fff0f4',
-        textMain: '#1e1e1e',
-        textSub: '#8a8a8a',
-        bgLight: '#fcfcfc',
+        primary: COLORS.primary,
+        primaryLight: COLORS.primaryLight,
+        textMain: COLORS.textMain,
+        textSub: COLORS.textSub,
+        bgLight: COLORS.bgLight,
         app: {
           black: '#1A1A1A',
           gray: '#6B7280',

@@ -1,0 +1,10 @@
+[
+  {
+    "id": "req-1",
+    "name": "Zeoo",
+    "avatar": "https://images.unsplash.com/photo-1618077360395-f3068be8e001?auto=format&fit=crop&w=100&q=80",
+    "actionText": "Like Post you...",
+    "timeAgo": "ago 35s",
+    "badgeType": "heart"
+  }
+]

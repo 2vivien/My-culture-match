@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
+import { COLORS } from '@/lib/theme';
 import { View, Text, TextInput, TouchableOpacity, Image, SafeAreaView, StatusBar, useWindowDimensions } from 'react-native';
-import Svg, { Path, Circle, Rect } from 'react-native-svg';
+import Svg, { Path, Circle } from 'react-native-svg';
 import tw from '@/lib/tailwind';
 import { SHADOWS } from '@/lib/styles';
 import { FilterModal, FilterValues } from '@/components/FilterModal';
@@ -87,10 +88,10 @@ const NearFriendCard = ({ user, onPress }: { user: any, onPress: () => void }) =
       <Image source={{ uri: user.image || user.images[0] }} style={tw`w-16 h-16 rounded-full`} />
       <View style={tw`ml-4 flex-1`}>
         <Text style={[tw`text-lg font-black text-gray-900`, { fontFamily: 'Urbanist_800ExtraBold' }]}>{user.name}, {user.age}</Text>
-        <Text style={tw`text-gray-400 text-xs font-medium`}>"{user.bio.slice(0, 30)}..." · {user.origin}</Text>
+        <Text style={tw`text-gray-400 text-xs font-medium`}>{"\""}{user.bio.slice(0, 30)}...{"\""} · {user.origin}</Text>
       </View>
       <TouchableOpacity style={tw`bg-primary/10 w-12 h-12 rounded-full items-center justify-center`}>
-         <Svg width="20" height="20" viewBox="0 0 24 24" fill="#ff386c">
+         <Svg width="20" height="20" viewBox="0 0 24 24" fill={COLORS.primary}>
             <Path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
          </Svg>
       </TouchableOpacity>
@@ -117,7 +118,7 @@ export const FriendSearchScreen = ({ onSelectProfile }: { onSelectProfile: (user
     setFilters(newFilters);
   };
 
-  const MapSimulation = () => (
+  const renderMapSimulation = () => (
     <View style={[tw`absolute inset-0 bg-gray-100`, { zIndex: -1 }]}>
       <Image 
         source={{ uri: 'https://api.mapbox.com/styles/v1/mapbox/light-v10/static/-0.1278,51.5074,13/800x1200?access_token=pk.eyJ1IjoiZGVtbyIsImEiOiJja2p4eGgzeG0wZzV5MnFvMnFvMnFvMnFvMnFvIn0.demo' }} 
@@ -146,7 +147,7 @@ export const FriendSearchScreen = ({ onSelectProfile }: { onSelectProfile: (user
   return (
     <View style={[tw`flex-1 bg-white`, { width: SCREEN_WIDTH, height: SCREEN_HEIGHT, alignSelf: 'center', overflow: 'hidden' }]}>
       <StatusBar barStyle="dark-content" />
-      <MapSimulation />
+      {renderMapSimulation()}
       <SafeAreaView style={tw`flex-1`}>
         <SearchHeader onFilterPress={() => setFiltersVisible(true)} />
         <NearFriendCard user={selectedUser} onPress={() => onSelectProfile(selectedUser)} />

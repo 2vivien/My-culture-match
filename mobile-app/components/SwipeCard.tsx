@@ -1,5 +1,7 @@
+/* eslint-disable react-hooks/immutability */
 import React, { useState } from 'react';
-import { View, Text, Image, useWindowDimensions, TouchableOpacity, StyleSheet, Pressable } from 'react-native';
+import { COLORS } from '@/lib/theme';
+import { View, Text, Image, useWindowDimensions, TouchableOpacity, Pressable } from 'react-native';
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 import Animated, {
   useAnimatedStyle,
@@ -9,7 +11,7 @@ import Animated, {
   interpolate,
   runOnJS
 } from 'react-native-reanimated';
-import Svg, { Path, Polygon, Line, Circle } from 'react-native-svg';
+import Svg, { Path, Polygon, Line } from 'react-native-svg';
 import { ArrowUp } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import tw from '@/lib/tailwind';
@@ -100,7 +102,7 @@ const ActionButtons = ({ onDislike, onLike, onSuperLike }: { onDislike?: () => v
         <Svg width="42" height="42" viewBox="0 0 24 24" fill="white">
             <Path d="M12 2c0 0-5.5 5-5.5 11a5.5 5.5 0 0 0 11 0C17.5 7 12 2 12 2z" />
         </Svg>
-        <Svg width="18" height="18" viewBox="0 0 24 24" fill="#ff386c" style={tw`absolute top-[55%]`}>
+        <Svg width="18" height="18" viewBox="0 0 24 24" fill={COLORS.primary} style={tw`absolute top-[55%]`}>
             <Path d="M12 12c0 0-2 1.5-2 3.5a2 2 0 0 0 4 0C14 13.5 12 12 12 12z" />
         </Svg>
       </View>
@@ -157,7 +159,7 @@ const Card = ({ user, actionButtons, onPress, SCREEN_WIDTH }: { user: User; acti
         <View style={tw`absolute bottom-8 left-6 right-6`}>
           {user.origin && (
             <View style={tw`flex-row items-center gap-1.5 mb-2`}>
-              <Svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ff386c" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <Svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={COLORS.primary} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <Path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
                 <Line x1="4" y1="22" x2="4" y2="15" />
               </Svg>
@@ -168,7 +170,7 @@ const Card = ({ user, actionButtons, onPress, SCREEN_WIDTH }: { user: User; acti
           <View style={tw`flex-row items-center gap-2.5 mb-1`}>
             <Text style={[tw`text-[28px] font-extrabold text-white tracking-tight`, { fontFamily: 'Urbanist_800ExtraBold' }]}>{user.name}, {user.age}</Text>
             <View style={tw`bg-white rounded-full w-5.5 h-5.5 items-center justify-center shadow-sm`}>
-              <Svg width="14" height="14" viewBox="0 0 24 24" fill="#ff386c">
+              <Svg width="14" height="14" viewBox="0 0 24 24" fill={COLORS.primary}>
                 <Polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
               </Svg>
             </View>

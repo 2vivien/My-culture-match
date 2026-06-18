@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { COLORS } from '@/lib/theme';
 import { StatusBar } from 'expo-status-bar';
 import { View, ActivityIndicator, Platform, useWindowDimensions } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -85,7 +86,7 @@ export default function App() {
   if (!fontsLoaded) {
     return (
       <View style={tw`flex-1 items-center justify-center bg-white`}>
-        <ActivityIndicator size="large" color="#ff386c" />
+        <ActivityIndicator size="large" color={COLORS.primary} />
       </View>
     );
   }
@@ -158,7 +159,19 @@ export default function App() {
         Platform.OS === 'web' && { height: '100vh', width: '100vw', overflow: 'hidden' }
       ]}>
         <View style={[
-          tw`bg-white shadow-2xl`,
+          tw`bg-white`,
+          Platform.select({
+            web: {
+              boxShadow: '0px 25px 50px -12px rgba(0, 0, 0, 0.25)',
+            },
+            default: {
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 25 },
+              shadowOpacity: 0.15,
+              shadowRadius: 50,
+              elevation: 24,
+            },
+          }),
           Platform.OS === 'web' ? { 
             width: Math.min(windowWidth, 500), 
             height: Math.min(windowHeight, 850),

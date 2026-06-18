@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView } from 'react-native';
+import { COLORS } from '@/lib/theme';
+import { View, Text, TextInput, TouchableOpacity } from 'react-native';
 import tw from '@/lib/tailwind';
 import { StepHeader } from '../StepHeader';
 import Svg, { Path, Circle, Rect } from 'react-native-svg';
@@ -48,7 +49,7 @@ export const OccupationStep = ({ value, onChange }: Props) => (
       sub="Ton domaine d'activité en dit long sur tes passions." 
     />
 
-    <Text style={[tw`text-[11px] font-bold text-gray-400 uppercase mb-4`, { fontFamily: 'Urbanist_700Bold' }]}>Ton domaine d'activité</Text>
+    <Text style={[tw`text-[11px] font-bold text-gray-400 uppercase mb-4`, { fontFamily: 'Urbanist_700Bold' }]}>{"Ton domaine d'activité"}</Text>
     <View style={tw`flex-row flex-wrap gap-3 mb-8`}>
       {DOMAINS.map((domain) => (
         <TouchableOpacity
@@ -62,11 +63,11 @@ export const OccupationStep = ({ value, onChange }: Props) => (
           ]}
         >
           <View style={tw`w-10 h-10 bg-gray-50 rounded-full items-center justify-center`}>
-            {domain.icon(value.domain === domain.label ? '#ff386c' : '#111')}
+            {domain.icon(value.domain === domain.label ? COLORS.primary : '#111')}
           </View>
           <Text style={[
             tw`text-[15px] font-bold`,
-            { fontFamily: 'Urbanist_700Bold', color: value.domain === domain.label ? '#ff386c' : '#111' }
+            { fontFamily: 'Urbanist_700Bold', color: value.domain === domain.label ? COLORS.primary : '#111' }
           ]}>{domain.label}</Text>
           {value.domain === domain.label && (
             <View style={tw`ml-auto w-5 h-5 bg-primary rounded-full items-center justify-center`}>

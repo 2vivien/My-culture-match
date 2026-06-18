@@ -1,4 +1,5 @@
 import React from 'react';
+import { COLORS } from '@/lib/theme';
 import { View, TouchableOpacity, Text } from 'react-native';
 import tw from '@/lib/tailwind';
 import { StepHeader } from '../StepHeader';
@@ -54,9 +55,9 @@ export const GenderStep = ({ gender, seeking, onGenderChange, onSeekingChange }:
           ]}
         >
           <View style={[tw`w-10 h-10 rounded-full items-center justify-center`, gender === g ? tw`bg-white` : tw`bg-gray-50`]}>
-            <GenderIcon type={g} color={gender === g ? '#ff386c' : '#111'} />
+            <GenderIcon type={g} color={gender === g ? COLORS.primary : '#111'} />
           </View>
-          <Text style={[tw`text-sm font-bold`, { fontFamily: 'Urbanist_700Bold', color: gender === g ? '#ff386c' : '#111' }]}>{g}</Text>
+          <Text style={[tw`text-sm font-bold`, { fontFamily: 'Urbanist_700Bold', color: gender === g ? COLORS.primary : '#111' }]}>{g}</Text>
         </TouchableOpacity>
       ))}
     </View>
@@ -74,9 +75,9 @@ export const GenderStep = ({ gender, seeking, onGenderChange, onSeekingChange }:
           ]}
         >
           <View style={[tw`w-10 h-10 rounded-full items-center justify-center`, seeking === s ? tw`bg-white` : tw`bg-gray-50`]}>
-            <GenderIcon type={s} color={seeking === s ? '#ff386c' : '#111'} />
+            <GenderIcon type={s} color={seeking === s ? COLORS.primary : '#111'} />
           </View>
-          <Text style={[tw`text-sm font-bold`, { fontFamily: 'Urbanist_700Bold', color: seeking === s ? '#ff386c' : '#111' }]}>{s}</Text>
+          <Text style={[tw`text-sm font-bold`, { fontFamily: 'Urbanist_700Bold', color: seeking === s ? COLORS.primary : '#111' }]}>{s}</Text>
         </TouchableOpacity>
       ))}
     </View>

@@ -2,7 +2,6 @@ import React from 'react';
 import { View, Text, TextInput, TouchableOpacity } from 'react-native';
 import tw from '@/lib/tailwind';
 import { StepHeader } from '../StepHeader';
-import Svg, { Path, Circle } from 'react-native-svg';
 import { SHADOWS } from '@/lib/styles';
 
 type Props = {
@@ -37,7 +36,7 @@ export const AgeStep = ({ age, seekAge, onChange, onSeekAgeChange }: Props) => (
     {/* Target Age Range */}
     <View style={tw`mb-8`}>
       <View style={tw`flex-row justify-between items-center mb-4`}>
-        <Text style={[tw`text-[11px] font-bold text-gray-400 uppercase`, { fontFamily: 'Urbanist_700Bold' }]}>Tranche d'âge souhaitée</Text>
+        <Text style={[tw`text-[11px] font-bold text-gray-400 uppercase`, { fontFamily: 'Urbanist_700Bold' }]}>{"Tranche d'âge souhaitée"}</Text>
         <View style={tw`bg-primary/10 px-3 py-1 rounded-lg`}>
           <Text style={[tw`text-sm font-black text-primary`, { fontFamily: 'Urbanist_800ExtraBold' }]}>{seekAge[0]} - {seekAge[1]}+</Text>
         </View>

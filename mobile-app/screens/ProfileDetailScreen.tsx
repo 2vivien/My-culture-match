@@ -1,11 +1,12 @@
 import React from 'react';
-import { View, Text, Image, ScrollView, TouchableOpacity, useWindowDimensions, SafeAreaView, Platform } from 'react-native';
-import Svg, { Path, Circle, Line, Polygon } from 'react-native-svg';
+import { COLORS } from '@/lib/theme';
+import { View, Text, Image, ScrollView, TouchableOpacity, useWindowDimensions, SafeAreaView } from 'react-native';
+import Svg, { Path, Circle, Polygon } from 'react-native-svg';
 import tw from '@/lib/tailwind';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SHADOWS } from '@/lib/styles';
 
-const VerificationStar = ({ color = "#ff386c", size = 20 }: { color?: string, size?: number }) => (
+const VerificationStar = ({ color = COLORS.primary, size = 20 }: { color?: string, size?: number }) => (
   <View style={[tw`rounded-full items-center justify-center bg-white shadow-sm`, { width: size * 1.5, height: size * 1.5 }]}>
     <Svg width={size} height={size} viewBox="0 0 24 24" fill={color}>
       <Polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
@@ -88,7 +89,7 @@ export const ProfileDetailScreen = ({ user, onBack }: ProfileDetailProps) => {
                  ].map((item, idx) => (
                    <View key={idx} style={[tw`w-1/2 p-4`, idx < 2 && tw`border-b border-gray-100`, idx % 2 === 0 && tw`border-r border-gray-100`]}>
                       <View style={tw`flex-row items-center gap-2 mb-1`}>
-                         <Svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ff386c" strokeWidth="2.5">
+                         <Svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={COLORS.primary} strokeWidth="2.5">
                             <Path d={item.icon} />
                          </Svg>
                          <Text style={[tw`text-[10px] text-gray-400 font-black uppercase`, { fontFamily: 'Urbanist_800ExtraBold' }]}>{item.label}</Text>
@@ -125,7 +126,7 @@ export const ProfileDetailScreen = ({ user, onBack }: ProfileDetailProps) => {
             onPress={onBack}
             style={[tw`w-16 h-16 bg-white rounded-[24px] items-center justify-center border border-gray-100`, SHADOWS.card]}
           >
-            <Svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#FF4D6D" strokeWidth={3}>
+            <Svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={COLORS.primary} strokeWidth={3}>
                <Path d="M18 6L6 18M6 6l12 12" />
             </Svg>
          </TouchableOpacity>

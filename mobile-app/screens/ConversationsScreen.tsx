@@ -1,13 +1,12 @@
 import React, { useState, useMemo } from 'react';
+import { COLORS } from '@/lib/theme';
 import { View, Text, ScrollView, Image, TouchableOpacity, SafeAreaView, StyleSheet, StatusBar } from 'react-native';
-import { ChevronLeft, Search, Star } from 'lucide-react-native';
-import Svg, { Path, Rect, Defs, RadialGradient, Stop, Circle } from 'react-native-svg';
+import { ChevronLeft, Star } from 'lucide-react-native';
+import Svg, { Path, Rect, Defs, RadialGradient, Stop } from 'react-native-svg';
 import Animated, { useAnimatedStyle, useSharedValue, withRepeat, withTiming, Easing } from 'react-native-reanimated';
 import tw from '@/lib/tailwind';
 import { MATCHES, MESSAGES, ConversationMode } from '@/data/conversations';
 import { SHADOWS } from '@/lib/styles';
-
-const AnimatedSvg = Animated.createAnimatedComponent(Svg);
 
 const BackgroundShapes = () => (
   <View style={StyleSheet.absoluteFill}>
@@ -23,8 +22,8 @@ const BackgroundShapes = () => (
           fy="0"
           gradientUnits="userSpaceOnUse"
         >
-          <Stop offset="0" stopColor="#fff0f4" stopOpacity="1" />
-          <Stop offset="1" stopColor="#fff0f4" stopOpacity="0" />
+          <Stop offset="0" stopColor="#ffffff" stopOpacity="1" />
+          <Stop offset="1" stopColor="#ffffff" stopOpacity="0" />
         </RadialGradient>
       </Defs>
       <Rect x="0" y="0" width="100%" height="100%" fill="url(#grad1)" />
@@ -41,7 +40,7 @@ const NewMatchIcon = () => {
       -1,
       false
     );
-  }, []);
+  }, [rotation]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ rotate: `${rotation.value}deg` }],
@@ -54,12 +53,14 @@ const NewMatchIcon = () => {
         { borderStyle: 'dashed' }
       ]}>
         <View style={tw`w-full h-full bg-primary rounded-full items-center justify-center`}>
-          <AnimatedSvg width="26" height="26" viewBox="0 0 24 24" style={animatedStyle}>
-            <Path 
-              d="M12 2V6M12 18V22M6 12H2M22 12H18M19.0711 19.0711L16.2426 16.2426M7.75736 7.75736L4.92893 4.92893M19.0711 4.92893L16.2426 7.75736M7.75736 16.2426L4.92893 19.0711" 
-              stroke="white" strokeWidth="2.5" strokeLinecap="round"
-            />
-          </AnimatedSvg>
+          <Animated.View style={animatedStyle}>
+            <Svg width="26" height="26" viewBox="0 0 24 24">
+              <Path 
+                d="M12 2V6M12 18V22M6 12H2M22 12H18M19.0711 19.0711L16.2426 16.2426M7.75736 7.75736L4.92893 4.92893M19.0711 4.92893L16.2426 7.75736M7.75736 16.2426L4.92893 19.0711" 
+                stroke="white" strokeWidth="2.5" strokeLinecap="round"
+              />
+            </Svg>
+          </Animated.View>
         </View>
       </View>
       <Text style={[tw`text-[13px] font-semibold text-textMain`, { fontFamily: 'Urbanist_600SemiBold' }]}>New</Text>
@@ -124,7 +125,7 @@ export const ConversationsScreen = ({ onSelectChat, onShowNotifications }: { onS
               ]}
             >
               {item.icon && (
-                <Svg width="14" height="14" viewBox="0 0 24 24" fill={filter === item.id ? "white" : "#ff386c"}>
+                <Svg width="14" height="14" viewBox="0 0 24 24" fill={filter === item.id ? "white" : COLORS.primary}>
                   <Path d={item.icon} />
                 </Svg>
               )}
@@ -151,7 +152,7 @@ export const ConversationsScreen = ({ onSelectChat, onShowNotifications }: { onS
                   >
                     <View style={[
                       tw`w-[70px] h-[70px] rounded-full p-[2.5px]`,
-                      match.hasStory && { backgroundColor: '#ff386c' }
+                      match.hasStory && { backgroundColor: COLORS.primary }
                     ]}>
                       <View style={tw`flex-1 rounded-full p-[2px] bg-white`}>
                         <Image source={{ uri: match.image }} style={tw`w-full h-full rounded-full`} resizeMode="cover" />
@@ -185,7 +186,7 @@ export const ConversationsScreen = ({ onSelectChat, onShowNotifications }: { onS
                     <TouchableOpacity 
                       activeOpacity={0.9}
                       onPress={() => onSelectChat?.(msg.id)}
-                      style={[tw`bg-white rounded-[32px] p-5.5 border border-pink-50`, SHADOWS.card]}
+                      style={[tw`bg-white rounded-[32px] p-5.5 border border-orange-50`, SHADOWS.card]}
                     >
                       <View style={tw`flex-row gap-4.5 items-start`}>
                         <View style={tw`relative`}>
@@ -236,7 +237,7 @@ export const ConversationsScreen = ({ onSelectChat, onShowNotifications }: { onS
                         <View style={tw`flex-row justify-between items-center mb-1.5`}>
                           <View style={tw`flex-row items-center gap-2`}>
                             <Text style={[tw`font-extrabold text-[17px] text-textMain`, { fontFamily: 'Urbanist_800ExtraBold' }]}>{msg.name}</Text>
-                            {msg.isStarred && <Star size={13} color="#ff386c" fill="#ff386c" />}
+                            {msg.isStarred && <Star size={13} color={COLORS.primary} fill={COLORS.primary} />}
                             <View style={[tw`w-1.5 h-1.5 rounded-full`, msg.mode === 'friendship' ? tw`bg-black` : tw`bg-primary`]} />
                           </View>
                           <Text style={[tw`text-[12px] text-textSub`, { fontFamily: 'Urbanist_500Medium' }]}>{msg.time}</Text>

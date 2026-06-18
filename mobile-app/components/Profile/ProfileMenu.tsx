@@ -2,8 +2,9 @@ import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import Svg, { Path, Circle } from 'react-native-svg';
 import tw from '@/lib/tailwind';
+import { COLORS } from '@/lib/theme';
 
-const MenuItem = ({ icon, label, sub, color = "#ff386c", last }: any) => (
+const MenuItem = ({ icon, label, sub, color = COLORS.primary, last }: any) => (
   <TouchableOpacity style={[tw`flex-row items-center py-4`, !last && tw`border-b border-gray-50`]}>
     <View style={tw`w-10 h-10 bg-gray-50 rounded-xl items-center justify-center mr-4`}>
       {icon(color)}

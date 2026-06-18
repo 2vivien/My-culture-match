@@ -1,6 +1,7 @@
 import React from 'react';
+import { COLORS } from '@/lib/theme';
 import { View, Text, FlatList, TouchableOpacity, Image, SafeAreaView, StatusBar } from 'react-native';
-import Svg, { Path, Circle } from 'react-native-svg';
+import Svg, { Path } from 'react-native-svg';
 import tw from '@/lib/tailwind';
 import { SHADOWS } from '@/lib/styles';
 
@@ -19,7 +20,7 @@ const NotificationItem = ({ item }: { item: typeof MOCK_NOTIFICATIONS[0] }) => (
         <Image source={{ uri: item.image }} style={tw`w-12 h-12 rounded-full`} />
       ) : (
         <View style={tw`w-12 h-12 rounded-full bg-primary/10 items-center justify-center`}>
-          <Svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ff386c" strokeWidth="2.5">
+          <Svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={COLORS.primary} strokeWidth="2.5">
             <Path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0" />
           </Svg>
         </View>

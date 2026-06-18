@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { ChevronLeft, Phone, Video, MoreVertical, Camera, Mic, Image as ImageIcon, Send } from 'lucide-react-native';
 import tw from '@/lib/tailwind';
+import { COLORS } from '@/lib/theme';
 
 export const ChatScreen = ({ route, onBack }: { route?: any, onBack: () => void }) => {
   const [message, setMessage] = useState('');
@@ -34,8 +35,8 @@ export const ChatScreen = ({ route, onBack }: { route?: any, onBack: () => void 
     { id: '7', text: 'Excellent Brother !', time: '16:12', isSender: false },
   ];
 
-  // Even Lighter Soft Dusty Rose Color
-  const lightDustyRose = '#dbb0b0';
+  // Primary Theme Color for header/send button
+  const lightDustyRose = COLORS.primary;
 
   return (
     <View style={tw`flex-1 bg-white`}>

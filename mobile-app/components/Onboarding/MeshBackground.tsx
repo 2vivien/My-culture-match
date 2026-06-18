@@ -15,7 +15,7 @@ export const MeshBackground: React.FC<MeshBackgroundProps> = ({ variant = 1 }) =
         <Defs>
           {variant === 1 ? (
             <>
-              {/* Mesh 1: Peach, Light Blue, Pink, Yellow - Concentrated at the top/middle */}
+              {/* Mesh 1: Peach, Light Blue, Terracotta, Yellow - Concentrated at the top/middle */}
               <SvgRadialGradient id="mesh1_peach" cx="10%" cy="10%" rx="100%" ry="60%" fx="10%" fy="10%">
                 <Stop offset="0" stopColor="#FFE4D6" stopOpacity="0.8" />
                 <Stop offset="1" stopColor="#FFE4D6" stopOpacity="0" />
@@ -25,8 +25,8 @@ export const MeshBackground: React.FC<MeshBackgroundProps> = ({ variant = 1 }) =
                 <Stop offset="1" stopColor="#E0F2FE" stopOpacity="0" />
               </SvgRadialGradient>
               <SvgRadialGradient id="mesh1_pink" cx="0%" cy="70%" rx="90%" ry="60%" fx="0%" fy="70%">
-                <Stop offset="0" stopColor="#FCE7F3" stopOpacity="0.8" />
-                <Stop offset="1" stopColor="#FCE7F3" stopOpacity="0" />
+                <Stop offset="0" stopColor="#FFEBE0" stopOpacity="0.8" />
+                <Stop offset="1" stopColor="#FFEBE0" stopOpacity="0" />
               </SvgRadialGradient>
               <SvgRadialGradient id="mesh1_yellow" cx="70%" cy="40%" rx="80%" ry="70%" fx="70%" fy="40%">
                 <Stop offset="0" stopColor="#FEF08A" stopOpacity="0.4" />
@@ -35,14 +35,14 @@ export const MeshBackground: React.FC<MeshBackgroundProps> = ({ variant = 1 }) =
             </>
           ) : (
             <>
-              {/* Mesh 2: Warm - Orange pale, Pink, Yellow, Blue */}
+              {/* Mesh 2: Warm - Orange pale, Terracotta, Yellow, Blue */}
               <SvgRadialGradient id="mesh2_orange1" cx="30%" cy="5%" rx="100%" ry="60%" fx="30%" fy="5%">
                 <Stop offset="0" stopColor="#FFEDD5" stopOpacity="0.9" />
                 <Stop offset="1" stopColor="#FFEDD5" stopOpacity="0" />
               </SvgRadialGradient>
               <SvgRadialGradient id="mesh2_pink" cx="95%" cy="30%" rx="100%" ry="70%" fx="95%" fy="30%">
-                <Stop offset="0" stopColor="#FCE7F3" stopOpacity="1" />
-                <Stop offset="1" stopColor="#FCE7F3" stopOpacity="0" />
+                <Stop offset="0" stopColor="#FFEBE0" stopOpacity="1" />
+                <Stop offset="1" stopColor="#FFEBE0" stopOpacity="0" />
               </SvgRadialGradient>
               <SvgRadialGradient id="mesh2_yellow" cx="20%" cy="40%" rx="90%" ry="70%" fx="20%" fy="40%">
                 <Stop offset="0" stopColor="#FEF08A" stopOpacity="0.6" />
