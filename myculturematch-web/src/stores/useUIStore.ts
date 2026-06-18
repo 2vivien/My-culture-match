@@ -21,7 +21,12 @@ export const useUIStore = create<UIState>((set) => ({
   toggleSidebar: () => set((s) => ({ isSidebarOpen: !s.isSidebarOpen })),
   toggleSidebarCollapse: () => set((s) => ({ isSidebarCollapsed: !s.isSidebarCollapsed })),
   setSearchQuery: (searchQuery) => set({ searchQuery }),
-  setActiveTab: (activeTab) => set({ activeTab }),
+  setActiveTab: (activeTab) => set((state) => {
+    if (activeTab === 'Chat' || activeTab === 'Thunderbird') {
+      return { activeTab, isSidebarCollapsed: true };
+    }
+    return { activeTab, isSidebarCollapsed: false };
+  }),
   notificationsCount: 9,
   setNotificationsCount: (notificationsCount) => set({ notificationsCount }),
 }));

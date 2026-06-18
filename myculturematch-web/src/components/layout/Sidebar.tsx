@@ -8,7 +8,7 @@ import { PanelRightOpen } from 'lucide-react';
 
 export const Sidebar = () => {
   const { activeTab, isSidebarOpen, toggleSidebar, isSidebarCollapsed, toggleSidebarCollapse } = useUIStore();
-  const isCollapsed = isSidebarCollapsed || activeTab === 'Chat' || activeTab === 'Thunderbird';
+  const isCollapsed = isSidebarCollapsed;
 
   return (
     <>

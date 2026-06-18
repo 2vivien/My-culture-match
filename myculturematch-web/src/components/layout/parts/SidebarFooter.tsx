@@ -6,8 +6,8 @@ import { cn } from '@/src/lib/utils';
 
 export const SidebarFooter = () => {
   const { theme, toggleTheme } = useAppStore();
-  const { activeTab, setActiveTab } = useUIStore();
-  const isCollapsed = activeTab === 'Chat' || activeTab === 'Thunderbird';
+  const { activeTab, setActiveTab, isSidebarCollapsed } = useUIStore();
+  const isCollapsed = isSidebarCollapsed;
 
   return (
     <div className="flex flex-col gap-2 select-none w-full text-sm">

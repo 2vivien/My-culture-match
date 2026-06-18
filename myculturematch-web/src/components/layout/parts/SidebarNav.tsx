@@ -44,7 +44,7 @@ const navItems = [
 export const SidebarNav = () => {
   const { activeTab, setActiveTab, isSidebarOpen, toggleSidebar, isSidebarCollapsed } = useUIStore();
   const { setSelectedTotemUserId, setFeedSort } = useAppStore();
-  const isCollapsed = isSidebarCollapsed || activeTab === 'Chat' || activeTab === 'Thunderbird';
+  const isCollapsed = isSidebarCollapsed;
 
   const handleNav = (name: string) => {
     if (name === 'Tribu') return; // Do nothing for main Tribu click
