@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { motion as framerMotion, AnimatePresence as framerAnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Palette, Music, Utensils, Landmark, Sparkles, MapPin, Award, BookOpen, Users, Compass, Globe, 
   MoreHorizontal, Plus, MessageSquare, Facebook, Twitter, Instagram, Youtube, Twitch, Gamepad2, Play,
@@ -59,8 +59,13 @@ export const TotemProfile = () => {
     { name: 'Bearded Wonder', avatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=80&q=80', role: 'Retro Gamer', level: 50, online: true },
   ];
 
+  const followingMock = [
+    { name: 'Sandro Strange', avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=80&q=80', role: 'Caster', level: 18, online: true },
+    { name: 'James Murdock', avatar: 'https://images.unsplash.com/photo-1618077360395-f3068be8e001?auto=format&fit=crop&w=80&q=80', role: 'Concept Artist', level: 12, online: false },
+  ];
+
   return (
-    <framerMotion.div
+    <motion.div
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -15 }}
@@ -74,12 +79,15 @@ export const TotemProfile = () => {
         '--gradient-btn-secondary': 'linear-gradient(135deg, #34e0e0 0%, #1fc8cf 100%)',
       } as any}
     >
+      {/* 6. HEADER DU PROFIL */}
       <div className="bg-white dark:bg-[#1c212e] rounded-[24px] shadow-sm flex flex-col relative mt-2">
+        {/* Image de couverture */}
         <div className="h-[220px] w-full rounded-t-[24px] overflow-hidden relative">
           <img src={coverImg} alt="Cover" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
         </div>
 
+        {/* Avatar hexagonal qui chevauche */}
         <div className="absolute top-[150px] left-1/2 -translate-x-1/2 z-10">
           <TotemAvatar 
             size="xl" 
@@ -90,7 +98,10 @@ export const TotemProfile = () => {
           />
         </div>
 
+        {/* Contenu sous la bannière */}
         <div className="pt-[80px] pb-8 px-8 grid grid-cols-1 lg:grid-cols-3 gap-6 items-center text-center lg:text-left">
+          
+          {/* Ligne de statistiques à gauche */}
           <div className="flex justify-center lg:justify-start items-center gap-6">
             <div className="flex flex-col items-center">
               <span className="text-2xl font-black text-[#2e3552] dark:text-white">930</span>
@@ -100,6 +111,11 @@ export const TotemProfile = () => {
               <span className="text-2xl font-black text-[#2e3552] dark:text-white">82</span>
               <span className="text-[11px] font-bold text-[#9aa3b8] uppercase tracking-wider">Connexions</span>
             </div>
+            <div className="flex flex-col items-center">
+              <span className="text-2xl font-black text-[#2e3552] dark:text-white">5.7K</span>
+              <span className="text-[11px] font-bold text-[#9aa3b8] uppercase tracking-wider">Following</span>
+            </div>
+            {/* Drapeau */}
             <div className="flex flex-col items-center ml-4">
               <div className="w-8 h-8 rounded-full overflow-hidden border border-gray-200 shadow-sm mb-1">
                 <img 
@@ -112,11 +128,13 @@ export const TotemProfile = () => {
             </div>
           </div>
 
+          {/* Centre : Nom et Handle */}
           <div className="flex flex-col items-center justify-center">
             <h1 className="text-3xl font-black text-[#2e3552] dark:text-white">{user.name}</h1>
             <span className="text-[#2dd9d9] font-bold text-sm mt-1">@{user.name.toLowerCase()}</span>
           </div>
 
+          {/* Droite : Boutons d'icônes et Réseaux Sociaux */}
           <div className="flex flex-col items-center lg:items-end gap-4">
             <div className="flex gap-3">
               <button 
@@ -140,11 +158,15 @@ export const TotemProfile = () => {
               <a href="#" className="w-8 h-8 rounded-lg bg-[#1da1f2] text-white flex items-center justify-center hover:scale-110 transition-transform"><Twitter className="w-4 h-4 fill-current" /></a>
               <a href="#" className="w-8 h-8 rounded-lg bg-[#e1306c] text-white flex items-center justify-center hover:scale-110 transition-transform"><Instagram className="w-4 h-4" /></a>
               <a href="#" className="w-8 h-8 rounded-lg bg-[#7b5cf0] text-white flex items-center justify-center hover:scale-110 transition-transform"><Twitch className="w-4 h-4" /></a>
+              <a href="#" className="w-8 h-8 rounded-lg bg-[#ff0000] text-white flex items-center justify-center hover:scale-110 transition-transform"><Youtube className="w-4 h-4" /></a>
+              <a href="#" className="w-8 h-8 rounded-lg bg-[#ff9500] text-white flex items-center justify-center hover:scale-110 transition-transform"><Sparkles className="w-4 h-4" /></a>
+              <a href="#" className="w-8 h-8 rounded-lg bg-[#6c7393] text-white flex items-center justify-center hover:scale-110 transition-transform"><Gamepad2 className="w-4 h-4" /></a>
             </div>
           </div>
         </div>
       </div>
 
+      {/* 7. BARRE D'ONGLETS DE NAVIGATION DU PROFIL (ICON ROW WITH 9 ICONS) */}
       <div className="bg-white dark:bg-[#1c212e] rounded-xl shadow-sm px-4 flex justify-between items-center h-[60px] overflow-hidden">
         <button className="text-[#9aa3b8] hover:text-[#2e3552] dark:hover:text-white p-1">
           <ChevronLeft className="w-5 h-5" />
@@ -166,7 +188,7 @@ export const TotemProfile = () => {
                 >
                   <IconComponent className="w-5 h-5 group-hover:scale-110 transition-transform" />
                   {isActive && (
-                    <framerMotion.div 
+                    <motion.div 
                       layoutId="activeTabUnderline"
                       className="absolute bottom-0 left-0 right-0 h-[3px] bg-[#2dd9d9] rounded-t-full" 
                     />
@@ -182,7 +204,10 @@ export const TotemProfile = () => {
         </button>
       </div>
 
+      {/* 8. CONTENU PRINCIPAL - DEUX COLONNES */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        {/* Colonne gauche - About Me */}
         <div className="lg:col-span-4 flex flex-col gap-6">
           <div className="bg-white dark:bg-[#1c212e] rounded-xl shadow-sm p-6">
             <div className="flex justify-between items-center mb-4">
@@ -195,7 +220,7 @@ export const TotemProfile = () => {
             <div className="flex flex-col gap-3 text-sm">
               <div className="flex justify-between">
                 <span className="text-[#9aa3b8] font-bold">City</span>
-                <span className="font-bold text-[#2e3552] dark:text-white">{user.location.split(' - ')[0]}</span>
+                <span className="font-bold text-[#2e3552] dark:text-white">{user.location.split(' - ')[0] || user.location}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-[#9aa3b8] font-bold">Country</span>
@@ -209,17 +234,20 @@ export const TotemProfile = () => {
           </div>
         </div>
 
+        {/* Colonne droite - Dynamic Feed */}
         <div className="lg:col-span-8 flex flex-col gap-6">
-          <framerAnimatePresence mode="wait">
+          <AnimatePresence mode="wait">
             {activeTab === 'Timeline' && (
-              <framerMotion.div
+              <motion.div
                 key="timeline"
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 10 }}
                 className="flex flex-col gap-6"
               >
+                {/* Post Card */}
                 <div className="bg-white dark:bg-[#1c212e] rounded-[20px] shadow-sm p-6 border border-gray-100 dark:border-zinc-800">
+                  {/* Header */}
                   <div className="flex gap-4 items-center mb-4">
                     <TotemAvatar size="md" src={user.avatar} glow="turquoise" />
                     <div>
@@ -227,15 +255,19 @@ export const TotemProfile = () => {
                       <p className="text-xs text-[#9aa3b8]">5 hours ago</p>
                     </div>
                   </div>
+                  {/* Text */}
                   <p className="text-sm text-[#2e3552] dark:text-white mb-4">
                     Just finished setting up my new streaming room! What do you guys think? 🎮✨
                   </p>
+                  
+                  {/* Image with Twitch overlay */}
                   <div className="rounded-xl overflow-hidden bg-zinc-100 dark:bg-zinc-800 h-80 relative group shadow-inner">
                     <img 
                       src="https://images.unsplash.com/photo-1600861195091-690c92f1d2cc?auto=format&fit=crop&w=800&q=80" 
                       alt="Streaming room setup" 
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
                     />
+                    {/* Translucent overlay */}
                     <div className="absolute bottom-3 left-3 right-3 bg-[#1c212e]/85 backdrop-blur-md border border-white/10 rounded-xl p-3 flex justify-between items-center text-white shadow-lg">
                       <div className="flex gap-3 items-center">
                         <TotemAvatar size="sm" src={user.avatar} glow="none" className="border border-white/20 shadow-lg" />
@@ -249,6 +281,8 @@ export const TotemProfile = () => {
                       </button>
                     </div>
                   </div>
+
+                  {/* Reaction icons under post */}
                   <div className="flex items-center justify-between border-t border-gray-100 dark:border-zinc-800 pt-4 mt-4 text-xs font-bold text-[#9aa3b8]">
                     <div className="flex gap-6">
                       <button className="flex items-center gap-2 hover:text-red-500 transition-colors cursor-pointer">
@@ -263,11 +297,11 @@ export const TotemProfile = () => {
                     </button>
                   </div>
                 </div>
-              </framerMotion.div>
+              </motion.div>
             )}
 
             {activeTab === 'Connexions' && (
-              <framerMotion.div
+              <motion.div
                 key="connexions"
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -289,11 +323,11 @@ export const TotemProfile = () => {
                     </div>
                   ))}
                 </div>
-              </framerMotion.div>
+              </motion.div>
             )}
 
             {activeTab === 'Photos' && (
-              <framerMotion.div
+              <motion.div
                 key="photos"
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -318,11 +352,11 @@ export const TotemProfile = () => {
                     </div>
                   ))}
                 </div>
-              </framerMotion.div>
+              </motion.div>
             )}
 
             {activeTab === 'Videos' && (
-              <framerMotion.div
+              <motion.div
                 key="videos"
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -350,11 +384,11 @@ export const TotemProfile = () => {
                     </div>
                   ))}
                 </div>
-              </framerMotion.div>
+              </motion.div>
             )}
 
             {activeTab === 'Traditions' && (
-              <framerMotion.div
+              <motion.div
                 key="traditions"
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -384,12 +418,12 @@ export const TotemProfile = () => {
                     </div>
                   ))}
                 </div>
-              </framerMotion.div>
+              </motion.div>
             )}
 
-            {activeTab === 'Home' && (
-              <framerMotion.div
-                key="home"
+            {activeTab === 'Profile' && (
+              <motion.div
+                key="profile"
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 10 }}
@@ -409,11 +443,11 @@ export const TotemProfile = () => {
                     <h4 className="text-lg font-black text-[#2dd9d9] mt-1">{user.tribes.join(', ')}</h4>
                   </div>
                 </div>
-              </framerMotion.div>
+              </motion.div>
             )}
 
             {activeTab === 'Journal' && (
-              <framerMotion.div
+              <motion.div
                 key="journal"
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -429,11 +463,11 @@ export const TotemProfile = () => {
                   <h4 className="font-bold text-xs text-[#2e3552] dark:text-white">Discovered the Fon Kingdom storytelling tradition</h4>
                   <p className="text-xs text-[#9aa3b8]">Encountered beautiful folklore and oral traditions of Benin during the last cultural gathering.</p>
                 </div>
-              </framerMotion.div>
+              </motion.div>
             )}
 
             {activeTab === 'Messages' && (
-              <framerMotion.div
+              <motion.div
                 key="messages"
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -451,11 +485,11 @@ export const TotemProfile = () => {
                     Send
                   </button>
                 </div>
-              </framerMotion.div>
+              </motion.div>
             )}
 
             {activeTab === 'Settings' && (
-              <framerMotion.div
+              <motion.div
                 key="settings"
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -466,11 +500,11 @@ export const TotemProfile = () => {
                 <p className="text-sm text-[#9aa3b8]">
                   Manage profile cards, customize hexagon borders, or edit personal social links.
                 </p>
-              </framerMotion.div>
+              </motion.div>
             )}
-          </framerAnimatePresence>
+          </AnimatePresence>
         </div>
       </div>
-    </framerMotion.div>
+    </motion.div>
   );
 };
