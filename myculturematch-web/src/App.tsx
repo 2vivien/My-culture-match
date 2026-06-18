@@ -33,7 +33,7 @@ export default function App() {
               <MainFeedColumn />
             ) : activeTab === 'Totem' ? (
               <TotemProfile />
-            ) : activeTab === 'Chat' ? (
+            ) : activeTab === 'Thunderbird' || activeTab === 'Chat' ? (
               <ChatPage />
             ) : (
               <motion.div
@@ -54,7 +54,7 @@ export default function App() {
               </motion.div>
             )}
 
-            {activeTab !== 'Chat' && <RightPanel />}
+            {activeTab !== 'Chat' && activeTab !== 'Thunderbird' && <RightPanel />}
           </div>
         </div>
       </div>

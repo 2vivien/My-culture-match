@@ -1,46 +1,99 @@
+import { useState, useRef, useEffect } from 'react';
 import { useAppStore } from '@/src/stores/useAppStore';
 import { cn } from '@/src/lib/utils';
-import { motion } from 'framer-motion';
+import { Award, Globe, ChevronDown, Check } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
+
+const sortOptions = ['Best', 'Popular', 'New', 'Hot'];
+const cultureOptions = ['Everywhere', 'Afrique', 'Japon', 'États-Unis', 'Inde', 'France', 'Brésil'];
 
 export const FeedFilterToggle = () => {
-  const { feedFilter, setFeedFilter } = useAppStore();
+  const { feedSort, feedCulture, setFeedSort, setFeedCulture } = useAppStore();
+  const [openSort, setOpenSort] = useState(false);
+  const [openCulture, setOpenCulture] = useState(false);
+
+  const sortRef = useRef<HTMLDivElement>(null);
+  const cultureRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (sortRef.current && !sortRef.current.contains(e.target as Node)) setOpenSort(false);
+      if (cultureRef.current && !cultureRef.current.contains(e.target as Node)) setOpenCulture(false);
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   return (
-    <div className="flex justify-center mb-2 select-none">
-      <div className="bg-white dark:bg-zinc-950 p-1 rounded-full shadow-soft border border-app-border dark:border-zinc-850 inline-flex items-center gap-1">
+    <div className="flex justify-start mb-6 select-none gap-3 px-1 relative z-30">
+      {/* Sort Custom Select */}
+      <div className="relative" ref={sortRef}>
         <button
-          onClick={() => setFeedFilter('following')}
-          className={cn(
-            'px-5 sm:px-6 py-2 rounded-full text-xs sm:text-sm font-bold transition-all cursor-pointer relative',
-            feedFilter === 'following' ? 'text-white dark:text-app-black' : 'text-app-gray hover:text-app-black dark:hover:text-zinc-300'
-          )}
+          onClick={() => { setOpenSort(!openSort); setOpenCulture(false); }}
+          className="group bg-white dark:bg-zinc-950 px-4 py-2 pl-10 pr-8 rounded-full shadow-sm border border-app-border dark:border-zinc-800 text-sm font-bold text-app-black dark:text-white flex items-center gap-2 hover:shadow-md transition-all focus:outline-none"
         >
-          {feedFilter === 'following' && (
-            <motion.div
-              layoutId="feed-filter-bg"
-              className="absolute inset-0 bg-app-black dark:bg-white rounded-full -z-10"
-              transition={{ type: 'spring', stiffness: 350, damping: 25 }}
-            />
-          )}
-          Following
+          <Award className="w-4 h-4 absolute left-3.5 text-app-gray group-hover:text-yellow-500 transition-colors" />
+          {feedSort}
+          <ChevronDown className={cn("w-4 h-4 absolute right-3 text-app-gray transition-transform duration-200", openSort && "rotate-180")} />
         </button>
 
-        <button
-          onClick={() => setFeedFilter('for-you')}
-          className={cn(
-            'px-5 sm:px-6 py-2 rounded-full text-xs sm:text-sm font-bold transition-all cursor-pointer relative',
-            feedFilter === 'for-you' ? 'text-white dark:text-app-black' : 'text-app-gray hover:text-app-black dark:hover:text-zinc-300'
-          )}
-        >
-          {feedFilter === 'for-you' && (
+        <AnimatePresence>
+          {openSort && (
             <motion.div
-              layoutId="feed-filter-bg"
-              className="absolute inset-0 bg-app-black dark:bg-white rounded-full -z-10"
-              transition={{ type: 'spring', stiffness: 350, damping: 25 }}
-            />
+              initial={{ opacity: 0, y: -10, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -10, scale: 0.95 }}
+              transition={{ duration: 0.15 }}
+              className="absolute top-full left-0 mt-2 w-40 bg-white dark:bg-zinc-900 rounded-2xl shadow-xl border border-app-border dark:border-zinc-800 overflow-hidden py-2 z-50"
+            >
+              {sortOptions.map(option => (
+                <div
+                  key={option}
+                  onClick={() => { setFeedSort(option); setOpenSort(false); }}
+                  className="px-4 py-2 text-sm font-semibold text-app-black dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer flex items-center justify-between"
+                >
+                  {option}
+                  {feedSort === option && <Check className="w-4 h-4 text-app-black dark:text-white" />}
+                </div>
+              ))}
+            </motion.div>
           )}
-          For you
+        </AnimatePresence>
+      </div>
+
+      {/* Culture Custom Select */}
+      <div className="relative" ref={cultureRef}>
+        <button
+          onClick={() => { setOpenCulture(!openCulture); setOpenSort(false); }}
+          className="group bg-white dark:bg-zinc-950 px-4 py-2 pl-10 pr-8 rounded-full shadow-sm border border-app-border dark:border-zinc-800 text-sm font-bold text-app-black dark:text-white flex items-center gap-2 hover:shadow-md transition-all focus:outline-none"
+        >
+          <Globe className="w-4 h-4 absolute left-3.5 text-app-gray group-hover:text-blue-500 transition-colors" />
+          {feedCulture}
+          <ChevronDown className={cn("w-4 h-4 absolute right-3 text-app-gray transition-transform duration-200", openCulture && "rotate-180")} />
         </button>
+
+        <AnimatePresence>
+          {openCulture && (
+            <motion.div
+              initial={{ opacity: 0, y: -10, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -10, scale: 0.95 }}
+              transition={{ duration: 0.15 }}
+              className="absolute top-full left-0 mt-2 w-48 max-h-60 overflow-y-auto no-scrollbar bg-white dark:bg-zinc-900 rounded-2xl shadow-xl border border-app-border dark:border-zinc-800 py-2 z-50"
+            >
+              {cultureOptions.map(option => (
+                <div
+                  key={option}
+                  onClick={() => { setFeedCulture(option); setOpenCulture(false); }}
+                  className="px-4 py-2 text-sm font-semibold text-app-black dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer flex items-center justify-between"
+                >
+                  {option}
+                  {feedCulture === option && <Check className="w-4 h-4 text-app-black dark:text-white" />}
+                </div>
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

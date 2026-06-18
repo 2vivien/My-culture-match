@@ -21,7 +21,7 @@ export const PostCard = ({ post }: PostCardProps) => {
         views={post.views}
         onLike={() => likePost(post.id)}
       />
-      <PostActions />
+      <PostActions likes={post.likes} onLike={() => likePost(post.id)} />
     </article>
   );
 };

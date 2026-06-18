@@ -5,12 +5,14 @@ import type { CurrentUser } from '@/src/types/user';
 interface AppState {
   theme: 'light' | 'dark';
   locale: string;
-  feedFilter: 'following' | 'for-you';
+  feedSort: string;
+  feedCulture: string;
   currentUser: CurrentUser;
   selectedTotemUserId: string;
   toggleTheme: () => void;
   setLocale: (locale: string) => void;
-  setFeedFilter: (filter: 'following' | 'for-you') => void;
+  setFeedSort: (sort: string) => void;
+  setFeedCulture: (culture: string) => void;
   setSelectedTotemUserId: (id: string) => void;
 }
 
@@ -33,12 +35,14 @@ export const useAppStore = create<AppState>()(
     (set) => ({
       theme: 'light',
       locale: 'English',
-      feedFilter: 'following',
+      feedSort: 'Best',
+      feedCulture: 'Everywhere',
       currentUser: defaultUser,
       selectedTotemUserId: 'user-current',
       toggleTheme: () => set((s) => ({ theme: s.theme === 'light' ? 'dark' : 'light' })),
       setLocale: (locale) => set({ locale }),
-      setFeedFilter: (feedFilter) => set({ feedFilter }),
+      setFeedSort: (feedSort) => set({ feedSort }),
+      setFeedCulture: (feedCulture) => set({ feedCulture }),
       setSelectedTotemUserId: (id) => set({ selectedTotemUserId: id }),
     }),
     { name: 'app-store' }
