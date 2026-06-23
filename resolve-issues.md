@@ -69,11 +69,17 @@ Ce fichier liste l'état de conformité de chaque page du projet par rapport aux
 ---
 
 ## 4. ConnexionPage.tsx (Page des Connexions)
-- **Fichier initial** : `myculturematch-web/src/pages/ConnexionPage.tsx` (132 lignes - CONFORME)
+- **Fichier initial** : `myculturematch-web/src/pages/ConnexionPage.tsx` (212 lignes - NON CONFORME)
 - **Actions réalisées** :
-  - Retrait du composant StatsHeader inutile.
-  - Alignement responsive (Grille de cartes pour le bureau / Liste de lignes pour le mobile).
-  - Remplacement de l'ancien bouton de filtres par le style Love.
+  - Création de composants modulaires de recherche et d'onglets sous `src/components/connections/` :
+    - [ConnectionsSearch.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/connections/ConnectionsSearch.tsx) (54 lignes) — Champ de recherche et bouton de filtres.
+    - Sous `src/components/connections/tabs/` :
+      - [SuggestionsTab.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/connections/tabs/SuggestionsTab.tsx) (38 lignes) — Liste des suggestions (desktop & mobile).
+      - [InterestedTab.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/connections/tabs/InterestedTab.tsx) (29 lignes) — Liste des visites de profils.
+      - [DemandesTab.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/connections/tabs/DemandesTab.tsx) (44 lignes) — Liste des demandes reçues (desktop & mobile).
+      - [CompagnonsTab.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/connections/tabs/CompagnonsTab.tsx) (29 lignes) — Liste des compagnons actifs.
+      - [ConnectionsEmptyState.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/connections/tabs/ConnectionsEmptyState.tsx) (41 lignes) — Écran vide pour les résultats de recherche.
+  - Refactorisation de [ConnexionPage.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/pages/ConnexionPage.tsx) à 75 lignes (CONFORME).
 - **Statut final** : **CONFORME** (Design 100% préservé).
 
 ---
