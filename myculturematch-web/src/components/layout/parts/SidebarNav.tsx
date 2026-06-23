@@ -27,7 +27,7 @@ const LayersPlusIcon = (props: any) => (
 );
 
 const iconMap: Record<string, any> = {
-  Home, Popular: LandPlot, Love: Flame, New: LayersPlusIcon, Explore: FerrisWheel, Tribu: Landmark, Totem: GrimTotemIcon, Thunderbird: ThunderbirdIcon, Connexion: Unplug,
+  Home, Popular: LandPlot, Love: Flame, New: LayersPlusIcon, Explore: FerrisWheel, Tribu: Landmark, Totem: GrimTotemIcon, Thunderbird: ThunderbirdIcon,
 };
 
 const navItems = [
@@ -35,7 +35,6 @@ const navItems = [
   { name: 'Popular', icon: 'Popular' },
   { name: 'New', icon: 'New' },
   { name: 'Explore', icon: 'Explore' },
-  { name: 'Connexion', icon: 'Connexion' },
   { name: 'Love', icon: 'Love' },
   { name: 'Tribu', icon: 'Tribu' },
   { name: 'Totem', icon: 'Totem' },

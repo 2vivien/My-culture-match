@@ -7,6 +7,8 @@
   --color-app-accent: #000000;
   --color-app-gray: #777777;
   --color-app-border: #ECECEC;
+  --color-primary: #DD4F0D;
+  --color-primary-light: #fff5f0;
   --radius-app: 20px;
   --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.03);
   --shadow-float: 0 10px 30px rgba(0, 0, 0, 0.05);

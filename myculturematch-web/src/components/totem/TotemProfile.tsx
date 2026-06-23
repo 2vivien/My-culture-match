@@ -98,9 +98,9 @@ export const TotemProfile = () => {
             size="xl" 
             src={user.avatar} 
             level={user.level} 
-            glow="turquoise" 
+            glow="none" 
             className="drop-shadow-xl"
-            shape="circle"
+            shape="cloud"
           />
         </div>
 
@@ -111,15 +111,15 @@ export const TotemProfile = () => {
           <div className="flex justify-center lg:justify-start items-center gap-6 order-2 lg:order-1">
             <div className="flex flex-col items-center">
               <span className="text-2xl font-black text-[#2e3552] dark:text-white">930</span>
-              <span className="text-[11px] font-bold text-[#9aa3b8] uppercase tracking-wider">Posts</span>
+              <span className="text-[11px] font-bold text-[#9aa3b8] uppercase tracking-wider">Traditions</span>
             </div>
             <div className="flex flex-col items-center">
               <span className="text-2xl font-black text-[#2e3552] dark:text-white">82</span>
-              <span className="text-[11px] font-bold text-[#9aa3b8] uppercase tracking-wider">Connexions</span>
+              <span className="text-[11px] font-bold text-[#9aa3b8] uppercase tracking-wider">Companions</span>
             </div>
             <div className="flex flex-col items-center">
               <span className="text-2xl font-black text-[#2e3552] dark:text-white">5.7K</span>
-              <span className="text-[11px] font-bold text-[#9aa3b8] uppercase tracking-wider">Following</span>
+              <span className="text-[11px] font-bold text-[#9aa3b8] uppercase tracking-wider">Interested</span>
             </div>
             {/* Drapeau */}
             <div className="flex flex-col items-center ml-4">
@@ -404,17 +404,17 @@ export const TotemProfile = () => {
                 <div className="border-t border-gray-100 dark:border-zinc-850 pt-4 flex gap-4 text-xs font-bold text-[#9aa3b8] mt-2">
                   <div className="flex flex-col">
                     <span className="text-[#2e3552] dark:text-white text-sm font-black">930</span>
-                    <span>Posts Published</span>
+                    <span>Traditions</span>
                   </div>
                   <div className="h-8 w-[1px] bg-gray-100 dark:bg-zinc-850" />
                   <div className="flex flex-col">
                     <span className="text-[#2e3552] dark:text-white text-sm font-black">82</span>
-                    <span>Connections</span>
+                    <span>Companions</span>
                   </div>
                   <div className="h-8 w-[1px] bg-gray-100 dark:bg-zinc-850" />
                   <div className="flex flex-col">
                     <span className="text-[#2e3552] dark:text-white text-sm font-black">5.7K</span>
-                    <span>Following</span>
+                    <span>Interested</span>
                   </div>
                 </div>
               </div>

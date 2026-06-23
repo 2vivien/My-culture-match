@@ -5,7 +5,7 @@ import { Button } from '@/src/components/ui/button';
 import { cn } from '@/src/lib/utils';
 
 export const SidebarFooter = () => {
-  const { theme, toggleTheme } = useAppStore();
+  const { theme, toggleTheme, logout } = useAppStore();
   const { activeTab, setActiveTab, isSidebarCollapsed, setShowCreateTribeModal } = useUIStore();
   const isCollapsed = isSidebarCollapsed;
 
@@ -17,7 +17,7 @@ export const SidebarFooter = () => {
         variant="ghost"
         title="Créer un tribu"
         onClick={() => {
-          setActiveTab('CreateTribe');
+          setShowCreateTribeModal(true);
         }}
         className={cn(
           "w-full text-app-gray hover:text-app-black dark:text-zinc-400 dark:hover:text-white font-medium py-3 px-4 rounded-2xl",
@@ -86,6 +86,7 @@ export const SidebarFooter = () => {
       <Button
         variant="ghost"
         title="Log out"
+        onClick={logout}
         className={cn(
           "w-full text-app-gray hover:text-app-black dark:text-zinc-400 dark:hover:text-white font-medium py-3 px-4 rounded-2xl mt-2",
           isCollapsed ? "justify-center p-3 w-12 mx-auto" : "justify-start gap-4"

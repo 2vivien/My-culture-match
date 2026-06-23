@@ -10,12 +10,18 @@ interface AppState {
   currentUser: CurrentUser;
   selectedTotemUserId: string;
   profileActiveTab: 'Posts' | 'Photos' | 'Videos' | 'Traditions' | 'About' | 'Saves';
+  isAuthenticated: boolean;
+  isOnboarded: boolean;
   toggleTheme: () => void;
   setLocale: (locale: string) => void;
   setFeedSort: (sort: string) => void;
   setFeedCulture: (culture: string) => void;
   setSelectedTotemUserId: (id: string) => void;
   setProfileActiveTab: (tab: 'Posts' | 'Photos' | 'Videos' | 'Traditions' | 'About' | 'Saves') => void;
+  setAuthenticated: (auth: boolean) => void;
+  setOnboarded: (onboarded: boolean) => void;
+  loginUser: (user: Partial<CurrentUser>) => void;
+  logout: () => void;
 }
 
 const defaultUser: CurrentUser = {
@@ -42,12 +48,22 @@ export const useAppStore = create<AppState>()(
       currentUser: defaultUser,
       selectedTotemUserId: 'user-current',
       profileActiveTab: 'Posts',
+      isAuthenticated: false,
+      isOnboarded: false,
       toggleTheme: () => set((s) => ({ theme: s.theme === 'light' ? 'dark' : 'light' })),
       setLocale: (locale) => set({ locale }),
       setFeedSort: (feedSort) => set({ feedSort }),
       setFeedCulture: (feedCulture) => set({ feedCulture }),
       setSelectedTotemUserId: (id) => set({ selectedTotemUserId: id }),
       setProfileActiveTab: (profileActiveTab) => set({ profileActiveTab }),
+      setAuthenticated: (isAuthenticated) => set({ isAuthenticated }),
+      setOnboarded: (isOnboarded) => set({ isOnboarded }),
+      loginUser: (user) => set((state) => ({
+        isAuthenticated: true,
+        isOnboarded: true,
+        currentUser: { ...state.currentUser, ...user }
+      })),
+      logout: () => set({ isAuthenticated: false, isOnboarded: false }),
     }),
     { name: 'app-store' }
   )

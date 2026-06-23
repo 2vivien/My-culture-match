@@ -10,7 +10,7 @@ interface UserProfileDropdownProps {
 }
 
 export const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ onClose }) => {
-  const { currentUser, theme, toggleTheme } = useAppStore();
+  const { currentUser, theme, toggleTheme, logout } = useAppStore();
   const { setActiveTab } = useUIStore();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
@@ -159,7 +159,10 @@ export const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ onClos
                 Cancel
               </button>
               <button
-                onClick={() => window.location.reload()}
+                onClick={() => {
+                  logout();
+                  if (onClose) onClose();
+                }}
                 className="flex-1 py-2 text-xs font-bold bg-[#E27D60] hover:bg-[#c66b50] text-white rounded-xl cursor-pointer"
               >
                 Log Out

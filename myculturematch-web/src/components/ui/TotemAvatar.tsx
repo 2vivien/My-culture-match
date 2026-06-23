@@ -123,7 +123,7 @@ export const TotemAvatar = ({
           inset: 0,
           width: '100%',
           height: '100%',
-          filter: isCloud 
+          filter: isCloud && glowKey !== 'none'
             ? 'drop-shadow(0px 6px 12px rgba(124, 58, 237, 0.3)) drop-shadow(0px 2px 4px rgba(37, 99, 235, 0.2))' 
             : 'drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.12))',
         }}
@@ -184,12 +184,14 @@ export const TotemAvatar = ({
               )}
             </g>
             {/* Couche 2 : Contour dégradé cloud */}
-            <path
-              d={cloudPath}
-              fill="none"
-              stroke={`url(#${gradId})`}
-              strokeWidth="3.5"
-            />
+            {glowKey !== 'none' && (
+              <path
+                d={cloudPath}
+                fill="none"
+                stroke={`url(#${gradId})`}
+                strokeWidth="3.5"
+              />
+            )}
           </>
         ) : isHexagon ? (
           <>
@@ -199,12 +201,14 @@ export const TotemAvatar = ({
               fill="currentColor"
             />
             {/* Couche 2 : Contour dégradé pointed-top hexagone (radius = 44) */}
-            <polygon
-              points="50,6 89,28.5 89,71.5 50,94 11,71.5 11,28.5"
-              fill="none"
-              stroke={`url(#${gradId})`}
-              strokeWidth="3.5"
-            />
+            {glowKey !== 'none' && (
+              <polygon
+                points="50,6 89,28.5 89,71.5 50,94 11,71.5 11,28.5"
+                fill="none"
+                stroke={`url(#${gradId})`}
+                strokeWidth="3.5"
+              />
+            )}
           </>
         ) : isSquare ? (
           <>
@@ -214,12 +218,14 @@ export const TotemAvatar = ({
               fill="currentColor"
             />
             {/* Couche 2 : Contour dégradé rounded square */}
-            <rect
-              x="6" y="6" width="88" height="88" rx="16"
-              fill="none"
-              stroke={`url(#${gradId})`}
-              strokeWidth="3.5"
-            />
+            {glowKey !== 'none' && (
+              <rect
+                x="6" y="6" width="88" height="88" rx="16"
+                fill="none"
+                stroke={`url(#${gradId})`}
+                strokeWidth="3.5"
+              />
+            )}
           </>
         ) : (
           <>
@@ -229,12 +235,14 @@ export const TotemAvatar = ({
               fill="currentColor"
             />
             {/* Couche 2 : Contour dégradé cercle */}
-            <circle
-              cx="50" cy="50" r="44"
-              fill="none"
-              stroke={`url(#${gradId})`}
-              strokeWidth="3.5"
-            />
+            {glowKey !== 'none' && (
+              <circle
+                cx="50" cy="50" r="44"
+                fill="none"
+                stroke={`url(#${gradId})`}
+                strokeWidth="3.5"
+              />
+            )}
           </>
         )}
       </svg>

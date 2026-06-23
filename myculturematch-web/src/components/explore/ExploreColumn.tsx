@@ -4,6 +4,9 @@ import { Compass, Users, UserPlus, Images, SquarePlay, Flame, Heart, MessageCirc
 import { TotemAvatar } from '@/src/components/ui/TotemAvatar';
 import { Button } from '@/src/components/ui/button';
 import { useUIStore } from '@/src/stores/useUIStore';
+import { UserCard } from '../connections/UserCard';
+import { UserRow } from '../connections/UserRow';
+import type { ConnectionUser } from '@/src/stores/useConnectionsStore';
 
 interface TribeItem {
   id: string;
@@ -50,6 +53,7 @@ export const ExploreColumn: React.FC = () => {
   const [activeSubTab, setActiveSubTab] = useState<'Tribu' | 'Connexion' | 'Images' | 'Vidéo'>('Tribu');
   const [activeCategory, setActiveCategory] = useState<string>('All');
   const [lightboxImage, setLightboxImage] = useState<ImagePost | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   // --- MOCK DATA ---
   const [tribes, setTribes] = useState<TribeItem[]>([
@@ -304,6 +308,12 @@ export const ExploreColumn: React.FC = () => {
   });
 
   const filteredCompanions = companions.filter((c) => {
+    if (searchQuery.trim() !== '') {
+      const q = searchQuery.toLowerCase();
+      const matchName = c.name.toLowerCase().includes(q);
+      const matchInterests = c.interests.some(i => i.toLowerCase().includes(q));
+      if (!matchName && !matchInterests) return false;
+    }
     if (activeCategory === 'All') return true;
     if (activeCategory === '90%+ Matches') return c.matchScore >= 90;
     if (activeCategory === 'Shared Totems') return c.interests.length >= 3;
@@ -321,6 +331,25 @@ export const ExploreColumn: React.FC = () => {
     return v.category === activeCategory;
   });
 
+  // Auto-switch to Connexion tab if searching for a person or their specific interests
+  React.useEffect(() => {
+    if (searchQuery.trim() !== '') {
+      const q = searchQuery.toLowerCase().trim();
+      const hasPersonMatch = companions.some(c =>
+        c.name.toLowerCase().includes(q) ||
+        c.interests.some(i => i.toLowerCase().includes(q))
+      );
+      const hasTribeMatch = tribes.some(t =>
+        t.name.toLowerCase().includes(q) ||
+        t.desc.toLowerCase().includes(q)
+      );
+      
+      if (hasPersonMatch && (!hasTribeMatch || companions.some(c => c.name.toLowerCase() === q))) {
+        setActiveSubTab('Connexion');
+      }
+    }
+  }, [searchQuery, companions, tribes]);
+
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden select-none">
       {/* Search & Header Section */}
@@ -336,10 +365,12 @@ export const ExploreColumn: React.FC = () => {
 
         {/* Mini Search input */}
         <div className="relative w-full md:w-72">
-          <Search className="w-4 h-4 text-app-gray absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <Search className="w-4.5 h-4.5 text-app-gray absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             placeholder="Search matching traditions..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-10 pr-4 py-2 text-xs rounded-full border border-app-border dark:border-zinc-800 bg-white dark:bg-zinc-900/50 text-app-black dark:text-zinc-100 placeholder:text-app-gray/70 focus:outline-none focus:border-[#E27D60] focus:ring-1 focus:ring-[#E27D60]"
           />
         </div>
@@ -543,80 +574,54 @@ export const ExploreColumn: React.FC = () => {
           )}
 
           {/* CONNEXION VIEW (Discover Potential Connections) */}
-          {activeSubTab === 'Connexion' && (
-            <motion.div
-              key="companion-tab"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
-              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5"
-            >
-              {filteredCompanions.map((comp) => (
-                <div
-                  key={comp.id}
-                  className="bg-white dark:bg-zinc-900/60 border border-app-border dark:border-zinc-850 rounded-[24px] p-5 flex flex-col items-center text-center shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group"
-                >
-                  {/* Matching score overlay badge */}
-                  <div className="absolute top-3.5 right-3.5 px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/45 border border-emerald-200/50 text-[10px] font-black text-emerald-600 dark:text-emerald-400 tracking-wider">
-                    {comp.matchScore}% Match
-                  </div>
+          {activeSubTab === 'Connexion' && (() => {
+            const mapCompanionToUser = (comp: CompanionItem): ConnectionUser => ({
+              id: comp.id,
+              name: comp.name,
+              avatar: comp.avatar,
+              matchScore: comp.matchScore,
+              country: 'Japan',
+              countryFlag: '🇯🇵',
+              countryCode: comp.name === 'Keisuke' ? 'JP' : comp.name === 'Jumana' ? 'JO' : comp.name === 'Kaelen' ? 'NO' : 'BJ',
+              interestedCount: 125,
+              compagnonsCount: 48,
+              interests: comp.interests,
+              isConnected: comp.connected,
+            });
 
-                  {/* Avatar */}
-                  <div className="mt-4 mb-3">
-                    <TotemAvatar
-                      src={comp.avatar}
-                      alt={comp.name}
-                      size="lg"
-                      glow={comp.glow}
-                      level={comp.level}
+            return (
+              <motion.div
+                key="companion-tab"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className="w-full"
+              >
+                {/* Desktop View (Grid Cards) */}
+                <div className="hidden md:grid grid-cols-2 lg:grid-cols-4 gap-5">
+                  {filteredCompanions.map((comp) => (
+                    <UserCard
+                      key={comp.id}
+                      user={mapCompanionToUser(comp)}
+                      onConnect={() => toggleConnectCompanion(comp.id)}
                     />
-                  </div>
-
-                  <h4 className="font-extrabold text-sm text-app-black dark:text-zinc-100">
-                    {comp.name}
-                  </h4>
-                  <p className="text-[10px] text-app-gray dark:text-zinc-500 font-bold uppercase mt-0.5">
-                    Level {comp.level} Match Companion
-                  </p>
-
-                  {/* Shared Interests tags */}
-                  <div className="flex flex-wrap gap-1 justify-center my-4.5 max-h-12 overflow-hidden">
-                    {comp.interests.map((interest) => (
-                      <span
-                        key={interest}
-                        className="text-[9px] font-extrabold bg-zinc-50 dark:bg-zinc-800 text-app-gray dark:text-zinc-300 border border-app-border/40 dark:border-zinc-750 px-2 py-0.5 rounded-full"
-                      >
-                        {interest}
-                      </span>
-                    ))}
-                  </div>
-
-                  {/* Action button */}
-                  <button
-                    onClick={() => toggleConnectCompanion(comp.id)}
-                    className={`w-full py-2 rounded-xl text-xs font-black cursor-pointer tracking-wider flex items-center justify-center gap-1.5 transition-all ${
-                      comp.connected
-                        ? 'bg-zinc-100 dark:bg-zinc-850 text-app-black dark:text-zinc-200 border border-app-border dark:border-zinc-750'
-                        : 'bg-[#E27D60] text-white hover:bg-[#c66b50] shadow-sm'
-                    }`}
-                  >
-                    {comp.connected ? (
-                      <>
-                        <Check className="w-3.5 h-3.5 stroke-[3.5] text-green-600" />
-                        Requested
-                      </>
-                    ) : (
-                      <>
-                        <Unplug className="w-3.5 h-3.5" />
-                        Connect
-                      </>
-                    )}
-                  </button>
+                  ))}
                 </div>
-              ))}
-            </motion.div>
-          )}
+
+                {/* Mobile View (List Rows) */}
+                <div className="flex md:hidden flex-col gap-3.5">
+                  {filteredCompanions.map((comp) => (
+                    <UserRow
+                      key={comp.id}
+                      user={mapCompanionToUser(comp)}
+                      onConnect={() => toggleConnectCompanion(comp.id)}
+                    />
+                  ))}
+                </div>
+              </motion.div>
+            );
+          })()}
 
           {/* IMAGES VIEW (Instagram Grid) */}
           {activeSubTab === 'Images' && (
