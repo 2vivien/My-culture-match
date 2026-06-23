@@ -44,11 +44,13 @@ export const ExploreColumn: React.FC = () => {
       />
 
       {/* Category Pills list */}
-      <ExploreCategories
-        activeSubTab={activeSubTab}
-        activeCategory={activeCategory}
-        setActiveCategory={setActiveCategory}
-      />
+      {activeSubTab !== 'Connexion' && (
+        <ExploreCategories
+          activeSubTab={activeSubTab}
+          activeCategory={activeCategory}
+          setActiveCategory={setActiveCategory}
+        />
+      )}
 
       {/* Main scrollable contents window */}
       <div className="flex-1 overflow-y-auto pr-1 select-none hide-scrollbar">

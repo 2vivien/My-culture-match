@@ -11,7 +11,6 @@ interface UserRowProps {
 }
 
 export const UserRow: React.FC<UserRowProps> = ({ user, onConnect, isInterested }) => {
-  const isHighMatch = user.matchScore >= 90;
   const [requested, setRequested] = useState(user.isConnected || false);
 
   const handleConnect = () => {
@@ -31,9 +30,6 @@ export const UserRow: React.FC<UserRowProps> = ({ user, onConnect, isInterested 
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <h4 className="font-extrabold text-sm text-app-black dark:text-zinc-150 truncate leading-tight">{user.name}</h4>
-            <span className={cn("text-[9px] font-black px-2 py-0.5 rounded-md", isHighMatch ? "text-emerald-500 bg-emerald-500/10" : "text-[#E27D60] bg-[#E27D60]/10")}>
-              {user.matchScore}%
-            </span>
           </div>
           <div className="flex items-center gap-1.5 text-[10px] text-app-gray dark:text-zinc-400 font-bold mt-1.5">
             <span className="flex items-center gap-0.5"><MousePointerClick className="w-3.5 h-3.5 text-[#E27D60] shrink-0" /> {user.interestedCount} Interested</span>

@@ -230,7 +230,18 @@ Ce fichier liste l'état de conformité de chaque page du projet par rapport aux
     - [FiltersGender.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/ui/filters/FiltersGender.tsx) (35 lignes)
   - Refactorisation de [FiltersModal.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/ui/FiltersModal.tsx) à 78 lignes (CONFORME).
 - **Statut final** : **CONFORME**.
+---
 
-
-
-
+## 14. Connexion, Glow Modes et Scoring sur les Compagnons (Explore & Connections)
+- **Fichiers concernés** :
+  - [ExploreColumn.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/explore/ExploreColumn.tsx)
+  - [TribeCard.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/explore/TribeCard.tsx)
+  - [RequestCard.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/connections/RequestCard.tsx)
+  - [RequestRow.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/connections/RequestRow.tsx)
+  - [UserRow.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/connections/UserRow.tsx)
+- **Actions réalisées** :
+  - Masquage de la barre de catégories (`ExploreCategories` avec les options *All*, *90%+ Matches*, *Shared Totems*, *Active Level*) dans l'onglet Explore quand le sous-onglet actif est `'Connexion'`.
+  - Désactivation complète des glow modes et masquage du badge de niveau sur toutes les cartes de tribu (`TribeCard`) en forçant `glow="none"`.
+  - Suppression de l'affichage du score de match (`matchScore`) et des styles/drapeaux associés sur toutes les fiches compagnon (comme les cartes et lignes de demandes `RequestCard` / `RequestRow`).
+  - Suppression du code inutilisé relatif à `isHighMatch` dans les composants compagnons.
+- **Statut final** : **CONFORME**.

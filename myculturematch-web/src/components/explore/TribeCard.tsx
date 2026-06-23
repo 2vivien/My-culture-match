@@ -22,8 +22,7 @@ export const TribeCard: React.FC<TribeCardProps> = ({ item, onJoin, onSelect, de
             src={item.avatar}
             alt={item.name}
             size="md"
-            glow={item.glow}
-            level={item.glow === 'none' ? undefined : defaultLevel}
+            glow="none"
           />
           <div className="min-w-0">
             <h4 className="font-extrabold text-sm text-app-black dark:text-zinc-100 truncate leading-tight group-hover:text-[#E27D60] transition-colors">

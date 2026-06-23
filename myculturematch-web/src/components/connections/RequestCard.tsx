@@ -19,7 +19,6 @@ export const RequestCard: React.FC<RequestCardProps> = ({ user, onAccept, onDecl
         </div>
         <h4 className="font-extrabold text-base text-app-black dark:text-zinc-100 flex items-center gap-1.5 justify-center leading-tight">
           {user.name}
-          <span className="text-[10px] font-black text-emerald-600 dark:text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full whitespace-nowrap">{user.matchScore}% Match</span>
         </h4>
         <p className="text-[10px] text-app-gray dark:text-zinc-400 font-bold uppercase tracking-wider mt-1">wants to connect</p>
         
