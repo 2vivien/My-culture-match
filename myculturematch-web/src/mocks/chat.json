@@ -43,27 +43,6 @@
       ]
     },
     {
-      "id": "c-3",
-      "name": "Halean Storm",
-      "avatar": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80",
-      "culture": "Viking Runes × Rio Samba",
-      "lang": "Swedish (Native), Portuguese (Fluent)",
-      "online": false,
-      "lastSeen": "1h ago",
-      "lastMsg": "🎙️ Voice Note (0:42) - Scandinavian chants",
-      "timeAgo": "1h ago",
-      "unreadCount": 0,
-      "glow": "sunset",
-      "level": 19,
-      "bio": "Stockholm musician researching acoustic overlaps in Brazilian Capoeira and Nordic traditional jaw-harps. Polar light worshipper.",
-      "country": "Sweden 🇸🇪",
-      "traditions": ["Nordic Runology exploration", "Midsummer solstice chants", "Foraging local wild cloudberries"],
-      "tribes": ["Eco Warriors", "Capoeira Choral", "Polar Explorers"],
-      "sharedMedia": [
-        "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=150&q=80"
-      ]
-    },
-    {
       "id": "c-4",
       "name": "Fatimah Diop",
       "avatar": "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?auto=format&fit=crop&w=150&q=80",
@@ -97,11 +76,7 @@
       { "id": "2", "senderId": "c-2", "senderName": "Jumana Al-Fassi", "text": "Marhaban my friend! A woven neckpiece can take up to 40 hours of absolute focus.", "time": "Yesterday" },
       { "id": "3", "senderId": "c-2", "senderName": "Jumana Al-Fassi", "text": "The spice maps here in Marrakech are thousands of years old.", "time": "Yesterday" }
     ],
-    "c-3": [
-      { "id": "1", "senderId": "c-3", "senderName": "Halean Storm", "text": "Hallå! I recorded some acoustic tests combining Nordic overtone singing with Bahia rhythms.", "time": "2 days ago" },
-      { "id": "2", "senderId": "me", "senderName": "Me", "text": "That sounds magical, send a sample over when you can!", "time": "2 days ago" },
-      { "id": "3", "senderId": "c-3", "senderName": "Halean Storm", "audioDur": "0:42", "time": "1h ago" }
-    ],
+
     "c-4": [
       { "id": "1", "senderId": "me", "senderName": "Me", "text": "Hi Fatimah! Can you send me the Wolof drum patterns we discussed earlier?", "time": "3h ago" },
       { "id": "2", "senderId": "c-4", "senderName": "Fatimah Diop", "text": "Of course! Here is the Sabar template I promised.", "time": "3h ago" },

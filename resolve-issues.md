@@ -249,3 +249,15 @@ Ce fichier liste l'état de conformité de chaque page du projet par rapport aux
   - Ajustement de l'espacement (`mt-4 mb-3.5`) au-dessus et en dessous de la section de statistiques (*Interested* et *Compagnons*) pour les fiches compagnon `UserCard` et `RequestCard` afin de les harmoniser avec `CompanionCard` et d'ajouter une marge agréable avant les boutons d'action.
   - Suppression du code inutilisé relatif à `isHighMatch` dans les composants compagnons.
 - **Statut final** : **CONFORME**.
+
+---
+
+## 15. Modal de Sélection de Tribu et Nettoyage des Messages Thunderbird
+- **Fichiers concernés** :
+  - [TribuSelector.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/create-tradition/TribuSelector.tsx)
+  - [chat.json](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/mocks/chat.json)
+- **Actions réalisées** :
+  - Remplacement du sélecteur sous forme de menu déroulant (dropdown) dans la création de tradition par une fenêtre modale popup moderne, centrée, avec un arrière-plan flouté semi-transparent.
+  - La modale de sélection de tribu affiche désormais de manière lisible les avatars circulaires, les noms de tribu et une coche de sélection avec des animations fluides via `framer-motion`.
+  - Suppression complète du troisième contact ("Halean Storm", Suède) et de son historique de messages dans le mock des conversations Thunderbird (`chat.json`).
+- **Statut final** : **CONFORME**.
