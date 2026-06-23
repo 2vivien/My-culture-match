@@ -150,3 +150,22 @@ Ce fichier liste l'état de conformité de chaque page du projet par rapport aux
     - [TribuMods.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/tribu/TribuMods.tsx) (27 lignes)
   - Refactorisation de [TribuDetailView.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/explore/TribuDetailView.tsx) à 115 lignes (CONFORME).
 - **Statut final** : **CONFORME**.
+
+---
+
+## 10. CreateTraditionView.tsx (Création de Tradition)
+- **Fichier initial** : `myculturematch-web/src/components/feed/CreateTraditionView.tsx` (228 lignes - NON CONFORME)
+- **Actions réalisées** :
+  - Délocalisation des données et options des tribus dans [createTradition.json](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/mocks/createTradition.json).
+  - Création du type [createTradition.ts](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/types/createTradition.ts) et du service [traditionService.ts](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/services/traditionService.ts).
+  - Création du hook [useCreateTradition.ts](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/hooks/useCreateTradition.ts).
+  - Création de composants modulaires de présentation sous `src/components/create-tradition/` :
+    - [CreateTraditionHeader.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/create-tradition/CreateTraditionHeader.tsx) (14 lignes)
+    - [TribuSelector.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/create-tradition/TribuSelector.tsx) (63 lignes)
+    - [CreateTraditionTabs.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/create-tradition/CreateTraditionTabs.tsx) (41 lignes)
+    - [CreateTraditionTextForm.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/create-tradition/CreateTraditionTextForm.tsx) (85 lignes)
+    - [CreateTraditionMediaForm.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/create-tradition/CreateTraditionMediaForm.tsx) (53 lignes)
+    - [CreateTraditionLinkForm.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/create-tradition/CreateTraditionLinkForm.tsx) (35 lignes)
+  - Refactorisation de [CreateTraditionView.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/feed/CreateTraditionView.tsx) à 75 lignes (CONFORME).
+- **Statut final** : **CONFORME**.
+
