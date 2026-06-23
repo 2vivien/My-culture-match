@@ -246,5 +246,6 @@ Ce fichier liste l'état de conformité de chaque page du projet par rapport aux
   - Désactivation complète des glow modes et masquage du badge de niveau sur toutes les cartes de tribu (`TribeCard`) en forçant `glow="none"`.
   - Suppression de l'affichage du score de match (`matchScore`) et des styles/drapeaux associés sur toutes les fiches compagnon (comme les cartes et lignes de demandes `RequestCard` / `RequestRow`).
   - Suppression de l'affichage des badges/tags d'intérêts de l'utilisateur (contenant des groupes de mots comme *Runes & Sagas* ou *Woodcarving*) placés juste avant le(s) bouton(s) d'action sur les cartes compagnon (`UserCard` et `RequestCard`).
+  - Ajustement de l'espacement (`mt-4 mb-3.5`) au-dessus et en dessous de la section de statistiques (*Interested* et *Compagnons*) pour les fiches compagnon `UserCard` et `RequestCard` afin de les harmoniser avec `CompanionCard` et d'ajouter une marge agréable avant les boutons d'action.
   - Suppression du code inutilisé relatif à `isHighMatch` dans les composants compagnons.
 - **Statut final** : **CONFORME**.

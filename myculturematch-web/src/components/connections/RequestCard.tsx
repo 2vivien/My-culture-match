@@ -23,7 +23,7 @@ export const RequestCard: React.FC<RequestCardProps> = ({ user, onAccept, onDecl
         <p className="text-[10px] text-app-gray dark:text-zinc-400 font-bold uppercase tracking-wider mt-1">wants to connect</p>
         
         {/* Companion & Interests stats using MousePointerClick and Unplug icons */}
-        <div className="flex flex-col items-center gap-1.5 text-[10px] text-app-gray dark:text-zinc-400 font-bold mt-2.5 mb-2 select-none">
+        <div className="flex flex-col items-center gap-1.5 text-[10px] text-app-gray dark:text-zinc-400 font-bold mt-4 mb-3.5 select-none">
           <div className="flex items-center gap-1.5">
             <MousePointerClick className="w-3.5 h-3.5 text-[#E27D60] shrink-0" />
             <span>{user.interestedCount} Interested</span>
