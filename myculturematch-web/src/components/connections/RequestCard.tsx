@@ -33,12 +33,6 @@ export const RequestCard: React.FC<RequestCardProps> = ({ user, onAccept, onDecl
             <span>{user.compagnonsCount} Compagnons</span>
           </div>
         </div>
-
-        <div className="flex flex-wrap gap-1.5 justify-center mt-3 mb-4">
-          {user.interests?.map((tag) => (
-            <span key={tag} className="text-[9px] font-black text-app-gray dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800 px-2.5 py-1 rounded-md uppercase tracking-wider">{tag}</span>
-          ))}
-        </div>
       </div>
       <div className="flex gap-2 text-xs font-black">
         <button onClick={() => onDecline(user.id)} className="flex-1 py-2.5 rounded-xl border border-app-border dark:border-zinc-800 text-app-gray hover:bg-zinc-50 dark:hover:bg-zinc-850 cursor-pointer flex items-center justify-center gap-1.5 transition-colors">

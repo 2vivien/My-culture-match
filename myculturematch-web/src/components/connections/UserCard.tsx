@@ -39,12 +39,6 @@ export const UserCard: React.FC<UserCardProps> = ({ user, onConnect }) => {
             <span>{user.compagnonsCount} Compagnons</span>
           </div>
         </div>
-
-        <div className="flex flex-wrap gap-1.5 justify-center mt-3.5 mb-4">
-          {user.interests?.map((tag) => (
-            <span key={tag} className="text-[9px] font-black text-app-gray dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800 px-2.5 py-1 rounded-md uppercase tracking-wider">{tag}</span>
-          ))}
-        </div>
       </div>
       <button
         onClick={handleConnect}

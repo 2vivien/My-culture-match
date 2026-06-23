@@ -238,10 +238,13 @@ Ce fichier liste l'état de conformité de chaque page du projet par rapport aux
   - [TribeCard.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/explore/TribeCard.tsx)
   - [RequestCard.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/connections/RequestCard.tsx)
   - [RequestRow.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/connections/RequestRow.tsx)
+  - [UserCard.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/connections/UserCard.tsx)
   - [UserRow.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/connections/UserRow.tsx)
+  - [CompanionCard.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/connections/CompanionCard.tsx)
 - **Actions réalisées** :
   - Masquage de la barre de catégories (`ExploreCategories` avec les options *All*, *90%+ Matches*, *Shared Totems*, *Active Level*) dans l'onglet Explore quand le sous-onglet actif est `'Connexion'`.
   - Désactivation complète des glow modes et masquage du badge de niveau sur toutes les cartes de tribu (`TribeCard`) en forçant `glow="none"`.
   - Suppression de l'affichage du score de match (`matchScore`) et des styles/drapeaux associés sur toutes les fiches compagnon (comme les cartes et lignes de demandes `RequestCard` / `RequestRow`).
+  - Suppression de l'affichage des badges/tags d'intérêts de l'utilisateur (contenant des groupes de mots comme *Runes & Sagas* ou *Woodcarving*) placés juste avant le(s) bouton(s) d'action sur les cartes compagnon (`UserCard` et `RequestCard`).
   - Suppression du code inutilisé relatif à `isHighMatch` dans les composants compagnons.
 - **Statut final** : **CONFORME**.
