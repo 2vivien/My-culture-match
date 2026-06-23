@@ -274,3 +274,15 @@ Ce fichier liste l'état de conformité de chaque page du projet par rapport aux
   - Correction de l'action au clic sur un message de la boîte de réception du fil d'actualité (MessagesPanel) pour rediriger l'utilisateur vers l'onglet `'Thunderbird'` (inbox/messages) au lieu d'ouvrir le profil totem de l'utilisateur.
   - Nettoyage des imports de stores inutilisés (`useAppStore`).
 - **Statut final** : **CONFORME**.
+
+---
+
+## 17. Affichage Mobile des Onglets Connexions et Icône Demandes
+- **Fichiers concernés** :
+  - [InterestedTab.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/connections/tabs/InterestedTab.tsx)
+  - [CompagnonsTab.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/connections/tabs/CompagnonsTab.tsx)
+  - [ConnectionsTabs.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/connections/ConnectionsTabs.tsx)
+- **Actions réalisées** :
+  - Correction de l'affichage sur mobile pour les onglets `'Interested'` et `'Compagnons'` : remplacement des grilles de cartes (qui dépassaient l'écran mobile) par une disposition en lignes (`UserRow` et `CompanionRow` en liste verticale), identique aux onglets Suggestions et Demandes.
+  - Mise à jour de l'icône de l'onglet `'Demandes'` dans la barre supérieure des connexions : remplacement de l'icône `Unplug` (redondante avec Compagnons) par `BluetoothSearching`.
+- **Statut final** : **CONFORME**.
