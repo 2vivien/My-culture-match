@@ -82,24 +82,7 @@ export const RequestCard = () => {
         <Button onClick={() => respondToRequest({ id: current.id, action: 'okay' })} className="flex-1 py-2.5 bg-[#E27D60] text-white hover:bg-[#c66b50] shadow-md">Connect</Button>
       </div>
 
-      {/* Other notifications (Recent Activity) */}
-      <div className="mt-5 pt-4 border-t border-app-border/70 dark:border-zinc-850 flex flex-col gap-3">
-        <span className="text-[10px] font-extrabold uppercase tracking-wider text-app-gray dark:text-zinc-500 pl-1">Recent Activity</span>
-        <div className="flex flex-col gap-3">
-          <div className="flex items-start gap-2.5 text-xs bg-zinc-50/50 dark:bg-zinc-900/30 p-2.5 rounded-xl border border-app-border/40 dark:border-zinc-800/40">
-            <span className="w-2 h-2 rounded-full bg-[#E27D60] mt-1.5 shrink-0" />
-            <p className="text-app-gray dark:text-zinc-400 text-[11px] leading-snug">
-              <span className="font-black text-app-black dark:text-zinc-200">AinuScholar</span> commented on your tradition.
-            </p>
-          </div>
-          <div className="flex items-start gap-2.5 text-xs bg-zinc-50/50 dark:bg-zinc-900/30 p-2.5 rounded-xl border border-app-border/40 dark:border-zinc-800/40">
-            <span className="w-2 h-2 rounded-full bg-[#E27D60] mt-1.5 shrink-0" />
-            <p className="text-app-gray dark:text-zinc-400 text-[11px] leading-snug">
-              <span className="font-black text-app-black dark:text-zinc-200">YamatoElder</span> liked your tradition.
-            </p>
-          </div>
-        </div>
-      </div>
+
     </div>
   );
 };

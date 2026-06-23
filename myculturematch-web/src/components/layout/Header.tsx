@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Bell, Menu, ChevronDown, Plus, SquarePen } from 'lucide-react';
+import { Bell, Menu, ChevronDown, Plus, SquarePen, Search } from 'lucide-react';
 import { ThunderbirdIcon } from '@/src/components/ui/ThunderbirdIcon';
 import { SearchBar } from './parts/SearchBar';
 import { useUIStore } from '@/src/stores/useUIStore';
@@ -43,6 +43,15 @@ export const Header = () => {
       <SearchBar />
 
       <div className="flex items-center gap-1.5 sm:gap-3 md:gap-5 select-none relative shrink-0">
+        {/* Mobile search icon button - placed side-by-side with others */}
+        <button
+          onClick={() => setActiveTab('Explore')}
+          className="md:hidden w-10 h-10 bg-white dark:bg-zinc-900 rounded-full shadow-sm border border-app-border dark:border-zinc-800 flex items-center justify-center text-app-gray hover:text-app-black cursor-pointer select-none shrink-0"
+          title="Search"
+        >
+          <Search className="w-4.5 h-4.5 text-app-black dark:text-zinc-350" />
+        </button>
+
         {/* Create Tradition Action Button */}
         <button
           onClick={() => setActiveTab('Create')}
@@ -78,8 +87,8 @@ export const Header = () => {
           <AnimatePresence>{showNotif && <NotificationDropdown />}</AnimatePresence>
         </div>
 
-        {/* User Profile Avatar and Trigger */}
-        <div ref={profileRef} className="relative shrink-0">
+        {/* User Profile Avatar and Trigger (Desktop only) */}
+        <div ref={profileRef} className="hidden md:block relative shrink-0">
           <div onClick={() => setShowProfile(!showProfile)} className="bg-white dark:bg-zinc-900 p-0.5 md:pl-2.5 md:pr-4 md:py-1.5 rounded-full shadow-sm border border-app-border dark:border-zinc-800 flex items-center gap-2 cursor-pointer hover:shadow-md transition-all">
             <TotemAvatar size="xs" src={currentUser.avatar} alt={currentUser.name} glow={currentUser.glow} />
             <div className="hidden md:flex items-center gap-1.5">

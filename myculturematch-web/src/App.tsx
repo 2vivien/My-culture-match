@@ -10,6 +10,8 @@ import { ExploreColumn } from './components/explore/ExploreColumn';
 import { TribuDetailView } from './components/explore/TribuDetailView';
 import { CreateTraditionView } from './components/feed/CreateTraditionView';
 import { SettingsPage } from './pages/SettingsPage';
+import { CreateTribePage } from './pages/CreateTribePage';
+import { LoveColumn } from './components/explore/LoveColumn';
 import { useAppStore } from './stores/useAppStore';
 import { useUIStore } from './stores/useUIStore';
 import { cn } from './lib/utils';
@@ -30,21 +32,32 @@ export default function App() {
         <Sidebar />
 
         <div className="flex-1 flex flex-col h-full overflow-hidden">
-          <Header />
+          {!(activeTab === 'Thunderbird' || activeTab === 'Chat') && <Header />}
 
-          <div className="flex-1 overflow-hidden px-4 md:px-10 pb-4 flex gap-8">
-            {activeTab === 'Feed' || activeTab === 'Home' || activeTab === 'Popular' || activeTab === 'Love' || activeTab === 'New' ? (
+          <div className={cn(
+            "flex-1 overflow-hidden flex",
+            (activeTab === 'Thunderbird' || activeTab === 'Chat') 
+              ? "p-0 m-0" 
+              : "px-4 md:px-10 pb-4 gap-8"
+          )}>
+            {activeTab === 'Feed' || activeTab === 'Home' || activeTab === 'Popular' || activeTab === 'New' ? (
               <MainFeedColumn />
+            ) : activeTab === 'Love' ? (
+              <LoveColumn />
             ) : activeTab === 'Totem' ? (
               <TotemProfile />
             ) : activeTab === 'Thunderbird' || activeTab === 'Chat' ? (
               <ChatPage />
             ) : activeTab === 'Explore' ? (
               <ExploreColumn />
+            ) : activeTab === 'Connexion' ? (
+              <ExploreColumn defaultSubTab="Connexion" />
             ) : activeTab === 'Tribu' ? (
               <TribuDetailView />
             ) : activeTab === 'Create' ? (
               <CreateTraditionView />
+            ) : activeTab === 'CreateTribe' ? (
+              <CreateTribePage />
             ) : activeTab === 'Settings' ? (
               <SettingsPage />
             ) : (
@@ -66,7 +79,7 @@ export default function App() {
               </motion.div>
             )}
 
-            {(activeTab === 'Home' || activeTab === 'Feed' || activeTab === 'Popular' || activeTab === 'Love' || activeTab === 'New') && <RightPanel />}
+            {(activeTab === 'Home' || activeTab === 'Feed' || activeTab === 'Popular' || activeTab === 'New') && <RightPanel />}
           </div>
         </div>
       </div>

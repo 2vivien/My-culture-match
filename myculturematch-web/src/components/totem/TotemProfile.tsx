@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { ThunderbirdIcon } from '@/src/components/ui/ThunderbirdIcon';
 import { useAppStore } from '@/src/stores/useAppStore';
+import { useUIStore } from '@/src/stores/useUIStore';
 import { userService } from '@/src/services/userService';
 import { TotemAvatar } from '@/src/components/ui/TotemAvatar';
 import { useFeed } from '@/src/hooks/useFeed';
@@ -17,6 +18,7 @@ import coverImg from '../../../assets/cover.jpeg';
 
 export const TotemProfile = () => {
   const { selectedTotemUserId, profileActiveTab: activeTab, setProfileActiveTab: setActiveTab, currentUser } = useAppStore();
+  const { setActiveTab: setMainActiveTab } = useUIStore();
   const user = userService.getUserById(selectedTotemUserId);
   const { posts } = useFeed();
   const [connectionState, setConnectionState] = useState<'none' | 'pending' | 'connected'>('none');
@@ -160,7 +162,7 @@ export const TotemProfile = () => {
               </button>
               <button 
                 onClick={() => {
-                  setActiveTab('Thunderbird');
+                  setMainActiveTab('Thunderbird');
                 }}
                 className="w-12 h-12 rounded-xl text-white flex items-center justify-center hover:opacity-90 hover:scale-105 transition-all shadow-md cursor-pointer bg-zinc-900 dark:bg-zinc-800"
                 title="Send Message"

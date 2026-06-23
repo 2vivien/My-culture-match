@@ -11,6 +11,8 @@ interface UIState {
   setActiveTab: (tab: string) => void;
   notificationsCount: number;
   setNotificationsCount: (count: number) => void;
+  showCreateTribeModal: boolean;
+  setShowCreateTribeModal: (show: boolean) => void;
 }
 
 export const useUIStore = create<UIState>((set) => ({
@@ -29,4 +31,6 @@ export const useUIStore = create<UIState>((set) => ({
   }),
   notificationsCount: 9,
   setNotificationsCount: (notificationsCount) => set({ notificationsCount }),
+  showCreateTribeModal: false,
+  setShowCreateTribeModal: (showCreateTribeModal) => set({ showCreateTribeModal }),
 }));

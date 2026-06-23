@@ -1,4 +1,4 @@
-import { Home, LandPlot, Layers, FerrisWheel, Landmark, LucideIcon, Flame } from 'lucide-react';
+import { Home, LandPlot, Layers, FerrisWheel, Landmark, LucideIcon, Flame, Unplug } from 'lucide-react';
 import { useUIStore } from '@/src/stores/useUIStore';
 import { useAppStore } from '@/src/stores/useAppStore';
 import { cn } from '@/src/lib/utils';
@@ -27,7 +27,7 @@ const LayersPlusIcon = (props: any) => (
 );
 
 const iconMap: Record<string, any> = {
-  Home, Popular: LandPlot, Love: Flame, New: LayersPlusIcon, Explore: FerrisWheel, Tribu: Landmark, Totem: GrimTotemIcon, Thunderbird: ThunderbirdIcon,
+  Home, Popular: LandPlot, Love: Flame, New: LayersPlusIcon, Explore: FerrisWheel, Tribu: Landmark, Totem: GrimTotemIcon, Thunderbird: ThunderbirdIcon, Connexion: Unplug,
 };
 
 const navItems = [
@@ -35,6 +35,7 @@ const navItems = [
   { name: 'Popular', icon: 'Popular' },
   { name: 'New', icon: 'New' },
   { name: 'Explore', icon: 'Explore' },
+  { name: 'Connexion', icon: 'Connexion' },
   { name: 'Love', icon: 'Love' },
   { name: 'Tribu', icon: 'Tribu' },
   { name: 'Totem', icon: 'Totem' },

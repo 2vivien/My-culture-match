@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { User, Settings, LogOut, ChevronRight, Moon, Sun, ShieldCheck } from 'lucide-react';
 import { useAppStore } from '@/src/stores/useAppStore';
 import { useUIStore } from '@/src/stores/useUIStore';
+import { TotemAvatar } from '@/src/components/ui/TotemAvatar';
 
 interface UserProfileDropdownProps {
   onClose?: () => void;
@@ -53,10 +54,12 @@ export const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ onClos
           >
             {/* User Details */}
             <div className="flex items-center gap-3 border-b border-app-border dark:border-zinc-850 pb-3.5 select-none">
-              <img
+              <TotemAvatar
                 src={currentUser.avatar}
                 alt={currentUser.name}
-                className="w-12 h-12 rounded-full object-cover border border-app-border"
+                size="md"
+                shape="cloud"
+                glow="none"
               />
               <div className="min-w-0">
                 <h4 className="font-black text-sm text-app-black dark:text-zinc-100 truncate leading-snug">

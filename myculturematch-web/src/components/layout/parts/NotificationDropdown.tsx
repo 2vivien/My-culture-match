@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Bell, MessageCircle, Check, X, ShieldAlert, Heart, Calendar } from 'lucide-react';
 import { useUIStore } from '@/src/stores/useUIStore';
+import { TotemAvatar } from '@/src/components/ui/TotemAvatar';
 
 interface NotificationItem {
   id: string;
@@ -148,10 +149,12 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ hide
             >
               {/* Badge avatar indicator overlay style */}
               <div className="relative shrink-0 select-none">
-                <img
+                <TotemAvatar
                   src={item.user.avatar}
                   alt={item.user.name}
-                  className="w-10 h-10 rounded-full object-cover border border-app-border"
+                  size="sm"
+                  shape="cloud"
+                  glow="none"
                 />
                 <span className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center border border-white dark:border-zinc-950 bg-white dark:bg-zinc-950 shadow-xs">
                   {item.type === 'comment' && (
