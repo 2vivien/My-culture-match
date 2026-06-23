@@ -184,4 +184,23 @@ Ce fichier liste l'état de conformité de chaque page du projet par rapport aux
   - Refactorisation de [NotificationDropdown.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/layout/parts/NotificationDropdown.tsx) à 45 lignes (CONFORME).
 - **Statut final** : **CONFORME**.
 
+---
+
+## 12. CreateTribeModal.tsx (Modal de création de tribu)
+- **Fichier initial** : `myculturematch-web/src/components/explore/CreateTribeModal.tsx` (401 lignes - NON CONFORME)
+- **Actions réalisées** :
+  - Délocalisation de la liste statique des thématiques dans le mock [createTribe.json](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/mocks/createTribe.json).
+  - Création du type [createTribe.ts](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/types/createTribe.ts) et du service [createTribeService.ts](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/services/createTribeService.ts).
+  - Création du hook [useCreateTribe.ts](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/hooks/useCreateTribe.ts) pour centraliser les états d'étapes (wizard).
+  - Découpage en sous-composants modulaires sous `src/components/explore/create-tribe/` :
+    - [CreateTribeHeader.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/explore/create-tribe/CreateTribeHeader.tsx) (37 lignes)
+    - [CreateTribeTopicsStep.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/explore/create-tribe/CreateTribeTopicsStep.tsx) (41 lignes)
+    - [CreateTribeTypeStep.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/explore/create-tribe/CreateTribeTypeStep.tsx) (122 lignes)
+    - [CreateTribeDetailsStep.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/explore/create-tribe/CreateTribeDetailsStep.tsx) (105 lignes)
+    - [CreateTribeSuccessStep.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/explore/create-tribe/CreateTribeSuccessStep.tsx) (23 lignes)
+    - [CreateTribeFooter.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/explore/create-tribe/CreateTribeFooter.tsx) (116 lignes)
+  - Refactorisation de [CreateTribeModal.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/explore/CreateTribeModal.tsx) à 75 lignes (CONFORME).
+- **Statut final** : **CONFORME**.
+
+
 
