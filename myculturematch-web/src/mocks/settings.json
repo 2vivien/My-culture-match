@@ -1,0 +1,8 @@
+{
+  "email": "agueoundev@gmail.com",
+  "gender": "Male",
+  "locationType": "Use approximate location (based on IP)",
+  "googleConnected": true,
+  "appleConnected": false,
+  "twoFactor": false
+}

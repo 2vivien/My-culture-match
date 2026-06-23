@@ -44,7 +44,9 @@ Ce fichier liste l'état de conformité de chaque page du projet par rapport aux
 ## 3. SettingsPage.tsx (Paramètres utilisateur)
 - **Fichier initial** : `myculturematch-web/src/pages/SettingsPage.tsx` (488 lignes - NON CONFORME)
 - **Actions réalisées** : 
-  - Création du hook personnalisé [useSettings.ts](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/hooks/useSettings.ts) (40 lignes).
+  - Délocalisation des valeurs par défaut dans le mock [settings.json](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/mocks/settings.json).
+  - Création du type [settings.ts](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/types/settings.ts) et du service [settingsService.ts](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/services/settingsService.ts).
+  - Création du hook personnalisé [useSettings.ts](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/hooks/useSettings.ts) (80 lignes) pour gérer dynamiquement les changements.
   - Création de composants modulaires sous `src/components/settings/` :
     - [SettingsHeader.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/settings/SettingsHeader.tsx) (11 lignes) — Titre et icône.
     - [SettingsTabs.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/settings/SettingsTabs.tsx) (38 lignes) — Barre d'onglets de navigation.
