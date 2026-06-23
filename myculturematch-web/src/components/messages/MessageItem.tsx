@@ -3,7 +3,6 @@ import { ThunderbirdIcon } from '@/src/components/ui/ThunderbirdIcon';
 import { TotemAvatar } from '@/src/components/ui/TotemAvatar';
 import { Message } from '@/src/types/message';
 import { userService } from '@/src/services/userService';
-import { useAppStore } from '@/src/stores/useAppStore';
 import { useUIStore } from '@/src/stores/useUIStore';
 
 interface MessageItemProps {
@@ -12,13 +11,11 @@ interface MessageItemProps {
 }
 
 export const MessageItem: React.FC<MessageItemProps> = ({ message, onToggleNotification }) => {
-  const { setSelectedTotemUserId } = useAppStore();
   const { setActiveTab } = useUIStore();
   const user = userService.getUserById(message.id);
 
   const handleClick = () => {
-    setSelectedTotemUserId(message.id);
-    setActiveTab('Totem');
+    setActiveTab('Thunderbird');
   };
 
   return (

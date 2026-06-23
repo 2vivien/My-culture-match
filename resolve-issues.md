@@ -264,3 +264,13 @@ Ce fichier liste l'état de conformité de chaque page du projet par rapport aux
   - Retrait du bouton de basculement du profil dans l'en-tête de la discussion (`ActiveChatColumn.tsx`) et nettoyage des imports associés (`SidebarOpen`, `SidebarClose`).
   - La discussion active s'étend désormais sur tout l'espace restant pour un affichage optimal et épuré.
 - **Statut final** : **CONFORME**.
+
+---
+
+## 16. Redirection du clic sur un message du fil d'actualité (MessagesPanel)
+- **Fichiers concernés** :
+  - [MessageItem.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/messages/MessageItem.tsx)
+- **Actions réalisées** :
+  - Correction de l'action au clic sur un message de la boîte de réception du fil d'actualité (MessagesPanel) pour rediriger l'utilisateur vers l'onglet `'Thunderbird'` (inbox/messages) au lieu d'ouvrir le profil totem de l'utilisateur.
+  - Nettoyage des imports de stores inutilisés (`useAppStore`).
+- **Statut final** : **CONFORME**.
