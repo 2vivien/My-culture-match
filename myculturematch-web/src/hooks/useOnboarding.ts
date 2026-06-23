@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAppStore } from '@/src/stores/useAppStore';
-import { generateUsernameSuggestions } from '@/src/services/onboarding.service';
+import { generateUsernameSuggestions, calculateAge } from '@/src/services/onboarding.service';
 
 export interface OnboardingData {
   intention: string;
@@ -51,6 +51,16 @@ export function useOnboarding() {
       setUsernameSuggestions([]);
     }
   }, [formData.name]);
+
+  useEffect(() => {
+    if (formData.birthdate) {
+      const calculatedAge = calculateAge(formData.birthdate);
+      setFormData(prev => {
+        if (prev.age === calculatedAge) return prev;
+        return { ...prev, age: calculatedAge };
+      });
+    }
+  }, [formData.birthdate]);
 
   const updateField = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));

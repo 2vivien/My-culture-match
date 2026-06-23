@@ -42,13 +42,29 @@ Ce fichier liste l'état de conformité de chaque page du projet par rapport aux
 ---
 
 ## 3. SettingsPage.tsx (Paramètres utilisateur)
-- **Fichier actuel** : `myculturematch-web/src/pages/SettingsPage.tsx` (500+ lignes - NON CONFORME)
-- **Problèmes identifiés** :
-  - Fichier trop volumineux.
-  - Contient toute la gestion de l'affichage des sections (Profil, Notifications, Sécurité, etc.) ainsi que les formulaires d'édition correspondants.
-- **Actions requises** :
-  - Découper en sous-sections de paramètres indépendantes sous `src/components/settings/`.
-- **Statut final** : **À FAIRE**.
+- **Fichier initial** : `myculturematch-web/src/pages/SettingsPage.tsx` (488 lignes - NON CONFORME)
+- **Actions réalisées** : 
+  - Création du hook personnalisé [useSettings.ts](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/hooks/useSettings.ts) (40 lignes).
+  - Création de composants modulaires sous `src/components/settings/` :
+    - [SettingsHeader.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/settings/SettingsHeader.tsx) (11 lignes) — Titre et icône.
+    - [SettingsTabs.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/settings/SettingsTabs.tsx) (38 lignes) — Barre d'onglets de navigation.
+    - Sous `src/components/settings/rows/` :
+      - [EmailRow.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/settings/rows/EmailRow.tsx) (49 lignes) — Ligne d'édition de l'email.
+      - [GenderRow.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/settings/rows/GenderRow.tsx) (48 lignes) — Sélection du genre.
+      - [LocationRow.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/settings/rows/LocationRow.tsx) (48 lignes) — Paramètres de localisation.
+      - [ConnectionRow.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/settings/rows/ConnectionRow.tsx) (40 lignes) — Toggles d'intégration Google/Apple.
+      - [TwoFactorRow.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/settings/rows/TwoFactorRow.tsx) (38 lignes) — Interrupteur 2FA.
+      - [ToggleRow.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/settings/rows/ToggleRow.tsx) (35 lignes) — Interrupteurs de paramètres génériques.
+    - Sous `src/components/settings/sections/` :
+      - [AccountGeneral.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/settings/sections/AccountGeneral.tsx) (45 lignes) — Section générale de compte.
+      - [AccountAuth.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/settings/sections/AccountAuth.tsx) (46 lignes) — Section d'authentification tiers et sécurité.
+      - [ProfileSection.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/settings/sections/ProfileSection.tsx) (43 lignes) — Informations de profil public.
+      - [PrivacySection.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/settings/sections/PrivacySection.tsx) (40 lignes) — Paramètres de visibilité.
+      - [PreferencesSection.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/settings/sections/PreferencesSection.tsx) (46 lignes) — Choix de langue et d'affichage.
+      - [NotificationsSection.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/settings/sections/NotificationsSection.tsx) (37 lignes) — Préférences des notifications push.
+      - [EmailSection.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/settings/sections/EmailSection.tsx) (29 lignes) — Préférences d'email.
+  - Refactorisation de [SettingsPage.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/pages/SettingsPage.tsx) à 36 lignes (CONFORME).
+- **Statut final** : **CONFORME** (Design original 100% préservé).
 
 ---
 

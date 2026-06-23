@@ -54,3 +54,16 @@ export function generateUsernameSuggestions(fullName: string): string[] {
   }
   return Array.from(new Set(suggestions)).slice(0, 3);
 }
+
+export function calculateAge(birthdateStr: string): number {
+  if (!birthdateStr) return 0;
+  const today = new Date();
+  const birthDate = new Date(birthdateStr);
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const m = today.getMonth() - birthDate.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
+  }
+  return age;
+}
+
