@@ -2,7 +2,7 @@ import React from 'react';
 import { useConnections } from '@/src/hooks/useConnections';
 import { cn } from '@/src/lib/utils';
 import { motion } from 'framer-motion';
-import { Compass, MousePointerClick, Unplug } from 'lucide-react';
+import { Compass, MousePointerClick, Plug, Unplug } from 'lucide-react';
 
 export const ConnectionsTabs: React.FC = () => {
   const { activeSubTab, setActiveSubTab, suggestionsCount, interestedCount, demandesCount, compagnonsCount } = useConnections();

@@ -1,7 +1,7 @@
 import React from 'react';
 import { ConnectionUser } from '@/src/stores/useConnectionsStore';
 import { TotemAvatar } from '@/src/components/ui/TotemAvatar';
-import { User, MessageCircle, Heart, Users } from 'lucide-react';
+import { User, MessageCircle, MousePointerClick, Unplug } from 'lucide-react';
 
 interface CompanionRowProps {
   user: ConnectionUser;
@@ -22,9 +22,9 @@ export const CompanionRow: React.FC<CompanionRowProps> = ({ user, onMessage, onP
         <div className="min-w-0 flex-1">
           <h4 className="font-extrabold text-sm text-app-black dark:text-zinc-150 truncate leading-tight">{user.name}</h4>
           <div className="flex items-center gap-1.5 text-[10px] text-app-gray dark:text-zinc-400 font-bold mt-1.5">
-            <span className="flex items-center gap-0.5"><Heart className="w-3 h-3 text-app-gray" /> {user.interestedCount}</span>
+            <span className="flex items-center gap-0.5"><MousePointerClick className="w-3.5 h-3.5 text-[#E27D60] shrink-0" /> {user.interestedCount} Interested</span>
             <span>•</span>
-            <span className="flex items-center gap-0.5"><Users className="w-3 h-3 text-app-gray" /> {user.compagnonsCount}</span>
+            <span className="flex items-center gap-0.5"><Unplug className="w-3.5 h-3.5 text-[#E27D60] shrink-0" /> {user.compagnonsCount} Compagnons</span>
           </div>
         </div>
       </div>

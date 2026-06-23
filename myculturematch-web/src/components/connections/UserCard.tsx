@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ConnectionUser } from '@/src/stores/useConnectionsStore';
 import { TotemAvatar } from '@/src/components/ui/TotemAvatar';
-import { MousePointerClick, Unplug, Check, UserPlus } from 'lucide-react';
+import { MousePointerClick, Unplug, Check, Heart, Users } from 'lucide-react';
 import { cn } from '@/src/lib/utils';
 
 interface UserCardProps {
@@ -62,7 +62,7 @@ export const UserCard: React.FC<UserCardProps> = ({ user, onConnect }) => {
           </>
         ) : (
           <>
-            <UserPlus className="w-3.5 h-3.5 text-white" />
+            <Unplug className="w-3.5 h-3.5 text-white" />
             Connect
           </>
         )}

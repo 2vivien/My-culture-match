@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Compass, Users, UserPlus, Images, SquarePlay, Flame, Heart, MessageCircle, Check, Plus, ExternalLink, Search, Play, Landmark, Unplug } from 'lucide-react';
+import { Compass, Users, UserPlus, Images, SquarePlay, Flame, Heart, MessageCircle, Check, Plus, ExternalLink, Search, Play, Landmark, Unplug, Plug } from 'lucide-react';
 import { TotemAvatar } from '@/src/components/ui/TotemAvatar';
 import { Button } from '@/src/components/ui/button';
 import { useUIStore } from '@/src/stores/useUIStore';

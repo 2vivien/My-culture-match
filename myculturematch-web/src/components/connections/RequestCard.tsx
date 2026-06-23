@@ -1,7 +1,7 @@
 import React from 'react';
 import { ConnectionUser } from '@/src/stores/useConnectionsStore';
 import { TotemAvatar } from '@/src/components/ui/TotemAvatar';
-import { Heart, Users, X, Check } from 'lucide-react';
+import { MousePointerClick, Unplug, X, Check } from 'lucide-react';
 
 interface RequestCardProps {
   user: ConnectionUser;
@@ -23,14 +23,14 @@ export const RequestCard: React.FC<RequestCardProps> = ({ user, onAccept, onDecl
         </h4>
         <p className="text-[10px] text-app-gray dark:text-zinc-400 font-bold uppercase tracking-wider mt-1">wants to connect</p>
         
-        {/* Companion & Interests stats using Heart and Users icons */}
+        {/* Companion & Interests stats using MousePointerClick and Unplug icons */}
         <div className="flex flex-col items-center gap-1.5 text-[10px] text-app-gray dark:text-zinc-400 font-bold mt-2.5 mb-2 select-none">
           <div className="flex items-center gap-1.5">
-            <Heart className="w-3.5 h-3.5 text-[#E27D60] fill-[#E27D60]/10 shrink-0" />
+            <MousePointerClick className="w-3.5 h-3.5 text-[#E27D60] shrink-0" />
             <span>{user.interestedCount} Interested</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <Users className="w-3.5 h-3.5 text-[#E27D60] shrink-0" />
+            <Unplug className="w-3.5 h-3.5 text-[#E27D60] shrink-0" />
             <span>{user.compagnonsCount} Compagnons</span>
           </div>
         </div>

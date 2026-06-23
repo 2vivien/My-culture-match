@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
 import { ConnectionUser } from '@/src/stores/useConnectionsStore';
 import { TotemAvatar } from '@/src/components/ui/TotemAvatar';
-import { Heart, Users, Link2, Check } from 'lucide-react';
+import { Heart, Users, Check, MousePointerClick, Unplug } from 'lucide-react';
 import { cn } from '@/src/lib/utils';
 
 interface UserRowProps {
   user: ConnectionUser;
   onConnect: (id: string) => void;
+  isInterested?: boolean;
 }
 
-export const UserRow: React.FC<UserRowProps> = ({ user, onConnect }) => {
+export const UserRow: React.FC<UserRowProps> = ({ user, onConnect, isInterested }) => {
   const isHighMatch = user.matchScore >= 90;
   const [requested, setRequested] = useState(user.isConnected || false);
 
@@ -35,17 +36,19 @@ export const UserRow: React.FC<UserRowProps> = ({ user, onConnect }) => {
             </span>
           </div>
           <div className="flex items-center gap-1.5 text-[10px] text-app-gray dark:text-zinc-400 font-bold mt-1.5">
-            <span className="flex items-center gap-0.5"><Heart className="w-3 h-3 text-app-gray" /> {user.interestedCount}</span>
+            <span className="flex items-center gap-0.5"><MousePointerClick className="w-3.5 h-3.5 text-[#E27D60] shrink-0" /> {user.interestedCount} Interested</span>
             <span>•</span>
-            <span className="flex items-center gap-0.5"><Users className="w-3 h-3 text-app-gray" /> {user.compagnonsCount}</span>
+            <span className="flex items-center gap-0.5"><Unplug className="w-3.5 h-3.5 text-[#E27D60] shrink-0" /> {user.compagnonsCount} Compagnons</span>
           </div>
-          <p className="text-[11px] text-app-gray dark:text-zinc-400 font-medium mt-1 truncate">
-            {user.interests && user.interests.length > 0 ? user.interests.join(' • ') : 'Interested in your profile'}
+          <p className="text-[11px] text-app-gray dark:text-zinc-405 font-medium mt-1 truncate">
+            {isInterested 
+              ? "Cette personne vous porte de l'intérêt" 
+              : (user.interests && user.interests.length > 0 ? user.interests.join(' • ') : 'Interested in your profile')}
           </p>
         </div>
       </div>
       <button onClick={handleConnect} disabled={requested} className={cn("w-10 h-10 shrink-0 rounded-2xl flex items-center justify-center shadow-md cursor-pointer transition-all hover:scale-105 active:scale-95 ml-2.5", requested ? "bg-zinc-100 dark:bg-zinc-850 text-app-gray shadow-none" : "bg-[#E27D60] text-white hover:bg-[#c66b50] shadow-orange-500/10")}>
-        {requested ? <Check className="w-4 h-4 text-green-600 stroke-[3.5]" /> : <Link2 className="w-4 h-4 stroke-[2.5]" />}
+        {requested ? <Check className="w-4 h-4 text-green-600 stroke-[3.5]" /> : <Unplug className="w-4 h-4 text-white stroke-[2.5]" />}
       </button>
     </div>
   );

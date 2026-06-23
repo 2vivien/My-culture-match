@@ -18,6 +18,7 @@ import { cn } from './lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AuthPage } from './pages/AuthPage';
 import { OnboardingPage } from './pages/OnboardingPage';
+import { ConnexionPage } from './pages/ConnexionPage';
 
 export default function App() {
   const { theme, isAuthenticated, isOnboarded } = useAppStore();
@@ -84,6 +85,8 @@ export default function App() {
                   <CreateTraditionView />
                 ) : activeTab === 'Settings' ? (
                   <SettingsPage />
+                ) : activeTab === 'Connexion' || activeTab === 'Connections' ? (
+                  <ConnexionPage />
                 ) : (
                   <motion.div
                     initial={{ opacity: 0, scale: 0.98 }}
