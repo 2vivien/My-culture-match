@@ -10,7 +10,9 @@
     "tribes": ["Fon", "Yoruba", "Adja"],
     "traditionsCount": 18,
     "culturesCount": 32,
-    "tribesCount": 4
+    "tribesCount": 4,
+    "interestedCount": 125,
+    "companionsCount": 48
   },
   "1": {
     "id": "1",
@@ -23,7 +25,9 @@
     "tribes": ["Maori", "Polynesian"],
     "traditionsCount": 31,
     "culturesCount": 52,
-    "tribesCount": 6
+    "tribesCount": 6,
+    "interestedCount": 350,
+    "companionsCount": 82
   },
   "2": {
     "id": "2",
@@ -36,7 +40,9 @@
     "tribes": ["Wolof", "Serer"],
     "traditionsCount": 12,
     "culturesCount": 22,
-    "tribesCount": 3
+    "tribesCount": 3,
+    "interestedCount": 180,
+    "companionsCount": 42
   },
   "3": {
     "id": "3",
@@ -49,7 +55,9 @@
     "tribes": ["Amhara", "Oromo"],
     "traditionsCount": 6,
     "culturesCount": 11,
-    "tribesCount": 2
+    "tribesCount": 2,
+    "interestedCount": 95,
+    "companionsCount": 18
   },
   "4": {
     "id": "4",
@@ -62,7 +70,9 @@
     "tribes": ["Maya", "Zapotec"],
     "traditionsCount": 24,
     "culturesCount": 36,
-    "tribesCount": 5
+    "tribesCount": 5,
+    "interestedCount": 240,
+    "companionsCount": 64
   },
   "user-1": {
     "id": "user-1",
@@ -75,7 +85,9 @@
     "tribes": ["Fon", "Yoruba"],
     "traditionsCount": 18,
     "culturesCount": 32,
-    "tribesCount": 4
+    "tribesCount": 4,
+    "interestedCount": 125,
+    "companionsCount": 48
   },
   "user-2": {
     "id": "user-2",
@@ -88,7 +100,9 @@
     "tribes": ["Yamato", "Ainu"],
     "traditionsCount": 14,
     "culturesCount": 25,
-    "tribesCount": 3
+    "tribesCount": 3,
+    "interestedCount": 190,
+    "companionsCount": 56
   },
   "m1": {
     "id": "m1",
@@ -101,7 +115,9 @@
     "tribes": ["Celts", "Bretons"],
     "traditionsCount": 45,
     "culturesCount": 78,
-    "tribesCount": 8
+    "tribesCount": 8,
+    "interestedCount": 540,
+    "companionsCount": 112
   },
   "m2": {
     "id": "m2",
@@ -114,7 +130,9 @@
     "tribes": ["Bedouins", "Nabataeans"],
     "traditionsCount": 22,
     "culturesCount": 39,
-    "tribesCount": 4
+    "tribesCount": 4,
+    "interestedCount": 210,
+    "companionsCount": 52
   },
   "m3": {
     "id": "m3",
@@ -127,7 +145,9 @@
     "tribes": ["Cherokee", "Navajo"],
     "traditionsCount": 9,
     "culturesCount": 16,
-    "tribesCount": 2
+    "tribesCount": 2,
+    "interestedCount": 105,
+    "companionsCount": 24
   },
   "m4": {
     "id": "m4",
@@ -140,7 +160,9 @@
     "tribes": ["Quechua", "Aymara"],
     "traditionsCount": 15,
     "culturesCount": 27,
-    "tribesCount": 3
+    "tribesCount": 3,
+    "interestedCount": 160,
+    "companionsCount": 38
   },
   "m5": {
     "id": "m5",
@@ -153,7 +175,9 @@
     "tribes": ["Amazigh", "Berbers"],
     "traditionsCount": 28,
     "culturesCount": 49,
-    "tribesCount": 5
+    "tribesCount": 5,
+    "interestedCount": 290,
+    "companionsCount": 68
   },
   "req-1": {
     "id": "req-1",
@@ -166,6 +190,8 @@
     "tribes": ["Tupi-Guarani"],
     "traditionsCount": 8,
     "culturesCount": 14,
-    "tribesCount": 2
+    "tribesCount": 2,
+    "interestedCount": 85,
+    "companionsCount": 15
   }
 }

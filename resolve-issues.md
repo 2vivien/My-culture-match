@@ -87,3 +87,49 @@ Ce fichier liste l'état de conformité de chaque page du projet par rapport aux
 ## 5. ChatPage (Dossier Messagerie)
 - **Fichier principal** : `myculturematch-web/src/pages/ChatPage/index.tsx` (120 lignes - CONFORME)
 - **Statut final** : **CONFORME**.
+
+---
+
+## 6. ExploreColumn.tsx (Onglet Explore)
+- **Fichier initial** : `myculturematch-web/src/components/explore/ExploreColumn.tsx` (785 lignes - NON CONFORME)
+- **Actions réalisées** :
+  - Création du mock [explore.json](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/mocks/explore.json) pour délocaliser les données.
+  - Création du type [explore.ts](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/types/explore.ts) et du hook [useExplore.ts](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/hooks/useExplore.ts).
+  - Création de composants modulaires sous `src/components/explore/` :
+    - [ExploreHeader.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/explore/ExploreHeader.tsx) (33 lignes)
+    - [ExploreTabs.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/explore/ExploreTabs.tsx) (44 lignes)
+    - [ExploreCategories.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/explore/ExploreCategories.tsx) (48 lignes)
+    - [TribeCard.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/explore/TribeCard.tsx) (56 lignes)
+    - [ExploreTribesTab.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/explore/ExploreTribesTab.tsx) (63 lignes)
+    - [ExploreConnectionsTab.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/explore/ExploreConnectionsTab.tsx) (45 lignes)
+    - [ExploreImagesTab.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/explore/ExploreImagesTab.tsx) (53 lignes)
+    - [ExploreVideosTab.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/explore/ExploreVideosTab.tsx) (56 lignes)
+    - [ExploreLightbox.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/explore/ExploreLightbox.tsx) (56 lignes)
+  - Refactorisation de [ExploreColumn.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/explore/ExploreColumn.tsx) à 80 lignes (CONFORME).
+- **Statut final** : **CONFORME**.
+
+---
+
+## 7. LoveColumn.tsx (Matchmaker Love)
+- **Fichier initial** : `myculturematch-web/src/components/explore/LoveColumn.tsx` (568 lignes - NON CONFORME)
+- **Actions réalisées** :
+  - Délocalisation des données dans [love.json](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/mocks/love.json).
+  - Création du type [love.ts](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/types/love.ts) et du service [loveService.ts](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/services/loveService.ts).
+  - Création du hook [useLove.ts](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/hooks/useLove.ts).
+  - Création de composants modulaires de présentation :
+    - [LoveHeader.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/love/LoveHeader.tsx) (42 lignes)
+    - [LoveActiveMatches.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/love/LoveActiveMatches.tsx) (36 lignes)
+    - [LoveCard.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/love/LoveCard.tsx) (112 lignes)
+    - [LoveMatchCelebrate.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/love/LoveMatchCelebrate.tsx) (58 lignes)
+    - [LoveDetailModal.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/explore/LoveDetailModal.tsx) (90 lignes)
+  - Refactorisation de [LoveColumn.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/explore/LoveColumn.tsx) à 110 lignes (CONFORME).
+- **Statut final** : **CONFORME**.
+
+---
+
+## 8. TotemProfile.tsx (Profil Totem)
+- **Fichier initial** : `myculturematch-web/src/components/totem/TotemProfile.tsx` (479 lignes - CONFORME)
+- **Actions réalisées** :
+  - Ajout des statistiques dynamiques des compagnons, intéressés et traditions de l'utilisateur à partir du mock [users.json](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/mocks/users.json).
+  - Correction de l'affichage de l'avatar [TotemAvatar.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/ui/TotemAvatar.tsx) en mode `glow="none"` pour remplir la forme sans bordure ni contour.
+- **Statut final** : **CONFORME**.

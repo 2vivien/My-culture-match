@@ -142,7 +142,7 @@ export const TotemAvatar = ({
             <clipPath id={clipId}>
               <path
                 d={cloudPath}
-                transform="translate(7.5, 7.5) scale(0.85)"
+                transform={glowKey === 'none' ? "translate(0, 0) scale(1)" : "translate(7.5, 7.5) scale(0.85)"}
               />
             </clipPath>
           )}
@@ -252,7 +252,7 @@ export const TotemAvatar = ({
         <div
           style={{
             position: 'absolute',
-            inset: isHexagon ? '13.5%' : isSquare ? '11%' : '9%',
+            inset: glowKey === 'none' ? '0%' : (isHexagon ? '13.5%' : isSquare ? '11%' : '9%'),
             overflow: 'hidden',
             clipPath: isHexagon ? hexClip : undefined,
             borderRadius: isHexagon ? undefined : isSquare ? '16%' : '50%',

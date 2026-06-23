@@ -110,16 +110,16 @@ export const TotemProfile = () => {
           {/* Ligne de statistiques à gauche */}
           <div className="flex justify-center lg:justify-start items-center gap-6 order-2 lg:order-1">
             <div className="flex flex-col items-center">
-              <span className="text-2xl font-black text-[#2e3552] dark:text-white">930</span>
+              <span className="text-2xl font-black text-[#2e3552] dark:text-white">{user.traditionsCount || 0}</span>
               <span className="text-[11px] font-bold text-[#9aa3b8] uppercase tracking-wider">Traditions</span>
             </div>
             <div className="flex flex-col items-center">
-              <span className="text-2xl font-black text-[#2e3552] dark:text-white">82</span>
-              <span className="text-[11px] font-bold text-[#9aa3b8] uppercase tracking-wider">Companions</span>
+              <span className="text-2xl font-black text-[#2e3552] dark:text-white">{user.interestedCount || 0}</span>
+              <span className="text-[11px] font-bold text-[#9aa3b8] uppercase tracking-wider">Interested</span>
             </div>
             <div className="flex flex-col items-center">
-              <span className="text-2xl font-black text-[#2e3552] dark:text-white">5.7K</span>
-              <span className="text-[11px] font-bold text-[#9aa3b8] uppercase tracking-wider">Interested</span>
+              <span className="text-2xl font-black text-[#2e3552] dark:text-white">{user.companionsCount || 0}</span>
+              <span className="text-[11px] font-bold text-[#9aa3b8] uppercase tracking-wider">Companions</span>
             </div>
             {/* Drapeau */}
             <div className="flex flex-col items-center ml-4">
@@ -403,18 +403,18 @@ export const TotemProfile = () => {
                 </p>
                 <div className="border-t border-gray-100 dark:border-zinc-850 pt-4 flex gap-4 text-xs font-bold text-[#9aa3b8] mt-2">
                   <div className="flex flex-col">
-                    <span className="text-[#2e3552] dark:text-white text-sm font-black">930</span>
+                    <span className="text-[#2e3552] dark:text-white text-sm font-black">{user.traditionsCount || 0}</span>
                     <span>Traditions</span>
                   </div>
                   <div className="h-8 w-[1px] bg-gray-100 dark:bg-zinc-850" />
                   <div className="flex flex-col">
-                    <span className="text-[#2e3552] dark:text-white text-sm font-black">82</span>
-                    <span>Companions</span>
+                    <span className="text-[#2e3552] dark:text-white text-sm font-black">{user.interestedCount || 0}</span>
+                    <span>Interested</span>
                   </div>
                   <div className="h-8 w-[1px] bg-gray-100 dark:bg-zinc-850" />
                   <div className="flex flex-col">
-                    <span className="text-[#2e3552] dark:text-white text-sm font-black">5.7K</span>
-                    <span>Interested</span>
+                    <span className="text-[#2e3552] dark:text-white text-sm font-black">{user.companionsCount || 0}</span>
+                    <span>Companions</span>
                   </div>
                 </div>
               </div>

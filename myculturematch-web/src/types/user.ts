@@ -10,6 +10,8 @@ export interface CurrentUser {
   culturesCount: number;
   tribesCount: number;
   location: string;
+  interestedCount?: number;
+  companionsCount?: number;
 }
 
 export type TotemTitle = 'Explorateur' | 'Voyageur' | 'Gardien' | 'Sage' | 'Ancêtre';

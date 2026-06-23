@@ -1,0 +1,212 @@
+{
+  "tribes": [
+    {
+      "id": "t1",
+      "name": "Yamato Heritage Circle",
+      "tag": "yamato",
+      "visitors": "4.6M",
+      "desc": "Connect with practitioners of Shinto rituals, traditional Japanese calligraphy, and festival drumming.",
+      "avatar": "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=150&q=80",
+      "joined": false,
+      "glow": "turquoise"
+    },
+    {
+      "id": "t2",
+      "name": "Quechua Weaver Guild",
+      "tag": "quechua",
+      "visitors": "969K",
+      "desc": "Shared Andean history, complex loom weaving guides, and traditional solar festival celebrations.",
+      "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80",
+      "joined": true,
+      "glow": "violet"
+    },
+    {
+      "id": "t3",
+      "name": "Ainu Totem Folklore",
+      "tag": "ainu",
+      "visitors": "149K",
+      "desc": "Preserving Kamuy folklore, sacred woodcrafts, and nature-inspired dialect songs of Hokkaido.",
+      "avatar": "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=150&q=80",
+      "joined": false,
+      "glow": "amber"
+    },
+    {
+      "id": "t4",
+      "name": "Maori Haka Alliance",
+      "tag": "maori",
+      "visitors": "640K",
+      "desc": "Explore the ancestral origins, powerful chants, and deep spiritual meanings behind the Haka.",
+      "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80",
+      "joined": false,
+      "glow": "emerald"
+    },
+    {
+      "id": "t5",
+      "name": "Norse Runes & Sagas",
+      "tag": "norse",
+      "visitors": "4.1M",
+      "desc": "Discover Edda poetry, Elder Futhark rune scripts, and historical Viking longhouse rituals.",
+      "avatar": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80",
+      "joined": false,
+      "glow": "none"
+    },
+    {
+      "id": "t6",
+      "name": "Benin Voodoo Rhythms",
+      "tag": "voodoo",
+      "visitors": "28K",
+      "desc": "Authentic West African drumming tracks, sacred spiritual ceremonies, and regional heritage history.",
+      "avatar": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80",
+      "joined": false,
+      "glow": "turquoise"
+    }
+  ],
+  "moreTribes": [
+    {
+      "id": "t7",
+      "name": "Celtic Ogham Circles",
+      "tag": "celtic",
+      "visitors": "150K",
+      "desc": "Tree mythology, ancient script carved in stone, and seasonal solstice fire gatherings.",
+      "avatar": "https://images.unsplash.com/photo-1473448912268-2022ce9509d8?auto=format&fit=crop&w=150&q=80",
+      "joined": false,
+      "glow": "amber"
+    },
+    {
+      "id": "t8",
+      "name": "Zulu Warrior Traditions",
+      "tag": "zulu",
+      "visitors": "300K",
+      "desc": "Traditional beadwork language, vibrant tribal dances, and historical accounts of legendary kings.",
+      "avatar": "https://images.unsplash.com/photo-1509099836639-18ba1795216d?auto=format&fit=crop&w=150&q=80",
+      "joined": false,
+      "glow": "emerald"
+    }
+  ],
+  "companions": [
+    {
+      "id": "c1",
+      "name": "Keisuke",
+      "avatar": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80",
+      "matchScore": 98,
+      "level": 21,
+      "glow": "turquoise",
+      "interests": ["Shinto Rituals", "Ancestral Art", "Flute Drums"],
+      "connected": false
+    },
+    {
+      "id": "c2",
+      "name": "Jumana",
+      "avatar": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=100&q=80",
+      "matchScore": 94,
+      "level": 18,
+      "glow": "violet",
+      "interests": ["Quechua Looms", "Andean Tales", "Alpaca Crafts"],
+      "connected": true
+    },
+    {
+      "id": "c3",
+      "name": "Kaelen",
+      "avatar": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80",
+      "matchScore": 89,
+      "level": 12,
+      "glow": "amber",
+      "interests": ["Norse Mythology", "Elder Runes", "Saga Singing"],
+      "connected": false
+    },
+    {
+      "id": "c4",
+      "name": "Nala",
+      "avatar": "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?auto=format&fit=crop&w=100&q=80",
+      "matchScore": 87,
+      "level": 15,
+      "glow": "emerald",
+      "interests": ["Benin Rhythms", "Tribal Dance", "Bead Weaving"],
+      "connected": false
+    }
+  ],
+  "images": [
+    {
+      "id": "i1",
+      "url": "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=500&q=80",
+      "title": "Traditional Temple Shrine Festival",
+      "likes": "12K",
+      "comments": "342",
+      "category": "Rituals & Ceremonies"
+    },
+    {
+      "id": "i2",
+      "url": "https://images.unsplash.com/photo-1566737236500-c8ac43014a67?auto=format&fit=crop&w=500&q=80",
+      "title": "Andean Native Wool Dyeing Process",
+      "likes": "8.4K",
+      "comments": "189",
+      "category": "Weaving & Crafts"
+    },
+    {
+      "id": "i3",
+      "url": "https://images.unsplash.com/photo-1509099836639-18ba1795216d?auto=format&fit=crop&w=500&q=80",
+      "title": "Traditional African Bead Collars",
+      "likes": "15.2K",
+      "comments": "512",
+      "category": "Ancestral Art"
+    },
+    {
+      "id": "i4",
+      "url": "https://images.unsplash.com/photo-1528164344705-47542687000d?auto=format&fit=crop&w=500&q=80",
+      "title": "Japanese Taiko Drumming Ceremony",
+      "likes": "19.8K",
+      "comments": "702",
+      "category": "Rituals & Ceremonies"
+    },
+    {
+      "id": "i5",
+      "url": "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=500&q=80",
+      "title": "Highland Traditional Outfits",
+      "likes": "6.2K",
+      "comments": "98",
+      "category": "Gastronomy"
+    },
+    {
+      "id": "i6",
+      "url": "https://images.unsplash.com/photo-1473448912268-2022ce9509d8?auto=format&fit=crop&w=500&q=80",
+      "title": "Solstice Gatherings in Celtic Forest",
+      "likes": "22K",
+      "comments": "990",
+      "category": "Mythology & Tales"
+    }
+  ],
+  "videos": [
+    {
+      "id": "v1",
+      "thumbnail": "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=500&q=80",
+      "title": "Haka ancestral dance performance live",
+      "duration": "2:45",
+      "plays": "450K",
+      "category": "Rituals & Ceremonies"
+    },
+    {
+      "id": "v2",
+      "thumbnail": "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?auto=format&fit=crop&w=500&q=80",
+      "title": "Andean backstrap loom weaving tutorial",
+      "duration": "5:12",
+      "plays": "120K",
+      "category": "Weaving & Crafts"
+    },
+    {
+      "id": "v3",
+      "thumbnail": "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?auto=format&fit=crop&w=500&q=80",
+      "title": "Shinto festival shrine carry full ritual",
+      "duration": "3:30",
+      "plays": "380K",
+      "category": "Rituals & Ceremonies"
+    },
+    {
+      "id": "v4",
+      "thumbnail": "https://images.unsplash.com/photo-1547153760-18fc86324498?auto=format&fit=crop&w=500&q=80",
+      "title": "Voodoo fire dance ceremony drum track",
+      "duration": "8:45",
+      "plays": "95K",
+      "category": "Mythology & Tales"
+    }
+  ]
+}

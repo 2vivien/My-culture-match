@@ -36,6 +36,8 @@ const defaultUser: CurrentUser = {
   traditionsCount: 18,
   culturesCount: 32,
   tribesCount: 4,
+  interestedCount: 125,
+  companionsCount: 48,
 };
 
 export const useAppStore = create<AppState>()(
