@@ -169,3 +169,19 @@ Ce fichier liste l'état de conformité de chaque page du projet par rapport aux
   - Refactorisation de [CreateTraditionView.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/feed/CreateTraditionView.tsx) à 75 lignes (CONFORME).
 - **Statut final** : **CONFORME**.
 
+---
+
+## 11. NotificationDropdown.tsx (Dropdown de notifications)
+- **Fichier initial** : `myculturematch-web/src/components/layout/parts/NotificationDropdown.tsx` (255 lignes - NON CONFORME)
+- **Actions réalisées** :
+  - Délocalisation des notifications dans le mock [notifications.json](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/mocks/notifications.json).
+  - Création du type [notification.ts](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/types/notification.ts) et du service [notificationService.ts](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/services/notificationService.ts).
+  - Création du hook personnalisé [useNotifications.ts](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/hooks/useNotifications.ts).
+  - Découpage en composants modulaires présentations sous `src/components/layout/parts/` :
+    - [NotificationHeader.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/layout/parts/NotificationHeader.tsx) (37 lignes)
+    - [NotificationItemView.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/layout/parts/NotificationItemView.tsx) (95 lignes)
+    - [NotificationFooter.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/layout/parts/NotificationFooter.tsx) (23 lignes)
+  - Refactorisation de [NotificationDropdown.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/layout/parts/NotificationDropdown.tsx) à 45 lignes (CONFORME).
+- **Statut final** : **CONFORME**.
+
+

@@ -1,0 +1,50 @@
+[
+  {
+    "id": "1",
+    "user": {
+      "name": "AinuScholar",
+      "avatar": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=80&q=80",
+      "action": "commented on your tradition",
+      "target": "Benin Voodoo rhythms study"
+    },
+    "type": "comment",
+    "time": "1h ago",
+    "isUnread": true
+  },
+  {
+    "id": "2",
+    "user": {
+      "name": "YamatoElder",
+      "avatar": "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=80&q=80",
+      "action": "liked your tradition",
+      "target": "Shinto festival restoration project"
+    },
+    "type": "like",
+    "time": "1h ago",
+    "isUnread": true
+  },
+  {
+    "id": "3",
+    "user": {
+      "name": "HakaNavigator",
+      "avatar": "https://images.unsplash.com/photo-1534528741775-53994a59daeb?auto=format&fit=crop&w=80&q=80",
+      "action": "invited you to collaborate on",
+      "target": "Pacific Rhythm Matchmaking"
+    },
+    "type": "invite",
+    "time": "1h ago",
+    "isUnread": true
+  },
+  {
+    "id": "4",
+    "user": {
+      "name": "Luna",
+      "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=80&q=80",
+      "action": "liked your shared image in",
+      "target": "t/AinuTribe"
+    },
+    "type": "like",
+    "time": "1h ago",
+    "isUnread": false
+  }
+]
