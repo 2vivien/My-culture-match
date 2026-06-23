@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Phone, Video, SidebarOpen, SidebarClose, Smile, Paperclip, Mic, Send, ArrowLeft } from 'lucide-react';
+import { Phone, Video, Smile, Paperclip, Mic, Send, ArrowLeft } from 'lucide-react';
 import { Conversation, ChatMessage } from '@/src/types/chat.types';
 import { ChatMessageBubble } from './ChatMessageBubble';
 import { TotemAvatar } from '@/src/components/ui/TotemAvatar';
@@ -9,8 +9,6 @@ interface ActiveChatProps {
   partner: Conversation;
   messages: ChatMessage[];
   onSendMessage: (text: string) => void;
-  isProfileOpen: boolean;
-  onToggleProfile: () => void;
   onBack?: () => void;
 }
 
@@ -18,8 +16,6 @@ export const ActiveChatColumn: React.FC<ActiveChatProps> = ({
   partner,
   messages,
   onSendMessage,
-  isProfileOpen,
-  onToggleProfile,
   onBack,
 }) => {
   const [input, setInput] = useState('');
@@ -88,13 +84,6 @@ export const ActiveChatColumn: React.FC<ActiveChatProps> = ({
           </button>
           <button className="w-9 h-9 border border-app-border dark:border-zinc-800 rounded-full flex items-center justify-center text-app-gray hover:text-app-black hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors cursor-pointer">
             <Video className="w-4 h-4" />
-          </button>
-          <button
-            onClick={onToggleProfile}
-            title={isProfileOpen ? 'Hide Cultural Profile' : 'Show Cultural Profile'}
-            className="w-9 h-9 border border-app-border dark:border-zinc-800 rounded-full flex items-center justify-center text-app-gray hover:text-[#E27D60] hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors cursor-pointer"
-          >
-            {isProfileOpen ? <SidebarClose className="w-4 h-4" /> : <SidebarOpen className="w-4 h-4" />}
           </button>
         </div>
       </div>

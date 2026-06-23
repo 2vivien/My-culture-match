@@ -1,16 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { mockConversations, initialMessages, getAutomatedReply } from '@/src/services/chat.service';
 import { ConversationsListColumn } from '@/src/components/chat/ConversationsListColumn';
 import { ActiveChatColumn } from '@/src/components/chat/ActiveChatColumn';
-import { CulturalProfileColumn } from '@/src/components/chat/CulturalProfileColumn';
 import { ChatMessage } from '@/src/types/chat.types';
 
 export const ChatPage: React.FC = () => {
   const [conversations, setConversations] = useState(mockConversations);
   const [activeId, setActiveId] = useState(mockConversations[0].id);
   const [messagesMap, setMessagesMap] = useState<Record<string, ChatMessage[]>>(initialMessages);
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [mobileView, setMobileView] = useState<'list' | 'chat'>('list');
 
   const activeConversation = conversations.find((c) => c.id === activeId) || conversations[0];
@@ -90,30 +88,9 @@ export const ChatPage: React.FC = () => {
           partner={activeConversation}
           messages={activeMessages}
           onSendMessage={handleSendMessage}
-          isProfileOpen={isProfileOpen}
-          onToggleProfile={() => setIsProfileOpen((p) => !p)}
           onBack={() => setMobileView('list')}
         />
       </div>
-
-      {/* Column 3: Expandable Cultural Profile details */}
-      <AnimatePresence mode="wait">
-        {isProfileOpen && (
-          <motion.div
-            key={activeId}
-            initial={{ opacity: 0, x: 50, scale: 0.95 }}
-            animate={{ opacity: 1, x: 0, scale: 1 }}
-            exit={{ opacity: 0, x: 50, scale: 0.95 }}
-            transition={{ duration: 0.35, ease: 'easeOut' }}
-            className="hidden lg:block h-full shrink-0"
-          >
-            <CulturalProfileColumn
-              partner={activeConversation}
-              onClose={() => setIsProfileOpen(false)}
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 };

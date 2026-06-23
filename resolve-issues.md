@@ -252,12 +252,15 @@ Ce fichier liste l'état de conformité de chaque page du projet par rapport aux
 
 ---
 
-## 15. Modal de Sélection de Tribu et Nettoyage des Messages Thunderbird
+## 15. Modal de Sélection de Tribu et Suppression du Troisième Side (Profil) dans Thunderbird
 - **Fichiers concernés** :
   - [TribuSelector.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/create-tradition/TribuSelector.tsx)
-  - [chat.json](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/mocks/chat.json)
+  - [index.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/pages/ChatPage/index.tsx)
+  - [ActiveChatColumn.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/chat/ActiveChatColumn.tsx)
 - **Actions réalisées** :
   - Remplacement du sélecteur sous forme de menu déroulant (dropdown) dans la création de tradition par une fenêtre modale popup moderne, centrée, avec un arrière-plan flouté semi-transparent.
   - La modale de sélection de tribu affiche désormais de manière lisible les avatars circulaires, les noms de tribu et une coche de sélection avec des animations fluides via `framer-motion`.
-  - Suppression complète du troisième contact ("Halean Storm", Suède) et de son historique de messages dans le mock des conversations Thunderbird (`chat.json`).
+  - Suppression complète du troisième panneau ("third side" / colonne de profil culturel dépliable de droite) sur la page des messages Thunderbird.
+  - Retrait du bouton de basculement du profil dans l'en-tête de la discussion (`ActiveChatColumn.tsx`) et nettoyage des imports associés (`SidebarOpen`, `SidebarClose`).
+  - La discussion active s'étend désormais sur tout l'espace restant pour un affichage optimal et épuré.
 - **Statut final** : **CONFORME**.
