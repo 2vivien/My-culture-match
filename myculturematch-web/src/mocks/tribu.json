@@ -1,0 +1,36 @@
+{
+  "posts": [
+    {
+      "id": "p1",
+      "author": "u/YamatoScholar",
+      "timeAgo": "6 hr. ago",
+      "title": "Day 23 of rebuilding our ancestral Shinto shrine festival using digital sound matching tools",
+      "tagText": "Ancestral Match",
+      "tagColor": "bg-[#E27D60] text-white",
+      "mediaUrl": "https://images.unsplash.com/photo-1528164344705-47542687000d?auto=format&fit=crop&w=800&q=80",
+      "upvotes": 391,
+      "commentsCount": 76
+    },
+    {
+      "id": "p2",
+      "author": "u/HakaNavigator",
+      "timeAgo": "11 days ago",
+      "title": "Comparing drum frequencies between Benin Voodoo rhythms and Shinto festival beats: Why they match perfectly",
+      "tagText": "Rhythm Study",
+      "tagColor": "bg-zinc-700 text-white dark:bg-zinc-650",
+      "upvotes": 285,
+      "commentsCount": 32
+    }
+  ],
+  "rules": [
+    { "number": 1, "title": "Respect Ancestral Heritage", "desc": "No mockery of sacred rites or Shinto rituals." },
+    { "number": 2, "title": "Keep Dialects Authentic", "desc": "Share genuine linguistic accounts." },
+    { "number": 3, "title": "Constructive Matching", "desc": "Promote healthy matches across tribes." },
+    { "number": 4, "title": "No Spam or Self-Promotion", "desc": "Keep the hub educational and heritage-focused." }
+  ],
+  "moderators": [
+    { "name": "u/YamatoElder", "role": "Head Elder", "avatar": "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=50&q=80" },
+    { "name": "u/TotemNavigator", "role": "Synergy Guide", "avatar": "https://images.unsplash.com/photo-1534528741775-53994a59daeb?auto=format&fit=crop&w=50&q=80" },
+    { "name": "u/AinuFolkloreDev", "role": "Inter-Tribe Mod", "avatar": "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=50&q=80" }
+  ]
+}

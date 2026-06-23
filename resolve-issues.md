@@ -133,3 +133,20 @@ Ce fichier liste l'état de conformité de chaque page du projet par rapport aux
   - Ajout des statistiques dynamiques des compagnons, intéressés et traditions de l'utilisateur à partir du mock [users.json](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/mocks/users.json).
   - Correction de l'affichage de l'avatar [TotemAvatar.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/ui/TotemAvatar.tsx) en mode `glow="none"` pour remplir la forme sans bordure ni contour.
 - **Statut final** : **CONFORME**.
+
+---
+
+## 9. TribuDetailView.tsx (Vue Détails Tribu)
+- **Fichier initial** : `myculturematch-web/src/components/explore/TribuDetailView.tsx` (487 lignes - NON CONFORME)
+- **Actions réalisées** :
+  - Délocalisation de toutes les données statiques dans [tribu.json](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/mocks/tribu.json).
+  - Création du type [tribu.ts](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/types/tribu.ts) et du service [tribuService.ts](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/services/tribuService.ts).
+  - Création du hook [useTribu.ts](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/hooks/useTribu.ts) pour centraliser les filtres de tri, upvotes et soumissions de commentaires.
+  - Création de composants modulaires de présentation sous `src/components/tribu/` :
+    - [TribuHeader.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/tribu/TribuHeader.tsx) (78 lignes)
+    - [TribuPostCard.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/tribu/TribuPostCard.tsx) (179 lignes)
+    - [TribuAbout.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/tribu/TribuAbout.tsx) (37 lignes)
+    - [TribuRules.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/tribu/TribuRules.tsx) (38 lignes)
+    - [TribuMods.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/tribu/TribuMods.tsx) (27 lignes)
+  - Refactorisation de [TribuDetailView.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/explore/TribuDetailView.tsx) à 115 lignes (CONFORME).
+- **Statut final** : **CONFORME**.
