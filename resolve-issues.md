@@ -202,5 +202,20 @@ Ce fichier liste l'état de conformité de chaque page du projet par rapport aux
   - Refactorisation de [CreateTribeModal.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/explore/CreateTribeModal.tsx) à 75 lignes (CONFORME).
 - **Statut final** : **CONFORME**.
 
+---
+
+## 13. FiltersModal.tsx (Modal des filtres)
+- **Fichier initial** : `myculturematch-web/src/components/ui/FiltersModal.tsx` (211 lignes - NON CONFORME)
+- **Actions réalisées** :
+  - Découpage du formulaire en sous-composants atomiques sous `src/components/ui/filters/` :
+    - [FiltersHeader.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/ui/filters/FiltersHeader.tsx) (27 lignes)
+    - [FiltersInputs.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/ui/filters/FiltersInputs.tsx) (43 lignes)
+    - [FiltersRadius.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/ui/filters/FiltersRadius.tsx) (37 lignes)
+    - [FiltersAgeRange.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/ui/filters/FiltersAgeRange.tsx) (37 lignes)
+    - [FiltersGender.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/ui/filters/FiltersGender.tsx) (35 lignes)
+  - Refactorisation de [FiltersModal.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/ui/FiltersModal.tsx) à 78 lignes (CONFORME).
+- **Statut final** : **CONFORME**.
+
+
 
 
