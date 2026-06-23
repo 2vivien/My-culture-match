@@ -128,11 +128,24 @@ Ce fichier liste l'état de conformité de chaque page du projet par rapport aux
 ---
 
 ## 8. TotemProfile.tsx (Profil Totem)
-- **Fichier initial** : `myculturematch-web/src/components/totem/TotemProfile.tsx` (479 lignes - CONFORME)
+- **Fichier initial** : `myculturematch-web/src/components/totem/TotemProfile.tsx` (479 lignes - NON CONFORME)
 - **Actions réalisées** :
   - Ajout des statistiques dynamiques des compagnons, intéressés et traditions de l'utilisateur à partir du mock [users.json](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/mocks/users.json).
   - Correction de l'affichage de l'avatar [TotemAvatar.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/ui/TotemAvatar.tsx) en mode `glow="none"` pour remplir la forme sans bordure ni contour.
+  - Création du hook personnalisé [useTotemProfile.ts](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/hooks/useTotemProfile.ts).
+  - Découpage en composants modulaires de présentation sous `src/components/totem/` :
+    - [ProfileHeader.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/totem/ProfileHeader.tsx) (90 lignes)
+    - [ProfileTabs.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/totem/ProfileTabs.tsx) (41 lignes)
+    - Sous-onglets de profil sous `src/components/totem/tabs/` :
+      - [AboutTab.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/totem/tabs/AboutTab.tsx) (60 lignes)
+      - [TraditionsTab.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/totem/tabs/TraditionsTab.tsx) (60 lignes)
+      - [PhotosTab.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/totem/tabs/PhotosTab.tsx) (41 lignes)
+      - [VideosTab.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/totem/tabs/VideosTab.tsx) (35 lignes)
+      - [SavesTab.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/totem/tabs/SavesTab.tsx) (29 lignes)
+      - [PostsTab.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/totem/tabs/PostsTab.tsx) (35 lignes)
+  - Refactorisation de [TotemProfile.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/totem/TotemProfile.tsx) à 90 lignes (CONFORME).
 - **Statut final** : **CONFORME**.
+
 
 ---
 
