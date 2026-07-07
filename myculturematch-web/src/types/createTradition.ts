@@ -11,4 +11,5 @@ export interface TraditionSubmission {
   linkUrl?: string;
   tribeId?: string;
   type: 'Text' | 'Images' | 'Link';
+  tags?: string[];
 }

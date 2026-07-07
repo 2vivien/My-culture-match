@@ -26,7 +26,7 @@ export const TotemProfile: React.FC = () => {
   } = useTotemProfile();
 
   const handleSendMessage = () => {
-    setMainActiveTab('Thunderbird');
+    setMainActiveTab('Sandbox');
   };
 
   const profileTabs = [

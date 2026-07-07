@@ -14,7 +14,7 @@ export const CreateTribeTopicsStep: React.FC<CreateTribeTopicsStepProps> = ({
   onToggleTopic,
 }) => {
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 animate-fade-in">
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-[45vh] overflow-y-auto pr-1 hide-scrollbar">
         {topics.map((topic) => {
           const isSelected = selectedTopics.includes(topic.name);

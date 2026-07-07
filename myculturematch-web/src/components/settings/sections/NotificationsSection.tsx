@@ -20,7 +20,7 @@ export const NotificationsSection: React.FC = () => {
             onToggle={() => setNewMatches(!newMatches)}
           />
           <ToggleRow
-            title="Messages (Thunderbird)"
+            title="Messages (Sandbox)"
             description="When you receive direct messages"
             isActive={messages}
             onToggle={() => setMessages(!messages)}

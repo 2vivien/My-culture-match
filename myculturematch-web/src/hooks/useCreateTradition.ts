@@ -16,6 +16,13 @@ export function useCreateTradition() {
   const [linkUrl, setLinkUrl] = useState('');
   const [mediaPreview, setMediaPreview] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+
+  const toggleTag = (tag: string) => {
+    setSelectedTags((prev) =>
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
+    );
+  };
 
   const [formats, setFormats] = useState<Record<string, boolean>>({
     bold: false,
@@ -74,6 +81,7 @@ export function useCreateTradition() {
       linkUrl: activeSubTab === 'Link' ? linkUrl : undefined,
       tribeId: selectedTribe?.id,
       type: activeSubTab,
+      tags: selectedTags.length > 0 ? selectedTags : undefined,
     };
 
     try {
@@ -107,5 +115,7 @@ export function useCreateTradition() {
     isSubmitting,
     selectTribe,
     handleSubmit,
+    selectedTags,
+    toggleTag,
   };
 }

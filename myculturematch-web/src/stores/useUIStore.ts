@@ -24,7 +24,7 @@ export const useUIStore = create<UIState>((set) => ({
   toggleSidebarCollapse: () => set((s) => ({ isSidebarCollapsed: !s.isSidebarCollapsed })),
   setSearchQuery: (searchQuery) => set({ searchQuery }),
   setActiveTab: (activeTab) => set((state) => {
-    if (activeTab === 'Chat' || activeTab === 'Thunderbird') {
+    if (activeTab === 'Chat' || activeTab === 'Sandbox') {
       return { activeTab, isSidebarCollapsed: true };
     }
     return { activeTab, isSidebarCollapsed: false };

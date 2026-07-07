@@ -1,6 +1,6 @@
 import React from 'react';
 import { Cable, RadioTower, Unplug, Facebook, Twitter, Instagram, Twitch } from 'lucide-react';
-import { ThunderbirdIcon } from '@/src/components/ui/ThunderbirdIcon';
+import { SandboxIcon } from '@/src/components/ui/SandboxIcon';
 import { TotemAvatar } from '@/src/components/ui/TotemAvatar';
 import coverImg from '../../../assets/cover.jpeg';
 
@@ -98,7 +98,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
               className="w-12 h-12 rounded-xl text-white flex items-center justify-center hover:opacity-90 hover:scale-105 transition-all shadow-md cursor-pointer bg-zinc-900 dark:bg-zinc-800"
               title="Send Message"
             >
-              <ThunderbirdIcon className="w-5 h-5 text-white" />
+              <SandboxIcon className="w-5 h-5 text-white" />
             </button>
           </div>
           

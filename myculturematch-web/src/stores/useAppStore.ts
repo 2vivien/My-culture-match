@@ -22,6 +22,7 @@ interface AppState {
   setOnboarded: (onboarded: boolean) => void;
   loginUser: (user: Partial<CurrentUser>) => void;
   logout: () => void;
+  joinTribe: (tribeName: string) => void;
 }
 
 const defaultUser: CurrentUser = {
@@ -46,7 +47,7 @@ export const useAppStore = create<AppState>()(
       theme: 'light',
       locale: 'English',
       feedSort: 'Best',
-      feedCulture: 'Everywhere',
+      feedCulture: 'Toutes les thématiques',
       currentUser: defaultUser,
       selectedTotemUserId: 'user-current',
       profileActiveTab: 'Posts',
@@ -66,6 +67,17 @@ export const useAppStore = create<AppState>()(
         currentUser: { ...state.currentUser, ...user }
       })),
       logout: () => set({ isAuthenticated: false, isOnboarded: false }),
+      joinTribe: (tribeName) => set((s) => ({
+        currentUser: {
+          ...s.currentUser,
+          tribes: s.currentUser.tribes.includes(tribeName)
+            ? s.currentUser.tribes
+            : [...s.currentUser.tribes, tribeName],
+          tribesCount: s.currentUser.tribes.includes(tribeName)
+            ? s.currentUser.tribesCount
+            : s.currentUser.tribesCount + 1
+        }
+      })),
     }),
     { name: 'app-store' }
   )

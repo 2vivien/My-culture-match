@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Bell, Menu, ChevronDown, Plus, SquarePen, Search } from 'lucide-react';
-import { ThunderbirdIcon } from '@/src/components/ui/ThunderbirdIcon';
+import { SandboxIcon } from '@/src/components/ui/SandboxIcon';
 import { SearchBar } from './parts/SearchBar';
 import { useUIStore } from '@/src/stores/useUIStore';
 import { useAppStore } from '@/src/stores/useAppStore';
@@ -36,7 +36,7 @@ export const Header = () => {
 
   return (
     <header className="h-20 md:h-24 px-4 sm:px-6 md:px-10 flex items-center justify-between gap-4 shrink-0 bg-[#FEFEFE]/85 dark:bg-[#0E0E10]/80 backdrop-blur-md sticky top-0 z-40 w-full border-b border-app-border/40 dark:border-zinc-800/40">
-      <button onClick={toggleSidebar} className="md:hidden p-2 bg-white dark:bg-zinc-955 w-10 h-10 rounded-full border border-app-border text-app-gray cursor-pointer flex items-center justify-center shrink-0">
+      <button onClick={toggleSidebar} className="md:hidden p-2 bg-white dark:bg-zinc-900 w-10 h-10 rounded-full border border-app-border dark:border-zinc-800 text-app-gray dark:text-zinc-300 cursor-pointer flex items-center justify-center shrink-0">
         <Menu className="w-5 h-5" />
       </button>
 
@@ -64,11 +64,11 @@ export const Header = () => {
 
         {/* Message Bubble Switcher Shortcut */}
         <button 
-          onClick={() => setActiveTab('Thunderbird')} 
+          onClick={() => setActiveTab('Sandbox')} 
           className="w-10 h-10 md:w-12 md:h-12 bg-white dark:bg-zinc-900 rounded-full shadow-sm border border-app-border dark:border-zinc-800 flex items-center justify-center text-app-gray hover:text-app-black hover:shadow-md transition-all relative cursor-pointer shrink-0"
           title="Messages"
         >
-          <ThunderbirdIcon className="w-4.5 h-4.5 md:w-5 md:h-5 text-app-black dark:text-zinc-350" />
+          <SandboxIcon className="w-4.5 h-4.5 md:w-5 md:h-5 text-app-black dark:text-zinc-350" />
           <span className="absolute -top-1 -right-1.5 min-w-[16px] h-4 px-1 rounded-full flex items-center justify-center bg-[#E27D60] text-[9px] font-black text-white shadow-sm animate-pulse">
             99+
           </span>

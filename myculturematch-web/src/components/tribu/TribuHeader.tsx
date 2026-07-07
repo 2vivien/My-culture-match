@@ -20,7 +20,12 @@ export const TribuHeader: React.FC<TribuHeaderProps> = ({
     <>
       {/* 1. Header Banner Image */}
       <div className="relative h-36 md:h-48 rounded-[24px] overflow-hidden bg-[#E27D60] dark:bg-[#c66b50] mt-4 shadow-sm shrink-0">
-        <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px]" />
+        <img 
+          src="https://images.unsplash.com/photo-1524492412937-b28074a5d7da?auto=format&fit=crop&w=820&h=360&q=80" 
+          alt="Tribe Banner" 
+          className="w-full h-full object-cover" 
+        />
+        <div className="absolute inset-0 bg-black/15 dark:bg-black/35" />
         <div className="absolute inset-0 flex items-center justify-between px-10 select-none pointer-events-none">
           <Landmark className="w-24 h-24 text-white opacity-20 transform -rotate-12" />
           <Compass className="w-20 h-20 text-white opacity-15 transform rotate-45" />

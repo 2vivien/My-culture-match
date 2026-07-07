@@ -13,7 +13,9 @@
     "comments": 48,
     "views": 25000,
     "date": "Today",
-    "createdAt": "2026-06-18T12:00:00Z"
+    "createdAt": "2026-06-18T12:00:00Z",
+    "tribe": { "id": "t-andean", "name": "AndeanTribe" },
+    "tags": ["#machupicchu", "#peru", "#sacred"]
   },
   {
     "id": "post-4",
@@ -29,7 +31,9 @@
     "comments": 32,
     "views": 18200,
     "date": "Yesterday",
-    "createdAt": "2026-06-17T15:00:00Z"
+    "createdAt": "2026-06-17T15:00:00Z",
+    "tribe": { "id": "t-yamato", "name": "YamatoTribe" },
+    "tags": ["#kyoto", "#tea", "#ceremony"]
   },
   {
     "id": "post-1",

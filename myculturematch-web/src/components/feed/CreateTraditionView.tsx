@@ -30,6 +30,8 @@ export const CreateTraditionView: React.FC = () => {
     isSubmitting,
     selectTribe,
     handleSubmit,
+    selectedTags,
+    toggleTag,
   } = useCreateTradition();
 
   return (
@@ -65,6 +67,8 @@ export const CreateTraditionView: React.FC = () => {
             toggleFormat={toggleFormat}
             isSubmitting={isSubmitting}
             onSubmit={handleSubmit}
+            selectedTags={selectedTags}
+            onToggleTag={toggleTag}
           />
         )}
 

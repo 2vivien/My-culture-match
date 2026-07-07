@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from './lib/queryClient';
 import { Sidebar } from './components/layout/Sidebar';
@@ -8,6 +9,7 @@ import { TotemProfile } from './components/totem/TotemProfile';
 import { ChatPage } from './pages/ChatPage';
 import { ExploreColumn } from './components/explore/ExploreColumn';
 import { TribuDetailView } from './components/explore/TribuDetailView';
+import { TribuSettingsView } from './components/explore/TribuSettingsView';
 import { CreateTraditionView } from './components/feed/CreateTraditionView';
 import { SettingsPage } from './pages/SettingsPage';
 import { LoveColumn } from './components/explore/LoveColumn';
@@ -23,6 +25,14 @@ import { ConnexionPage } from './pages/ConnexionPage';
 export default function App() {
   const { theme, isAuthenticated, isOnboarded } = useAppStore();
   const { activeTab } = useUIStore();
+
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [theme]);
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -61,11 +71,11 @@ export default function App() {
             <Sidebar />
 
             <div className="flex-1 flex flex-col h-full overflow-hidden">
-              {!(activeTab === 'Thunderbird' || activeTab === 'Chat') && <Header />}
+              {!(activeTab === 'Sandbox' || activeTab === 'Chat') && <Header />}
 
               <div className={cn(
                 "flex-1 overflow-hidden flex",
-                (activeTab === 'Thunderbird' || activeTab === 'Chat') 
+                (activeTab === 'Sandbox' || activeTab === 'Chat') 
                   ? "p-0 m-0" 
                   : "px-4 md:px-10 pb-4 gap-8"
               )}>
@@ -75,12 +85,14 @@ export default function App() {
                   <LoveColumn />
                 ) : activeTab === 'Totem' ? (
                   <TotemProfile />
-                ) : activeTab === 'Thunderbird' || activeTab === 'Chat' ? (
+                ) : activeTab === 'Sandbox' || activeTab === 'Chat' ? (
                   <ChatPage />
                 ) : activeTab === 'Explore' ? (
                   <ExploreColumn />
                 ) : activeTab === 'Tribu' ? (
                   <TribuDetailView />
+                ) : activeTab === 'TribuSettings' ? (
+                  <TribuSettingsView />
                 ) : activeTab === 'Create' ? (
                   <CreateTraditionView />
                 ) : activeTab === 'Settings' ? (

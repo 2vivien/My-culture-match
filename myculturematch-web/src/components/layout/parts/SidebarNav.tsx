@@ -1,9 +1,9 @@
-import { Home, LandPlot, Layers, FerrisWheel, Landmark, LucideIcon, Flame, Unplug, Plug } from 'lucide-react';
+import { Home, LandPlot, Layers, FerrisWheel, Landmark, LucideIcon, Flame, Unplug, Plug, Settings } from 'lucide-react';
 import { useUIStore } from '@/src/stores/useUIStore';
 import { useAppStore } from '@/src/stores/useAppStore';
 import { cn } from '@/src/lib/utils';
 import { motion } from 'framer-motion';
-import { ThunderbirdIcon } from '@/src/components/ui/ThunderbirdIcon';
+import { SandboxIcon } from '@/src/components/ui/SandboxIcon';
 
 const GrimTotemIcon = (props: any) => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
@@ -27,7 +27,7 @@ const LayersPlusIcon = (props: any) => (
 );
 
 const iconMap: Record<string, any> = {
-  Home, Popular: LandPlot, Love: Flame, New: LayersPlusIcon, Explore: FerrisWheel, Tribu: Landmark, Totem: GrimTotemIcon, Thunderbird: ThunderbirdIcon,
+  Home, Popular: LandPlot, Love: Flame, New: LayersPlusIcon, Explore: FerrisWheel, Tribu: Landmark, Totem: GrimTotemIcon, Sandbox: SandboxIcon,
   Connexion: Unplug,
 };
 
@@ -40,7 +40,7 @@ const navItems = [
   { name: 'Love', icon: 'Love' },
   { name: 'Tribu', icon: 'Tribu' },
   { name: 'Totem', icon: 'Totem' },
-  { name: 'Thunderbird', icon: 'Thunderbird', badge: '+09' },
+  { name: 'Sandbox', icon: 'Sandbox', badge: '+09' },
 ];
 
 export const SidebarNav = () => {
@@ -121,6 +121,36 @@ export const SidebarNav = () => {
                   <span className="w-1 h-1 rounded-full bg-[#E27D60] shrink-0" />
                   t/AinuTribe
                 </button>
+
+                <div className="flex flex-col gap-1 mt-3 border-t border-app-border/40 dark:border-zinc-800 pt-2 w-full">
+                  <span className="text-[9px] uppercase tracking-wider text-app-gray/60 dark:text-zinc-500 font-black mb-1 select-none">Your Own Tribes</span>
+                  <div className="group/item flex items-center justify-between hover:text-[#E27D60] py-1 text-app-black dark:text-zinc-300 select-none">
+                    <button onClick={() => { setActiveTab('Tribu'); if (window.innerWidth < 768 && isSidebarOpen) toggleSidebar(); }} className="flex items-center gap-1.5 cursor-pointer text-left text-app-black dark:text-zinc-300 bg-transparent border-none hover:text-[#E27D60] flex-1 min-w-0 font-bold text-[11px]">
+                      <span className="w-1 h-1 rounded-full bg-zinc-400 dark:bg-zinc-600 shrink-0" />
+                      <span className="truncate">t/MyFonHeritage</span>
+                    </button>
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); setActiveTab('TribuSettings'); }}
+                      className="opacity-0 group-hover/item:opacity-100 hover:text-[#E27D60] p-1 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-all cursor-pointer mr-1 flex items-center justify-center border-none bg-transparent"
+                      title="Tribe Settings"
+                    >
+                      <Settings className="w-3.5 h-3.5 text-app-gray hover:text-[#E27D60] dark:text-zinc-400" />
+                    </button>
+                  </div>
+                  <div className="group/item flex items-center justify-between hover:text-[#E27D60] py-1 text-app-black dark:text-zinc-300 select-none">
+                    <button onClick={() => { setActiveTab('Tribu'); if (window.innerWidth < 768 && isSidebarOpen) toggleSidebar(); }} className="flex items-center gap-1.5 cursor-pointer text-left text-app-black dark:text-zinc-300 bg-transparent border-none hover:text-[#E27D60] flex-1 min-w-0 font-bold text-[11px]">
+                      <span className="w-1 h-1 rounded-full bg-zinc-400 dark:bg-zinc-600 shrink-0" />
+                      <span className="truncate">t/VoodooSecrets</span>
+                    </button>
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); setActiveTab('TribuSettings'); }}
+                      className="opacity-0 group-hover/item:opacity-100 hover:text-[#E27D60] p-1 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-all cursor-pointer mr-1 flex items-center justify-center border-none bg-transparent"
+                      title="Tribe Settings"
+                    >
+                      <Settings className="w-3.5 h-3.5 text-app-gray hover:text-[#E27D60] dark:text-zinc-400" />
+                    </button>
+                  </div>
+                </div>
               </div>
             )}
           </div>

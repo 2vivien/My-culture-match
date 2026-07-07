@@ -15,4 +15,6 @@ export interface Post {
   views: number;
   date: string;
   createdAt: string;
+  tribe?: { id: string; name: string };
+  tags?: string[];
 }

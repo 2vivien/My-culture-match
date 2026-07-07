@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Bold, Italic, Strikethrough, Superscript, Link2, Image as ImageIcon, PlaySquare, 
   List, ListOrdered, Quote, Code, MoreHorizontal 
 } from 'lucide-react';
+import { launchThemes, themeIcons } from '@/src/lib/themes';
 
 interface CreateTraditionTextFormProps {
   title: string;
@@ -13,6 +14,8 @@ interface CreateTraditionTextFormProps {
   toggleFormat: (format: string) => void;
   isSubmitting: boolean;
   onSubmit: () => void;
+  selectedTags: string[];
+  onToggleTag: (tag: string) => void;
 }
 
 export const CreateTraditionTextForm: React.FC<CreateTraditionTextFormProps> = ({
@@ -24,7 +27,11 @@ export const CreateTraditionTextForm: React.FC<CreateTraditionTextFormProps> = (
   toggleFormat,
   isSubmitting,
   onSubmit,
+  selectedTags,
+  onToggleTag,
 }) => {
+  const [showTags, setShowTags] = useState(false);
+
   return (
     <div className="flex flex-col gap-4 animate-fade-in">
       {/* Title Input */}
@@ -42,11 +49,66 @@ export const CreateTraditionTextForm: React.FC<CreateTraditionTextFormProps> = (
         </div>
       </div>
 
-      {/* Tags Button */}
-      <div className="mt-2">
-        <button type="button" className="px-4 py-1.5 rounded-full bg-zinc-100 dark:bg-zinc-900 text-app-gray dark:text-zinc-400 text-xs font-bold hover:bg-zinc-200 dark:hover:bg-zinc-850 transition-colors cursor-pointer w-fit">
-          Add tags
-        </button>
+      {/* Custom Tags input for Post/Tradition */}
+      <div className="mt-2 flex flex-col gap-2 select-none">
+        <label className="text-[10px] font-black uppercase tracking-wider text-app-gray dark:text-zinc-500">
+          Add custom tags (optional)
+        </label>
+        <div className="flex gap-2">
+          <input
+            type="text"
+            id="post-tag-input"
+            placeholder="Type a tag (e.g. #Fon, #Kintsugi, #Ceremony) and click Add"
+            className="flex-1 px-4 py-2.5 text-xs font-semibold rounded-2xl border border-app-border dark:border-zinc-800 bg-transparent text-app-black dark:text-white focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-650 transition-colors placeholder:text-app-gray/60"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                const btn = document.getElementById('add-tag-btn');
+                if (btn) btn.click();
+              }
+            }}
+          />
+          <button
+            type="button"
+            id="add-tag-btn"
+            onClick={() => {
+              const input = document.getElementById('post-tag-input') as HTMLInputElement;
+              if (input && input.value.trim()) {
+                let tag = input.value.trim();
+                if (!tag.startsWith('#')) tag = '#' + tag;
+                if (selectedTags.includes(tag)) {
+                  input.value = '';
+                  return;
+                }
+                if (selectedTags.length >= 4) {
+                  alert('Maximum 4 tags allowed.');
+                  return;
+                }
+                onToggleTag(tag);
+                input.value = '';
+              }
+            }}
+            className="px-4 py-2.5 rounded-2xl bg-app-black dark:bg-white text-white dark:text-app-black font-extrabold text-xs cursor-pointer hover:opacity-90 transition-all flex items-center justify-center border-none"
+          >
+            Add
+          </button>
+        </div>
+
+        {/* Display currently selected tags */}
+        <div className="flex flex-wrap gap-2 mt-1">
+          {selectedTags.map(tag => (
+            <span key={tag} className="px-3 py-1 rounded-full bg-[#E27D60]/10 text-[#E27D60] text-xs font-bold flex items-center gap-1 select-none border border-[#E27D60]/10">
+              <span>{tag}</span>
+              <button 
+                type="button" 
+                onClick={() => onToggleTag(tag)}
+                className="hover:text-red-500 font-extrabold text-[10px] ml-1 cursor-pointer bg-transparent border-none p-0 flex items-center justify-center leading-none"
+              >
+                ✕
+              </button>
+            </span>
+          ))}
+        </div>
       </div>
 
       {/* Editor Area */}

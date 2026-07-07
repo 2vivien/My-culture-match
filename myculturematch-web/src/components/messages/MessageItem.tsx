@@ -1,5 +1,5 @@
 import React from 'react';
-import { ThunderbirdIcon } from '@/src/components/ui/ThunderbirdIcon';
+import { SandboxIcon } from '@/src/components/ui/SandboxIcon';
 import { TotemAvatar } from '@/src/components/ui/TotemAvatar';
 import { Message } from '@/src/types/message';
 import { userService } from '@/src/services/userService';
@@ -15,7 +15,7 @@ export const MessageItem: React.FC<MessageItemProps> = ({ message, onToggleNotif
   const user = userService.getUserById(message.id);
 
   const handleClick = () => {
-    setActiveTab('Thunderbird');
+    setActiveTab('Sandbox');
   };
 
   return (
@@ -32,7 +32,7 @@ export const MessageItem: React.FC<MessageItemProps> = ({ message, onToggleNotif
         </div>
       </div>
       <div className="relative flex items-center justify-center shrink-0 w-8 h-8 mr-1">
-        <ThunderbirdIcon className="w-5 h-5 text-app-black dark:text-zinc-355" />
+        <SandboxIcon className="w-5 h-5 text-app-black dark:text-zinc-355" />
         <span className="absolute -top-1 -right-1.5 min-w-[16px] h-4 px-1 rounded-full flex items-center justify-center bg-[#E27D60] text-[9px] font-black text-white shadow-sm">
           {message.id === 'm1' ? '1' : message.id === 'm2' ? '5' : message.id === 'm3' ? '99+' : '2'}
         </span>

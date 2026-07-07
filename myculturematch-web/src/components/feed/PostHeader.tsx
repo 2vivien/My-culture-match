@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { MoreHorizontal, Bookmark, Share2, BellOff, AlertTriangle, Check } from 'lucide-react';
 import { TotemAvatar } from '@/src/components/ui/TotemAvatar';
 import { Button } from '@/src/components/ui/button';
@@ -11,12 +11,21 @@ import { motion, AnimatePresence } from 'framer-motion';
 interface PostHeaderProps {
   author: PostAuthor;
   date: string;
+  tribe?: { id: string; name: string };
 }
 
-export const PostHeader = ({ author, date }: PostHeaderProps) => {
-  const { setSelectedTotemUserId } = useAppStore();
+export const PostHeader = ({ author, date, tribe }: PostHeaderProps) => {
+  const { setSelectedTotemUserId, currentUser, joinTribe } = useAppStore();
   const { setActiveTab } = useUIStore();
   const user = userService.getUserById(author.id);
+  const isMember = tribe ? currentUser.tribes.includes(tribe.name) : false;
+
+  const handleJoin = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (tribe) {
+      joinTribe(tribe.name);
+    }
+  };
 
   const [isOpen, setIsOpen] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -82,7 +91,27 @@ export const PostHeader = ({ author, date }: PostHeaderProps) => {
           <p className="text-xs text-app-gray">{author.location}</p>
         </div>
       </div>
-      <div className="flex items-center gap-4 text-xs text-app-gray relative" ref={menuRef}>
+      <div className="flex items-center gap-3 text-xs text-app-gray relative" ref={menuRef}>
+        {tribe && (
+          <div className="flex items-center gap-2 border-r border-app-border dark:border-zinc-800 pr-2">
+            <span className="font-extrabold text-[9px] uppercase text-[#E27D60] tracking-wide select-none">
+              t/{tribe.name}
+            </span>
+            {!isMember ? (
+              <button
+                type="button"
+                onClick={handleJoin}
+                className="px-2.5 py-0.5 rounded-full bg-app-black text-white dark:bg-white dark:text-app-black text-[9px] font-black hover:scale-105 active:scale-95 transition-all cursor-pointer border-none outline-none"
+              >
+                Join
+              </button>
+            ) : (
+              <span className="flex items-center text-green-600 dark:text-green-400 font-extrabold text-[9px] gap-0.5 select-none bg-green-50 dark:bg-green-950/30 px-2 py-0.5 rounded-full">
+                <Check className="w-2.5 h-2.5 stroke-[3px]" /> Joined
+              </span>
+            )}
+          </div>
+        )}
         <span>{date}</span>
         
         {/* Toggle standard menu */}

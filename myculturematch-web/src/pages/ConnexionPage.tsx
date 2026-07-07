@@ -15,9 +15,9 @@ export function ConnexionPage() {
   const { setActiveTab } = useUIStore();
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Handle message redirection to Thunderbird chat
+  // Handle message redirection to Sandbox chat
   const handleMessage = (userId: string) => {
-    setActiveTab('Thunderbird');
+    setActiveTab('Sandbox');
   };
 
   // Filter current sub-tab list by search query (case-insensitive name check)

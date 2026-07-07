@@ -1,5 +1,4 @@
 import { cn } from '@/src/lib/utils';
-import { motion } from 'framer-motion';
 
 export interface TotemAvatarProps {
   src?: string;
@@ -35,8 +34,26 @@ const glowStops: Record<string, { stop1: string; stop2: string; stop3: string }>
 };
 
 const hexClip = "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)";
-// Smooth 8-lobed organic flower-cloud SVG path
-const cloudPath = "M93.50,50.00 C93.50,54.99 81.94,57.83 80.03,62.44 C78.12,67.05 84.29,77.23 80.76,80.76 C77.23,84.29 67.05,78.12 62.44,80.03 C57.83,81.94 54.99,93.50 50.00,93.50 C45.01,93.50 42.17,81.94 37.56,80.03 C32.95,78.12 22.77,84.29 19.24,80.76 C15.71,77.23 21.88,67.05 19.97,62.44 C18.06,57.83 6.50,54.99 6.50,50.00 C6.50,45.01 18.06,42.17 19.97,37.56 C21.88,32.95 15.71,22.77 19.24,19.24 C22.77,15.71 32.95,21.88 37.56,19.97 C42.17,18.06 45.01,6.50 50.00,6.50 C54.99,6.50 57.83,18.06 62.44,19.97 C67.05,21.88 77.23,15.71 80.76,19.24 C84.29,22.77 78.12,32.95 80.03,37.56 C81.94,42.17 93.50,45.01 93.50,50.00 Z";
+
+const createLacePath = (centerX = 50, centerY = 50, baseRadius = 45.5, amplitude = 1.6, lobes = 14) => {
+  let path = "";
+  const steps = lobes * 8;
+  for (let i = 0; i <= steps; i++) {
+    const theta = (i / steps) * 2 * Math.PI;
+    const r = baseRadius + amplitude * Math.cos(lobes * theta);
+    const x = centerX + r * Math.cos(theta);
+    const y = centerY + r * Math.sin(theta);
+    if (i === 0) {
+      path += `M ${x.toFixed(2)} ${y.toFixed(2)}`;
+    } else {
+      path += ` L ${x.toFixed(2)} ${y.toFixed(2)}`;
+    }
+  }
+  path += " Z";
+  return path;
+};
+
+const cloudPath = createLacePath();
 
 const nameFlagMap: Record<string, string> = {
   'amal': '🇧🇯',
@@ -95,19 +112,21 @@ export const TotemAvatar = ({
   const isHexagon = shape === 'hexagon';
   const isCloud = shape === 'cloud';
 
+  const glowColors: Record<string, string> = {
+    orange: '#e27d60',
+    red: '#ef4444',
+    blue: '#2563eb',
+    turquoise: '#06b6d4',
+    violet: '#8b5cf6',
+    sunset: '#ff7e5f',
+    citrus: '#a8ff78',
+    none: '#cbd5e1',
+  };
+  const bgHex = glowColors[glowKey] || '#cbd5e1';
+
   return (
-    <motion.div
+    <div
       onClick={onClick}
-      whileHover={{ scale: onClick ? 1.06 : 1, y: isCloud ? -4 : 0 }}
-      animate={isCloud ? { y: [0, -3, 0] } : undefined}
-      transition={
-        isCloud 
-          ? { 
-              y: { repeat: Infinity, duration: 4.5, ease: 'easeInOut' },
-              scale: { duration: 0.2 }
-            } 
-          : { duration: 0.3, ease: 'easeOut' }
-      }
       style={{ width: sizePx, height: sizePx }}
       className={cn(
         'relative select-none shrink-0 group',
@@ -142,7 +161,7 @@ export const TotemAvatar = ({
             <clipPath id={clipId}>
               <path
                 d={cloudPath}
-                transform={glowKey === 'none' ? "translate(0, 0) scale(1)" : "translate(7.5, 7.5) scale(0.85)"}
+                transform="translate(0, 0) scale(1)"
               />
             </clipPath>
           )}
@@ -150,10 +169,10 @@ export const TotemAvatar = ({
 
         {isCloud ? (
           <>
-            {/* Couche 1 : Support plein noir luxury (#111111) */}
+            {/* Couche 1 : Support plein coloré (glow) */}
             <path
               d={cloudPath}
-              fill="currentColor"
+              fill={bgHex}
             />
             {/* Couche 3 : Image clippée (rendu interne SVG pour alignement parfait) */}
             <g clipPath={`url(#${clipId})`}>
@@ -173,8 +192,8 @@ export const TotemAvatar = ({
                     x="50"
                     y="55"
                     textAnchor="middle"
-                    fill="#a1a1aa"
-                    fontSize="16"
+                    fill="#ffffff"
+                    fontSize="18"
                     fontWeight="900"
                     fontFamily="var(--font-sans)"
                   >
@@ -183,15 +202,6 @@ export const TotemAvatar = ({
                 </>
               )}
             </g>
-            {/* Couche 2 : Contour dégradé cloud */}
-            {glowKey !== 'none' && (
-              <path
-                d={cloudPath}
-                fill="none"
-                stroke={`url(#${gradId})`}
-                strokeWidth="3.5"
-              />
-            )}
           </>
         ) : isHexagon ? (
           <>
@@ -320,7 +330,6 @@ export const TotemAvatar = ({
           className="border border-white dark:border-zinc-950 shadow-sm z-10"
         />
       )}
-    </motion.div>
+    </div>
   );
 };
-

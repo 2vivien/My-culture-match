@@ -1,9 +1,12 @@
-import createTribeMock from '@/src/mocks/createTribe.json';
+import { launchThemes, themeIcons } from '@/src/lib/themes';
 import type { TribeTopic, TribeSubmission } from '@/src/types/createTribe';
 
 export const createTribeService = {
   async getTopics(): Promise<TribeTopic[]> {
-    return createTribeMock.topics as TribeTopic[];
+    return launchThemes.map((name) => ({
+      name,
+      icon: themeIcons[name] || '🏷️',
+    }));
   },
 
   async submitTribe(data: TribeSubmission): Promise<{ success: boolean }> {
