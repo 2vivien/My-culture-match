@@ -57,6 +57,9 @@ export function initSocketServer(httpServer: HttpServer, redisClient: Redis): Se
   io.on('connection', async (socket) => {
     const userId: string = socket.data.userId;
 
+    // Room personnelle : permet d'envoyer des events ciblés (notifications, love, messages)
+    socket.join(`user:${userId}`);
+
     await markOnline(userId);
     io?.emit('presence:online', { userId });
 

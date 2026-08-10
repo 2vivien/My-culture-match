@@ -563,3 +563,4 @@ export type NewPost = typeof posts.$inferInsert;
 export type Conversation = typeof conversations.$inferSelect;
 export type Message = typeof messages.$inferSelect;
 export type Notification = typeof notifications.$inferSelect;
+export type Story = typeof stories.$inferSelect;

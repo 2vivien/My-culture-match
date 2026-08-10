@@ -14,6 +14,9 @@ import { tribesModule, tribuModule } from './modules/tribes/tribes.routes';
 import { messagesRoutes } from './modules/messages/messages.routes';
 import { connectionsRoutes } from './modules/connections/connections.routes';
 import { loveRoutes } from './modules/love/love.routes';
+import { notificationsRoutes } from './modules/notifications/notifications.routes';
+import { storiesRoutes } from './modules/stories/stories.routes';
+import { searchRoutes } from './modules/search/search.routes';
 
 export type AppBindings = {
   Variables: {
@@ -43,6 +46,9 @@ export function createApp(): Hono<AppBindings> {
   app.route('/api', messagesRoutes);
   app.route('/api', connectionsRoutes);
   app.route('/api', loveRoutes);
+  app.route('/api', notificationsRoutes);
+  app.route('/api', storiesRoutes);
+  app.route('/api', searchRoutes);
 
   // 404 JSON
   app.notFound((c) =>

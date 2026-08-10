@@ -10,6 +10,7 @@ import { initSocketServer } from './infrastructure/websocket';
 import { logger } from './middleware/logger';
 import { startEmailWorker, closeEmailQueue } from './modules/email/email.queue';
 import { startCountersFlushWorker, closeCountersFlushQueue } from './modules/feed/counters.queue';
+import { startStoriesCleanup, stopStoriesCleanup } from './modules/stories/stories.service';
 
 async function bootstrap() {
   // Préparation des ressources externes au démarrage
@@ -25,6 +26,9 @@ async function bootstrap() {
   // Worker de flush des compteurs (likes/comments/views + visiteurs tribus)
   startCountersFlushWorker();
 
+  // Cron de purge des stories expirées (toutes les heures)
+  startStoriesCleanup();
+
   const app = createApp();
 
   const server = serve({ fetch: app.fetch, port: env.PORT }, (info) => {
@@ -39,6 +43,7 @@ async function bootstrap() {
     logger.info(`Signal ${signal} reçu, arrêt en cours…`);
     server.close(async () => {
       await Promise.allSettled([closeDatabase(), closeRedis(), closeMeilisearch(), closeEmailQueue(), closeCountersFlushQueue()]);
+      stopStoriesCleanup();
       process.exit(0);
     });
     // Filet de sécurité si la fermeture traîne
