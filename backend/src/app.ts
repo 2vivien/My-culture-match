@@ -17,6 +17,9 @@ import { loveRoutes } from './modules/love/love.routes';
 import { notificationsRoutes } from './modules/notifications/notifications.routes';
 import { storiesRoutes } from './modules/stories/stories.routes';
 import { searchRoutes } from './modules/search/search.routes';
+import { feedRoutes } from './modules/feed/feed.routes';
+import { adminRoutes } from './modules/admin/admin.routes';
+import { reportsRoutes } from './modules/reports/reports.routes';
 
 export type AppBindings = {
   Variables: {
@@ -49,6 +52,9 @@ export function createApp(): Hono<AppBindings> {
   app.route('/api', notificationsRoutes);
   app.route('/api', storiesRoutes);
   app.route('/api', searchRoutes);
+  app.route('/api', feedRoutes);
+  app.route('/api', reportsRoutes);
+  app.route('/api/admin', adminRoutes);
 
   // 404 JSON
   app.notFound((c) =>

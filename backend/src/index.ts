@@ -11,6 +11,9 @@ import { logger } from './middleware/logger';
 import { startEmailWorker, closeEmailQueue } from './modules/email/email.queue';
 import { startCountersFlushWorker, closeCountersFlushQueue } from './modules/feed/counters.queue';
 import { startStoriesCleanup, stopStoriesCleanup } from './modules/stories/stories.service';
+import { startModerationWorker, closeModerationQueue } from './modules/moderation/moderation.queue';
+import { startCultureEngineWorker, scheduleNightlyCultureBatch, closeCultureEngineQueue } from './modules/culture-engine/batch.queue';
+import { startCronWorkers, closeCronQueues } from './modules/workers/crons';
 
 async function bootstrap() {
   // Préparation des ressources externes au démarrage
@@ -25,6 +28,20 @@ async function bootstrap() {
 
   // Worker de flush des compteurs (likes/comments/views + visiteurs tribus)
   startCountersFlushWorker();
+
+  // Worker d'auto-modération (scan toxique des posts/comments/stories)
+  startModerationWorker();
+
+  // Worker culture-engine (batch nightly : vecteurs + métriques de santé)
+  startCultureEngineWorker();
+  try {
+    await scheduleNightlyCultureBatch();
+  } catch (err) {
+    logger.warn({ err: { message: String(err) } }, 'batch nightly déjà planifié');
+  }
+
+  // Crons : présence, sessions expirées, suggestions utilisateurs
+  startCronWorkers();
 
   // Cron de purge des stories expirées (toutes les heures)
   startStoriesCleanup();
@@ -42,7 +59,7 @@ async function bootstrap() {
   const shutdown = (signal: string) => {
     logger.info(`Signal ${signal} reçu, arrêt en cours…`);
     server.close(async () => {
-      await Promise.allSettled([closeDatabase(), closeRedis(), closeMeilisearch(), closeEmailQueue(), closeCountersFlushQueue()]);
+      await Promise.allSettled([closeDatabase(), closeRedis(), closeMeilisearch(), closeEmailQueue(), closeCountersFlushQueue(), closeModerationQueue(), closeCultureEngineQueue(), closeCronQueues()]);
       stopStoriesCleanup();
       process.exit(0);
     });

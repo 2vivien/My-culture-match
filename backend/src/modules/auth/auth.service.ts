@@ -17,7 +17,7 @@ function generateUsername(email: string): string {
   return `${base || 'user'}${suffix}`;
 }
 
-function publicUser(user: { id: string; email: string; name: string; username: string; avatar: string | null; emailVerified: boolean }) {
+function publicUser(user: { id: string; email: string; name: string; username: string; avatar: string | null; emailVerified: boolean; role: string; bannedAt: Date | null }) {
   return {
     id: user.id,
     email: user.email,
@@ -25,6 +25,8 @@ function publicUser(user: { id: string; email: string; name: string; username: s
     username: user.username,
     avatar: user.avatar,
     emailVerified: user.emailVerified,
+    role: user.role,
+    bannedAt: user.bannedAt,
   };
 }
 
@@ -33,7 +35,10 @@ async function findUserByEmail(email: string) {
   return user ?? null;
 }
 
-function assertNotLocked(user: { lockedUntil: Date | null }): void {
+function assertNotLocked(user: { lockedUntil: Date | null; bannedAt: Date | null }): void {
+  if (user.bannedAt) {
+    throw AppError.forbidden('Ce compte a été banni pour non-respect des règles.', 'ACCOUNT_BANNED');
+  }
   if (user.lockedUntil && user.lockedUntil.getTime() > Date.now()) {
     const remainingMin = Math.ceil((user.lockedUntil.getTime() - Date.now()) / 60000);
     throw AppError.forbidden(`Compte verrouillé. Réessayez dans ${remainingMin} min.`, 'ACCOUNT_LOCKED');

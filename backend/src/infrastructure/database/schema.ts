@@ -1,4 +1,4 @@
-import { pgEnum, pgTable, text, timestamp, boolean, integer, jsonb, uniqueIndex, index, primaryKey, type AnyPgColumn } from 'drizzle-orm/pg-core';
+import { pgEnum, pgTable, text, timestamp, boolean, integer, jsonb, uniqueIndex, index, primaryKey, doublePrecision, type AnyPgColumn } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 import { generateId } from '../../shared/utils/ids';
 
@@ -63,6 +63,10 @@ export const users = pgTable(
     // ── Onboarding ──
     acceptedTermsAt: timestamp('accepted_terms_at', { withTimezone: true }),
     profileCompleted: boolean('profile_completed').notNull().default(false),
+    // ── Admin & Modération ──
+    role: text('role').notNull().default('user'), // 'user' | 'admin' | 'superadmin'
+    bannedAt: timestamp('banned_at', { withTimezone: true }),
+    banReason: text('ban_reason'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
@@ -502,7 +506,10 @@ export const reports = pgTable(
     targetType: text('target_type').notNull(),
     targetId: text('target_id').notNull(),
     reason: text('reason'),
+    description: text('description'),
     status: reportStatusEnum('status').notNull().default('open'),
+    moderatorId: text('moderator_id').references(() => users.id),
+    resolution: text('resolution'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     resolvedAt: timestamp('resolved_at', { withTimezone: true }),
   },
@@ -527,6 +534,20 @@ export const auditLogs = pgTable(
     index('audit_logs_user_idx').on(t.userId, t.createdAt),
     index('audit_logs_action_idx').on(t.action),
   ],
+);
+
+// ── Health metrics (Culture Engine, auto-évaluation L11) ──
+export const healthMetrics = pgTable(
+  'health_metrics',
+  {
+    id: text('id').primaryKey().$defaultFn(generateId),
+    metric: text('metric').notNull(),
+    value: doublePrecision('value').notNull(),
+    details: jsonb('details').$type<Record<string, unknown>>().notNull().default({}),
+    day: text('day').notNull(), // 'YYYY-MM-DD'
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex('health_metrics_metric_day_idx').on(t.metric, t.day)],
 );
 
 // ── Relations Drizzle ──────────────────────────────────────

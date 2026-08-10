@@ -1,4 +1,4 @@
-import { eq, and, lt, desc } from 'drizzle-orm';
+import { eq, and, lt, desc, inArray } from 'drizzle-orm';
 import { db, schema } from '../../infrastructure/database';
 import { redis } from '../../infrastructure/redis';
 import { AppError } from '../../shared/utils/AppError';
@@ -7,6 +7,7 @@ import { moderatePost, moderateText } from './moderation';
 import { incrementCounter, decrementCounter, getCounterDeltas } from '../feed/counters';
 import { createNotification } from '../notifications/notifications.service';
 import { enqueueFeedFanout, enqueueSearchIndex, enqueuePostEmbedding } from './posts.jobs';
+import { enqueueModerationScan } from '../moderation/moderation.queue';
 import type { CreatePostInput, CreateCommentInput } from './posts.schemas';
 
 const POST_CACHE_TTL = 30 * 60; // 30 min
@@ -91,13 +92,14 @@ export async function createPost(userId: string, input: CreatePostInput): Promis
     })
     .returning();
 
-  // Jobs async : fanout followers, indexation search, embedding post
+  // Jobs async : fanout followers, indexation search, embedding post, scan modération
   if (!post) throw AppError.badRequest('Échec de création du post', 'POST_CREATE_FAILED');
   await enqueueFeedFanout(post.id, userId);
   if (status === 'published') {
     await enqueueSearchIndex(post.id);
   }
   await enqueuePostEmbedding(post.id);
+  await enqueueModerationScan('post', post.id);
 
   return hydratePost(post, userId, await postRelations(post.id, userId));
 }
@@ -145,8 +147,7 @@ async function hydratePost(post: schema.Post, _viewerId: string, rel: { liked: b
 }
 
 /** GET /api/posts/:id — détail (exclut les posts non publiés pour les tiers). */
-export async function getPostById(postId: string, viewerId: string): Promise<HydratedPost> {
-  const cached = await redis.get(postCacheKey(postId));
+export async function getPostById(postId: string, viewerId: string): Promise<HydratedPost> {  const cached = await redis.get(postCacheKey(postId));
   if (cached) {
     const post = JSON.parse(cached) as schema.Post;
     if (post.status !== 'deleted') {
@@ -165,6 +166,27 @@ export async function getPostById(postId: string, viewerId: string): Promise<Hyd
   await redis.set(postCacheKey(postId), JSON.stringify(post), 'EX', POST_CACHE_TTL);
   const rel = await postRelations(postId, viewerId);
   return hydratePost(post, viewerId, rel);
+}
+
+/** Hydratation groupée (feed) : exclut supprimés + flagged hors auteur. */
+export async function getPostsByIds(postIds: string[], viewerId: string): Promise<HydratedPost[]> {
+  if (postIds.length === 0) return [];
+
+  const rows = await db.select().from(schema.posts).where(inArray(schema.posts.id, postIds));
+  const visible = rows.filter((p) => p.status !== 'deleted' && (p.status !== 'flagged' || p.authorId === viewerId));
+  const rank = new Map(rows.map((p, i) => [p.id, i]));
+  const posts = [...visible].sort((a, b) => (rank.get(a.id) ?? 0) - (rank.get(b.id) ?? 0));
+
+  const [likes, saves, votes] = await Promise.all([
+    db.select().from(schema.postLikes).where(and(inArray(schema.postLikes.postId, postIds), eq(schema.postLikes.userId, viewerId))),
+    db.select().from(schema.saves).where(and(inArray(schema.saves.postId, postIds), eq(schema.saves.userId, viewerId))),
+    db.select().from(schema.postVotes).where(and(inArray(schema.postVotes.postId, postIds), eq(schema.postVotes.userId, viewerId))),
+  ]);
+  const likedSet = new Set(likes.map((l) => l.postId));
+  const savedSet = new Set(saves.map((s) => s.postId));
+  const voteMap = new Map(votes.map((v) => [v.postId, v.value]));
+
+  return Promise.all(posts.map((p) => hydratePost(p, viewerId, { liked: likedSet.has(p.id), saved: savedSet.has(p.id), vote: voteMap.get(p.id) ?? 0 })));
 }
 
 /** POST /api/posts/:id/like — toggle. */
@@ -220,6 +242,7 @@ export async function addComment(userId: string, postId: string, input: CreateCo
 
   await incrementCounter(postId, 'comments');
   if (!comment) throw AppError.badRequest('Échec de création du commentaire', 'COMMENT_CREATE_FAILED');
+  await enqueueModerationScan('comment', comment.id);
   await createNotification({
     userId: post.authorId,
     actorId: userId,

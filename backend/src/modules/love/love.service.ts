@@ -5,6 +5,7 @@ import { AppError } from '../../shared/utils/AppError';
 import { createNotification } from '../notifications/notifications.service';
 import { emitToUser } from '../../infrastructure/websocket';
 import { createConversationForUsers } from '../messages/messages.service';
+import { compatLove } from '../culture-engine/scoring';
 
 const CANDIDATES_TTL = 60 * 60; // 1h
 const PASS_TTL = 30 * 24 * 60 * 60; // 30j
@@ -33,21 +34,23 @@ function computeAge(birthdate: Date | null): number | null {
   return Math.floor(diff / (365.25 * 24 * 60 * 60 * 1000));
 }
 
-/** Extraction du score de compatibilité (valeurs + langues + culture). */
-function compatScore(a: { values?: string[] | null; languages?: string[] | null; ethnicity?: string | null }, b: { values?: string[] | null; languages?: string[] | null; ethnicity?: string | null }): number {
-  const aValues = new Set(a.values ?? []);
-  const bValues = new Set(b.values ?? []);
-  const shared = [...aValues].filter((v) => bValues.has(v)).length;
-  const total = new Set([...aValues, ...bValues]).size;
-  let score = total > 0 ? (shared / total) * 50 : 0;
-
-  if ((a.languages?.length ?? 0) > 0 && (b.languages?.length ?? 0) > 0) {
-    const langOverlap = (a.languages ?? []).filter((l) => (b.languages ?? []).includes(l)).length;
-    score += (langOverlap / Math.max((a.languages ?? []).length, (b.languages ?? []).length)) * 30;
-  }
-  if (a.ethnicity && b.ethnicity && a.ethnicity === b.ethnicity) score += 20;
-
-  return Math.round(score);
+function toUserFeatures(row: {
+  values: string[] | null;
+  languages: string[] | null;
+  ethnicity: string | null;
+  country: string | null;
+  region: string | null;
+  interests?: string[];
+}) {
+  return {
+    id: '',
+    values: row.values,
+    languages: row.languages,
+    ethnicity: row.ethnicity,
+    country: row.country,
+    region: row.region,
+    interests: row.interests ?? row.values ?? [],
+  };
 }
 
 async function blockedIds(userId: string): Promise<string[]> {
@@ -96,6 +99,7 @@ export async function getLoveCandidates(userId: string): Promise<{ candidates: L
       bio: schema.users.bio,
       location: schema.users.location,
       country: schema.users.country,
+      region: schema.users.region,
       birthdate: schema.users.birthdate,
       profileCompleted: schema.users.profileCompleted,
       values: schema.users.values,
@@ -123,7 +127,7 @@ export async function getLoveCandidates(userId: string): Promise<{ candidates: L
     location: c.location,
     country: c.country,
     age: computeAge(c.birthdate),
-    matchScore: compatScore(me, c),
+    matchScore: compatLove(toUserFeatures(me), toUserFeatures(c)),
     sharedValues: (c.values ?? []).filter((v) => (me.values ?? []).includes(v)),
   }));
 
@@ -151,8 +155,8 @@ export async function swipe(userId: string, candidateId: string, action: 'like' 
     throw AppError.badRequest('Profil inéligible', 'CANDIDATE_NOT_ELIGIBLE');
   }
 
-  const [me] = await db.select({ values: schema.users.values, languages: schema.users.languages, ethnicity: schema.users.ethnicity }).from(schema.users).where(eq(schema.users.id, userId)).limit(1);
-  const score = me ? compatScore(me, candidate) : 0;
+  const [me] = await db.select({ values: schema.users.values, languages: schema.users.languages, ethnicity: schema.users.ethnicity, country: schema.users.country, region: schema.users.region }).from(schema.users).where(eq(schema.users.id, userId)).limit(1);
+  const score = me ? compatLove(toUserFeatures(me), toUserFeatures(candidate)) : 0;
 
   const existing = await db
     .select()

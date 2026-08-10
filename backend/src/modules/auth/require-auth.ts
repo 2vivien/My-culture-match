@@ -30,6 +30,10 @@ export async function requireAuth(c: Context, next: Next) {
   const session = await getSession(token);
   if (!session) throw AppError.unauthorized('Session invalide ou expirée');
 
+  if (session.user.bannedAt) {
+    throw AppError.forbidden('Ce compte a été banni pour non-respect des règles.', 'ACCOUNT_BANNED');
+  }
+
   c.set('auth', { userId: session.user.id, email: session.user.email });
   await next();
 }

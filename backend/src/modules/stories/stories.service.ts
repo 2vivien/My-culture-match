@@ -3,6 +3,7 @@ import { db, schema } from '../../infrastructure/database';
 import { redis } from '../../infrastructure/redis';
 import { AppError } from '../../shared/utils/AppError';
 import { logger } from '../../middleware/logger';
+import { enqueueModerationScan } from '../moderation/moderation.queue';
 
 const STORY_TTL_MS = 24 * 60 * 60 * 1000; // 24h
 const viewedKey = (storyId: string) => `stories:viewed:${storyId}`;
@@ -62,6 +63,7 @@ export async function createStory(
     })
     .returning();
   if (!row) throw AppError.badRequest('Échec de création de la story', 'STORY_CREATE_FAILED');
+  await enqueueModerationScan('story', row.id);
 
   const [author] = await db.select({ name: schema.users.name, avatar: schema.users.avatar }).from(schema.users).where(eq(schema.users.id, userId)).limit(1);
   return toDto(row, true, false, author?.name ?? '', author?.avatar ?? null);

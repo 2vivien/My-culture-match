@@ -1,4 +1,4 @@
-import { and, count, desc, eq, gte, lt } from 'drizzle-orm';
+import { and, count, desc, eq, gte, isNull, lt } from 'drizzle-orm';
 import { db, schema } from '../../infrastructure/database';
 import { redis } from '../../infrastructure/redis';
 import { AppError } from '../../shared/utils/AppError';
@@ -56,7 +56,7 @@ export interface NotificationDto {
  *  - émission temps réel WS `notification:new`
  */
 export async function createNotification(input: CreateNotificationInput): Promise<void> {
-  if (!input.actorId || input.actorId === input.userId) return;
+  if (input.actorId && input.actorId === input.userId) return;
 
   // Déduplication : même destinataire + acteur + type + cible dans l'heure → skip
   const recent = await db
@@ -65,7 +65,7 @@ export async function createNotification(input: CreateNotificationInput): Promis
     .where(
       and(
         eq(schema.notifications.userId, input.userId),
-        eq(schema.notifications.actorId, input.actorId),
+        input.actorId ? eq(schema.notifications.actorId, input.actorId) : isNull(schema.notifications.actorId),
         eq(schema.notifications.type, input.type),
         input.target ? eq(schema.notifications.target, input.target) : undefined,
         gte(schema.notifications.createdAt, new Date(Date.now() - DEDUP_WINDOW_MS)),

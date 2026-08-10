@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { SignJWT, jwtVerify } from 'jose';
 import { db, schema } from '../../infrastructure/database';
 import { redis } from '../../infrastructure/redis';
@@ -33,11 +33,11 @@ export async function createSession(userId: string, meta?: { ip?: string; userAg
 
   await redis.set(sessionKey(jti), JSON.stringify({ userId, jti }), 'EX', SESSION_TTL_SECONDS);
 
-  // Backup en base (table user_sessions)
+  // Backup en base (table user_sessions) : hash du token (jamais le JWT brut)
   await db.insert(schema.sessions).values({
     id: jti,
     userId,
-    token: token.slice(0, 64),
+    token: createHash('sha256').update(token).digest('hex'),
     expiresAt: new Date(Date.now() + SESSION_TTL_SECONDS * 1000),
     ipAddress: meta?.ip,
     userAgent: meta?.userAgent,
