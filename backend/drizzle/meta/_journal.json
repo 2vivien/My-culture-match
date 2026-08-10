@@ -22,6 +22,27 @@
       "when": 1786355062341,
       "tag": "0002_jittery_alex_wilder",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1786357281472,
+      "tag": "0003_purple_sabretooth",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1786358614374,
+      "tag": "0004_broad_rage",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1786386394190,
+      "tag": "0005_heavy_randall_flagg",
+      "breakpoints": true
     }
   ]
 }

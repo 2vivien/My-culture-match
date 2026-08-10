@@ -1,12 +1,15 @@
+import type { Server as HttpServer } from 'node:http';
 import { serve } from '@hono/node-server';
 import { env } from './config/env';
 import { createApp } from './app';
 import { closeDatabase } from './infrastructure/database';
-import { closeRedis } from './infrastructure/redis';
+import { closeRedis, redis } from './infrastructure/redis';
 import { closeMeilisearch } from './infrastructure/meilisearch';
 import { ensureBucket } from './infrastructure/minio';
+import { initSocketServer } from './infrastructure/websocket';
 import { logger } from './middleware/logger';
 import { startEmailWorker, closeEmailQueue } from './modules/email/email.queue';
+import { startCountersFlushWorker, closeCountersFlushQueue } from './modules/feed/counters.queue';
 
 async function bootstrap() {
   // Préparation des ressources externes au démarrage
@@ -19,17 +22,23 @@ async function bootstrap() {
   // Worker d'emails (BullMQ)
   startEmailWorker();
 
+  // Worker de flush des compteurs (likes/comments/views + visiteurs tribus)
+  startCountersFlushWorker();
+
   const app = createApp();
 
   const server = serve({ fetch: app.fetch, port: env.PORT }, (info) => {
     logger.info(`API prête sur http://localhost:${info.port} (${env.NODE_ENV})`);
   });
 
+  // Socket.io (messagerie temps réel) sur le même serveur HTTP
+  initSocketServer(server as HttpServer, redis);
+
   // Shutdown gracieux : arrête les connexions avant de quitter
   const shutdown = (signal: string) => {
     logger.info(`Signal ${signal} reçu, arrêt en cours…`);
     server.close(async () => {
-      await Promise.allSettled([closeDatabase(), closeRedis(), closeMeilisearch(), closeEmailQueue()]);
+      await Promise.allSettled([closeDatabase(), closeRedis(), closeMeilisearch(), closeEmailQueue(), closeCountersFlushQueue()]);
       process.exit(0);
     });
     // Filet de sécurité si la fermeture traîne

@@ -1,4 +1,4 @@
-import { pgEnum, pgTable, text, timestamp, boolean, integer, jsonb, uniqueIndex, index, primaryKey } from 'drizzle-orm/pg-core';
+import { pgEnum, pgTable, text, timestamp, boolean, integer, jsonb, uniqueIndex, index, primaryKey, type AnyPgColumn } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 import { generateId } from '../../shared/utils/ids';
 
@@ -12,6 +12,7 @@ export const tribeRoleEnum = pgEnum('tribe_role', ['member', 'moderator', 'owner
 export const storyTypeEnum = pgEnum('story_type', ['image', 'video']);
 export const messageTypeEnum = pgEnum('message_type', ['text', 'image', 'voice', 'file']);
 export const reportStatusEnum = pgEnum('report_status', ['open', 'reviewed', 'dismissed', 'actioned']);
+export const postStatusEnum = pgEnum('post_status', ['published', 'flagged', 'deleted']);
 
 // ── Users ──────────────────────────────────────────────────
 export const users = pgTable(
@@ -118,6 +119,14 @@ export const userProfileVectors = pgTable('user_profile_vectors', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
+export const postProfileVectors = pgTable('post_profile_vectors', {
+  postId: text('post_id')
+    .primaryKey()
+    .references(() => posts.id, { onDelete: 'cascade' }),
+  vector: jsonb('vector').$type<Record<string, number>>().notNull().default({}),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
 export const userSettings = pgTable('user_settings', {
   userId: text('user_id')
     .primaryKey()
@@ -185,7 +194,11 @@ export const tribes = pgTable(
     memberCount: integer('member_count').notNull().default(0),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [index('tribes_topic_idx').on(t.topic)],
+  (t) => [
+    index('tribes_topic_idx').on(t.topic),
+    uniqueIndex('tribes_name_unique_idx').on(t.name),
+    uniqueIndex('tribes_tag_unique_idx').on(t.tag),
+  ],
 );
 
 export const tribeMembers = pgTable(
@@ -241,9 +254,13 @@ export const posts = pgTable(
     text: text('text'),
     body: text('body'),
     image: text('image'),
-    mediaUrl: text('media_url'),
+    mediaUrls: jsonb('media_url').$type<string[]>().notNull().default([]),
     linkUrl: text('link_url'),
     tags: jsonb('tags').$type<string[]>().notNull().default([]),
+    status: postStatusEnum('status').notNull().default('published'),
+    score: integer('score').notNull().default(0),
+    pinned: boolean('pinned').notNull().default(false),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
     likes: integer('likes').notNull().default(0),
     comments: integer('comments').notNull().default(0),
     views: integer('views').notNull().default(0),
@@ -256,7 +273,24 @@ export const posts = pgTable(
     index('posts_author_idx').on(t.authorId),
     index('posts_tribe_idx').on(t.tribeId),
     index('posts_created_idx').on(t.createdAt),
+    index('posts_status_idx').on(t.status),
   ],
+);
+
+export const postVotes = pgTable(
+  'post_votes',
+  {
+    postId: text('post_id')
+      .notNull()
+      .references(() => posts.id, { onDelete: 'cascade' }),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    value: integer('value').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.postId, t.userId] })],
 );
 
 export const postLikes = pgTable(
@@ -283,7 +317,9 @@ export const comments = pgTable(
     userId: text('user_id')
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
+    parentId: text('parent_id').references((): AnyPgColumn => comments.id, { onDelete: 'cascade' }),
     text: text('text').notNull(),
+    status: postStatusEnum('status').notNull().default('published'),
     likes: integer('likes').notNull().default(0),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },

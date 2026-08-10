@@ -9,6 +9,11 @@ import { onboardingModule } from './modules/onboarding/onboarding.routes';
 import { usersModule } from './modules/users/users.routes';
 import { settingsModule } from './modules/settings/settings.routes';
 import { uploadsModule } from './modules/uploads/uploads.routes';
+import { postsModule } from './modules/posts/posts.routes';
+import { tribesModule, tribuModule } from './modules/tribes/tribes.routes';
+import { messagesRoutes } from './modules/messages/messages.routes';
+import { connectionsRoutes } from './modules/connections/connections.routes';
+import { loveRoutes } from './modules/love/love.routes';
 
 export type AppBindings = {
   Variables: {
@@ -32,6 +37,12 @@ export function createApp(): Hono<AppBindings> {
   app.route('/api/users', usersModule);
   app.route('/api/settings', settingsModule);
   app.route('/api/uploads', uploadsModule);
+  app.route('/api/posts', postsModule);
+  app.route('/api/tribes', tribesModule);
+  app.route('/api/tribu', tribuModule);
+  app.route('/api', messagesRoutes);
+  app.route('/api', connectionsRoutes);
+  app.route('/api', loveRoutes);
 
   // 404 JSON
   app.notFound((c) =>
