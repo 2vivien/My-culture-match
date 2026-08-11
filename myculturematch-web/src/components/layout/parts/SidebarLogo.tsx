@@ -2,8 +2,8 @@ import logoMyCultureMatch from '@/assets/logo-myculturematch.png';
 import { useUIStore } from '@/src/stores/useUIStore';
 
 export const SidebarLogo = () => {
-  const { activeTab, isSidebarCollapsed } = useUIStore();
-  const isCollapsed = isSidebarCollapsed || activeTab === 'Chat' || activeTab === 'Sandbox';
+  const { isSidebarCollapsed } = useUIStore();
+  const isCollapsed = isSidebarCollapsed;
 
   return (
     <div className={`flex select-none mb-8 items-center px-4 ${isCollapsed ? 'justify-center' : 'justify-start gap-3'}`}>

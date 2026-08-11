@@ -8,6 +8,7 @@ import { incrementCounter, decrementCounter, getCounterDeltas } from '../feed/co
 import { createNotification } from '../notifications/notifications.service';
 import { enqueueFeedFanout, enqueueSearchIndex, enqueuePostEmbedding } from './posts.jobs';
 import { enqueueModerationScan } from '../moderation/moderation.queue';
+import { postsCreatedTotal } from '../../infrastructure/monitoring/metrics';
 import type { CreatePostInput, CreateCommentInput } from './posts.schemas';
 
 const POST_CACHE_TTL = 30 * 60; // 30 min
@@ -100,6 +101,7 @@ export async function createPost(userId: string, input: CreatePostInput): Promis
   }
   await enqueuePostEmbedding(post.id);
   await enqueueModerationScan('post', post.id);
+  postsCreatedTotal.inc();
 
   return hydratePost(post, userId, await postRelations(post.id, userId));
 }

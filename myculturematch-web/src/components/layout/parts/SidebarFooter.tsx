@@ -48,7 +48,7 @@ export const SidebarFooter = () => {
             <div className="flex items-center bg-gray-100 dark:bg-zinc-800 rounded-full p-1">
               <button 
                 onClick={() => theme !== 'light' && toggleTheme()} 
-                className={cn("p-1.5 rounded-full transition-colors", theme === 'light' ? "bg-white text-app-black shadow-sm" : "text-app-gray hover:text-app-black dark:hover:text-white")}
+                className={cn("p-1.5 rounded-full transition-colors", theme === 'light' ? "bg-white text-app-black dark:text-zinc-100 shadow-sm" : "text-app-gray hover:text-app-black dark:hover:text-white")}
               >
                 <Sun className="w-4 h-4" />
               </button>

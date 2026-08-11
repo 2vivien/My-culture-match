@@ -11,7 +11,7 @@ export const NotificationHeader: React.FC<NotificationHeaderProps> = ({
   setFilter,
 }) => {
   return (
-    <div className="flex items-center justify-between pb-3 border-b border-app-border dark:border-zinc-850">
+    <div className="flex items-center justify-between pb-3 border-b border-app-border dark:border-zinc-800">
       <h3 className="font-black text-sm text-app-black dark:text-zinc-100 flex items-center gap-1.5">
         <Bell className="w-4 h-4 text-[#6c63fc] dark:text-[#2dd9d9] animate-pulse" />
         Notifications

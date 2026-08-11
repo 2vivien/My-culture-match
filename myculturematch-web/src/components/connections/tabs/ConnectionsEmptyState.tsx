@@ -19,7 +19,7 @@ export const ConnectionsEmptyState: React.FC<ConnectionsEmptyStateProps> = ({
       exit={{ opacity: 0, scale: 0.95 }}
       className="flex flex-col items-center justify-center py-16 text-center"
     >
-      <div className="w-16 h-16 bg-zinc-50 dark:bg-zinc-900 rounded-2xl flex items-center justify-center border border-zinc-100 dark:border-zinc-850 text-zinc-400 mb-4">
+      <div className="w-16 h-16 bg-zinc-50 dark:bg-zinc-900 rounded-2xl flex items-center justify-center border border-zinc-100 dark:border-zinc-800 text-zinc-400 mb-4">
         <UserX className="w-7 h-7" />
       </div>
       <h4 className="font-extrabold text-sm text-zinc-900 dark:text-white">Aucun profil trouvé</h4>

@@ -15,12 +15,12 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         className={cn(
           'inline-flex items-center justify-center font-medium rounded-full cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 select-none',
           {
-            'bg-app-black text-white hover:bg-zinc-800 shadow-sm': variant === 'primary',
-            'bg-[#FCFCFC] border border-app-border text-app-black hover:bg-white': variant === 'secondary',
-            'border border-app-border bg-white text-app-black hover:bg-[#FCFCFC]': variant === 'outline',
-            'hover:bg-[#FCFCFC] hover:text-app-black text-app-gray': variant === 'ghost',
+            'bg-app-black text-white hover:bg-zinc-800 shadow-sm dark:bg-white dark:text-app-black dark:hover:bg-zinc-200': variant === 'primary',
+            'bg-[#FCFCFC] dark:bg-zinc-800 border border-app-border text-app-black dark:text-zinc-100 hover:bg-white dark:hover:bg-zinc-700': variant === 'secondary',
+            'border border-app-border bg-white dark:bg-zinc-900 text-app-black dark:text-zinc-100 hover:bg-[#FCFCFC] dark:hover:bg-zinc-800': variant === 'outline',
+            'hover:bg-[#FCFCFC] dark:hover:bg-zinc-800 hover:text-app-black dark:hover:text-white text-app-gray': variant === 'ghost',
             'bg-red-500 text-white hover:bg-red-600': variant === 'danger',
-            'bg-purple-50 text-purple-600 hover:bg-purple-100': variant === 'purple',
+            'bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 hover:bg-purple-100 dark:hover:bg-purple-900/40 border border-transparent dark:border-purple-900': variant === 'purple',
           },
           {
             'px-4 py-1.5 text-xs': size === 'sm',

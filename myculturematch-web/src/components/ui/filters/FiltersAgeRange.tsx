@@ -28,7 +28,7 @@ export const FiltersAgeRange: React.FC<FiltersAgeRangeProps> = ({
           onChange={(e) =>
             setAgeRange([parseInt(e.target.value), ageRange[1]])
           }
-          className="w-full h-1 bg-zinc-250 dark:bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-[#E27D60]"
+          className="w-full h-1 bg-zinc-400 dark:bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-[#E27D60]"
         />
         <input
           type="range"
@@ -38,7 +38,7 @@ export const FiltersAgeRange: React.FC<FiltersAgeRangeProps> = ({
           onChange={(e) =>
             setAgeRange([ageRange[0], parseInt(e.target.value)])
           }
-          className="w-full h-1 bg-zinc-250 dark:bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-[#E27D60]"
+          className="w-full h-1 bg-zinc-400 dark:bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-[#E27D60]"
         />
       </div>
     </div>

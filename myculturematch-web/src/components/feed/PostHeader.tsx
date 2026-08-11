@@ -85,7 +85,7 @@ export const PostHeader = ({ author, date, tribe }: PostHeaderProps) => {
           onClick={handleClick}
         />
         <div>
-          <h3 onClick={handleClick} className="font-bold text-sm cursor-pointer hover:underline text-app-black dark:text-zinc-150">
+          <h3 onClick={handleClick} className="font-bold text-sm cursor-pointer hover:underline text-app-black dark:text-zinc-300">
             {author.name}
           </h3>
           <p className="text-xs text-app-gray">{author.location}</p>
@@ -132,7 +132,7 @@ export const PostHeader = ({ author, date, tribe }: PostHeaderProps) => {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 10, scale: 0.95 }}
               transition={{ duration: 0.15 }}
-              className="absolute right-0 top-10 w-52 bg-white dark:bg-zinc-950 border border-app-border dark:border-zinc-850 rounded-2xl shadow-xl overflow-hidden z-55 p-1.5"
+              className="absolute right-0 top-10 w-52 bg-white dark:bg-zinc-950 border border-app-border dark:border-zinc-800 rounded-2xl shadow-xl overflow-hidden z-55 p-1.5"
             >
               <button
                 onClick={handleSavePost}
@@ -167,7 +167,7 @@ export const PostHeader = ({ author, date, tribe }: PostHeaderProps) => {
                 {muted && <Check className="w-3.5 h-3.5 text-[#E27D60]" />}
               </button>
 
-              <div className="border-t border-app-border/60 dark:border-zinc-850/60 my-1" />
+              <div className="border-t border-app-border/60 dark:border-zinc-800/60 my-1" />
 
               <button
                 onClick={() => {

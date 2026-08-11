@@ -6,7 +6,7 @@ import { Header } from './components/layout/Header';
 import { MainFeedColumn } from './components/feed/MainFeedColumn';
 import { RightPanel } from './components/RightPanel';
 import { TotemProfile } from './components/totem/TotemProfile';
-import { ChatPage } from './pages/ChatPage';
+import { ChatPopup } from './components/chat/ChatPopup';
 import { ExploreColumn } from './components/explore/ExploreColumn';
 import { TribuDetailView } from './components/explore/TribuDetailView';
 import { TribuSettingsView } from './components/explore/TribuSettingsView';
@@ -65,19 +65,17 @@ export default function App() {
             exit={{ opacity: 0 }}
             className={cn(
               'h-screen w-full flex overflow-hidden font-sans transition-colors duration-300',
-              theme === 'dark' ? 'dark bg-zinc-950 text-white' : 'bg-[#FEFEFE] text-app-black'
+              theme === 'dark' ? 'dark bg-zinc-950 text-white' : 'bg-[#FEFEFE] text-app-black dark:text-zinc-100'
             )}
           >
             <Sidebar />
 
             <div className="flex-1 flex flex-col h-full overflow-hidden">
-              {!(activeTab === 'Sandbox' || activeTab === 'Chat') && <Header />}
+              <Header />
 
               <div className={cn(
                 "flex-1 overflow-hidden flex",
-                (activeTab === 'Sandbox' || activeTab === 'Chat') 
-                  ? "p-0 m-0" 
-                  : "px-4 md:px-10 pb-4 gap-8"
+                "px-4 md:px-10 pb-4 gap-8"
               )}>
                 {activeTab === 'Feed' || activeTab === 'Home' || activeTab === 'Popular' || activeTab === 'New' ? (
                   <MainFeedColumn />
@@ -85,8 +83,6 @@ export default function App() {
                   <LoveColumn />
                 ) : activeTab === 'Totem' ? (
                   <TotemProfile />
-                ) : activeTab === 'Sandbox' || activeTab === 'Chat' ? (
-                  <ChatPage />
                 ) : activeTab === 'Explore' ? (
                   <ExploreColumn />
                 ) : activeTab === 'Tribu' ? (
@@ -124,6 +120,7 @@ export default function App() {
           </motion.div>
         )}
       </AnimatePresence>
+      <ChatPopup />
       <CreateTribeModal />
     </QueryClientProvider>
   );

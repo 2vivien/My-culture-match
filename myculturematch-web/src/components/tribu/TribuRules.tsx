@@ -14,8 +14,8 @@ export const TribuRules: React.FC<TribuRulesProps> = ({
   setExpandedRule,
 }) => {
   return (
-    <div className="bg-white dark:bg-zinc-900/60 border border-app-border dark:border-zinc-850 rounded-[20px] p-5 shadow-xs">
-      <h3 className="font-extrabold text-sm text-app-black dark:text-zinc-200 mb-3 border-b border-app-border/40 dark:border-zinc-850 pb-2">
+    <div className="bg-white dark:bg-zinc-900/60 border border-app-border dark:border-zinc-800 rounded-[20px] p-5 shadow-xs">
+      <h3 className="font-extrabold text-sm text-app-black dark:text-zinc-200 mb-3 border-b border-app-border/40 dark:border-zinc-800 pb-2">
         t/YamatoTribe Rules
       </h3>
       <div className="flex flex-col gap-3">

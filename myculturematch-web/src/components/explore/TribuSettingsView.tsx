@@ -142,7 +142,7 @@ export const TribuSettingsView: React.FC = () => {
   );
 
   return (
-    <div className="flex-1 max-w-4xl mx-auto w-full flex flex-col gap-6 overflow-y-auto pb-12 pt-4 hide-scrollbar select-none text-app-black dark:text-zinc-150">
+    <div className="flex-1 max-w-4xl mx-auto w-full flex flex-col gap-6 overflow-y-auto pb-12 pt-4 hide-scrollbar select-none text-app-black dark:text-zinc-300">
       {/* Settings Header */}
       <div className="flex items-center justify-between px-1">
         <div>
@@ -170,7 +170,7 @@ export const TribuSettingsView: React.FC = () => {
 
       {/* Banner Upload Card */}
       <div className="bg-white dark:bg-zinc-900 rounded-[28px] border border-app-border dark:border-zinc-800 overflow-hidden shadow-soft flex flex-col relative group">
-        <div className="h-[200px] w-full bg-zinc-150 dark:bg-zinc-950 relative">
+        <div className="h-[200px] w-full bg-zinc-100 dark:bg-zinc-950 relative">
           <img src={bannerPreview} alt="Tribe Banner" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-black/45 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
             <label className="flex items-center gap-2 px-4 py-2 bg-white/95 dark:bg-zinc-900/95 text-app-black dark:text-white rounded-full text-xs font-bold cursor-pointer hover:scale-105 transition-all">
@@ -215,7 +215,7 @@ export const TribuSettingsView: React.FC = () => {
                 type="text"
                 value={tribeName}
                 onChange={(e) => setTribeName(e.target.value)}
-                className="w-full px-4 py-3 rounded-2xl border border-app-border dark:border-zinc-800 bg-transparent text-app-black dark:text-white font-semibold text-sm focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-650 transition-colors"
+                className="w-full px-4 py-3 rounded-2xl border border-app-border dark:border-zinc-800 bg-transparent text-app-black dark:text-white font-semibold text-sm focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
               />
             </div>
           </div>
@@ -235,7 +235,7 @@ export const TribuSettingsView: React.FC = () => {
               value={searchMember}
               onChange={(e) => setSearchMember(e.target.value)}
               placeholder="Search member..."
-              className="w-full pl-9 pr-4 py-2 text-xs font-semibold rounded-xl border border-app-border dark:border-zinc-800 bg-transparent text-app-black dark:text-white focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-650 transition-colors"
+              className="w-full pl-9 pr-4 py-2 text-xs font-semibold rounded-xl border border-app-border dark:border-zinc-800 bg-transparent text-app-black dark:text-white focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
             />
           </div>
 
@@ -262,7 +262,7 @@ export const TribuSettingsView: React.FC = () => {
                         member.role === 'Creator' 
                           ? 'bg-amber-100 dark:bg-amber-950/40 text-amber-800 dark:text-amber-400' 
                           : member.role === 'Moderator' 
-                          ? 'bg-blue-100 dark:bg-blue-950/40 text-blue-800 dark:text-blue-400' 
+                          ? 'bg-violet-100 dark:bg-violet-950/40 text-violet-800 dark:text-violet-400' 
                           : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400'
                       }`}>
                         {member.role}
@@ -370,10 +370,10 @@ export const TribuSettingsView: React.FC = () => {
                   className="mt-0.5 rounded border-app-border dark:border-zinc-800 text-[#E27D60] focus:ring-[#E27D60] w-4 h-4"
                 />
                 <div>
-                  <span className="text-xs font-bold text-app-black dark:text-zinc-150 group-hover:text-[#E27D60] transition-colors">
+                  <span className="text-xs font-bold text-app-black dark:text-zinc-300 group-hover:text-[#E27D60] transition-colors">
                     Can delete tribe posts
                   </span>
-                  <p className="text-[10px] text-app-gray dark:text-zinc-550 font-semibold mt-0.5">Allows the user to moderate content by removing published posts</p>
+                  <p className="text-[10px] text-app-gray dark:text-zinc-500 font-semibold mt-0.5">Allows the user to moderate content by removing published posts</p>
                 </div>
               </label>
 
@@ -386,10 +386,10 @@ export const TribuSettingsView: React.FC = () => {
                   className="mt-0.5 rounded border-app-border dark:border-zinc-800 text-[#E27D60] focus:ring-[#E27D60] w-4 h-4"
                 />
                 <div>
-                  <span className="text-xs font-bold text-app-black dark:text-zinc-150 group-hover:text-[#E27D60] transition-colors">
+                  <span className="text-xs font-bold text-app-black dark:text-zinc-300 group-hover:text-[#E27D60] transition-colors">
                     Can edit tribe name & emblem logo
                   </span>
-                  <p className="text-[10px] text-app-gray dark:text-zinc-550 font-semibold mt-0.5">Allows modifying the name or profile photo of the community</p>
+                  <p className="text-[10px] text-app-gray dark:text-zinc-500 font-semibold mt-0.5">Allows modifying the name or profile photo of the community</p>
                 </div>
               </label>
 
@@ -402,10 +402,10 @@ export const TribuSettingsView: React.FC = () => {
                   className="mt-0.5 rounded border-app-border dark:border-zinc-800 text-[#E27D60] focus:ring-[#E27D60] w-4 h-4"
                 />
                 <div>
-                  <span className="text-xs font-bold text-app-black dark:text-zinc-150 group-hover:text-[#E27D60] transition-colors">
+                  <span className="text-xs font-bold text-app-black dark:text-zinc-300 group-hover:text-[#E27D60] transition-colors">
                     Can edit tribe background banner
                   </span>
-                  <p className="text-[10px] text-app-gray dark:text-zinc-550 font-semibold mt-0.5">Allows uploading new background covers for the community page</p>
+                  <p className="text-[10px] text-app-gray dark:text-zinc-500 font-semibold mt-0.5">Allows uploading new background covers for the community page</p>
                 </div>
               </label>
             </div>

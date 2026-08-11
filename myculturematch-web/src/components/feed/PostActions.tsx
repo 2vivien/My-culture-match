@@ -53,7 +53,7 @@ export const PostActions = ({ likes, onLike }: PostActionsProps) => {
             onChange={(e) => setComment(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSendComment()}
             placeholder="Write a comment..."
-            className="bg-transparent border-none text-sm w-full focus:ring-0 outline-none placeholder-app-gray dark:text-zinc-150"
+            className="bg-transparent border-none text-sm w-full focus:ring-0 outline-none placeholder-app-gray dark:text-zinc-300"
           />
           <Button
             variant="ghost"

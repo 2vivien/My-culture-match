@@ -19,7 +19,7 @@ export const ProfileTabs: React.FC<ProfileTabsProps> = ({
   setActiveTab,
 }) => {
   return (
-    <div className="bg-white dark:bg-[#1c212e] rounded-[20px] shadow-sm px-6 flex items-stretch h-[100px] w-full mb-6 border border-gray-100 dark:border-zinc-800/50">
+    <div className="bg-white dark:bg-[#161b22] rounded-[20px] shadow-sm px-6 flex items-stretch h-[100px] w-full mb-6 border border-gray-100 dark:border-zinc-800/50">
       <div className="flex h-full items-stretch flex-1 justify-start md:justify-center gap-1 sm:gap-2 overflow-x-auto hide-scrollbar">
         {tabs.map((tab, idx) => {
           const IconComponent = tab.icon;

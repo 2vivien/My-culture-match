@@ -20,7 +20,7 @@ export const ExploreVideosTab: React.FC<ExploreVideosTabProps> = ({ filteredVide
       {filteredVideos.map((video) => (
         <div
           key={video.id}
-          className="bg-white dark:bg-zinc-900/60 border border-app-border dark:border-zinc-855 rounded-[20px] overflow-hidden relative group shadow-sm flex flex-col"
+          className="bg-white dark:bg-zinc-900/60 border border-app-border dark:border-zinc-800 rounded-[20px] overflow-hidden relative group shadow-sm flex flex-col"
         >
           {/* Video Thumbnail with play hover overlay */}
           <div className="aspect-[9/16] relative overflow-hidden bg-black flex-1">
@@ -40,8 +40,8 @@ export const ExploreVideosTab: React.FC<ExploreVideosTabProps> = ({ filteredVide
 
             {/* Centered big play button appearing on hover */}
             <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer">
-              <div className="w-12 h-12 rounded-full bg-white/95 flex items-center justify-center text-app-black shadow-md transform group-hover:scale-105 transition-transform">
-                <Play className="w-5 h-5 fill-current text-app-black translate-x-[2px]" />
+              <div className="w-12 h-12 rounded-full bg-white/95 dark:bg-zinc-900/95 flex items-center justify-center text-app-black dark:text-zinc-100 shadow-md transform group-hover:scale-105 transition-transform">
+                <Play className="w-5 h-5 fill-current text-app-black dark:text-zinc-100 translate-x-[2px]" />
               </div>
             </div>
           </div>

@@ -12,7 +12,7 @@ const TABS: SettingsTab[] = ['Account', 'Profile', 'Privacy', 'Preferences', 'No
 
 export const SettingsTabs: React.FC<SettingsTabsProps> = ({ activeTab, setActiveTab }) => {
   return (
-    <div className="flex flex-wrap gap-1 md:gap-2 border-b border-app-border dark:border-zinc-850 pb-3 mb-6">
+    <div className="flex flex-wrap gap-1 md:gap-2 border-b border-app-border dark:border-zinc-800 pb-3 mb-6">
       {TABS.map((tab) => {
         const isActive = activeTab === tab;
         return (

@@ -6,6 +6,7 @@ import { createNotification } from '../notifications/notifications.service';
 import { emitToUser } from '../../infrastructure/websocket';
 import { createConversationForUsers } from '../messages/messages.service';
 import { compatLove } from '../culture-engine/scoring';
+import { matchesCreatedTotal } from '../../infrastructure/monitoring/metrics';
 
 const CANDIDATES_TTL = 60 * 60; // 1h
 const PASS_TTL = 30 * 24 * 60 * 60; // 30j
@@ -197,6 +198,7 @@ export async function swipe(userId: string, candidateId: string, action: 'like' 
 
   await db.insert(schema.loveMatches).values({ userId, candidateId, action: 'like', isMutual: true, conversationId });
   await db.update(schema.loveMatches).set({ isMutual: true, conversationId }).where(and(eq(schema.loveMatches.userId, candidateId), eq(schema.loveMatches.candidateId, userId)));
+  matchesCreatedTotal.inc();
 
   await db
     .insert(schema.connections)

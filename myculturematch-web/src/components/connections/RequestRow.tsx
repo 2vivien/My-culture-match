@@ -11,7 +11,7 @@ interface RequestRowProps {
 
 export const RequestRow: React.FC<RequestRowProps> = ({ user, onAccept, onDecline }) => {
   return (
-    <div className="bg-zinc-50/50 dark:bg-zinc-900/60 p-4.5 rounded-[22px] border border-app-border dark:border-zinc-850 flex items-center justify-between hover:shadow-md transition-shadow relative w-full">
+    <div className="bg-zinc-50/50 dark:bg-zinc-900/60 p-4.5 rounded-[22px] border border-app-border dark:border-zinc-800 flex items-center justify-between hover:shadow-md transition-shadow relative w-full">
       <div className="flex items-center gap-4 flex-1 min-w-0">
         <div className="relative shrink-0 select-none">
           <TotemAvatar src={user.avatar} alt={user.name} size="md" glow="orange" />
@@ -21,7 +21,7 @@ export const RequestRow: React.FC<RequestRowProps> = ({ user, onAccept, onDeclin
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <h4 className="font-extrabold text-sm text-app-black dark:text-zinc-150 truncate leading-tight">{user.name}</h4>
+            <h4 className="font-extrabold text-sm text-app-black dark:text-zinc-300 truncate leading-tight">{user.name}</h4>
           </div>
           <p className="text-[11px] text-app-gray dark:text-zinc-400 font-semibold mt-1.5 truncate">
             {user.interests && user.interests.length > 0 ? user.interests.join(', ') : `${user.country} • Request`}

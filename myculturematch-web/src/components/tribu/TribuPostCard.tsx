@@ -37,8 +37,8 @@ export const TribuPostCard: React.FC<TribuPostCardProps> = ({
   onCommentSubmit,
 }) => {
   return (
-    <div className="bg-white dark:bg-zinc-900/60 border border-app-border dark:border-zinc-855 rounded-[20px] p-5 shadow-xs flex flex-col hover:shadow-sm transition-shadow relative">
-      <div className="flex items-center justify-between border-b border-app-border/40 dark:border-zinc-855 pb-3 mb-3.5">
+    <div className="bg-white dark:bg-zinc-900/60 border border-app-border dark:border-zinc-800 rounded-[20px] p-5 shadow-xs flex flex-col hover:shadow-sm transition-shadow relative">
+      <div className="flex items-center justify-between border-b border-app-border/40 dark:border-zinc-800 pb-3 mb-3.5">
         <div className="flex items-center gap-3">
           <button
             onClick={onFlagClick}
@@ -80,7 +80,7 @@ export const TribuPostCard: React.FC<TribuPostCardProps> = ({
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 10, scale: 0.95 }}
                 transition={{ duration: 0.15 }}
-                className="absolute right-0 top-7 w-52 bg-white dark:bg-zinc-950 border border-app-border dark:border-zinc-855 rounded-2xl shadow-xl overflow-hidden z-55 p-1.5"
+                className="absolute right-0 top-7 w-52 bg-white dark:bg-zinc-950 border border-app-border dark:border-zinc-800 rounded-2xl shadow-xl overflow-hidden z-55 p-1.5"
                 onClick={(e) => e.stopPropagation()}
               >
                 <button
@@ -116,7 +116,7 @@ export const TribuPostCard: React.FC<TribuPostCardProps> = ({
                   {isMuted && <Check className="w-3.5 h-3.5 text-[#E27D60]" />}
                 </button>
 
-                <div className="border-t border-app-border/60 dark:border-zinc-850/60 my-1" />
+                <div className="border-t border-app-border/60 dark:border-zinc-800/60 my-1" />
 
                 <button
                   onClick={onReport}
@@ -149,7 +149,7 @@ export const TribuPostCard: React.FC<TribuPostCardProps> = ({
           </div>
         )}
 
-        <div className="mt-4.5 pt-4 border-t border-app-border/40 dark:border-zinc-855 flex flex-col gap-3">
+        <div className="mt-4.5 pt-4 border-t border-app-border/40 dark:border-zinc-800 flex flex-col gap-3">
           <div className="flex items-center gap-1.5 text-[11px] text-app-gray dark:text-zinc-400 font-bold">
             <MessageCircle className="w-4 h-4 text-app-gray dark:text-zinc-400" />
             <span>{post.commentsCount} comments shared</span>
@@ -163,7 +163,7 @@ export const TribuPostCard: React.FC<TribuPostCardProps> = ({
               onKeyDown={(e) => {
                 if (e.key === 'Enter') onCommentSubmit();
               }}
-              className="flex-1 px-4 py-2 text-xs rounded-xl border border-app-border dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 text-app-black dark:text-zinc-150 focus:outline-none focus:border-[#E27D60] focus:ring-1 focus:ring-[#E27D60]"
+              className="flex-1 px-4 py-2 text-xs rounded-xl border border-app-border dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 text-app-black dark:text-zinc-300 focus:outline-none focus:border-[#E27D60] focus:ring-1 focus:ring-[#E27D60]"
             />
             <button
               onClick={onCommentSubmit}

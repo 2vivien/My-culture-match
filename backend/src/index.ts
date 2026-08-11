@@ -7,15 +7,22 @@ import { closeRedis, redis } from './infrastructure/redis';
 import { closeMeilisearch } from './infrastructure/meilisearch';
 import { ensureBucket } from './infrastructure/minio';
 import { initSocketServer } from './infrastructure/websocket';
+import { initSentry } from './infrastructure/monitoring/sentry';
+import { startQueueMetricsSampler, startNodeMetrics } from './infrastructure/monitoring/metrics';
 import { logger } from './middleware/logger';
-import { startEmailWorker, closeEmailQueue } from './modules/email/email.queue';
+import { startEmailWorker, closeEmailQueue, emailQueue } from './modules/email/email.queue';
 import { startCountersFlushWorker, closeCountersFlushQueue } from './modules/feed/counters.queue';
 import { startStoriesCleanup, stopStoriesCleanup } from './modules/stories/stories.service';
-import { startModerationWorker, closeModerationQueue } from './modules/moderation/moderation.queue';
-import { startCultureEngineWorker, scheduleNightlyCultureBatch, closeCultureEngineQueue } from './modules/culture-engine/batch.queue';
+import { startModerationWorker, closeModerationQueue, moderationQueue, moderationDlq } from './modules/moderation/moderation.queue';
+import { startCultureEngineWorker, scheduleNightlyCultureBatch, closeCultureEngineQueue, cultureBatchQueue } from './modules/culture-engine/batch.queue';
 import { startCronWorkers, closeCronQueues } from './modules/workers/crons';
 
 async function bootstrap() {
+  // Observabilité (MP18) : Sentry si SENTRY_DSN configuré
+  initSentry();
+  // Métriques Node.js (GC, event loop, mémoire) pour Prometheus
+  startNodeMetrics();
+
   // Préparation des ressources externes au démarrage
   try {
     await ensureBucket();
@@ -46,6 +53,14 @@ async function bootstrap() {
   // Cron de purge des stories expirées (toutes les heures)
   startStoriesCleanup();
 
+  // Échantillonnage de la profondeur des queues BullMQ (Prometheus)
+  const queueSampler = startQueueMetricsSampler([
+    { name: 'email', queue: emailQueue },
+    { name: 'moderation.scan', queue: moderationQueue },
+    { name: 'moderation.scan.dlq', queue: moderationDlq },
+    { name: 'culture-engine.batch', queue: cultureBatchQueue },
+  ]);
+
   const app = createApp();
 
   const server = serve({ fetch: app.fetch, port: env.PORT }, (info) => {
@@ -58,6 +73,7 @@ async function bootstrap() {
   // Shutdown gracieux : arrête les connexions avant de quitter
   const shutdown = (signal: string) => {
     logger.info(`Signal ${signal} reçu, arrêt en cours…`);
+    clearInterval(queueSampler);
     server.close(async () => {
       await Promise.allSettled([closeDatabase(), closeRedis(), closeMeilisearch(), closeEmailQueue(), closeCountersFlushQueue(), closeModerationQueue(), closeCultureEngineQueue(), closeCronQueues()]);
       stopStoriesCleanup();

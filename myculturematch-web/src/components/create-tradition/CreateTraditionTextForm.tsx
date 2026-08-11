@@ -59,7 +59,7 @@ export const CreateTraditionTextForm: React.FC<CreateTraditionTextFormProps> = (
             type="text"
             id="post-tag-input"
             placeholder="Type a tag (e.g. #Fon, #Kintsugi, #Ceremony) and click Add"
-            className="flex-1 px-4 py-2.5 text-xs font-semibold rounded-2xl border border-app-border dark:border-zinc-800 bg-transparent text-app-black dark:text-white focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-650 transition-colors placeholder:text-app-gray/60"
+            className="flex-1 px-4 py-2.5 text-xs font-semibold rounded-2xl border border-app-border dark:border-zinc-800 bg-transparent text-app-black dark:text-white focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors placeholder:text-app-gray/60"
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
                 e.preventDefault();

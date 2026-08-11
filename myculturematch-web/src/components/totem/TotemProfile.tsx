@@ -2,8 +2,10 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FileText, Images, SquarePlay, ArchiveRestore, Info, Bookmark } from 'lucide-react';
 import { useTotemProfile } from '@/src/hooks/useTotemProfile';
+import { useUIStore } from '@/src/stores/useUIStore';
 import { ProfileHeader } from './ProfileHeader';
 import { ProfileTabs } from './ProfileTabs';
+import { ProfileCompletionPanel } from '@/src/components/profile/ProfileCompletionPanel';
 import { PostsTab } from './tabs/PostsTab';
 import { PhotosTab } from './tabs/PhotosTab';
 import { VideosTab } from './tabs/VideosTab';
@@ -12,12 +14,12 @@ import { AboutTab } from './tabs/AboutTab';
 import { SavesTab } from './tabs/SavesTab';
 
 export const TotemProfile: React.FC = () => {
+  const { openChat } = useUIStore();
   const {
     user,
     posts,
     activeTab,
     setActiveTab,
-    setMainActiveTab,
     connectionState,
     toggleConnection,
     getCountryCode,
@@ -26,7 +28,7 @@ export const TotemProfile: React.FC = () => {
   } = useTotemProfile();
 
   const handleSendMessage = () => {
-    setMainActiveTab('Sandbox');
+    openChat();
   };
 
   const profileTabs = [
@@ -60,6 +62,8 @@ export const TotemProfile: React.FC = () => {
         onSendMessage={handleSendMessage}
         getCountryCode={getCountryCode}
       />
+
+      {isOwnProfile && <ProfileCompletionPanel />}
 
       <ProfileTabs
         tabs={profileTabs}

@@ -12,7 +12,7 @@ export const NotificationsSection: React.FC = () => {
         <h2 className="text-xs uppercase font-extrabold tracking-wider text-app-gray dark:text-zinc-500 mb-4">
           Push Notifications
         </h2>
-        <div className="divide-y divide-app-border/40 dark:divide-zinc-850/40">
+        <div className="divide-y divide-app-border/40 dark:divide-zinc-800/40">
           <ToggleRow
             title="New Matches & Companions"
             description="When someone requests to connect with you"
@@ -20,7 +20,7 @@ export const NotificationsSection: React.FC = () => {
             onToggle={() => setNewMatches(!newMatches)}
           />
           <ToggleRow
-            title="Messages (Sandbox)"
+            title="Messages"
             description="When you receive direct messages"
             isActive={messages}
             onToggle={() => setMessages(!messages)}

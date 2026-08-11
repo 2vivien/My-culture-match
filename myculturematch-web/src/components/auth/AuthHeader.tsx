@@ -1,11 +1,7 @@
 import React from 'react';
 import logoMyCultureMatch from '@/assets/logo-myculturematch.png';
 
-interface AuthHeaderProps {
-  mode: 'signin' | 'signup';
-}
-
-export const AuthHeader: React.FC<AuthHeaderProps> = ({ mode }) => {
+export const AuthHeader: React.FC = () => {
   return (
     <>
       {/* Logo or Icon */}
@@ -17,12 +13,10 @@ export const AuthHeader: React.FC<AuthHeaderProps> = ({ mode }) => {
       {/* Heading */}
       <div className="mb-8">
         <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-zinc-900 dark:text-white">
-          {mode === 'signin' ? 'Heureux de vous revoir' : 'Rejoignez la communauté'}
+          Rejoignez la communauté
         </h2>
         <p className="text-zinc-500 dark:text-zinc-400 mt-2 text-sm">
-          {mode === 'signin'
-            ? 'Entrez vos identifiants pour accéder à vos compagnons et traditions.'
-            : 'Commencez votre voyage d’exploration culturelle en créant votre compte.'}
+          Commencez votre voyage d’exploration culturelle en créant votre compte.
         </p>
       </div>
     </>

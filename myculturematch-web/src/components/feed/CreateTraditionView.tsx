@@ -43,7 +43,7 @@ export const CreateTraditionView: React.FC = () => {
     >
       <CreateTraditionHeader />
 
-      <div className="bg-white dark:bg-zinc-950 rounded-[20px] p-6 border border-app-border dark:border-zinc-850 shadow-sm">
+      <div className="bg-white dark:bg-zinc-950 rounded-[20px] p-6 border border-app-border dark:border-zinc-800 shadow-sm">
         <TribuSelector
           tribes={tribes}
           selectedTribe={selectedTribe}

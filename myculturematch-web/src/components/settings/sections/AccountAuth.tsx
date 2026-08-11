@@ -25,7 +25,7 @@ export const AccountAuth: React.FC<AccountAuthProps> = ({
       <h2 className="text-xs uppercase font-extrabold tracking-wider text-app-gray dark:text-zinc-500 mb-4">
         Account authorization
       </h2>
-      <div className="divide-y divide-app-border/40 dark:divide-zinc-850/40">
+      <div className="divide-y divide-app-border/40 dark:divide-zinc-800/40">
         <ConnectionRow
           icon={<Chrome className="w-5 h-5 text-app-gray dark:text-zinc-400" />}
           title="Google"

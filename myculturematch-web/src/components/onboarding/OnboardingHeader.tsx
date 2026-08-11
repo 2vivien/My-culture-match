@@ -13,11 +13,11 @@ export const OnboardingHeader: React.FC<OnboardingHeaderProps> = ({ step }) => {
         <span className="font-extrabold text-sm dark:text-white text-zinc-800">MyCultureMatch</span>
       </div>
       <div className="flex items-center gap-3">
-        <span className="font-extrabold text-sm text-zinc-400">Étape {step} sur 15</span>
+        <span className="font-extrabold text-sm text-zinc-400">Étape {step} sur 6</span>
         <div className="h-2 w-32 bg-zinc-200 dark:bg-zinc-800 rounded-full overflow-hidden">
           <div
             className="h-full bg-primary transition-all duration-300"
-            style={{ width: `${(step / 15) * 100}%` }}
+            style={{ width: `${(step / 6) * 100}%` }}
           />
         </div>
       </div>

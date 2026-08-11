@@ -12,7 +12,7 @@ interface TribeCardProps {
 
 export const TribeCard: React.FC<TribeCardProps> = ({ item, onJoin, onSelect, defaultLevel }) => {
   return (
-    <div className="bg-white dark:bg-zinc-900/60 rounded-[20px] p-5 border border-app-border dark:border-zinc-850 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow group relative">
+    <div className="bg-white dark:bg-zinc-900/60 rounded-[20px] p-5 border border-app-border dark:border-zinc-800 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow group relative">
       <div>
         <div 
           onClick={onSelect}
@@ -42,7 +42,7 @@ export const TribeCard: React.FC<TribeCardProps> = ({ item, onJoin, onSelect, de
         onClick={() => onJoin(item.id)}
         className={`w-full py-2 rounded-xl text-xs font-black cursor-pointer tracking-wider flex items-center justify-center gap-1.5 transition-all ${
           item.joined
-            ? 'bg-zinc-100 dark:bg-zinc-850 text-app-black dark:text-zinc-200 border border-app-border dark:border-zinc-750'
+            ? 'bg-zinc-100 dark:bg-zinc-800 text-app-black dark:text-zinc-200 border border-app-border dark:border-zinc-700'
             : 'bg-app-black text-white dark:bg-white dark:text-app-black hover:opacity-90'
         }`}
       >

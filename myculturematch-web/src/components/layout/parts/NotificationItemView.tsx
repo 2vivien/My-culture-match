@@ -19,7 +19,7 @@ export const NotificationItemView: React.FC<NotificationItemViewProps> = ({
       onClick={() => onToggleRead(item.id)}
       className={`p-2.5 rounded-2xl flex gap-3 transition-colors relative group cursor-pointer ${
         item.isUnread 
-          ? 'bg-zinc-50/50 dark:bg-zinc-900/30 hover:bg-zinc-100/50 dark:hover:bg-zinc-850/50' 
+          ? 'bg-zinc-50/50 dark:bg-zinc-900/30 hover:bg-zinc-100/50 dark:hover:bg-zinc-800/50' 
           : 'hover:bg-zinc-50/30 dark:hover:bg-zinc-900/20'
       }`}
     >
@@ -82,7 +82,7 @@ export const NotificationItemView: React.FC<NotificationItemViewProps> = ({
                 e.stopPropagation();
                 onAction(item.id, 'decline');
               }}
-              className="px-4.5 py-2 text-xs font-black bg-[#E4E6EB] hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-750 text-app-black dark:text-zinc-200 rounded-xl cursor-pointer transition-colors"
+              className="px-4.5 py-2 text-xs font-black bg-[#E4E6EB] hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-app-black dark:text-zinc-200 rounded-xl cursor-pointer transition-colors"
             >
               Decline
             </button>

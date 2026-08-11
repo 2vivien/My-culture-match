@@ -25,7 +25,7 @@ export const ExploreImagesTab: React.FC<ExploreImagesTabProps> = ({
         <div
           key={img.id}
           onClick={() => setLightboxImage(img)}
-          className="aspect-square rounded-[16px] overflow-hidden relative group cursor-pointer border border-app-border dark:border-zinc-850 shadow-sm"
+          className="aspect-square rounded-[16px] overflow-hidden relative group cursor-pointer border border-app-border dark:border-zinc-800 shadow-sm"
         >
           <img
             src={img.url}

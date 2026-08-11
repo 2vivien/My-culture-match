@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { requestId } from './middleware/request-id';
 import { httpLogger } from './middleware/logger';
 import { errorHandler } from './middleware/error-handler';
+import { metricsMiddleware, renderMetrics } from './infrastructure/monitoring/metrics';
 import { cors } from './middleware/cors';
 import { healthModule } from './modules/health/health.module';
 import { authModule } from './modules/auth/auth.routes';
@@ -24,6 +25,7 @@ import { reportsRoutes } from './modules/reports/reports.routes';
 export type AppBindings = {
   Variables: {
     requestId: string;
+    correlationId: string;
   };
 };
 
@@ -35,6 +37,10 @@ export function createApp(): Hono<AppBindings> {
   app.use('*', requestId);
   app.use('*', cors);
   app.use('*', httpLogger);
+  app.use('*', metricsMiddleware);
+
+  // Observabilité (MP18)
+  app.get('/metrics', () => renderMetrics());
 
   // Routes
   app.route('/health', healthModule);

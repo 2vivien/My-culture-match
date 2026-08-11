@@ -20,7 +20,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   getCountryCode,
 }) => {
   return (
-    <div className="bg-white dark:bg-[#1c212e] rounded-[24px] shadow-sm flex flex-col relative mt-2">
+    <div className="bg-white dark:bg-[#161b22] rounded-[24px] shadow-sm flex flex-col relative mt-2">
       {/* Image de couverture */}
       <div className="h-[220px] w-full rounded-t-[24px] overflow-hidden relative">
         <img src={coverImg} alt="Cover" className="w-full h-full object-cover" />

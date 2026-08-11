@@ -1,16 +1,19 @@
 import settingsMock from '@/src/mocks/settings.json';
 import type { UserSettings } from '@/src/types/settings';
+import { api, USE_MOCK } from './api';
 
 export const settingsService = {
   async getSettings(): Promise<UserSettings> {
-    return settingsMock as UserSettings;
+    if (USE_MOCK) {
+      return settingsMock as UserSettings;
+    }
+    return api.get<UserSettings>('/api/settings');
   },
 
   async updateSettings(data: Partial<UserSettings>): Promise<void> {
-    // In a real application, this would send an API request to the backend.
-    console.log('Settings updated:', data);
-    return new Promise((resolve) => {
-      setTimeout(resolve, 50);
-    });
-  }
+    if (USE_MOCK) {
+      return;
+    }
+    await api.put('/api/settings', data);
+  },
 };

@@ -11,7 +11,7 @@ export const CreateTraditionTabs: React.FC<CreateTraditionTabsProps> = ({
   setActiveTab,
 }) => {
   return (
-    <div className="flex flex-wrap items-center gap-6 border-b border-app-border dark:border-zinc-850 mb-6">
+    <div className="flex flex-wrap items-center gap-6 border-b border-app-border dark:border-zinc-800 mb-6">
       <button
         type="button"
         onClick={() => setActiveTab('Text')}

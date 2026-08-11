@@ -1,18 +1,21 @@
 import createTraditionMock from '@/src/mocks/createTradition.json';
 import type { TribeOption, TraditionSubmission } from '@/src/types/createTradition';
+import { api, USE_MOCK } from './api';
 
 export const traditionService = {
   async getTribes(): Promise<TribeOption[]> {
-    return createTraditionMock.tribes as TribeOption[];
+    if (USE_MOCK) {
+      return createTraditionMock.tribes as TribeOption[];
+    }
+    return api.get<TribeOption[]>('/api/tribes');
   },
-  
+
   async submitTradition(data: TraditionSubmission): Promise<{ success: boolean }> {
-    // In a real app, this would send the request to a REST API.
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        console.log('Tradition submitted:', data);
-        resolve({ success: true });
-      }, 500);
-    });
-  }
+    if (USE_MOCK) {
+      return new Promise((resolve) => {
+        setTimeout(() => resolve({ success: true }), 500);
+      });
+    }
+    return api.post<{ success: boolean }>('/api/posts', data);
+  },
 };

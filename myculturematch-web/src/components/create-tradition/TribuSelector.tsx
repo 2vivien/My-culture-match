@@ -70,7 +70,7 @@ export const TribuSelector: React.FC<TribuSelectorProps> = ({
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 15 }}
               transition={{ type: 'spring', duration: 0.4 }}
-              className="relative bg-white dark:bg-zinc-950 border border-app-border dark:border-zinc-850 rounded-[32px] shadow-2xl w-full max-w-md max-h-[75vh] flex flex-col overflow-hidden z-50 p-6 select-none"
+              className="relative bg-white dark:bg-zinc-950 border border-app-border dark:border-zinc-800 rounded-[32px] shadow-2xl w-full max-w-md max-h-[75vh] flex flex-col overflow-hidden z-50 p-6 select-none"
             >
               {/* Header */}
               <div className="flex items-center justify-between mb-5">
@@ -99,7 +99,7 @@ export const TribuSelector: React.FC<TribuSelectorProps> = ({
                       className={`w-full flex items-center justify-between p-3.5 rounded-2xl text-left transition-all border cursor-pointer ${
                         isSelected
                           ? 'bg-[#E27D60]/10 border-[#E27D60] dark:bg-[#c66b50]/15 dark:border-[#c66b50]'
-                          : 'bg-zinc-50/50 dark:bg-zinc-900/60 border-app-border/40 dark:border-zinc-850 hover:bg-zinc-100 dark:hover:bg-zinc-850 hover:scale-[1.01] active:scale-[0.99]'
+                          : 'bg-zinc-50/50 dark:bg-zinc-900/60 border-app-border/40 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:scale-[1.01] active:scale-[0.99]'
                       }`}
                     >
                       <div className="flex items-center gap-3.5 min-w-0">
@@ -111,7 +111,7 @@ export const TribuSelector: React.FC<TribuSelectorProps> = ({
                         <span className={`font-bold text-sm truncate ${
                           isSelected 
                             ? 'text-[#E27D60] dark:text-[#c66b50]' 
-                            : 'text-app-black dark:text-zinc-150'
+                            : 'text-app-black dark:text-zinc-300'
                         }`}>
                           {tribe.name}
                         </span>

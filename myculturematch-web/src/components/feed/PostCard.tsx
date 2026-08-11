@@ -12,9 +12,9 @@ export const PostCard = ({ post }: PostCardProps) => {
   const { likePost } = useFeed();
 
   return (
-    <article className="bg-white dark:bg-zinc-950 rounded-[24px] p-5 shadow-soft border border-app-border dark:border-zinc-850 hover:shadow-float transition-all duration-300">
+    <article className="bg-white dark:bg-zinc-950 rounded-[24px] p-5 shadow-soft border border-app-border dark:border-zinc-800 hover:shadow-float transition-all duration-300">
       <PostHeader author={post.author} date={post.date} tribe={post.tribe} />
-      <p className="text-sm mb-4 font-semibold text-app-black dark:text-zinc-150 leading-relaxed">{post.text}</p>
+      <p className="text-sm mb-4 font-semibold text-app-black dark:text-zinc-300 leading-relaxed">{post.text}</p>
       <PostImage
         image={post.image}
         likes={post.likes}

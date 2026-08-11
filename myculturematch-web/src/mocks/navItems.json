@@ -1,8 +1,0 @@
-[
-  { "name": "Home", "icon": "House", "path": "/", "badge": null },
-  { "name": "Feed", "icon": "Newspaper", "path": "/feed", "badge": "20+" },
-  { "name": "Culture", "icon": "Globe", "path": "/culture", "badge": null },
-  { "name": "Tribu", "icon": "Users", "path": "/tribu", "badge": null },
-  { "name": "Profile", "icon": "User", "path": "/profile", "badge": null },
-  { "name": "Chat", "icon": "MessageCircle", "path": "/chat", "badge": "+09" }
-]

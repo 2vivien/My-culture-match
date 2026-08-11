@@ -1,3 +1,6 @@
+import { api, USE_MOCK } from './api';
+import type { OnboardingData } from '@/src/lib/onboarding.schemas';
+
 export const DOMAINS = [
   { id: 'tech', label: 'Tech & Digital' },
   { id: 'business', label: 'Business & Finance' },
@@ -65,5 +68,63 @@ export function calculateAge(birthdateStr: string): number {
     age--;
   }
   return age;
+}
+
+export interface OnboardingSubmitPayload extends OnboardingData {
+  email?: string;
+  acceptedTermsAt: string | null;
+}
+
+const GENDER_MAP: Record<string, string> = {
+  Homme: 'male',
+  Femme: 'female',
+  Autre: 'prefer-not-to-say',
+};
+
+const INTENTION_MAP: Record<string, string> = {
+  union: 'marriage',
+  culture: 'friendship',
+  discover: 'networking',
+  explore: 'friendship',
+};
+
+const INTENTION_TO_SEEKING: Record<string, string> = {
+  union: 'love',
+  culture: 'cultural',
+  discover: 'cultural',
+  explore: 'friendship',
+};
+
+/** Convertit le formulaire web en payload conforme au schéma strict backend. */
+export function toOnboardingApiPayload(data: OnboardingSubmitPayload) {
+  if (!data.email) throw new Error('Adresse email manquante.');
+  if (!data.acceptedTermsAt) throw new Error('Vous devez accepter les conditions générales.');
+
+  const gender = GENDER_MAP[data.gender];
+  if (!gender) throw new Error('Genre invalide.');
+
+  return {
+    email: data.email,
+    name: data.name,
+    username: data.username,
+    avatarSeed: data.avatarSeed,
+    gender,
+    seeking: INTENTION_TO_SEEKING[data.intention],
+    birthdate: data.birthdate,
+    roots: data.roots,
+    languages: data.languages,
+    intention: INTENTION_MAP[data.intention],
+    acceptedTermsAt: data.acceptedTermsAt,
+  };
+}
+
+export async function submitProfile(
+  data: OnboardingSubmitPayload
+): Promise<{ success: boolean }> {
+  if (USE_MOCK) {
+    await new Promise((resolve) => setTimeout(resolve, 600));
+    return { success: true };
+  }
+  return api.post<{ success: boolean }>('/api/onboarding', toOnboardingApiPayload(data));
 }
 

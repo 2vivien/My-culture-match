@@ -34,7 +34,7 @@ export const TribuHeader: React.FC<TribuHeaderProps> = ({
       </div>
 
       {/* 2. Tribe Info and Controls Bar */}
-      <div className="relative px-6 pb-4 border-b border-app-border dark:border-zinc-850 shrink-0 bg-white dark:bg-zinc-900 rounded-b-[24px] shadow-xs">
+      <div className="relative px-6 pb-4 border-b border-app-border dark:border-zinc-800 shrink-0 bg-white dark:bg-zinc-900 rounded-b-[24px] shadow-xs">
         <div className="absolute -top-10 left-6">
           <div className="p-1 rounded-full bg-white dark:bg-zinc-900 border border-app-border dark:border-zinc-800 shadow-md">
             <TotemAvatar 
@@ -60,7 +60,7 @@ export const TribuHeader: React.FC<TribuHeaderProps> = ({
 
           {/* Buttons Controls */}
           <div className="flex items-center gap-2 select-none">
-            <Button variant="outline" className="text-xs font-black rounded-full px-4.5 py-2 hover:bg-zinc-50 dark:hover:bg-zinc-800 flex items-center gap-1.5 dark:border-zinc-850 dark:text-zinc-200">
+            <Button variant="outline" className="text-xs font-black rounded-full px-4.5 py-2 hover:bg-zinc-50 dark:hover:bg-zinc-800 flex items-center gap-1.5 dark:border-zinc-800 dark:text-zinc-200">
               <Plus className="w-3.5 h-3.5 stroke-[3]" />
               Create Tradition
             </Button>
@@ -69,7 +69,7 @@ export const TribuHeader: React.FC<TribuHeaderProps> = ({
               onClick={() => setNotificationsOn(!notificationsOn)}
               className={`w-9.5 h-9.5 rounded-full border border-app-border dark:border-zinc-800 flex items-center justify-center cursor-pointer transition-colors ${
                 notificationsOn 
-                  ? 'bg-zinc-50 dark:bg-zinc-850 text-[#E27D60] dark:text-[#E27D60]' 
+                  ? 'bg-zinc-50 dark:bg-zinc-800 text-[#E27D60] dark:text-[#E27D60]' 
                   : 'bg-white dark:bg-zinc-900 text-app-gray hover:text-app-black dark:hover:text-zinc-200'
               }`}
               title={notificationsOn ? "Mute notifications" : "Receive notifications"}

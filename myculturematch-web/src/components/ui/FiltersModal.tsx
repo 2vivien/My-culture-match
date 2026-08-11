@@ -61,7 +61,7 @@ export const FiltersModal: React.FC<FiltersModalProps> = ({
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.95, opacity: 0, y: 15 }}
             transition={{ type: 'spring', damping: 25, stiffness: 350 }}
-            className="bg-white dark:bg-zinc-950 border border-app-border dark:border-zinc-850 rounded-[32px] max-w-md w-full overflow-hidden shadow-2xl relative p-6 text-app-black dark:text-zinc-100 flex flex-col gap-6"
+            className="bg-white dark:bg-zinc-950 border border-app-border dark:border-zinc-800 rounded-[32px] max-w-md w-full overflow-hidden shadow-2xl relative p-6 text-app-black dark:text-zinc-100 flex flex-col gap-6"
             onClick={(e) => e.stopPropagation()}
           >
             <FiltersHeader onReset={handleReset} onClose={onClose} />

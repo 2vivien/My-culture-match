@@ -40,16 +40,20 @@ const navItems = [
   { name: 'Love', icon: 'Love' },
   { name: 'Tribu', icon: 'Tribu' },
   { name: 'Totem', icon: 'Totem' },
-  { name: 'Sandbox', icon: 'Sandbox', badge: '+09' },
+  { name: 'Messages', icon: 'Sandbox', badge: '+09' },
 ];
 
 export const SidebarNav = () => {
-  const { activeTab, setActiveTab, isSidebarOpen, toggleSidebar, isSidebarCollapsed } = useUIStore();
+  const { activeTab, setActiveTab, isSidebarOpen, toggleSidebar, isSidebarCollapsed, openChat } = useUIStore();
   const { setSelectedTotemUserId, setFeedSort } = useAppStore();
   const isCollapsed = isSidebarCollapsed;
 
   const handleNav = (name: string) => {
     if (name === 'Tribu') return; // Do nothing for main Tribu click
+    if (name === 'Messages') {
+      openChat();
+      return;
+    }
     setActiveTab(name);
     if (name === 'Popular') {
       setFeedSort('Popular');

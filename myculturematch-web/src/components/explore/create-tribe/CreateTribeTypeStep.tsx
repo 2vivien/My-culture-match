@@ -22,7 +22,7 @@ export const CreateTribeTypeStep: React.FC<CreateTribeTypeStepProps> = ({
             "flex items-center justify-between p-4 rounded-2xl border transition-all cursor-pointer select-none",
             tribeType === 'public'
               ? "bg-[#E27D60]/5 border-[#E27D60] dark:bg-[#E27D60]/10"
-              : "bg-zinc-50 dark:bg-zinc-900 border-app-border dark:border-zinc-850 hover:bg-zinc-100/50"
+              : "bg-zinc-50 dark:bg-zinc-900 border-app-border dark:border-zinc-800 hover:bg-zinc-100/50"
           )}
         >
           <div className="flex items-center gap-3.5">
@@ -49,7 +49,7 @@ export const CreateTribeTypeStep: React.FC<CreateTribeTypeStepProps> = ({
             "flex items-center justify-between p-4 rounded-2xl border transition-all cursor-pointer select-none",
             tribeType === 'restricted'
               ? "bg-[#E27D60]/5 border-[#E27D60] dark:bg-[#E27D60]/10"
-              : "bg-zinc-50 dark:bg-zinc-900 border-app-border dark:border-zinc-850 hover:bg-zinc-100/50"
+              : "bg-zinc-50 dark:bg-zinc-900 border-app-border dark:border-zinc-800 hover:bg-zinc-100/50"
           )}
         >
           <div className="flex items-center gap-3.5">
@@ -76,7 +76,7 @@ export const CreateTribeTypeStep: React.FC<CreateTribeTypeStepProps> = ({
             "flex items-center justify-between p-4 rounded-2xl border transition-all cursor-pointer select-none",
             tribeType === 'private'
               ? "bg-[#E27D60]/5 border-[#E27D60] dark:bg-[#E27D60]/10"
-              : "bg-zinc-50 dark:bg-zinc-900 border-app-border dark:border-zinc-850 hover:bg-zinc-100/50"
+              : "bg-zinc-50 dark:bg-zinc-900 border-app-border dark:border-zinc-800 hover:bg-zinc-100/50"
           )}
         >
           <div className="flex items-center gap-3.5">

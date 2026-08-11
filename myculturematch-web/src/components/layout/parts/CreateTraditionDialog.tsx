@@ -44,10 +44,10 @@ export const CreateTraditionDialog: React.FC<CreateTraditionDialogProps> = ({ on
         initial={{ opacity: 0, scale: 0.9, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.9, y: 20 }}
-        className="bg-white dark:bg-zinc-950 border border-app-border dark:border-zinc-850 rounded-[28px] max-w-lg w-full overflow-hidden shadow-2xl"
+        className="bg-white dark:bg-zinc-950 border border-app-border dark:border-zinc-800 rounded-[28px] max-w-lg w-full overflow-hidden shadow-2xl"
       >
         {/* Header */}
-        <div className="p-6 border-b border-app-border dark:border-zinc-850 flex items-center justify-between">
+        <div className="p-6 border-b border-app-border dark:border-zinc-800 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-400 to-orange-500 text-white flex items-center justify-center shadow-md shadow-orange-500/10">
               <Sparkles className="w-5 h-5" />
@@ -63,7 +63,7 @@ export const CreateTraditionDialog: React.FC<CreateTraditionDialogProps> = ({ on
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-900 border border-app-border dark:border-zinc-850 flex items-center justify-center text-app-gray hover:text-app-black hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+            className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-900 border border-app-border dark:border-zinc-800 flex items-center justify-center text-app-gray hover:text-app-black dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
@@ -84,7 +84,7 @@ export const CreateTraditionDialog: React.FC<CreateTraditionDialogProps> = ({ on
                   className={`w-9 h-9 rounded-xl flex items-center justify-center text-lg border cursor-pointer transition-all ${
                     symbol === sym
                       ? 'bg-amber-500/10 border-amber-500 scale-110 shadow-sm'
-                      : 'bg-zinc-55 dark:bg-zinc-900 border-app-border dark:border-zinc-850 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                      : 'bg-zinc-55 dark:bg-zinc-900 border-app-border dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800'
                   }`}
                 >
                   {sym}
@@ -105,7 +105,7 @@ export const CreateTraditionDialog: React.FC<CreateTraditionDialogProps> = ({ on
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="e.g. Benin's Vodoun Day, Japanese Kintsugi Arts"
-                className="w-full bg-zinc-50/50 dark:bg-zinc-900/50 border border-app-border dark:border-zinc-850 rounded-2xl pl-11 pr-4 py-3 text-xs font-bold outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500 text-app-black dark:text-zinc-100 transition-all placeholder:text-app-gray/70"
+                className="w-full bg-zinc-50/50 dark:bg-zinc-900/50 border border-app-border dark:border-zinc-800 rounded-2xl pl-11 pr-4 py-3 text-xs font-bold outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500 text-app-black dark:text-zinc-100 transition-all placeholder:text-app-gray/70"
               />
             </div>
           </div>
@@ -122,7 +122,7 @@ export const CreateTraditionDialog: React.FC<CreateTraditionDialogProps> = ({ on
                 value={culture}
                 onChange={(e) => setCulture(e.target.value)}
                 placeholder="e.g. Benin, Japan, Morocco, Indian Subcontinent"
-                className="w-full bg-zinc-50/50 dark:bg-zinc-900/50 border border-app-border dark:border-zinc-850 rounded-2xl pl-11 pr-4 py-3 text-xs font-bold outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500 text-app-black dark:text-zinc-100 transition-all placeholder:text-app-gray/70"
+                className="w-full bg-zinc-50/50 dark:bg-zinc-900/50 border border-app-border dark:border-zinc-800 rounded-2xl pl-11 pr-4 py-3 text-xs font-bold outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500 text-app-black dark:text-zinc-100 transition-all placeholder:text-app-gray/70"
               />
             </div>
           </div>
@@ -137,11 +137,11 @@ export const CreateTraditionDialog: React.FC<CreateTraditionDialogProps> = ({ on
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Tell the story of how it is conducted, the symbolic meaning, the secret recipe, or the physical movements of this ancient ceremony..."
-              className="w-full bg-zinc-50/50 dark:bg-zinc-900/50 border border-app-border dark:border-zinc-850 rounded-2xl p-4 text-xs leading-relaxed font-semibold outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500 text-app-black dark:text-zinc-100 transition-all placeholder:text-app-gray/70"
+              className="w-full bg-zinc-50/50 dark:bg-zinc-900/50 border border-app-border dark:border-zinc-800 rounded-2xl p-4 text-xs leading-relaxed font-semibold outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500 text-app-black dark:text-zinc-100 transition-all placeholder:text-app-gray/70"
             />
           </div>
 
-          <div className="bg-zinc-50 dark:bg-zinc-900/60 border border-app-border/60 dark:border-zinc-850/60 rounded-2xl p-3 flex gap-3 items-center">
+          <div className="bg-zinc-50 dark:bg-zinc-900/60 border border-app-border/60 dark:border-zinc-800/60 rounded-2xl p-3 flex gap-3 items-center">
             <div className="w-8 h-8 rounded-lg bg-orange-100 dark:bg-zinc-800 text-orange-600 dark:text-orange-400 flex items-center justify-center shrink-0">
               <Award className="w-4 h-4" />
             </div>

@@ -16,7 +16,7 @@ export const EmailRow: React.FC<EmailRowProps> = ({
 }) => {
   return (
     <div className="py-4.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
-      <span className="text-xs font-extrabold text-app-black dark:text-zinc-250">
+      <span className="text-xs font-extrabold text-app-black dark:text-zinc-400">
         Email address
       </span>
       <div className="flex items-center gap-2">
@@ -43,7 +43,7 @@ export const EmailRow: React.FC<EmailRowProps> = ({
             </span>
             <button 
               onClick={() => setIsEditingEmail(true)}
-              className="p-1 rounded-full hover:bg-zinc-50 dark:hover:bg-zinc-850 cursor-pointer text-app-gray"
+              className="p-1 rounded-full hover:bg-zinc-50 dark:hover:bg-zinc-800 cursor-pointer text-app-gray"
             >
               <ChevronRight className="w-4 h-4" />
             </button>

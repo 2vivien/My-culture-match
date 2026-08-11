@@ -2,6 +2,7 @@ import { and, count, desc, eq, gte, isNull, lt } from 'drizzle-orm';
 import { db, schema } from '../../infrastructure/database';
 import { redis } from '../../infrastructure/redis';
 import { AppError } from '../../shared/utils/AppError';
+import { notificationsSentTotal } from '../../infrastructure/monitoring/metrics';
 import type { NOTIFICATION_TYPE } from '../../shared/constants/enums';
 import { emitToUser } from '../../infrastructure/websocket';
 import { acceptRequest, declineRequest } from '../connections/connections.service';
@@ -86,6 +87,7 @@ export async function createNotification(input: CreateNotificationInput): Promis
     })
     .returning();
   if (!row) return;
+  notificationsSentTotal.inc();
 
   await redis.del(unreadCacheKey(input.userId));
 

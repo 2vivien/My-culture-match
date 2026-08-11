@@ -4,6 +4,7 @@ import { redis } from '../../infrastructure/redis';
 import { AppError } from '../../shared/utils/AppError';
 import type { SendMessageInput } from './messages.schemas';
 import { emitToUser } from '../../infrastructure/websocket';
+import { messagesSentTotal } from '../../infrastructure/monitoring/metrics';
 
 const MESSAGE_RATE_LIMIT = 60; // messages / min / user
 const messageRateKey = (userId: string) => `rl:messages:${userId}`;
@@ -286,6 +287,7 @@ export async function sendMessage(
     .returning();
 
   if (!message) throw AppError.badRequest('Échec d’envoi du message', 'MESSAGE_SEND_FAILED');
+  messagesSentTotal.inc();
 
   // unreadCount pour tous les autres participants + total Redis
   const others = participants.filter((p) => p.userId !== userId);

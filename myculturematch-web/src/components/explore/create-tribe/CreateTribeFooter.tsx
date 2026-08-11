@@ -47,7 +47,7 @@ export const CreateTribeFooter: React.FC<CreateTribeFooterProps> = ({
           <button
             type="button"
             onClick={onBack}
-            className="px-6 py-2.5 rounded-full bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-850 text-app-black dark:text-zinc-300 text-xs font-black uppercase tracking-wider cursor-pointer transition-colors"
+            className="px-6 py-2.5 rounded-full bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-app-black dark:text-zinc-300 text-xs font-black uppercase tracking-wider cursor-pointer transition-colors"
           >
             Back
           </button>
@@ -56,7 +56,7 @@ export const CreateTribeFooter: React.FC<CreateTribeFooterProps> = ({
           <button
             type="button"
             onClick={onCancel}
-            className="px-6 py-2.5 rounded-full bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-850 text-app-black dark:text-zinc-300 text-xs font-black uppercase tracking-wider cursor-pointer transition-colors"
+            className="px-6 py-2.5 rounded-full bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-app-black dark:text-zinc-300 text-xs font-black uppercase tracking-wider cursor-pointer transition-colors"
           >
             Cancel
           </button>
@@ -71,7 +71,7 @@ export const CreateTribeFooter: React.FC<CreateTribeFooterProps> = ({
               "px-6 py-2.5 rounded-full text-xs font-black uppercase tracking-wider cursor-pointer transition-all select-none",
               selectedTopicsCount > 0
                 ? "bg-[#E27D60] text-white hover:brightness-105"
-                : "bg-zinc-100 dark:bg-zinc-900 text-app-gray/50 dark:text-zinc-700 cursor-not-allowed border border-app-border/40 dark:border-zinc-850"
+                : "bg-zinc-100 dark:bg-zinc-900 text-app-gray/50 dark:text-zinc-700 cursor-not-allowed border border-app-border/40 dark:border-zinc-800"
             )}
           >
             Next
@@ -97,7 +97,7 @@ export const CreateTribeFooter: React.FC<CreateTribeFooterProps> = ({
               "px-6 py-2.5 rounded-full text-xs font-black uppercase tracking-wider cursor-pointer transition-all select-none",
               tribeName.trim() && tribeDescription.trim()
                 ? "bg-[#E27D60] text-white hover:brightness-105"
-                : "bg-zinc-100 dark:bg-zinc-900 text-app-gray/50 dark:text-zinc-700 cursor-not-allowed border border-app-border/40 dark:border-zinc-850"
+                : "bg-zinc-100 dark:bg-zinc-900 text-app-gray/50 dark:text-zinc-700 cursor-not-allowed border border-app-border/40 dark:border-zinc-800"
             )}
           >
             Create Tribu

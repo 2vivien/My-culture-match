@@ -11,7 +11,7 @@ interface RequestCardProps {
 
 export const RequestCard: React.FC<RequestCardProps> = ({ user, onAccept, onDecline }) => {
   return (
-    <div className="bg-white dark:bg-zinc-900 rounded-3xl p-5 border border-app-border dark:border-zinc-850 shadow-sm flex flex-col justify-between hover:shadow-md transition-all relative w-full">
+    <div className="bg-white dark:bg-zinc-900 rounded-3xl p-5 border border-app-border dark:border-zinc-800 shadow-sm flex flex-col justify-between hover:shadow-md transition-all relative w-full">
       <div className="flex flex-col items-center text-center">
         <div className="relative mb-3 select-none">
           <TotemAvatar src={user.avatar} alt={user.name} size="lg" glow="orange" />
@@ -35,7 +35,7 @@ export const RequestCard: React.FC<RequestCardProps> = ({ user, onAccept, onDecl
         </div>
       </div>
       <div className="flex gap-2 text-xs font-black">
-        <button onClick={() => onDecline(user.id)} className="flex-1 py-2.5 rounded-xl border border-app-border dark:border-zinc-800 text-app-gray hover:bg-zinc-50 dark:hover:bg-zinc-850 cursor-pointer flex items-center justify-center gap-1.5 transition-colors">
+        <button onClick={() => onDecline(user.id)} className="flex-1 py-2.5 rounded-xl border border-app-border dark:border-zinc-800 text-app-gray hover:bg-zinc-50 dark:hover:bg-zinc-800 cursor-pointer flex items-center justify-center gap-1.5 transition-colors">
           <X className="w-4 h-4 text-app-gray" />
           Refuse
         </button>

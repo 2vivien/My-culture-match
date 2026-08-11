@@ -20,7 +20,7 @@ export const ConversationListItem: React.FC<ListItemProps> = ({
       className={cn(
         'w-full text-left p-3 rounded-2xl flex items-center gap-3 transition-all relative border border-transparent cursor-pointer group',
         isActive
-          ? 'bg-white dark:bg-zinc-900 border-app-border dark:border-zinc-805 shadow-sm'
+          ? 'bg-white dark:bg-zinc-900 border-app-border dark:border-zinc-800 shadow-sm'
           : 'hover:bg-zinc-50 dark:hover:bg-zinc-900/40 text-app-gray hover:text-app-black dark:text-zinc-400 dark:hover:text-white'
       )}
     >

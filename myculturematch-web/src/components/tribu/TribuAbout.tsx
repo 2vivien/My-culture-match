@@ -2,7 +2,7 @@ import React from 'react';
 
 export const TribuAbout: React.FC = () => {
   return (
-    <div className="bg-white dark:bg-zinc-900/60 border border-app-border dark:border-zinc-855 rounded-[20px] p-5 shadow-xs">
+    <div className="bg-white dark:bg-zinc-900/60 border border-app-border dark:border-zinc-800 rounded-[20px] p-5 shadow-xs">
       <h3 className="font-extrabold text-sm text-app-black dark:text-zinc-200">
         About YamatoTribe
       </h3>

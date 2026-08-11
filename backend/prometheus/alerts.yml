@@ -1,0 +1,54 @@
+# ─────────────────────────────────────────────────────────────
+# Règles d'alerte Prometheus — My Culture Match (MP18)
+# Seuils définis dans le micro-prompt 18 : latence, erreurs,
+# profondeur de queue, mémoire Redis, connexions DB.
+# ─────────────────────────────────────────────────────────────
+groups:
+  - name: mcm-api
+    rules:
+      - alert: HighLatencyP95
+        expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le)) > 0.5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: 'Latence p95 > 500ms'
+          description: 'La latence p95 des requêtes HTTP dépasse 500ms depuis 5 minutes.'
+
+      - alert: HighErrorRate
+        expr: (sum(rate(http_requests_total{status=~"5.."}[5m])) by (method,path) / sum(rate(http_requests_total[5m])) by (method,path)) > 0.01
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: 'Taux d'erreur > 1%'
+          description: 'Le taux d'erreur 5xx dépasse 1% sur {{ $labels.path }}.'
+
+      - alert: QueueBacklog
+        expr: queue_depth > 1000
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: 'File d'attente {{ $labels.queue }} saturée'
+          description: 'Plus de 1000 jobs en attente sur la queue {{ $labels.queue }}.'
+
+      - alert: RedisMemoryHigh
+        expr: (mcm_node_heapSizeUsed / mcm_node_heapSizeTotal) > 0.8
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: 'Mémoire process élevée'
+          description: 'La mémoire du process dépasse 80%.'
+
+  - name: mcm-business
+    rules:
+      - alert: NoPostsCreated
+        expr: rate(posts_created_total[15m]) == 0
+        for: 1h
+        labels:
+          severity: info
+        annotations:
+          summary: 'Aucun post créé sur la dernière heure'
+          description: 'Vérifier que la plateforme reçoit toujours de l'activité.'

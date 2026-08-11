@@ -15,7 +15,7 @@ export const ConnectionsTabs: React.FC = () => {
   ] as const;
 
   return (
-    <div className="flex border-b border-app-border dark:border-zinc-850 overflow-x-auto shrink-0 select-none hide-scrollbar">
+    <div className="flex border-b border-app-border dark:border-zinc-800 overflow-x-auto shrink-0 select-none hide-scrollbar">
       <div className="flex min-w-full px-1">
         {tabs.map(({ key, label, count, icon: Icon, showCount }) => {
           const isActive = activeSubTab === key;

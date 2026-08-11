@@ -38,7 +38,7 @@ export const RequestCard = () => {
   };
 
   return (
-    <div className="bg-white dark:bg-zinc-950 rounded-[24px] p-5 shadow-float border border-app-border dark:border-zinc-850 relative select-none" ref={notifRef}>
+    <div className="bg-white dark:bg-zinc-950 rounded-[24px] p-5 shadow-float border border-app-border dark:border-zinc-800 relative select-none" ref={notifRef}>
       <button 
         onClick={() => setShowNotif(!showNotif)}
         className="absolute -top-3 left-6 bg-white dark:bg-zinc-900 border border-app-border dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800 rounded-full px-3 py-1 text-xs font-bold shadow-sm z-30 flex items-center gap-1 text-app-black dark:text-zinc-200 cursor-pointer"
