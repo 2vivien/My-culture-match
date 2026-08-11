@@ -1,0 +1,137 @@
+# ─────────────────────────────────────────────────────────────
+# My Culture Match — Backend PRODUCTION (MP20)
+#
+# Lance l'image backend (Dockerfile multi-stage) + les services
+# internes, avec healthchecks, volumes persistants et non-root.
+#
+#   cd backend
+#   docker compose -f docker-compose.prod.yml up -d --build
+#   → API        : http://localhost:3000
+#   → Health     : http://localhost:3000/health
+#
+# Variables : copier .env.example → .env et adapter les secrets.
+# ─────────────────────────────────────────────────────────────
+name: mcm-backend-prod
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - '${API_PORT:-3000}:3000'
+    command: sh -c "node dist/migrate.js && node dist/index.js"
+    environment:
+      NODE_ENV: production
+      PORT: '3000'
+      API_URL: '${API_URL:-http://localhost:3000}'
+      FRONTEND_URL: '${FRONTEND_URL:-http://localhost:5173}'
+      LOG_LEVEL: '${LOG_LEVEL:-info}'
+      DATABASE_URL: 'postgresql://mcm:${POSTGRES_PASSWORD:-mcm_secret}@postgres:5432/mcm?sslmode=disable'
+      DATABASE_POOL_SIZE: '${DATABASE_POOL_SIZE:-20}'
+      REDIS_URL: 'redis://redis:6379'
+      REDIS_POOL_SIZE: '${REDIS_POOL_SIZE:-10}'
+      BETTER_AUTH_SECRET: '${BETTER_AUTH_SECRET}'
+      BETTER_AUTH_URL: '${BETTER_AUTH_URL:-http://localhost:3000}'
+      MINIO_ENDPOINT: minio
+      MINIO_PORT: '9000'
+      MINIO_USE_SSL: 'false'
+      MINIO_ACCESS_KEY: '${MINIO_ACCESS_KEY:-minioadmin}'
+      MINIO_SECRET_KEY: '${MINIO_SECRET_KEY:-minioadmin}'
+      MINIO_BUCKET_NAME: '${MINIO_BUCKET_NAME:-mcm-media}'
+      MEILISEARCH_HOST: 'http://meilisearch:7700'
+      MEILISEARCH_API_KEY: '${MEILISEARCH_API_KEY:-masterKey}'
+      SMTP_HOST: '${SMTP_HOST:-mailpit}'
+      SMTP_PORT: '${SMTP_PORT:-1025}'
+      SMTP_USER: '${SMTP_USER:-}'
+      SMTP_PASSWORD: '${SMTP_PASSWORD:-}'
+      SENTRY_DSN: '${SENTRY_DSN:-}'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      meilisearch:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD', 'wget', '-q', '--spider', 'http://127.0.0.1:3000/health/live']
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: mcm
+      POSTGRES_PASSWORD: '${POSTGRES_PASSWORD:-mcm_secret}'
+      POSTGRES_DB: mcm
+    volumes:
+      - mcm_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U mcm -d mcm']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - mcm_redis_data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  meilisearch:
+    image: getmeili/meilisearch:v1.11
+    restart: unless-stopped
+    environment:
+      MEILI_MASTER_KEY: '${MEILISEARCH_API_KEY:-masterKey}'
+      MEILI_NO_ANALYTICS: 'true'
+    volumes:
+      - mcm_meili_data:/meili_data
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:7700/health']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  minio:
+    image: minio/minio:latest
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: '${MINIO_ACCESS_KEY:-minioadmin}'
+      MINIO_ROOT_PASSWORD: '${MINIO_SECRET_KEY:-minioadmin}'
+    command: server /data --console-address ':9001'
+    volumes:
+      - mcm_minio_data:/data
+    healthcheck:
+      test: ['CMD', 'mc', 'ready', 'local']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  mailpit:
+    image: axllent/mailpit:latest
+    restart: unless-stopped
+    ports:
+      - '8025:8025'
+    healthcheck:
+      test: ['CMD', 'wget', '-q', '--spider', 'http://localhost:8025/']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  mcm_pg_data:
+  mcm_redis_data:
+  mcm_meili_data:
+  mcm_minio_data:

@@ -46,13 +46,14 @@ curl http://localhost:3000/health   # → {"status":"ok",...}
 | Script | Description |
 |---|---|
 | `npm run dev` | Serveur en mode watch |
-| `npm run build` / `start` | Compilation TypeScript + exécution |
+| `npm run build` / `start` | Bundle esbuild (typecheck tsc) + exécution |
 | `npm run typecheck` | Typecheck strict (`tsc --noEmit`) |
 | `npm run lint` | ESLint (typescript-eslint) |
 | `npm run test:unit` | Tests unitaires (rapides, sans services) |
 | `npm run test:integration` | Tests d'intégration (services Docker requis) |
 | `npm run test:coverage` | Couverture complète (unit + intégration) |
 | `npm run migrate` / `migrate:generate` | Appliquer / générer les migrations Drizzle |
+| `npm run migrate:prod` | Runner migrations bundle (production / image Docker) |
 | `npm run seed` | Seed de données de dev |
 | `npm run studio` | Drizzle Studio (explorateur de schéma) |
 
@@ -83,4 +84,5 @@ Voir [architecture/overview.md](architecture/overview.md) et [observability/moni
 - [Sécurité](security/auth.md) — auth, rate limiting, modèle de menace, RBAC.
 - [Algorithmes](algorithms/culture-engine.md) — Culture Engine, feed, love, amitié.
 - [Scalabilité](scalability/roadmap.md) — roadmap, feed push/pull, sharding.
+- [Déploiement & Ops](operations/deploy.md) — image Docker, GHCR, CI/CD, runbook (MP20).
 - [ADR](decisions/adr-001-database.md) — décisions d'architecture.

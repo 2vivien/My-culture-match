@@ -11,11 +11,11 @@ import { env } from '../config/env';
 import { createBetterStackTransport } from '../infrastructure/monitoring/better-stack';
 
 const require = createRequire(import.meta.url);
-const prettyTarget = require.resolve('pino-pretty');
 
 const streams: Array<DestinationStream | StreamEntry> = [];
 
 if (env.NODE_ENV === 'development') {
+  const prettyTarget = require.resolve('pino-pretty');
   streams.push(
     pinoTransport({
       target: prettyTarget,
