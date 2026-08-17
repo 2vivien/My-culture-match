@@ -1,5 +1,4 @@
 import { Queue, Worker } from 'bullmq';
-import nodemailer from 'nodemailer';
 import { env } from '../../config/env';
 import { logger } from '../../middleware/logger';
 
@@ -22,24 +21,26 @@ export interface EmailJob {
   html: string;
 }
 
-const transporter = nodemailer.createTransport({
-  host: env.SMTP_HOST,
-  port: env.SMTP_PORT,
-  secure: env.SMTP_PORT === 465,
-  auth:
-    env.SMTP_USER
-      ? { user: env.SMTP_USER, pass: env.SMTP_PASSWORD }
-      : undefined,
-});
-
-/** Traitement d'un job email (exécuté dans le worker). */
-export async function sendEmailJob(job: EmailJob): Promise<void> {
-  await transporter.sendMail({
-    from: `"${env.BREVO_SENDER_NAME}" <${env.BREVO_SENDER_EMAIL}>`,
-    to: job.to,
-    subject: job.subject,
-    html: job.html,
+/** Envoi d'email via l'API Brevo (REST). */
+async function sendEmailJob(job: EmailJob): Promise<void> {
+  const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+    method: 'POST',
+    headers: {
+      'api-key': env.BREVO_API_KEY,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      sender: { name: env.BREVO_SENDER_NAME, email: env.BREVO_SENDER_EMAIL },
+      to: [{ email: job.to }],
+      subject: job.subject,
+      htmlContent: job.html,
+    }),
   });
+
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`Brevo API ${res.status}: ${body}`);
+  }
 }
 
 /** Enfile un email dans la queue. */
