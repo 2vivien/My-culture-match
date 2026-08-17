@@ -101,8 +101,15 @@ describe('usernames', () => {
 });
 
 describe('ids', () => {
-  it('génère un UUID v4', () => {
+  it('génère un UUID v7 (triable par temps, version 7 + variant RFC 4122)', () => {
     const id = generateId();
-    expect(id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+    expect(id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+  });
+
+  it('génère des IDs uniques et croissants dans le temps', () => {
+    const first = generateId();
+    const second = generateId();
+    expect(first).not.toBe(second);
+    expect(first < second).toBe(true);
   });
 });

@@ -6,13 +6,15 @@ import { AuthForm } from '@/src/components/auth/AuthForm';
 import { AuthSocialButtons } from '@/src/components/auth/AuthSocialButtons';
 import { AuthFooter } from '@/src/components/auth/AuthFooter';
 import { OtpForm } from '@/src/components/auth/OtpForm';
+import { TwoFactorForm } from '@/src/components/auth/TwoFactorForm';
 import { authService } from '@/src/services/authService';
 import { USE_MOCK } from '@/src/services/api';
 
 export function AuthPage() {
   const { setAuthenticated, setOnboarded, setEmail, loginUser } = useAppStore();
-  const [step, setStep] = useState<'email' | 'otp'>('email');
+  const [step, setStep] = useState<'email' | 'otp' | '2fa'>('email');
   const [email, setEmailValue] = useState('');
+  const [ticket, setTicket] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
 
@@ -21,7 +23,10 @@ export function AuthPage() {
     setEmailValue(value);
     setAuthError(null);
 
+    console.log('[Auth] handleContinue called:', { value, USE_MOCK });
+
     if (USE_MOCK) {
+      console.log('[Auth] MOCK MODE — bypassing API');
       setIsLoading(true);
       setTimeout(() => {
         setIsLoading(false);
@@ -33,13 +38,26 @@ export function AuthPage() {
 
     setIsLoading(true);
     try {
-      await authService.sendOtp(value);
+      console.log('[Auth] Calling sendOtp...');
+      const result = await authService.sendOtp(value);
+      console.log('[Auth] sendOtp success:', result);
       setStep('otp');
     } catch (err) {
+      console.error('[Auth] sendOtp error:', err);
       setAuthError(err instanceof Error ? err.message : 'Erreur lors de l\'envoi du code.');
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const finishLogin = (user: { id: string; name: string | null; avatar: string | null }, isNewUser: boolean) => {
+    loginUser({
+      id: user.id,
+      name: user.name ?? email,
+      avatar: user.avatar ?? undefined,
+    });
+    setAuthenticated(true);
+    setOnboarded(!isNewUser);
   };
 
   const handleVerify = async (code: string) => {
@@ -47,18 +65,80 @@ export function AuthPage() {
     setIsLoading(true);
     setAuthError(null);
     try {
-      const { user, isNewUser } = await authService.verifyOtp(email, code);
-      loginUser({
-        id: user.id,
-        name: user.name ?? email,
-        avatar: user.avatar ?? undefined,
-      });
-      setAuthenticated(true);
-      setOnboarded(!isNewUser);
+      const result = await authService.verifyOtp(email, code);
+      if ('twoFactorRequired' in result) {
+        setTicket(result.ticket);
+        setStep('2fa');
+        return;
+      }
+      finishLogin(result.user, result.isNewUser);
     } catch (err) {
       setAuthError(err instanceof Error ? err.message : 'Code invalide. Réessayez.');
+    } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleTwoFactor = async (code: string) => {
+    if (USE_MOCK) return;
+    setIsLoading(true);
+    setAuthError(null);
+    try {
+      const result = await authService.verifyTwoFactor(ticket, code);
+      finishLogin(result.user, result.isNewUser);
+    } catch (err) {
+      setAuthError(err instanceof Error ? err.message : 'Code de double authentification invalide.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    console.log('[Auth] Google login clicked');
+    if (USE_MOCK) {
+      setIsLoading(true);
+      setTimeout(() => {
+        setIsLoading(false);
+        setAuthenticated(true);
+        setOnboarded(false);
+      }, 600);
+      return;
+    }
+    try {
+      // @ts-expect-error - Google Identity Services API
+      const google = window.google;
+      if (!google?.accounts?.id) {
+        setAuthError('Google Sign-In n\'est pas disponible. Vérifiez la connexion internet.');
+        return;
+      }
+      google.accounts.id.initialize({
+        client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID ?? '',
+        callback: async (response: { credential: string }) => {
+          setIsLoading(true);
+          try {
+            const result = await authService.loginWithGoogle(response.credential);
+            if ('twoFactorRequired' in result) {
+              setTicket(result.ticket);
+              setStep('2fa');
+            } else {
+              finishLogin(result.user, result.isNewUser);
+            }
+          } catch (err) {
+            setAuthError(err instanceof Error ? err.message : 'Erreur connexion Google.');
+          } finally {
+            setIsLoading(false);
+          }
+        },
+      });
+      google.accounts.id.prompt();
+    } catch {
+      setAuthError('Impossible de démarrer Google Sign-In.');
+    }
+  };
+
+  const handleAppleLogin = async () => {
+    console.log('[Auth] Apple login clicked');
+    setAuthError('Connexion Apple pas encore disponible.');
   };
 
   const handleResend = async () => {
@@ -76,14 +156,14 @@ export function AuthPage() {
       {/* Left side Illustration & Branding */}
       <AuthIllustration />
 
-      {/* Right side: email + continue / OTP verification */}
+      {/* Right side: email + continue / OTP verification / 2FA */}
       <div className="w-full md:w-1/2 lg:w-2/5 h-full flex flex-col px-6 sm:px-12 lg:px-16 overflow-y-auto bg-[#FEFEFE] dark:bg-zinc-950 py-12">
         <div className="max-w-md w-full mx-auto my-auto">
           <AuthHeader />
 
           {step === 'email' ? (
-            <AuthForm isLoading={isLoading} onSubmit={handleContinue} />
-          ) : (
+            <AuthForm isLoading={isLoading} error={authError} onSubmit={handleContinue} />
+          ) : step === 'otp' ? (
             <OtpForm
               email={email}
               isLoading={isLoading}
@@ -91,11 +171,22 @@ export function AuthPage() {
               onSubmit={handleVerify}
               onResend={handleResend}
             />
+          ) : (
+            <TwoFactorForm
+              email={email}
+              isLoading={isLoading}
+              error={authError}
+              onSubmit={handleTwoFactor}
+              onBack={() => {
+                setStep('otp');
+                setAuthError(null);
+              }}
+            />
           )}
 
           {step === 'email' && (
             <>
-              <AuthSocialButtons />
+              <AuthSocialButtons onGoogle={handleGoogleLogin} onApple={handleAppleLogin} isLoading={isLoading} />
               <AuthFooter />
             </>
           )}

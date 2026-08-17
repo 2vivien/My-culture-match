@@ -4,6 +4,7 @@ import { httpLogger } from './middleware/logger';
 import { errorHandler } from './middleware/error-handler';
 import { metricsMiddleware, renderMetrics } from './infrastructure/monitoring/metrics';
 import { cors } from './middleware/cors';
+import { env } from './config/env';
 import { healthModule } from './modules/health/health.module';
 import { authModule } from './modules/auth/auth.routes';
 import { onboardingModule } from './modules/onboarding/onboarding.routes';
@@ -39,8 +40,19 @@ export function createApp(): Hono<AppBindings> {
   app.use('*', httpLogger);
   app.use('*', metricsMiddleware);
 
-  // Observabilité (MP18)
-  app.get('/metrics', () => renderMetrics());
+  // Observabilité (MP18) — /metrics protégé par token en prod (Prometheus scrape)
+  app.get('/metrics', (c) => {
+    const auth = c.req.header('Authorization')?.replace(/^Bearer\s+/i, '');
+    const xToken = c.req.header('X-Metrics-Token');
+    if (env.METRICS_TOKEN) {
+      if (auth !== env.METRICS_TOKEN && xToken !== env.METRICS_TOKEN) {
+        return c.json({ error: { code: 'UNAUTHORIZED', message: 'Token de métriques invalide' } }, 401);
+      }
+    } else if (env.NODE_ENV === 'production') {
+      return c.json({ error: { code: 'UNAUTHORIZED', message: 'Métriques non exposées' } }, 401);
+    }
+    return renderMetrics();
+  });
 
   // Routes
   app.route('/health', healthModule);

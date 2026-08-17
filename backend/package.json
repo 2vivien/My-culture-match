@@ -22,7 +22,6 @@
     "test:coverage": "vitest run --coverage",
     "migrate": "drizzle-kit migrate",
     "migrate:generate": "drizzle-kit generate",
-    "seed": "tsx src/seed.ts",
     "studio": "drizzle-kit studio"
   },
   "dependencies": {

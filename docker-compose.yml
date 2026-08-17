@@ -1,40 +1,180 @@
-version: '3.8'
+# ─────────────────────────────────────────────────────────────
+# My Culture Match — Stack complète de développement local
+# Usage : docker compose up -d
+# Frontend (port 5173) → Backend (port 3000) → Services (DB, Redis, etc.)
+# ─────────────────────────────────────────────────────────────
+name: my-culture-match
 
 services:
+  # ═══════════════════════════════════════════════════════════
+  # FRONTEND — Vite + React
+  # ═══════════════════════════════════════════════════════════
   web:
     image: node:22-alpine
-    container_name: culturematch_web
+    container_name: mcm_web
     working_dir: /app
     volumes:
       - ./myculturematch-web:/app
-      # Conserver les modules node dans un volume Docker pour la performance
       - web_node_modules:/app/node_modules
+    ports:
+      - "5173:5173"
+    command: sh -c "npm install && npm run dev"
+    environment:
+      - NODE_ENV=development
+      - VITE_USE_MOCK=false
+      - VITE_API_URL=http://localhost:3000
+      - VITE_MEDIA_URL=http://localhost:9000/mcm-media
+    depends_on:
+      backend:
+        condition: service_healthy
+
+  # ═══════════════════════════════════════════════════════════
+  # BACKEND — Hono + Node.js
+  # ═══════════════════════════════════════════════════════════
+  backend:
+    image: node:22-alpine
+    container_name: mcm_backend
+    working_dir: /app
+    volumes:
+      - ./backend:/app
+      - backend_node_modules:/app/node_modules
     ports:
       - "3000:3000"
     command: sh -c "npm install && npm run dev"
     environment:
       - NODE_ENV=development
+      - PORT=3000
+      - API_URL=http://localhost:3000
+      - FRONTEND_URL=http://localhost:5173
+      - DATABASE_URL=postgresql://mcm:mcm_secret@postgres:5432/mcm?sslmode=disable
+      - REDIS_URL=redis://redis:6379
+      - MEILISEARCH_HOST=http://meilisearch:7700
+      - MINIO_ENDPOINT=minio
+      - MINIO_PORT=9000
+      - SMTP_HOST=mailpit
+      - SMTP_PORT=1025
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
+  # ═══════════════════════════════════════════════════════════
+  # SERVICES INFRASTRUCTURE
+  # ═══════════════════════════════════════════════════════════
+  postgres:
+    image: postgres:16-alpine
+    container_name: mcm_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: mcm
+      POSTGRES_PASSWORD: mcm_secret
+      POSTGRES_DB: mcm
+    ports:
+      - "5432:5432"
+    volumes:
+      - mcm_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mcm -d mcm"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: mcm_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - mcm_redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  meilisearch:
+    image: getmeili/meilisearch:v1.11
+    container_name: mcm_meilisearch
+    restart: unless-stopped
+    environment:
+      MEILI_MASTER_KEY: masterKey
+      MEILI_NO_ANALYTICS: "true"
+    ports:
+      - "7700:7700"
+    volumes:
+      - mcm_meili_data:/meili_data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7700/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  minio:
+    image: minio/minio:latest
+    container_name: mcm_minio
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - mcm_minio_data:/data
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: mcm_mailpit
+    restart: unless-stopped
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8025/"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ═══════════════════════════════════════════════════════════
+  # MOBILE — Expo (optionnel)
+  # ═══════════════════════════════════════════════════════════
   mobile:
     image: node:22-alpine
-    container_name: culturematch_mobile
+    container_name: mcm_mobile
     working_dir: /app
+    profiles:
+      - mobile
     volumes:
       - ./mobile-app:/app
       - mobile_node_modules:/app/node_modules
     ports:
       - "8081:8081"
-      # Ports supplémentaires souvent utilisés par Expo pour le hot-reload
       - "19000:19000"
       - "19001:19001"
       - "19002:19002"
     command: sh -c "npm install && npx expo start --web"
     environment:
       - NODE_ENV=development
-      # Vous devrez peut-être définir REACT_NATIVE_PACKAGER_HOSTNAME avec votre adresse IP locale
-      # pour tester sur un appareil physique depuis l'application Expo Go.
-      # - REACT_NATIVE_PACKAGER_HOSTNAME=192.168.1.XX
 
 volumes:
   web_node_modules:
+  backend_node_modules:
   mobile_node_modules:
+  mcm_pg_data:
+  mcm_redis_data:
+  mcm_meili_data:
+  mcm_minio_data:

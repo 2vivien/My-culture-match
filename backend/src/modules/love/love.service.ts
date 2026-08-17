@@ -16,6 +16,9 @@ const MAX_CANDIDATES = 50;
 const candidatesKey = (userId: string) => `love:candidates:${userId}`;
 const swipedKey = (userId: string) => `love:swiped:${userId}`;
 
+/** Verrou PostgreSQL par paire non-ordonnée : sérialise les swipes croisés. */
+const pairLock = (a: string, b: string) => `love:pair:${[a, b].sort().join(':')}`;
+
 export interface LoveCandidateDto {
   id: string;
   name: string;
@@ -179,45 +182,51 @@ export async function swipe(userId: string, candidateId: string, action: 'like' 
     return { matched: false };
   }
 
-  // Vérification match mutuel : le candidat doit avoir déjà liké ce user
-  const reciprocal = await db
-    .select()
-    .from(schema.loveMatches)
-    .where(and(eq(schema.loveMatches.userId, candidateId), eq(schema.loveMatches.candidateId, userId), eq(schema.loveMatches.action, 'like')))
-    .limit(1);
+  // LIKE : tout le flux match est fait dans une transaction avec un verrou
+  // d'application par paire, pour éviter la course croisée (A et B likent
+  // simultanément → aucun ne voit le like de l'autre → match manqué).
+  return db.transaction(async (tx) => {
+    await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${pairLock(userId, candidateId)}))`);
 
-  if (!reciprocal[0]) {
-    await db.insert(schema.loveMatches).values({ userId, candidateId, action: 'like', matchScore: score, isMutual: false });
-    await createNotification({ userId: candidateId, actorId: userId, type: 'match', action: 'like', target: userId });
-    emitToUser(candidateId, 'love:like', { userId });
-    return { matched: false };
-  }
+    const reciprocal = await tx
+      .select()
+      .from(schema.loveMatches)
+      .where(and(eq(schema.loveMatches.userId, candidateId), eq(schema.loveMatches.candidateId, userId), eq(schema.loveMatches.action, 'like')))
+      .limit(1);
 
-  // MATCH MUTUEL → transaction : conversation + notification + compagnon + WS
-  const { id: conversationId } = await createConversationForUsers(userId, candidateId);
+    if (!reciprocal[0]) {
+      await tx.insert(schema.loveMatches).values({ userId, candidateId, action: 'like', matchScore: score, isMutual: false });
+      await createNotification({ userId: candidateId, actorId: userId, type: 'match', action: 'like', target: userId });
+      emitToUser(candidateId, 'love:like', { userId });
+      return { matched: false };
+    }
 
-  await db.insert(schema.loveMatches).values({ userId, candidateId, action: 'like', isMutual: true, conversationId });
-  await db.update(schema.loveMatches).set({ isMutual: true, conversationId }).where(and(eq(schema.loveMatches.userId, candidateId), eq(schema.loveMatches.candidateId, userId)));
-  matchesCreatedTotal.inc();
+    // MATCH MUTUEL → conversation + compagnon + WS, le tout atomique
+    const { id: conversationId } = await createConversationForUsers(userId, candidateId);
 
-  await db
-    .insert(schema.connections)
-    .values([
-      { fromUserId: userId, toUserId: candidateId, status: 'companion', matchScore: score },
-      { fromUserId: candidateId, toUserId: userId, status: 'companion', matchScore: score },
-    ])
-    .onConflictDoNothing();
+    await tx.insert(schema.loveMatches).values({ userId, candidateId, action: 'like', isMutual: true, conversationId });
+    await tx.update(schema.loveMatches).set({ isMutual: true, conversationId }).where(and(eq(schema.loveMatches.userId, candidateId), eq(schema.loveMatches.candidateId, userId)));
+    matchesCreatedTotal.inc();
 
-  await db
-    .update(schema.users)
-    .set({ companionsCount: sql`${schema.users.companionsCount} + 1` })
-    .where(inArray(schema.users.id, [userId, candidateId]));
+    await tx
+      .insert(schema.connections)
+      .values([
+        { fromUserId: userId, toUserId: candidateId, status: 'companion', matchScore: score },
+        { fromUserId: candidateId, toUserId: userId, status: 'companion', matchScore: score },
+      ])
+      .onConflictDoNothing();
 
-  await createNotification({ userId, actorId: candidateId, type: 'match', action: 'match', target: candidateId, metadata: { conversationId } });
-  await createNotification({ userId: candidateId, actorId: userId, type: 'match', action: 'match', target: userId, metadata: { conversationId } });
+    await tx
+      .update(schema.users)
+      .set({ companionsCount: sql`${schema.users.companionsCount} + 1` })
+      .where(inArray(schema.users.id, [userId, candidateId]));
 
-  emitToUser(userId, 'love:match', { userId: candidateId, conversationId });
-  emitToUser(candidateId, 'love:match', { userId, conversationId });
+    await createNotification({ userId, actorId: candidateId, type: 'match', action: 'match', target: candidateId, metadata: { conversationId } });
+    await createNotification({ userId: candidateId, actorId: userId, type: 'match', action: 'match', target: userId, metadata: { conversationId } });
 
-  return { matched: true, conversationId };
+    emitToUser(userId, 'love:match', { userId: candidateId, conversationId });
+    emitToUser(candidateId, 'love:match', { userId, conversationId });
+
+    return { matched: true, conversationId };
+  });
 }

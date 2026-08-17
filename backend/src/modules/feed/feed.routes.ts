@@ -8,11 +8,11 @@ const feedRoutes = new Hono();
 
 feedRoutes.use('*', requireAuth);
 
-/** GET /api/feed?filter=following|for-you|popular|new&limit= */
+/** GET /api/feed?filter=following|for-you|popular|new&limit=&cursor= */
 feedRoutes.get('/feed', zValidator('query', listFeedQuerySchema), async (c) => {
-  const { filter, limit } = c.req.valid('query');
+  const { filter, limit, cursor } = c.req.valid('query');
   const { userId } = c.get('auth');
-  const result = await getFeed(userId, filter, limit);
+  const result = await getFeed(userId, filter, limit, cursor);
   return c.json(result, 200);
 });
 

@@ -7,10 +7,11 @@ import { cn } from '@/src/lib/utils';
 
 interface AuthFormProps {
   isLoading?: boolean;
+  error?: string | null;
   onSubmit: (email: string) => void;
 }
 
-export const AuthForm: React.FC<AuthFormProps> = ({ isLoading = false, onSubmit }) => {
+export const AuthForm: React.FC<AuthFormProps> = ({ isLoading = false, error = null, onSubmit }) => {
   const {
     register,
     handleSubmit,
@@ -70,6 +71,12 @@ export const AuthForm: React.FC<AuthFormProps> = ({ isLoading = false, onSubmit 
           </>
         )}
       </button>
+
+      {error && (
+        <p className="text-xs font-bold text-red-500 text-center mt-1" role="alert">
+          {error}
+        </p>
+      )}
     </form>
   );
 };

@@ -47,6 +47,7 @@ export function initSocketServer(httpServer: HttpServer, redisClient: Redis): Se
       if (!token) return next(new Error('UNAUTHORIZED'));
       const session = await getSession(String(token));
       if (!session) return next(new Error('UNAUTHORIZED'));
+      if (session.user.bannedAt) return next(new Error('ACCOUNT_BANNED'));
       socket.data.userId = session.user.id;
       next();
     } catch {

@@ -18,6 +18,14 @@ export interface VerifyOtpResponse {
   isNewUser: boolean;
 }
 
+export interface TwoFactorRequiredResponse {
+  twoFactorRequired: true;
+  ticket: string;
+  user: AuthUser;
+}
+
+export type LoginResponse = VerifyOtpResponse | TwoFactorRequiredResponse;
+
 export interface SessionResponse {
   user: AuthUser;
   token: string;
@@ -28,21 +36,27 @@ export const authService = {
     return api.post<{ success: boolean; cooldown: number }>('/api/auth/send-otp', { email });
   },
 
-  async verifyOtp(email: string, code: string): Promise<VerifyOtpResponse> {
-    const result = await api.post<VerifyOtpResponse>('/api/auth/verify-otp', { email, code });
+  async verifyOtp(email: string, code: string): Promise<LoginResponse> {
+    const result = await api.post<LoginResponse>('/api/auth/verify-otp', { email, code });
+    if ('token' in result) setAuthToken(result.token);
+    return result;
+  },
+
+  async verifyTwoFactor(ticket: string, code: string): Promise<VerifyOtpResponse> {
+    const result = await api.post<VerifyOtpResponse>('/api/auth/2fa/verify', { ticket, code });
     setAuthToken(result.token);
     return result;
   },
 
-  async loginWithGoogle(idToken: string): Promise<VerifyOtpResponse> {
-    const result = await api.post<VerifyOtpResponse>('/api/auth/google', { idToken });
-    setAuthToken(result.token);
+  async loginWithGoogle(idToken: string): Promise<LoginResponse> {
+    const result = await api.post<LoginResponse>('/api/auth/google', { idToken });
+    if ('token' in result) setAuthToken(result.token);
     return result;
   },
 
-  async loginWithApple(idToken: string): Promise<VerifyOtpResponse> {
-    const result = await api.post<VerifyOtpResponse>('/api/auth/apple', { idToken });
-    setAuthToken(result.token);
+  async loginWithApple(idToken: string): Promise<LoginResponse> {
+    const result = await api.post<LoginResponse>('/api/auth/apple', { idToken });
+    if ('token' in result) setAuthToken(result.token);
     return result;
   },
 

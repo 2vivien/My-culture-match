@@ -57,6 +57,8 @@ const envSchema = z.object({
   SENTRY_DSN: z.string().optional().default(''),
   BETTER_STACK_SOURCE_TOKEN: z.string().optional().default(''),
 
+  METRICS_TOKEN: z.string().optional().default(''),
+
   CULTURE_ENGINE_BATCH_ENABLED: booleanFlag.default(true),
   CULTURE_ENGINE_VERSION: z.string().default('v1'),
 });

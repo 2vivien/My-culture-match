@@ -36,7 +36,9 @@ export async function getFeed(
   userId: string,
   filter: 'following' | 'for-you' | 'popular' | 'new' = 'following',
   limit = 20,
-): Promise<{ posts: HydratedPost[]; total: number }> {
+  cursor?: string,
+): Promise<{ posts: HydratedPost[]; total: number; nextCursor: string | null }> {
+  const offset = cursor ? parseInt(cursor, 10) || 0 : 0;
   const [me] = await db.select().from(schema.users).where(eq(schema.users.id, userId)).limit(1);
   if (!me) throw AppError.notFound('Utilisateur introuvable', 'USER_NOT_FOUND');
 
@@ -55,12 +57,12 @@ export async function getFeed(
     postIds = rows.map((r) => r.id);
   }
 
-  if (postIds.length === 0) return { posts: [], total: 0 };
+  if (postIds.length === 0) return { posts: [], total: 0, nextCursor: null };
 
   const hydrated = await getPostsByIds(postIds, userId);
   const candidates = hydrated.filter((p) => !blocked.has(p.author.id) && p.author.id !== userId);
 
-  if (candidates.length === 0) return { posts: [], total: 0 };
+  if (candidates.length === 0) return { posts: [], total: 0, nextCursor: null };
 
   // Vecteurs pour la résonance culturelle
   const [uvecRow] = await db.select({ vector: schema.userProfileVectors.vector }).from(schema.userProfileVectors).where(eq(schema.userProfileVectors.userId, userId)).limit(1);
@@ -94,5 +96,7 @@ export async function getFeed(
 
   scored.sort((a, b) => (filter === 'new' ? new Date(b.post.createdAt).getTime() - new Date(a.post.createdAt).getTime() : b.score - a.score));
 
-  return { posts: scored.slice(0, limit).map((s) => s.post), total: scored.length };
+  const page = scored.slice(offset, offset + limit).map((s) => s.post);
+  const nextCursor = offset + page.length < scored.length ? String(offset + page.length) : null;
+  return { posts: page, total: scored.length, nextCursor };
 }

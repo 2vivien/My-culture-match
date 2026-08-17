@@ -415,6 +415,7 @@ export const loveMatches = pgTable(
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
+    uniqueIndex('love_matches_user_candidate_uidx').on(t.userId, t.candidateId),
     index('love_matches_user_idx').on(t.userId),
     index('love_matches_candidate_idx').on(t.candidateId),
   ],

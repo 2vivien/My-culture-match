@@ -209,10 +209,9 @@ export async function banUser(
     .where(eq(schema.users.id, userId));
   await invalidateRoleCache(userId);
 
-  // Révoque les sessions actives du compte banni
-  const sessions = await db.select({ token: schema.sessions.token }).from(schema.sessions).where(eq(schema.sessions.userId, userId));
-  const { revokeSession } = await import('../auth/session.service');
-  await Promise.allSettled(sessions.map((s) => revokeSession(s.token)));
+  // Révoque toutes les sessions actives du compte banni (Redis + blacklist)
+  const { revokeAllUserSessions } = await import('../auth/session.service');
+  await revokeAllUserSessions(userId);
 
   await createNotification({
     userId,

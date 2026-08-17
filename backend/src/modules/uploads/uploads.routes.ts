@@ -26,10 +26,14 @@ uploadsModule.post('/complete', zValidator('json', uploadCompleteSchema), async 
   return c.json(result, 202);
 });
 
-// GET /api/uploads/:uploadId/status — état du traitement
+// GET /api/uploads/:uploadId/status — état du traitement (owner uniquement)
 uploadsModule.get('/:uploadId/status', async (c) => {
+  const { userId } = c.get('auth');
   const uploadId = c.req.param('uploadId');
   const result = await getMediaProcessResult(uploadId);
   if (!result) return c.json({ status: 'pending' }, 200);
+  if (result.userId !== userId) {
+    return c.json({ error: { code: 'FORBIDDEN', message: 'Cet upload ne vous appartient pas' } }, 403);
+  }
   return c.json({ status: 'done', uploadId: result.uploadId, objectKey: result.objectKey, contentType: result.contentType, thumbKey: result.thumbKey, width: result.width, height: result.height }, 200);
 });

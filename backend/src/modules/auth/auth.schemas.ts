@@ -29,6 +29,22 @@ export const oauthSchema = z.object({
   idToken: z.string().min(10, 'idToken invalide'),
 });
 
+/** POST /api/auth/2fa/verify */
+export const twoFactorVerifySchema = z.object({
+  ticket: z.string().min(10, 'ticket invalide'),
+  code: z
+    .string()
+    .regex(/^\d{6}$/, 'Code invalide : 6 chiffres requis'),
+});
+
+/** POST /api/auth/login/switch-otp — bascule un email OTP vers OAuth (same-origin). */
+export const switchOtpToOAuthSchema = z.object({
+  email: emailSchema,
+  method: z.enum(['google', 'apple']),
+});
+
 export type SendOtpInput = z.infer<typeof sendOtpSchema>;
 export type VerifyOtpInput = z.infer<typeof verifyOtpSchema>;
 export type OAuthInput = z.infer<typeof oauthSchema>;
+export type TwoFactorVerifyInput = z.infer<typeof twoFactorVerifySchema>;
+export type SwitchOtpToOAuthInput = z.infer<typeof switchOtpToOAuthSchema>;

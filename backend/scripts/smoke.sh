@@ -15,9 +15,11 @@ SLEEP="${SMOKE_SLEEP:-5}"
 check() {
   url="$1"
   label="$2"
+  header=""
+  [ -n "$SMOKE_METRICS_TOKEN" ] && header="--header=Authorization: Bearer $SMOKE_METRICS_TOKEN"
   n=1
   while [ "$n" -le "$TRIES" ]; do
-    if wget -q --spider "$url" 2>/dev/null; then
+    if wget -q --spider $header "$url" 2>/dev/null; then
       echo "OK  $label ($url)"
       return 0
     fi

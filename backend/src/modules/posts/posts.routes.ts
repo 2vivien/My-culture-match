@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { requireAuth } from '../auth/require-auth';
 import { createPostSchema, createCommentSchema, listCommentsQuerySchema } from './posts.schemas';
+import { withIdempotency, idempotencyKeyFrom } from '../../shared/utils/idempotency';
 import {
   createPost,
   getPostById,
@@ -18,11 +19,13 @@ export const postsModule = new Hono();
 
 postsModule.use('*', requireAuth);
 
-// POST /api/posts — création
+// POST /api/posts — création (idempotent)
 postsModule.post('/', zValidator('json', createPostSchema), async (c) => {
   const { userId } = c.get('auth');
   const input = c.req.valid('json');
-  const post = await createPost(userId, input);
+  const post = await withIdempotency(`posts:create:${userId}`, idempotencyKeyFrom(c), () =>
+    createPost(userId, input),
+  );
   return c.json(post, 201);
 });
 
@@ -33,18 +36,24 @@ postsModule.get('/:id', async (c) => {
   return c.json(post, 200);
 });
 
-// POST /api/posts/:id/like — toggle
+// POST /api/posts/:id/like — toggle (idempotent)
 postsModule.post('/:id/like', async (c) => {
   const { userId } = c.get('auth');
-  const result = await toggleLike(userId, c.req.param('id'));
+  const result = await withIdempotency(`posts:like:${userId}`, idempotencyKeyFrom(c), () =>
+    toggleLike(userId, c.req.param('id')),
+  );
   return c.json(result, 200);
 });
 
-// POST /api/posts/:id/comments — ajout
+// POST /api/posts/:id/comments — ajout (idempotent)
 postsModule.post('/:id/comments', zValidator('json', createCommentSchema), async (c) => {
   const { userId } = c.get('auth');
   const input = c.req.valid('json');
-  const result = await addComment(userId, c.req.param('id'), input);
+  const result = await withIdempotency(
+    `posts:comment:${userId}:${c.req.param('id')}`,
+    idempotencyKeyFrom(c),
+    () => addComment(userId, c.req.param('id'), input),
+  );
   return c.json(result, 201);
 });
 
@@ -55,10 +64,12 @@ postsModule.get('/:id/comments', zValidator('query', listCommentsQuerySchema), a
   return c.json(result, 200);
 });
 
-// POST /api/posts/:id/share
+// POST /api/posts/:id/share (idempotent)
 postsModule.post('/:id/share', async (c) => {
   const { userId } = c.get('auth');
-  const result = await sharePost(userId, c.req.param('id'));
+  const result = await withIdempotency(`posts:share:${userId}`, idempotencyKeyFrom(c), () =>
+    sharePost(userId, c.req.param('id')),
+  );
   return c.json(result, 200);
 });
 

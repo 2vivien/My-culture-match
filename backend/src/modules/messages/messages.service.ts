@@ -182,7 +182,8 @@ async function isUserOnline(userId: string): Promise<boolean> {
 }
 
 /** GET /api/conversations — liste. */
-export async function listConversations(userId: string): Promise<ConversationSummary[]> {
+/** GET /api/conversations — liste des conversations (aperçus tronqués). */
+export async function listConversations(userId: string, previewChars = 100): Promise<ConversationSummary[]> {
   const rows = await db
     .select({ conversationId: schema.conversationParticipants.conversationId })
     .from(schema.conversationParticipants)
@@ -192,7 +193,11 @@ export async function listConversations(userId: string): Promise<ConversationSum
 
   const summaries: ConversationSummary[] = [];
   for (const row of rows) {
-    summaries.push(await getConversationSummary(row.conversationId, userId));
+    const summary = await getConversationSummary(row.conversationId, userId);
+    if (summary.lastMessage && summary.lastMessage.length > previewChars) {
+      summary.lastMessage = `${summary.lastMessage.slice(0, previewChars)}…`;
+    }
+    summaries.push(summary);
   }
   return summaries.sort((a, b) => b.lastMessageAt.localeCompare(a.lastMessageAt));
 }

@@ -34,7 +34,7 @@ groups:
           description: 'Plus de 1000 jobs en attente sur la queue {{ $labels.queue }}.'
 
       - alert: RedisMemoryHigh
-        expr: (mcm_node_heapSizeUsed / mcm_node_heapSizeTotal) > 0.8
+        expr: (mcm_node_nodejs_heap_size_used_bytes / mcm_node_nodejs_heap_size_total_bytes) > 0.8
         for: 10m
         labels:
           severity: warning

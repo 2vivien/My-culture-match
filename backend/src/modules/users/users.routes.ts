@@ -2,7 +2,7 @@ import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { requireAuth } from '../auth/require-auth';
 import { profilePatchSchema } from './users.schemas';
-import { getCurrentUser, getPublicUser, updateProfile } from './users.service';
+import { getCurrentUser, getPublicUser, updateProfile, followUser, unfollowUser } from './users.service';
 
 /** Routes /api/users (auth requise). */
 export const usersModule = new Hono();
@@ -24,9 +24,26 @@ usersModule.patch('/me', zValidator('json', profilePatchSchema), async (c) => {
   return c.json(user, 200);
 });
 
-// GET /api/users/:id — profil public
+// GET /api/users/:id — profil public (isFollowing si vu par un utilisateur connecté)
 usersModule.get('/:id', async (c) => {
   const userId = c.req.param('id');
-  const user = await getPublicUser(userId);
+  const viewerId = c.get('auth').userId;
+  const user = await getPublicUser(userId, viewerId);
   return c.json(user, 200);
+});
+
+// POST /api/users/:id/follow — suivre
+usersModule.post('/:id/follow', async (c) => {
+  const { userId } = c.get('auth');
+  const targetId = c.req.param('id');
+  const result = await followUser(userId, targetId);
+  return c.json(result, 200);
+});
+
+// DELETE /api/users/:id/follow — ne plus suivre
+usersModule.delete('/:id/follow', async (c) => {
+  const { userId } = c.get('auth');
+  const targetId = c.req.param('id');
+  const result = await unfollowUser(userId, targetId);
+  return c.json(result, 200);
 });

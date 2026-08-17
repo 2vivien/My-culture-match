@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "love_matches_user_candidate_uidx" ON "love_matches" USING btree ("user_id","candidate_id");

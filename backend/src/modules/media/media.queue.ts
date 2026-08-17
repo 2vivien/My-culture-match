@@ -37,6 +37,7 @@ const DONE_TTL = 24 * 60 * 60; // 24h
 
 interface ProcessResult {
   uploadId: string;
+  userId: string;
   objectKey: string;
   contentType: string;
   thumbKey: string | null;
@@ -96,6 +97,7 @@ async function processJob(job: MediaProcessJob): Promise<void> {
 
   const result: ProcessResult = {
     uploadId,
+    userId: job.userId,
     objectKey,
     contentType,
     thumbKey,

@@ -7,6 +7,7 @@ import {
   listMessagesQuerySchema,
   sendMessageSchema,
 } from './messages.schemas';
+import { withIdempotency, idempotencyKeyFrom } from '../../shared/utils/idempotency';
 import {
   createConversation,
   getMessages,
@@ -45,11 +46,15 @@ messagesRoutes.get('/conversations/:id/messages', zValidator('query', listMessag
   return c.json({ messages, nextCursor }, 200);
 });
 
-/** POST /api/conversations/:id/messages — envoi. */
+/** POST /api/conversations/:id/messages — envoi (idempotent). */
 messagesRoutes.post('/conversations/:id/messages', zValidator('json', sendMessageSchema), async (c) => {
   const payload = c.req.valid('json');
   const { userId } = c.get('auth');
-  const message = await sendMessage(c.req.param('id'), userId, payload);
+  const message = await withIdempotency(
+    `messages:send:${userId}:${c.req.param('id')}`,
+    idempotencyKeyFrom(c),
+    () => sendMessage(c.req.param('id'), userId, payload),
+  );
   return c.json(message, 201);
 });
 

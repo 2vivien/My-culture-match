@@ -1,13 +1,20 @@
 import { Hono, type Context } from 'hono';
 import { setCookie, deleteCookie, getCookie } from 'hono/cookie';
 import { zValidator } from '@hono/zod-validator';
-import { sendOtpSchema, verifyOtpSchema, oauthSchema } from './auth.schemas';
-import { sendOtp, verifyOtpAndLogin, loginWithOAuth, logout, getSession } from './auth.service';
+import { sendOtpSchema, verifyOtpSchema, oauthSchema, twoFactorVerifySchema, switchOtpToOAuthSchema } from './auth.schemas';
+import {
+  sendOtp,
+  verifyOtpAndLogin,
+  verifyTwoFactorLogin,
+  loginWithOAuth,
+  logout,
+  getSession,
+} from './auth.service';
 import { requireAuth } from './require-auth';
 import { SESSION_COOKIE, SESSION_TTL_SECONDS } from './session.service';
 import { env } from '../../config/env';
 
-const SESSION_PATH = '/api/auth';
+const SESSION_PATH = '/';
 
 function extractIp(c: Context): string {
   const fwd = c.req.header('x-forwarded-for');
@@ -26,6 +33,15 @@ function setSessionCookie(c: Context, token: string) {
   });
 }
 
+type LoginResultShape =
+  | { token: string; user: unknown; isNewUser: boolean }
+  | { twoFactorRequired: true; ticket: string; user: unknown };
+
+function sendLoginResponse(c: Context, result: LoginResultShape) {
+  if ('token' in result) setSessionCookie(c, result.token);
+  return c.json(result, 200);
+}
+
 export const authModule = new Hono()
   .post('/send-otp', zValidator('json', sendOtpSchema), async (c) => {
     const { email } = c.req.valid('json');
@@ -41,7 +57,23 @@ export const authModule = new Hono()
       ip,
       userAgent: c.req.header('user-agent'),
     });
+    return sendLoginResponse(c, result);
+  })
+
+  .post('/2fa/verify', zValidator('json', twoFactorVerifySchema), async (c) => {
+    const { ticket, code } = c.req.valid('json');
+    const ip = extractIp(c);
+    const result = await verifyTwoFactorLogin(ticket, code, {
+      ip,
+      userAgent: c.req.header('user-agent'),
+    });
     setSessionCookie(c, result.token);
+    return c.json(result, 200);
+  })
+
+  .post('/login/switch-otp', zValidator('json', switchOtpToOAuthSchema), async (c) => {
+    const ip = extractIp(c);
+    const result = await sendOtp(c.req.valid('json').email, ip);
     return c.json(result, 200);
   })
 
@@ -52,8 +84,7 @@ export const authModule = new Hono()
       ip,
       userAgent: c.req.header('user-agent'),
     });
-    setSessionCookie(c, result.token);
-    return c.json(result, 200);
+    return sendLoginResponse(c, result);
   })
 
   .post('/apple', zValidator('json', oauthSchema), async (c) => {
@@ -63,8 +94,7 @@ export const authModule = new Hono()
       ip,
       userAgent: c.req.header('user-agent'),
     });
-    setSessionCookie(c, result.token);
-    return c.json(result, 200);
+    return sendLoginResponse(c, result);
   })
 
   .post('/logout', requireAuth, async (c) => {

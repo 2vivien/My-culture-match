@@ -28,8 +28,45 @@ export async function availableUsernameSuggestions(base: string): Promise<string
   return suggestions;
 }
 
+export interface OnboardedUserDto {
+  id: string;
+  email: string;
+  username: string;
+  name: string;
+  avatar: string | null;
+  avatarSeed: string | null;
+  level: number;
+  xp: number;
+  glow: string;
+  gender: string | null;
+  seeking: string | null;
+  intention: string | null;
+  profileCompleted: boolean;
+  createdAt: string;
+}
+
+/** Projection sûre : n'expose jamais les champs sensibles (2FA, verrouillage, bannissement). */
+function toSafeUser(user: schema.User): OnboardedUserDto {
+  return {
+    id: user.id,
+    email: user.email,
+    username: user.username,
+    name: user.name,
+    avatar: user.avatar,
+    avatarSeed: user.avatarSeed,
+    level: user.level,
+    xp: user.xp,
+    glow: user.glow,
+    gender: user.gender,
+    seeking: user.seeking,
+    intention: user.intention,
+    profileCompleted: user.profileCompleted,
+    createdAt: user.createdAt.toISOString(),
+  };
+}
+
 /** Traite l'onboarding en 7 étapes : valide les règles métier et remplit le profil. */
-export async function completeOnboarding(input: OnboardingInput): Promise<schema.User> {
+export async function completeOnboarding(input: OnboardingInput): Promise<OnboardedUserDto> {
   const [existing] = await db
     .select()
     .from(schema.users)
@@ -91,5 +128,5 @@ export async function completeOnboarding(input: OnboardingInput): Promise<schema
     .values({ userId: existing.id, vector: {}, updatedAt: new Date() })
     .onConflictDoNothing();
 
-  return updated!;
+  return toSafeUser(updated!);
 }

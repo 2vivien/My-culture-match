@@ -94,11 +94,13 @@ jobs:
             -e SMTP_HOST='mailpit' \
             -e SMTP_PORT='1025' \
             -e LOG_LEVEL='info' \
+            -e METRICS_TOKEN='smoke-test-token' \
             -p 3000:3000 \
             ${{ needs.build-and-push.outputs.image }}
 
       - name: Smoke test
-        run: BASE_URL=http://localhost:3000 ./scripts/smoke.sh
+        working-directory: backend
+        run: BASE_URL=http://localhost:3000 SMOKE_METRICS_TOKEN=smoke-test-token ./scripts/smoke.sh
 
       - name: Cleanup
         if: always()
@@ -126,3 +128,4 @@ jobs:
           SSH_USER: ${{ secrets.SSH_USER }}
           SSH_KEY: ${{ secrets.SSH_KEY }}
         run: ./scripts/deploy.sh
+        working-directory: backend

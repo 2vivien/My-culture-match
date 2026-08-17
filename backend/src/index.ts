@@ -15,6 +15,10 @@ import { startCountersFlushWorker, closeCountersFlushQueue } from './modules/fee
 import { startStoriesCleanup, stopStoriesCleanup } from './modules/stories/stories.service';
 import { startModerationWorker, closeModerationQueue, moderationQueue, moderationDlq } from './modules/moderation/moderation.queue';
 import { startCultureEngineWorker, scheduleNightlyCultureBatch, closeCultureEngineQueue, cultureBatchQueue } from './modules/culture-engine/batch.queue';
+import { startEmbeddingWorker, closeEmbeddingQueue, embeddingQueue } from './modules/culture-engine/embedding.queue';
+import { startMediaWorker, closeMediaQueue, mediaQueue } from './modules/media/media.queue';
+import { startSearchWorker, closeSearchQueue, searchQueue } from './modules/search/search.queue';
+import { startFeedFanoutWorker, closeFeedFanoutQueue, feedFanoutQueue } from './modules/feed/feed.queue';
 import { startCronWorkers, closeCronQueues } from './modules/workers/crons';
 
 async function bootstrap() {
@@ -47,6 +51,18 @@ async function bootstrap() {
     logger.warn({ err: { message: String(err) } }, 'batch nightly déjà planifié');
   }
 
+  // Worker embedding des posts (vecteurs postProfileVectors pour le feed)
+  startEmbeddingWorker();
+
+  // Worker traitement média (thumbnails, dimensions, détection)
+  startMediaWorker();
+
+  // Worker indexation Meilisearch (recherche posts/tribus)
+  startSearchWorker();
+
+  // Worker fanout feed suivant (pousse les posts dans les ZSET Redis)
+  startFeedFanoutWorker();
+
   // Crons : présence, sessions expirées, suggestions utilisateurs
   startCronWorkers();
 
@@ -59,6 +75,10 @@ async function bootstrap() {
     { name: 'moderation.scan', queue: moderationQueue },
     { name: 'moderation.scan.dlq', queue: moderationDlq },
     { name: 'culture-engine.batch', queue: cultureBatchQueue },
+    { name: 'culture-engine.embedding', queue: embeddingQueue },
+    { name: 'media.process', queue: mediaQueue },
+    { name: 'search.index', queue: searchQueue },
+    { name: 'feed.fanout', queue: feedFanoutQueue },
   ]);
 
   const app = createApp();
@@ -75,7 +95,7 @@ async function bootstrap() {
     logger.info(`Signal ${signal} reçu, arrêt en cours…`);
     clearInterval(queueSampler);
     server.close(async () => {
-      await Promise.allSettled([closeDatabase(), closeRedis(), closeMeilisearch(), closeEmailQueue(), closeCountersFlushQueue(), closeModerationQueue(), closeCultureEngineQueue(), closeCronQueues()]);
+      await Promise.allSettled([closeDatabase(), closeRedis(), closeMeilisearch(), closeEmailQueue(), closeCountersFlushQueue(), closeModerationQueue(), closeCultureEngineQueue(), closeEmbeddingQueue(), closeMediaQueue(), closeSearchQueue(), closeFeedFanoutQueue(), closeCronQueues()]);
       stopStoriesCleanup();
       process.exit(0);
     });

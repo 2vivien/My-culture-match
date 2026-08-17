@@ -1,14 +1,26 @@
-import { randomInt } from 'node:crypto';
+import { randomInt, randomUUID } from 'node:crypto';
 import { and, eq } from 'drizzle-orm';
 import { db, schema } from '../../infrastructure/database';
+import { redis } from '../../infrastructure/redis';
 import { AppError } from '../../shared/utils/AppError';
 import { checkOtpSendLimit, createOtp, verifyOtp } from './otp.service';
 import { createSession, revokeSession, verifySession } from './session.service';
 import { verifyIdToken, type OAuthProvider } from './oauth.service';
 import { sendOtpEmail } from '../email/otp.templates';
+import { verifyTotpCode } from '../../shared/utils/totp';
 
 const LOCK_THRESHOLD = 5;
 const LOCK_DURATION_MS = 30 * 60 * 1000; // 30 minutes
+
+// Ticket de pré-auth 2FA (valable 5 min, 5 essais max) — la session n'est
+// créée qu'après validation du code TOTP.
+const TWO_FA_TICKET_TTL = 5 * 60;
+const TWO_FA_MAX_ATTEMPTS = 5;
+const twoFaTicketKey = (ticket: string) => `auth:2fa:ticket:${ticket}`;
+
+export type LoginResult =
+  | { token: string; user: ReturnType<typeof publicUser>; isNewUser: boolean; twoFactorRequired?: false }
+  | { twoFactorRequired: true; ticket: string; user: ReturnType<typeof publicUser> };
 
 // ── Helpers ────────────────────────────────────────────────
 function generateUsername(email: string): string {
@@ -43,6 +55,21 @@ function assertNotLocked(user: { lockedUntil: Date | null; bannedAt: Date | null
     const remainingMin = Math.ceil((user.lockedUntil.getTime() - Date.now()) / 60000);
     throw AppError.forbidden(`Compte verrouillé. Réessayez dans ${remainingMin} min.`, 'ACCOUNT_LOCKED');
   }
+}
+
+/** Émet un ticket de pré-auth si l'utilisateur a activé la 2FA (pas de session). */
+async function maybeRequireTwoFactor(
+  user: { id: string; email: string; name: string; username: string; avatar: string | null; emailVerified: boolean; role: string; bannedAt: Date | null; twoFactorEnabled: boolean },
+): Promise<LoginResult | null> {
+  if (!user.twoFactorEnabled) return null;
+  const ticket = randomUUID();
+  await redis.set(
+    twoFaTicketKey(ticket),
+    JSON.stringify({ userId: user.id, attempts: 0 }),
+    'EX',
+    TWO_FA_TICKET_TTL,
+  );
+  return { twoFactorRequired: true, ticket, user: publicUser(user) };
 }
 
 /** Crée un compte minimal (email, username) — le profil est complété à l'onboarding. */
@@ -87,7 +114,7 @@ export async function verifyOtpAndLogin(
   email: string,
   code: string,
   meta: { ip?: string; userAgent?: string },
-): Promise<{ token: string; user: ReturnType<typeof publicUser>; isNewUser: boolean }> {
+): Promise<LoginResult> {
   const existing = await findUserByEmail(email);
   if (existing) assertNotLocked(existing);
 
@@ -118,8 +145,44 @@ export async function verifyOtpAndLogin(
     .set({ failedLoginAttempts: 0, lockedUntil: null, lastLoginAt: new Date(), updatedAt: new Date() })
     .where(eq(schema.users.id, user.id));
 
+  // 2FA activée → pré-auth (ticket) en attendant le code TOTP
+  const twoFactor = await maybeRequireTwoFactor(user);
+  if (twoFactor) return twoFactor;
+
   const token = await createSession(user.id, meta);
   return { token, user: publicUser(user), isNewUser };
+}
+
+/** POST /auth/2fa/verify — valide le code TOTP du ticket et ouvre la session. */
+export async function verifyTwoFactorLogin(
+  ticket: string,
+  code: string,
+  meta: { ip?: string; userAgent?: string },
+): Promise<{ token: string; user: ReturnType<typeof publicUser>; isNewUser: false }> {
+  const raw = await redis.get(twoFaTicketKey(ticket));
+  if (!raw) throw AppError.badRequest('Session de double authentification expirée. Recommencez.', 'TWO_FACTOR_TICKET_EXPIRED');
+
+  const record = JSON.parse(raw) as { userId: string; attempts: number };
+  const [user] = await db.select().from(schema.users).where(eq(schema.users.id, record.userId)).limit(1);
+  if (!user || !user.twoFactorEnabled || !user.twoFactorSecret) {
+    await redis.del(twoFaTicketKey(ticket));
+    throw AppError.badRequest('Double authentification inactive. Réessayez.', 'TWO_FACTOR_NOT_ENABLED');
+  }
+
+  if (!verifyTotpCode(user.twoFactorSecret, code)) {
+    const attempts = record.attempts + 1;
+    if (attempts >= TWO_FA_MAX_ATTEMPTS) {
+      await redis.del(twoFaTicketKey(ticket));
+      throw AppError.badRequest('Trop de tentatives. Recommencez la connexion.', 'TWO_FACTOR_EXHAUSTED');
+    }
+    await redis.set(twoFaTicketKey(ticket), JSON.stringify({ userId: user.id, attempts }), 'EX', TWO_FA_TICKET_TTL);
+    throw AppError.badRequest(`Code de double authentification invalide (${TWO_FA_MAX_ATTEMPTS - attempts} essai(s) restant).`, 'TWO_FACTOR_CODE_INVALID');
+  }
+
+  await redis.del(twoFaTicketKey(ticket));
+  await db.update(schema.users).set({ lastLoginAt: new Date(), updatedAt: new Date() }).where(eq(schema.users.id, user.id));
+  const token = await createSession(user.id, meta);
+  return { token, user: publicUser(user), isNewUser: false };
 }
 
 /** POST /google | /apple — vérifie le idToken et connecte le compte. */
@@ -127,8 +190,15 @@ export async function loginWithOAuth(
   provider: OAuthProvider,
   idToken: string,
   meta: { ip?: string; userAgent?: string },
-): Promise<{ token: string; user: ReturnType<typeof publicUser>; isNewUser: boolean }> {
+): Promise<LoginResult> {
   const claims = await verifyIdToken(provider, idToken);
+
+  if (!claims.emailVerified) {
+    throw AppError.forbidden(
+      'Votre adresse e-mail n\'est pas vérifiée chez votre fournisseur d\'authentification. Vérifiez-la avant de vous connecter.',
+      'OAUTH_EMAIL_NOT_VERIFIED',
+    );
+  }
 
   const existing = await findUserByEmail(claims.email);
   if (existing) assertNotLocked(existing);
@@ -155,6 +225,8 @@ export async function loginWithOAuth(
       .update(schema.users)
       .set({ lastLoginAt: new Date(), updatedAt: new Date() })
       .where(eq(schema.users.id, user.id));
+    const twoFactor = await maybeRequireTwoFactor(user);
+    if (twoFactor) return twoFactor;
     const token = await createSession(user.id, meta);
     return { token, user: publicUser(user), isNewUser };
   }
@@ -165,6 +237,8 @@ export async function loginWithOAuth(
     .update(schema.users)
     .set({ lastLoginAt: new Date(), updatedAt: new Date() })
     .where(eq(schema.users.id, user.id));
+  const twoFactor = await maybeRequireTwoFactor(user);
+  if (twoFactor) return twoFactor;
   const token = await createSession(user.id, meta);
   return { token, user: publicUser(user), isNewUser: false };
 }

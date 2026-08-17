@@ -1,7 +1,7 @@
 import { getAuthToken } from './auth.token';
 
 const USE_MOCK = (import.meta.env.VITE_USE_MOCK ?? 'true') === 'true';
-const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:3000';
+const API_BASE = '';
 
 export interface ApiErrorPayload {
   code?: string;

@@ -82,3 +82,26 @@ export async function revokeSession(token: string): Promise<void> {
   // Marque le backup PG comme révoqué
   await db.update(schema.sessions).set({ updatedAt: new Date() }).where(eq(schema.sessions.id, payload.jti));
 }
+
+/**
+ * Révoque toutes les sessions d'un utilisateur (ban/suspension).
+ * Utilise l'id de session (jti) stocké en base — pas besoin du JWT brut,
+ * uniquement conservé en hash côté client.
+ */
+export async function revokeAllUserSessions(userId: string): Promise<void> {
+  const rows = await db
+    .select({ id: schema.sessions.id, expiresAt: schema.sessions.expiresAt })
+    .from(schema.sessions)
+    .where(eq(schema.sessions.userId, userId));
+
+  await Promise.allSettled(
+    rows.map(async ({ id: jti, expiresAt }) => {
+      const remainingMs = new Date(expiresAt).getTime() - Date.now();
+      const ttlSeconds = Math.max(1, Math.ceil(remainingMs / 1000));
+
+      await redis.del(sessionKey(jti));
+      await redis.set(blacklistKey(jti), '1', 'EX', ttlSeconds);
+      await db.update(schema.sessions).set({ updatedAt: new Date() }).where(eq(schema.sessions.id, jti));
+    }),
+  );
+}

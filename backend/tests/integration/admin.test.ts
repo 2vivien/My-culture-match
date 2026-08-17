@@ -140,11 +140,11 @@ describe('Admin & modération (L12)', () => {
     const { banned: isBanned } = (await banned.json()) as { banned: boolean };
     expect(isBanned).toBe(true);
 
-    // Session existante : refusée par requireAuth (ACCOUNT_BANNED)
+    // Session existante : révoquée au ban (401) — la révocation marche
     const me = await app.request('/api/users/me', authed(target.token));
-    expect(me.status).toBe(403);
+    expect(me.status).toBe(401);
     const body = (await me.json()) as { error?: { code?: string } };
-    expect(body.error?.code).toBe('ACCOUNT_BANNED');
+    expect(body.error?.code).toBe('UNAUTHORIZED');
 
     // Nouvelle tentative de connexion : refusée
     await app.request('/api/auth/send-otp', {
