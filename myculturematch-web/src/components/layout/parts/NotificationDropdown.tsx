@@ -5,11 +5,7 @@ import { NotificationHeader } from './NotificationHeader';
 import { NotificationItemView } from './NotificationItemView';
 import { NotificationFooter } from './NotificationFooter';
 
-interface NotificationDropdownProps {
-  hideSubText?: boolean;
-}
-
-export const NotificationDropdown: React.FC<NotificationDropdownProps> = () => {
+export const NotificationDropdown: React.FC = () => {
   const {
     filter,
     setFilter,

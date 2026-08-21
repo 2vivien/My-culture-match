@@ -13,6 +13,8 @@ interface UIState {
   setNotificationsCount: (count: number) => void;
   showCreateTribeModal: boolean;
   setShowCreateTribeModal: (show: boolean) => void;
+  likedPosts: Set<string>;
+  toggleLikedPost: (postId: string) => void;
 }
 
 export const useUIStore = create<UIState>((set) => ({
@@ -33,4 +35,11 @@ export const useUIStore = create<UIState>((set) => ({
   setNotificationsCount: (notificationsCount) => set({ notificationsCount }),
   showCreateTribeModal: false,
   setShowCreateTribeModal: (showCreateTribeModal) => set({ showCreateTribeModal }),
+  likedPosts: new Set(),
+  toggleLikedPost: (postId) => set((s) => {
+    const next = new Set(s.likedPosts)
+    if (next.has(postId)) next.delete(postId)
+    else next.add(postId)
+    return { likedPosts: next }
+  }),
 }));

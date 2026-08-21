@@ -17,7 +17,7 @@ interface MatchModalProps {
 export const MatchModal = ({ visible, onClose, user, currentUserPhoto }: MatchModalProps) => {
   if (!user) return null;
 
-  const isFriendMode = user.mode === 'friendship';
+  const isFriendMode = user?.mode === 'friendship';
 
   // Love mode: neutral light gradient. Friend mode: strict Black & White
   const themeBgColors = (isFriendMode 
@@ -68,7 +68,7 @@ export const MatchModal = ({ visible, onClose, user, currentUserPhoto }: MatchMo
             {/* Matched User photo */}
             <View style={[tw`w-[160px] h-[220px] bg-gray-200 rounded-[40px] absolute border-4`, { borderColor: isFriendMode ? '#fff' : '#fff', transform: [{ rotate: '8deg' }, { translateX: 40 }, { translateY: 20 }] }, SHADOWS.card]}>
               <Image 
-                source={{ uri: user.images[0] }}
+                source={{ uri: user?.images?.[0] || 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=800' }}
                 style={tw`w-full h-full rounded-[36px]`}
                 resizeMode="cover"
               />

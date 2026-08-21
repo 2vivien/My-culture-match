@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAppStore } from '@/src/stores/useAppStore';
+import { authService } from '@/src/services/authService';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AuthIllustration } from '@/src/components/auth/AuthIllustration';
 import { AuthHeader } from '@/src/components/auth/AuthHeader';
@@ -9,7 +10,7 @@ import { AuthSocialButtons } from '@/src/components/auth/AuthSocialButtons';
 import { AuthFooter } from '@/src/components/auth/AuthFooter';
 
 export function AuthPage() {
-  const { loginUser, setAuthenticated, setOnboarded } = useAppStore();
+  const { setAuthenticated, setOnboarded } = useAppStore();
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -19,12 +20,17 @@ export function AuthPage() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
     if (!email || !password) {
       setError('Veuillez remplir tous les champs obligatoires.');
+      return;
+    }
+
+    if (!authService.isEmailValid(email)) {
+      setError('Format d\'email invalide.');
       return;
     }
 
@@ -35,22 +41,23 @@ export function AuthPage() {
 
     setIsLoading(true);
 
-    // Mock API request delay
-    setTimeout(() => {
+    if (mode === 'signin') {
+      const result = await authService.signIn(email, password);
       setIsLoading(false);
-      if (mode === 'signin') {
-        // Direct login to dashboard with default user
-        loginUser({
-          name: 'Amal',
-          avatar: 'https://api.dicebear.com/7.x/open-peeps/svg?seed=Amal',
-          location: 'Bénin',
-        });
-      } else {
-        // Go to onboarding
+      if (!result.success) {
+        setError(result.error || 'Erreur de connexion.');
+      }
+    } else {
+      const name = email.split('@')[0];
+      const result = await authService.signUp(email, password, name);
+      setIsLoading(false);
+      if (result.success) {
         setAuthenticated(true);
         setOnboarded(false);
+      } else {
+        setError(result.error || 'Erreur d\'inscription.');
       }
-    }, 1200);
+    }
   };
 
   return (

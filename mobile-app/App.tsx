@@ -25,6 +25,7 @@ import { ProfileDetailScreen } from './screens/ProfileDetailScreen';
 import { ProfileScreen } from './screens/ProfileScreen';
 import { FriendSearchScreen } from './screens/FriendSearchScreen';
 import { NotificationsScreen } from './screens/NotificationsScreen';
+import { MATCHES, MESSAGES } from './data/conversations';
 
 if (Platform.OS === 'web') {
   const style = document.createElement('style');
@@ -57,7 +58,7 @@ export default function App() {
   const [showAuth, setShowAuth] = useState(false);
   const [showInterestsOnboarding, setShowInterestsOnboarding] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [selectedChat, setSelectedChat] = useState<string | null>(null);
+  const [selectedChat, setSelectedChat] = useState<typeof MATCHES[0] | null>(null);
   const [selectedProfile, setSelectedProfile] = useState<any | null>(null);
   const [currentTab, setCurrentTab] = useState('home');
 
@@ -117,7 +118,10 @@ export default function App() {
     const renderScreen = () => {
       switch (currentTab) {
         case 'chat':
-          return <ConversationsScreen onSelectChat={(id) => setSelectedChat(id)} onShowNotifications={() => setShowNotifications(true)} />;
+          return <ConversationsScreen onSelectChat={(id) => {
+            const user = MATCHES.find((m) => m.id === id) || MESSAGES.find((m) => m.id === id);
+            if (user) setSelectedChat(user);
+          }} onShowNotifications={() => setShowNotifications(true)} />;
         case 'friends':
           return <FriendSearchScreen onSelectProfile={(user) => setSelectedProfile(user)} />;
         case 'profile':
@@ -136,7 +140,7 @@ export default function App() {
           {showNotifications ? (
             <NotificationsScreen onBack={() => setShowNotifications(false)} />
           ) : selectedChat ? (
-            <ChatScreen onBack={() => setSelectedChat(null)} />
+            <ChatScreen partner={selectedChat} onBack={() => setSelectedChat(null)} />
           ) : selectedProfile ? (
             <ProfileDetailScreen 
               user={selectedProfile} 

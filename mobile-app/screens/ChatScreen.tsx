@@ -15,24 +15,26 @@ import { ChevronLeft, Phone, Video, MoreVertical, Camera, Mic, Image as ImageIco
 import tw from '@/lib/tailwind';
 import { COLORS } from '@/lib/theme';
 
-export const ChatScreen = ({ route, onBack }: { route?: any, onBack: () => void }) => {
+interface ChatScreenProps {
+  partner?: { id: string; name: string; image: string; isOnline?: boolean } | null;
+  onBack: () => void;
+}
+
+export const ChatScreen = ({ partner, onBack }: ChatScreenProps) => {
   const [message, setMessage] = useState('');
-  
-  // Mock data for the specific chat
-  const chatUser = {
+
+  const chatUser = partner || {
     name: 'Jennifer Steve',
-    status: 'Active Now',
     image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200'
   };
 
+  const isOnline = partner && 'isOnline' in partner ? partner.isOnline : true;
+
   const messages = [
-    { id: '1', text: 'Hi Jennifer How are you ?', time: '16:12', isSender: false },
-    { id: '2', text: 'Totally Fine Bro !', time: '16:12', isSender: true },
-    { id: '3', text: 'Prince ! I finally Found A Job', time: '16:12', isSender: true },
-    { id: '4', text: 'Congrats ! after all this searches your finally made it.', time: '16:12', isSender: false },
-    { id: '5', text: 'In which company btw ?', time: '16:12', isSender: false },
-    { id: '6', text: 'UI designer in facebook', time: '16:12', isSender: true },
-    { id: '7', text: 'Excellent Brother !', time: '16:12', isSender: false },
+    { id: '1', text: `Hey ${chatUser.name}, how are you?`, time: '16:12', isSender: false },
+    { id: '2', text: 'I\'m great! Thanks for asking.', time: '16:12', isSender: true },
+    { id: '3', text: 'Would you like to share some cultural traditions?', time: '16:13', isSender: false },
+    { id: '4', text: 'I\'d love to! Let me tell you about my heritage.', time: '16:14', isSender: true },
   ];
 
   // Primary Theme Color for header/send button
@@ -52,11 +54,11 @@ export const ChatScreen = ({ route, onBack }: { route?: any, onBack: () => void 
               </TouchableOpacity>
               <View style={tw`relative`}>
                 <Image source={{ uri: chatUser.image }} style={tw`w-12 h-12 rounded-full border-2 border-white/20`} />
-                <View style={tw`absolute right-0 bottom-0 w-3 h-3 bg-green-400 border-2 border-[${lightDustyRose}] rounded-full`} />
+                <View style={[tw`absolute right-0 bottom-0 w-3 h-3 bg-green-400 rounded-full`, { borderWidth: 2, borderColor: lightDustyRose }]} />
               </View>
               <View>
                 <Text style={[tw`text-white text-[18px] font-extrabold`, { fontFamily: 'Urbanist_800ExtraBold' }]}>{chatUser.name}</Text>
-                <Text style={[tw`text-white/80 text-[12px] font-semibold`, { fontFamily: 'Urbanist_600SemiBold' }]}>{chatUser.status}</Text>
+                <Text style={[tw`text-white/80 text-[12px] font-semibold`, { fontFamily: 'Urbanist_600SemiBold' }]}>{isOnline ? 'Active Now' : 'Offline'}</Text>
               </View>
             </View>
             <View style={tw`flex-row items-center gap-4`}>

@@ -6,10 +6,11 @@ import { Button } from '@/src/components/ui/button';
 
 interface PostActionsProps {
   likes: number;
+  liked?: boolean;
   onLike: () => void;
 }
 
-export const PostActions = ({ likes, onLike }: PostActionsProps) => {
+export const PostActions = ({ likes, liked, onLike }: PostActionsProps) => {
   const { currentUser } = useAppStore();
   const [comment, setComment] = useState('');
 
@@ -33,9 +34,9 @@ export const PostActions = ({ likes, onLike }: PostActionsProps) => {
       <div className="flex items-center justify-end gap-4 text-app-gray px-2">
         <button 
           onClick={onLike} 
-          className="flex items-center gap-1.5 hover:text-[#E27D60] transition-colors font-semibold text-sm cursor-pointer"
+          className={`flex items-center gap-1.5 transition-colors font-semibold text-sm cursor-pointer ${liked ? 'text-[#E27D60]' : 'hover:text-[#E27D60] text-app-gray'}`}
         >
-          <FlagTriangleLeft className="w-5 h-5" />
+          <FlagTriangleLeft className={`w-5 h-5 ${liked ? 'fill-current' : ''}`} />
           <span>{likes === 0 ? 'flag' : formatLikes(likes)}</span>
         </button>
         <button className="flex items-center gap-1.5 hover:text-[#E27D60] transition-colors font-semibold text-sm cursor-pointer">

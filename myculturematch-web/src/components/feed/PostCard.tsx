@@ -9,7 +9,8 @@ interface PostCardProps {
 }
 
 export const PostCard = ({ post }: PostCardProps) => {
-  const { likePost } = useFeed();
+  const { likePost, isPostLiked } = useFeed();
+  const liked = isPostLiked(post.id);
 
   return (
     <article className="bg-white dark:bg-zinc-950 rounded-[24px] p-5 shadow-soft border border-app-border dark:border-zinc-850 hover:shadow-float transition-all duration-300">
@@ -19,6 +20,7 @@ export const PostCard = ({ post }: PostCardProps) => {
         image={post.image}
         likes={post.likes}
         views={post.views}
+        liked={liked}
         onLike={() => likePost(post.id)}
       />
       
@@ -32,7 +34,7 @@ export const PostCard = ({ post }: PostCardProps) => {
         </div>
       )}
 
-      <PostActions likes={post.likes} onLike={() => likePost(post.id)} />
+      <PostActions likes={post.likes} liked={liked} onLike={() => likePost(post.id)} />
     </article>
   );
 };

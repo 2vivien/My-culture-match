@@ -53,8 +53,7 @@ export const AuthScreen = ({ onAuthSuccess }: { onAuthSuccess: (mode: 'login' | 
                 },
               }),
               { 
-                backdropFilter: 'blur(10px)',
-                maxWidth: 400, // For tablet/web
+                maxWidth: 400,
                 alignSelf: 'center'
               } as any
             ]}>

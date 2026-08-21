@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from './lib/queryClient';
+import { authService } from './services/authService';
 import { Sidebar } from './components/layout/Sidebar';
 import { Header } from './components/layout/Header';
 import { MainFeedColumn } from './components/feed/MainFeedColumn';
@@ -25,6 +26,10 @@ import { ConnexionPage } from './pages/ConnexionPage';
 export default function App() {
   const { theme, isAuthenticated, isOnboarded } = useAppStore();
   const { activeTab } = useUIStore();
+
+  useEffect(() => {
+    authService.restoreSession();
+  }, []);
 
   useEffect(() => {
     if (theme === 'dark') {

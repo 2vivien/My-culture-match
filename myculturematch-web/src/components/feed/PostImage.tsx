@@ -4,11 +4,12 @@ import { motion } from 'framer-motion';
 interface PostImageProps {
   image?: string;
   likes: number;
+  liked?: boolean;
   onLike: () => void;
   views: number;
 }
 
-export const PostImage = ({ image, likes, onLike, views }: PostImageProps) => {
+export const PostImage = ({ image, likes, liked, onLike, views }: PostImageProps) => {
   if (!image) return null;
 
   return (

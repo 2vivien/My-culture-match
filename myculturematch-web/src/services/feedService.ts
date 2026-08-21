@@ -5,7 +5,7 @@ const USE_MOCK = true;
 const API_BASE = '';
 
 export const feedService = {
-  async getPosts(filter: 'following' | 'for-you' = 'following'): Promise<Post[]> {
+  async getPosts(filter: 'following' | 'for-you' | 'popular' = 'following'): Promise<Post[]> {
     if (USE_MOCK) {
       const posts = feedMock as Post[];
       if (filter === 'for-you') {

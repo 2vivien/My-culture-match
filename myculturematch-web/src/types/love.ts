@@ -10,6 +10,8 @@ export interface LoveMatch {
   online: boolean;
   interest: string;
   about: string;
+  tribes?: string[];
+  languages?: string[];
 }
 
 export interface LoveFilters {
