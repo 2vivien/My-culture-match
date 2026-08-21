@@ -21,7 +21,7 @@ export const ExploreTabs: React.FC<ExploreTabsProps> = ({
   setActiveCategory,
 }) => {
   return (
-    <div className="flex items-center gap-1.5 p-1 bg-gray-100/70 dark:bg-zinc-900/60 rounded-full w-fit mb-5 shrink-0 select-none border border-app-border/40 dark:border-zinc-850">
+    <div className="flex items-center gap-1.5 p-1 bg-gray-100/70 dark:bg-zinc-900/60 rounded-full w-fit mb-5 shrink-0 select-none border border-app-border/40 dark:border-zinc-800">
       {TABS.map(({ id, icon: Icon }) => {
         const isActive = activeSubTab === id;
         return (

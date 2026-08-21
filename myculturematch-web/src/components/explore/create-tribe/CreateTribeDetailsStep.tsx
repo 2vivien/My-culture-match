@@ -66,10 +66,10 @@ export const CreateTribeDetailsStep: React.FC<CreateTribeDetailsStepProps> = ({
         <span className="text-[10px] font-bold text-app-gray dark:text-zinc-400 uppercase tracking-widest">
           Live Preview
         </span>
-        <div className="bg-zinc-50 dark:bg-zinc-900/60 border border-app-border dark:border-zinc-850 rounded-[24px] p-5 shadow-sm flex flex-col justify-between h-48 border-dashed">
+        <div className="bg-zinc-50 dark:bg-zinc-900/60 border border-app-border dark:border-zinc-800 rounded-[24px] p-5 shadow-sm flex flex-col justify-between h-48 border-dashed">
           <div>
             <div className="flex items-center gap-3.5 mb-3.5">
-              <div className="w-12 h-12 rounded-2xl bg-zinc-200 dark:bg-zinc-800 flex items-center justify-center text-app-gray dark:text-zinc-400 border border-app-border dark:border-zinc-750">
+              <div className="w-12 h-12 rounded-2xl bg-zinc-200 dark:bg-zinc-800 flex items-center justify-center text-app-gray dark:text-zinc-400 border border-app-border dark:border-zinc-700">
                 <Landmark className="w-6 h-6 text-[#E27D60]" />
               </div>
               <div className="min-w-0">

@@ -40,7 +40,7 @@ export const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ onClos
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: 15, scale: 0.95 }}
       transition={{ duration: 0.25, ease: 'easeOut' }}
-      className="absolute right-0 mt-3 w-80 bg-white dark:bg-zinc-955 border border-app-border dark:border-zinc-850 rounded-[24px] shadow-xl overflow-hidden z-50 p-4"
+      className="absolute right-0 mt-3 w-80 bg-white dark:bg-[#161b22] border border-app-border dark:border-zinc-800 rounded-[24px] shadow-xl overflow-hidden z-50 p-4"
     >
       <AnimatePresence mode="wait">
         {!showLogoutConfirm ? (
@@ -53,7 +53,7 @@ export const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ onClos
             className="flex flex-col gap-3.5"
           >
             {/* User Details */}
-            <div className="flex items-center gap-3 border-b border-app-border dark:border-zinc-850 pb-3.5 select-none">
+            <div className="flex items-center gap-3 border-b border-app-border dark:border-zinc-800 pb-3.5 select-none">
               <TotemAvatar
                 src={currentUser.avatar}
                 alt={currentUser.name}
@@ -81,7 +81,7 @@ export const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ onClos
                   <div className="w-8 h-8 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-app-gray dark:text-zinc-300 flex items-center justify-center">
                     <User className="w-4 h-4" />
                   </div>
-                  <span className="text-xs font-bold text-app-black dark:text-zinc-250">
+                  <span className="text-xs font-bold text-app-black dark:text-zinc-400">
                     My Totem Profile
                   </span>
                 </div>
@@ -96,7 +96,7 @@ export const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ onClos
                   <div className="w-8 h-8 rounded-xl bg-violet-100 text-violet-600 dark:bg-zinc-800 dark:text-violet-400 flex items-center justify-center">
                     {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
                   </div>
-                  <span className="text-xs font-bold text-app-black dark:text-zinc-250">
+                  <span className="text-xs font-bold text-app-black dark:text-zinc-400">
                     Switch Theme ({theme === 'light' ? 'Dark' : 'Light'})
                   </span>
                 </div>
@@ -111,7 +111,7 @@ export const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ onClos
                   <div className="w-8 h-8 rounded-xl bg-[#E27D60]/10 text-[#E27D60] dark:bg-zinc-800 dark:text-[#E27D60] flex items-center justify-center">
                     <Settings className="w-4 h-4" />
                   </div>
-                  <span className="text-xs font-bold text-app-black dark:text-zinc-250">
+                  <span className="text-xs font-bold text-app-black dark:text-zinc-400">
                     Account Settings
                   </span>
                 </div>

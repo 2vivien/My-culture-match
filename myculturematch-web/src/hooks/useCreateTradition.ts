@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { traditionService } from '@/src/services/traditionService';
+import { uploadService } from '@/src/services/uploadService';
+import { mediaUrl } from '@/src/lib/media';
+import { USE_MOCK } from '@/src/services/api';
 import type { TribeOption, TraditionSubmission } from '@/src/types/createTradition';
 import { useUIStore } from '@/src/stores/useUIStore';
 
@@ -15,6 +18,7 @@ export function useCreateTradition() {
   const [body, setBody] = useState('');
   const [linkUrl, setLinkUrl] = useState('');
   const [mediaPreview, setMediaPreview] = useState<string | null>(null);
+  const [mediaFile, setMediaFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
@@ -59,11 +63,13 @@ export function useCreateTradition() {
   const handleMediaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      setMediaFile(file);
       setMediaPreview(URL.createObjectURL(file));
     }
   };
 
   const clearMedia = () => {
+    setMediaFile(null);
     setMediaPreview(null);
   };
 
@@ -74,10 +80,18 @@ export function useCreateTradition() {
 
     setIsSubmitting(true);
 
+    let resolvedMediaUrl = mediaPreview ?? undefined;
+    if (activeSubTab === 'Images' && mediaFile && !USE_MOCK) {
+      const uploaded = await uploadService.uploadFile(mediaFile, 'post');
+      if (uploaded?.objectKey) {
+        resolvedMediaUrl = mediaUrl(uploaded.objectKey);
+      }
+    }
+
     const submission: TraditionSubmission = {
       title,
       body: activeSubTab === 'Text' ? body : undefined,
-      mediaUrl: activeSubTab === 'Images' ? mediaPreview || undefined : undefined,
+      mediaUrl: activeSubTab === 'Images' ? resolvedMediaUrl : undefined,
       linkUrl: activeSubTab === 'Link' ? linkUrl : undefined,
       tribeId: selectedTribe?.id,
       type: activeSubTab,

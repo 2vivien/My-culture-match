@@ -1,10 +1,11 @@
 import React from 'react';
 import { AlertCircle, Check } from 'lucide-react';
+import type { UpdateField } from '@/src/lib/onboarding.schemas';
 
 interface StepBirthdateProps {
   birthdate: string;
   age: number;
-  updateField: (field: string, value: any) => void;
+  updateField: UpdateField;
 }
 
 export const StepBirthdate: React.FC<StepBirthdateProps> = ({

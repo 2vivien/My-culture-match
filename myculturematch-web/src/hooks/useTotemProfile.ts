@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useAppStore } from '@/src/stores/useAppStore';
-import { useUIStore } from '@/src/stores/useUIStore';
 import { userService } from '@/src/services/userService';
 import { useFeed } from '@/src/hooks/useFeed';
 
@@ -12,7 +11,6 @@ export function useTotemProfile() {
     currentUser 
   } = useAppStore();
   
-  const { setActiveTab: setMainActiveTab } = useUIStore();
   const user = userService.getUserById(selectedTotemUserId);
   const { posts } = useFeed();
   
@@ -68,7 +66,6 @@ export function useTotemProfile() {
     posts,
     activeTab,
     setActiveTab,
-    setMainActiveTab,
     connectionState,
     toggleConnection,
     getCountryCode,

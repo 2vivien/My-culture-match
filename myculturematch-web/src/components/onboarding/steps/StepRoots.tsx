@@ -1,4 +1,6 @@
 import React from 'react';
+import { SearchableSelect } from '@/src/components/ui/SearchableSelect';
+import { useCities, useCountries, useStates } from '@/src/services/geo.service';
 
 interface StepRootsProps {
   country: string;
@@ -8,6 +10,12 @@ interface StepRootsProps {
   updateRoots: (roots: { country: string; region: string; ethnicity: string; village: string }) => void;
 }
 
+const inputClass =
+  'w-full p-5 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 focus:border-primary dark:focus:border-primary rounded-2xl outline-none text-zinc-900 dark:text-white text-base transition-colors';
+
+const labelClass =
+  'text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider block';
+
 export const StepRoots: React.FC<StepRootsProps> = ({
   country,
   region,
@@ -15,6 +23,26 @@ export const StepRoots: React.FC<StepRootsProps> = ({
   village,
   updateRoots,
 }) => {
+  const { data: countries, isLoading: countriesLoading } = useCountries();
+  const selectedCountry = countries?.find((c) => c.name === country);
+  const { data: states, isLoading: statesLoading } = useStates(selectedCountry?.id ?? null);
+  const selectedState = states?.find((s) => s.name === region);
+  const { data: cities, isLoading: citiesLoading } = useCities(
+    selectedCountry?.id ?? null,
+    selectedState?.id ?? null
+  );
+
+  const countryOptions = (countries ?? []).map((c) => ({
+    value: c.name,
+    label: c.name,
+    flag: c.emoji,
+    meta: `+${c.phone_code}`,
+  }));
+
+  const stateOptions = (states ?? []).map((s) => ({ value: s.name, label: s.name }));
+
+  const cityOptions = (cities ?? []).map((c) => ({ value: c.name, label: c.name }));
+
   return (
     <div className="space-y-6">
       <div className="text-center md:text-left">
@@ -28,60 +56,57 @@ export const StepRoots: React.FC<StepRootsProps> = ({
           Précisez vos origines. Plus c'est exact, plus les matchs culturels seront fins.
         </p>
       </div>
-      
+
       <div className="space-y-4">
         <div className="space-y-2">
-          <label className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider block">
-            Pays d'origine
-          </label>
-          <input
-            type="text"
+          <label className={labelClass}>Pays d'origine</label>
+          <SearchableSelect
+            options={countryOptions}
             value={country}
-            onChange={(e) => updateRoots({ country: e.target.value, region, ethnicity, village })}
-            placeholder="Ex: Sénégal, Bénin, Côte d'Ivoire..."
-            className="w-full p-5 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 focus:border-primary dark:focus:border-primary rounded-2xl outline-none text-zinc-900 dark:text-white text-base transition-colors"
-            required
+            onChange={(value) => updateRoots({ country: value as string, region: '', ethnicity, village: '' })}
+            placeholder="Sélectionnez votre pays..."
+            showFlag
+            showMeta
+            loading={countriesLoading}
+            inputClassName="p-5"
           />
         </div>
 
         <div className="space-y-2">
-          <label className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider block">
-            Région d'origine
-          </label>
-          <input
-            type="text"
+          <label className={labelClass}>Région d'origine</label>
+          <SearchableSelect
+            options={stateOptions}
             value={region}
-            onChange={(e) => updateRoots({ country, region: e.target.value, ethnicity, village })}
-            placeholder="Ex: Casamance, Littoral, Région des Lagunes..."
-            className="w-full p-5 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 focus:border-primary dark:focus:border-primary rounded-2xl outline-none text-zinc-900 dark:text-white text-base transition-colors"
-            required
+            onChange={(value) => updateRoots({ country, region: value as string, ethnicity, village: '' })}
+            placeholder={selectedCountry ? 'Sélectionnez votre région...' : 'Choisissez d\'abord un pays'}
+            loading={statesLoading}
+            disabled={!selectedCountry}
+            inputClassName="p-5"
           />
         </div>
 
         <div className="space-y-2">
-          <label className="text-xs font-bold text-zinc-505 dark:text-zinc-400 uppercase tracking-wider block">
-            Ethnie d'origine
-          </label>
+          <label className={labelClass}>Ville ou Village natal</label>
+          <SearchableSelect
+            options={cityOptions}
+            value={village}
+            onChange={(value) => updateRoots({ country, region, ethnicity, village: value as string })}
+            placeholder={selectedState ? 'Sélectionnez votre ville...' : 'Choisissez d\'abord un pays et une région'}
+            loading={citiesLoading}
+            disabled={!selectedState}
+            inputClassName="p-5"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <label className={labelClass}>Ethnie d'origine</label>
           <input
             type="text"
             value={ethnicity}
             onChange={(e) => updateRoots({ country, region, ethnicity: e.target.value, village })}
             placeholder="Ex: Fon, Yoruba, Wolof, Diola, Baoulé..."
-            className="w-full p-5 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 focus:border-primary dark:focus:border-primary rounded-2xl outline-none text-zinc-900 dark:text-white text-base transition-colors"
+            className={inputClass}
             required
-          />
-        </div>
-
-        <div className="space-y-2">
-          <label className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider block">
-            Ville ou Village natal (Optionnel)
-          </label>
-          <input
-            type="text"
-            value={village}
-            onChange={(e) => updateRoots({ country, region, ethnicity, village: e.target.value })}
-            placeholder="Ex: Ouidah, Saint-Louis, Yamoussoukro..."
-            className="w-full p-5 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 focus:border-primary dark:focus:border-primary rounded-2xl outline-none text-zinc-900 dark:text-white text-base transition-colors"
           />
         </div>
       </div>

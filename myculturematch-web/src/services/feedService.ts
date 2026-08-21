@@ -1,8 +1,6 @@
 import feedMock from '@/src/mocks/feed.json';
 import type { Post } from '@/src/types/post';
-
-const USE_MOCK = true;
-const API_BASE = '';
+import { api, USE_MOCK } from './api';
 
 export const feedService = {
   async getPosts(filter: 'following' | 'for-you' | 'popular' = 'following'): Promise<Post[]> {
@@ -13,16 +11,14 @@ export const feedService = {
       }
       return posts;
     }
-    const res = await fetch(`${API_BASE}/api/feed?filter=${filter}`);
-    if (!res.ok) throw new Error('Failed to fetch feed');
-    return res.json() as Promise<Post[]>;
+    return api.get<Post[]>(`/api/feed?filter=${filter}`);
   },
 
   async likePost(postId: string): Promise<void> {
     if (USE_MOCK) {
       return;
     }
-    await fetch(`${API_BASE}/api/posts/${postId}/like`, { method: 'POST' });
+    await api.post(`/api/posts/${postId}/like`);
   },
 
   async createPost(data: Omit<Post, 'id' | 'createdAt' | 'likes' | 'comments' | 'views'>): Promise<Post> {
@@ -36,12 +32,7 @@ export const feedService = {
         views: 0,
       };
     }
-    const res = await fetch(`${API_BASE}/api/posts`, {
-      method: 'POST',
-      body: JSON.stringify(data),
-      headers: { 'Content-Type': 'application/json' },
-    });
-    return res.json() as Promise<Post>;
+    return api.post<Post>('/api/posts', data);
   },
 };
 export type FeedServiceType = typeof feedService;

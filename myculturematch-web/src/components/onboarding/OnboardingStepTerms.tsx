@@ -38,7 +38,7 @@ export const OnboardingStepTerms: React.FC<OnboardingStepTermsProps> = ({
               </p>
             </div>
 
-            <div className="space-y-4 max-h-[320px] overflow-y-auto border border-zinc-100 dark:border-zinc-800 p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900/55 scrollbar-thin text-xs sm:text-sm text-zinc-600 dark:text-zinc-350 leading-relaxed font-medium">
+            <div className="space-y-4 max-h-[320px] overflow-y-auto border border-zinc-100 dark:border-zinc-800 p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900/55 scrollbar-thin text-xs sm:text-sm text-zinc-600 dark:text-zinc-300 leading-relaxed font-medium">
               <div>
                 <h4 className="font-bold text-zinc-900 dark:text-white text-xs uppercase tracking-wider mb-1">1. Respect de l'Héritage Culturel</h4>
                 <p>Notre communauté est un espace sacré dédié au partage sincère des traditions. Tout comportement offensant, harcèlement ou dénigrement culturel entraînera un bannissement immédiat et définitif.</p>

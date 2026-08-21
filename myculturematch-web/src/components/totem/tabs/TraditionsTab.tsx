@@ -16,7 +16,7 @@ export const TraditionsTab: React.FC<TraditionsTabProps> = ({ user }) => {
       className="grid grid-cols-1 md:grid-cols-3 gap-6"
     >
       {/* Tribes & Traditions Stats Box */}
-      <div className="md:col-span-1 bg-white dark:bg-[#1c212e] rounded-2xl shadow-sm p-6 flex flex-col gap-4 border border-gray-100 dark:border-zinc-800/50">
+      <div className="md:col-span-1 bg-white dark:bg-[#161b22] rounded-2xl shadow-sm p-6 flex flex-col gap-4 border border-gray-100 dark:border-zinc-800/50">
         <div className="w-12 h-12 rounded-xl bg-[#2dd9d9]/10 text-[#2dd9d9] flex items-center justify-center">
           <ArchiveRestore className="w-6 h-6" />
         </div>
@@ -27,11 +27,11 @@ export const TraditionsTab: React.FC<TraditionsTabProps> = ({ user }) => {
           </p>
         </div>
         <div className="mt-2 flex flex-col gap-3">
-          <div className="flex justify-between items-center text-sm font-semibold border-b border-gray-100 dark:border-zinc-850 pb-2">
+          <div className="flex justify-between items-center text-sm font-semibold border-b border-gray-100 dark:border-zinc-800 pb-2">
             <span className="text-[#9aa3b8]">Traditions Unlocked</span>
             <span className="text-[#2e3552] dark:text-white font-black">{user.traditionsCount || 18}</span>
           </div>
-          <div className="flex justify-between items-center text-sm font-semibold border-b border-gray-100 dark:border-zinc-850 pb-2">
+          <div className="flex justify-between items-center text-sm font-semibold border-b border-gray-100 dark:border-zinc-800 pb-2">
             <span className="text-[#9aa3b8]">Cultures Discovered</span>
             <span className="text-[#2e3552] dark:text-white font-black">{user.culturesCount || 32}</span>
           </div>
@@ -49,7 +49,7 @@ export const TraditionsTab: React.FC<TraditionsTabProps> = ({ user }) => {
           {user.tribes.map((tribe: string, idx: number) => (
             <div 
               key={tribe} 
-              className="p-5 rounded-2xl bg-white dark:bg-[#1c212e] border border-gray-100 dark:border-zinc-800/50 shadow-sm flex flex-col gap-3 hover:shadow-md transition-all group"
+              className="p-5 rounded-2xl bg-white dark:bg-[#161b22] border border-gray-100 dark:border-zinc-800/50 shadow-sm flex flex-col gap-3 hover:shadow-md transition-all group"
             >
               <div className="flex justify-between items-center">
                 <span className="font-bold text-sm text-[#2e3552] dark:text-white">{tribe} Tribe</span>

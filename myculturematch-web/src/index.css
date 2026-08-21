@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --font-sans: "Inter", "system-ui", "sans-serif";
   --color-app-bg: #FEFEFE;
@@ -51,6 +53,23 @@ body {
 }
 
 .dark body {
-  background-color: #09090b;
-  color: #f4f4f5;
+  background-color: #0d1117;
+  color: #e6edf3;
+}
+
+.dark {
+  --color-app-bg: #0d1117;
+  --color-app-gray: #8b949e;
+  --color-app-border: #21262d;
+  --color-zinc-50: #f6f8fa;
+  --color-zinc-100: #eef1f5;
+  --color-zinc-200: #d8dee4;
+  --color-zinc-300: #b6b6b6;
+  --color-zinc-400: #8b949e;
+  --color-zinc-500: #6e7681;
+  --color-zinc-600: #30363d;
+  --color-zinc-700: #21262d;
+  --color-zinc-800: #21262d;
+  --color-zinc-900: #161b22;
+  --color-zinc-950: #0d1117;
 }

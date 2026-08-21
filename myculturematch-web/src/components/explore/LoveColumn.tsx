@@ -11,7 +11,7 @@ import { LoveMatchCelebrate } from '../love/LoveMatchCelebrate';
 import { LoveDetailModal } from './LoveDetailModal';
 
 export const LoveColumn: React.FC = () => {
-  const { setActiveTab } = useUIStore();
+  const { openChat } = useUIStore();
   const {
     matches,
     filteredMatches,
@@ -34,7 +34,7 @@ export const LoveColumn: React.FC = () => {
   const startChat = () => {
     setMatchCelebrating(null);
     setSelectedMatch(null);
-    setActiveTab('Chat');
+    openChat();
   };
 
   return (

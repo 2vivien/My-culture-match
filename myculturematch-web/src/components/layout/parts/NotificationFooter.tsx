@@ -8,7 +8,7 @@ export const NotificationFooter: React.FC<NotificationFooterProps> = ({
   onMarkAllRead,
 }) => {
   return (
-    <div className="mt-3 pt-2.5 border-t border-app-border dark:border-zinc-850 flex items-center justify-between select-none">
+    <div className="mt-3 pt-2.5 border-t border-app-border dark:border-zinc-800 flex items-center justify-between select-none">
       <button
         type="button"
         onClick={onMarkAllRead}

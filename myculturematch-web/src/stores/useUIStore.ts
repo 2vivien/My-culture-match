@@ -15,6 +15,9 @@ interface UIState {
   setShowCreateTribeModal: (show: boolean) => void;
   likedPosts: Set<string>;
   toggleLikedPost: (postId: string) => void;
+  isChatOpen: boolean;
+  openChat: () => void;
+  closeChat: () => void;
 }
 
 export const useUIStore = create<UIState>((set) => ({
@@ -25,12 +28,7 @@ export const useUIStore = create<UIState>((set) => ({
   toggleSidebar: () => set((s) => ({ isSidebarOpen: !s.isSidebarOpen })),
   toggleSidebarCollapse: () => set((s) => ({ isSidebarCollapsed: !s.isSidebarCollapsed })),
   setSearchQuery: (searchQuery) => set({ searchQuery }),
-  setActiveTab: (activeTab) => set((state) => {
-    if (activeTab === 'Chat' || activeTab === 'Sandbox') {
-      return { activeTab, isSidebarCollapsed: true };
-    }
-    return { activeTab, isSidebarCollapsed: false };
-  }),
+  setActiveTab: (activeTab) => set({ activeTab, isSidebarCollapsed: false }),
   notificationsCount: 9,
   setNotificationsCount: (notificationsCount) => set({ notificationsCount }),
   showCreateTribeModal: false,
@@ -42,4 +40,7 @@ export const useUIStore = create<UIState>((set) => ({
     else next.add(postId)
     return { likedPosts: next }
   }),
+  isChatOpen: false,
+  openChat: () => set({ isChatOpen: true }),
+  closeChat: () => set({ isChatOpen: false }),
 }));

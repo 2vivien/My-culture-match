@@ -46,8 +46,8 @@ export const ActiveChatColumn: React.FC<ActiveChatProps> = ({
           {onBack && (
             <button
               onClick={onBack}
-              className="md:hidden w-8 h-8 rounded-full border border-app-border dark:border-zinc-800/80 flex items-center justify-center text-app-gray hover:text-app-black hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors mr-1 cursor-pointer"
-              title="Go Back"
+              className="w-8 h-8 rounded-full border border-app-border dark:border-zinc-800/80 flex items-center justify-center text-app-gray hover:text-app-black dark:hover:text-white hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors mr-1 cursor-pointer"
+              title="Retour"
             >
               <ArrowLeft className="w-4 h-4" />
             </button>
@@ -79,10 +79,10 @@ export const ActiveChatColumn: React.FC<ActiveChatProps> = ({
         </div>
 
         <div className="flex items-center gap-1.5 md:gap-3">
-          <button className="w-9 h-9 border border-app-border dark:border-zinc-800 rounded-full flex items-center justify-center text-app-gray hover:text-app-black hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors cursor-pointer">
+          <button className="w-9 h-9 border border-app-border dark:border-zinc-800 rounded-full flex items-center justify-center text-app-gray hover:text-app-black dark:hover:text-white hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors cursor-pointer">
             <Phone className="w-4 h-4" />
           </button>
-          <button className="w-9 h-9 border border-app-border dark:border-zinc-800 rounded-full flex items-center justify-center text-app-gray hover:text-app-black hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors cursor-pointer">
+          <button className="w-9 h-9 border border-app-border dark:border-zinc-800 rounded-full flex items-center justify-center text-app-gray hover:text-app-black dark:hover:text-white hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors cursor-pointer">
             <Video className="w-4 h-4" />
           </button>
         </div>
@@ -91,7 +91,7 @@ export const ActiveChatColumn: React.FC<ActiveChatProps> = ({
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 bg-[#FEFEFE] dark:bg-zinc-950/40 hide-scrollbar flex flex-col">
         <div className="my-6 text-center select-none">
-          <span className="text-[10px] font-bold uppercase tracking-widest text-[#777777] bg-white dark:bg-zinc-900 border border-[#ECECEC] dark:border-zinc-820 px-3 py-1 rounded-full px-4 py-1.5 scroll-py-1 shadow-xs">
+          <span className="text-[10px] font-bold uppercase tracking-widest text-[#777777] bg-white dark:bg-zinc-900 border border-[#ECECEC] dark:border-zinc-800 px-3 py-1 rounded-full px-4 py-1.5 scroll-py-1 shadow-xs">
             ✨ Protected Cultural Exchange Space
           </span>
         </div>
@@ -103,9 +103,9 @@ export const ActiveChatColumn: React.FC<ActiveChatProps> = ({
       </div>
 
       {/* Input Form */}
-      <form onSubmit={handleSend} className="p-4 border-t border-app-border dark:border-zinc-850 bg-white dark:bg-zinc-950 shrink-0">
+      <form onSubmit={handleSend} className="p-4 border-t border-app-border dark:border-zinc-800 bg-white dark:bg-zinc-950 shrink-0">
         <div className="flex items-center gap-2 bg-[#FCFCFC] dark:bg-zinc-900 border border-[#ECECEC] dark:border-zinc-800 rounded-2xl px-3 py-2 focus-within:ring-1 focus-within:ring-[#E27D60] focus-within:border-[#E27D60] transition-all">
-          <button type="button" className="text-app-gray hover:text-app-black cursor-pointer p-1">
+          <button type="button" className="text-app-gray hover:text-app-black dark:hover:text-white cursor-pointer p-1">
             <Paperclip className="w-4 h-4" />
           </button>
           

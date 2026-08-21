@@ -1,6 +1,10 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { CurrentUser } from '@/src/types/user';
+import {
+  defaultProfileDetails,
+  type ProfileDetails,
+} from '@/src/lib/onboarding.schemas';
 
 interface AppState {
   theme: 'light' | 'dark';
@@ -12,6 +16,8 @@ interface AppState {
   profileActiveTab: 'Posts' | 'Photos' | 'Videos' | 'Traditions' | 'About' | 'Saves';
   isAuthenticated: boolean;
   isOnboarded: boolean;
+  email: string;
+  profileDetails: ProfileDetails;
   toggleTheme: () => void;
   setLocale: (locale: string) => void;
   setFeedSort: (sort: string) => void;
@@ -20,6 +26,9 @@ interface AppState {
   setProfileActiveTab: (tab: 'Posts' | 'Photos' | 'Videos' | 'Traditions' | 'About' | 'Saves') => void;
   setAuthenticated: (auth: boolean) => void;
   setOnboarded: (onboarded: boolean) => void;
+  setEmail: (email: string) => void;
+  updateProfileDetail: <K extends keyof ProfileDetails>(field: K, value: ProfileDetails[K]) => void;
+  resetProfileDetails: () => void;
   loginUser: (user: Partial<CurrentUser>) => void;
   logout: () => void;
   joinTribe: (tribeName: string) => void;
@@ -53,6 +62,8 @@ export const useAppStore = create<AppState>()(
       profileActiveTab: 'Posts',
       isAuthenticated: false,
       isOnboarded: false,
+      email: '',
+      profileDetails: defaultProfileDetails,
       toggleTheme: () => set((s) => ({ theme: s.theme === 'light' ? 'dark' : 'light' })),
       setLocale: (locale) => set({ locale }),
       setFeedSort: (feedSort) => set({ feedSort }),
@@ -61,12 +72,17 @@ export const useAppStore = create<AppState>()(
       setProfileActiveTab: (profileActiveTab) => set({ profileActiveTab }),
       setAuthenticated: (isAuthenticated) => set({ isAuthenticated }),
       setOnboarded: (isOnboarded) => set({ isOnboarded }),
+      setEmail: (email) => set({ email }),
+      updateProfileDetail: (field, value) => set((state) => ({
+        profileDetails: { ...state.profileDetails, [field]: value },
+      })),
+      resetProfileDetails: () => set({ profileDetails: defaultProfileDetails }),
       loginUser: (user) => set((state) => ({
         isAuthenticated: true,
         isOnboarded: true,
         currentUser: { ...state.currentUser, ...user }
       })),
-      logout: () => set({ isAuthenticated: false, isOnboarded: false }),
+      logout: () => set({ isAuthenticated: false, isOnboarded: false, profileDetails: defaultProfileDetails }),
       joinTribe: (tribeName) => set((s) => ({
         currentUser: {
           ...s.currentUser,

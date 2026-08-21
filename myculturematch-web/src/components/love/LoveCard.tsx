@@ -65,7 +65,7 @@ export const LoveCard: React.FC<LoveCardProps> = ({
               {match.gender === 'female' ? (
                 <span className="text-rose-400 text-base font-black px-1.5 py-0.5 rounded-md bg-rose-400/10 leading-none" title="Female">♀</span>
               ) : match.gender === 'male' ? (
-                <span className="text-blue-400 text-base font-black px-1.5 py-0.5 rounded-md bg-blue-400/10 leading-none" title="Male">♂</span>
+                <span className="text-zinc-400 text-base font-black px-1.5 py-0.5 rounded-md bg-zinc-400/10 leading-none" title="Male">♂</span>
               ) : (
                 <span className="text-purple-400 text-base font-black px-1.5 py-0.5 rounded-md bg-purple-400/10 leading-none" title="Non-binary">⚧</span>
               )}

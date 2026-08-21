@@ -17,7 +17,7 @@ export const MainFeedColumn = () => {
 
       {isLoading ? (
         <div className="flex justify-center py-10">
-          <div className="w-8 h-8 rounded-full border-4 border-app-border border-t-app-black animate-spin" />
+          <div className="w-8 h-8 rounded-full border-4 border-app-border dark:border-zinc-800 border-t-app-black dark:border-t-white animate-spin" />
         </div>
       ) : (
         <motion.div

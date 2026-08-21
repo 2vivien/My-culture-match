@@ -3,6 +3,7 @@ import type { LoveMatch } from '@/src/types/love';
 import { enrichLoveMatches } from '@/src/lib/compatibility/compatibilityEngine';
 import type { UserProfile } from '@/src/lib/compatibility/types';
 import { useAppStore } from '@/src/stores/useAppStore';
+import { api, USE_MOCK } from './api';
 
 const rawMatches = loveMock as unknown as (LoveMatch & { tribes?: string[]; languages?: string[] })[];
 
@@ -41,5 +42,12 @@ export const loveService = {
         languages: m.languages || [],
       }))
       .sort((a, b) => b.matchScore - a.matchScore);
+  },
+
+  async fetchLoveMatches(): Promise<LoveMatch[]> {
+    if (USE_MOCK) {
+      return this.getLoveMatches();
+    }
+    return api.get<LoveMatch[]>('/api/love/matches');
   },
 };

@@ -19,7 +19,7 @@ export const PhotosTab: React.FC = () => {
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -15 }}
-      className="bg-white dark:bg-[#1c212e] rounded-2xl shadow-sm p-6 border border-gray-100 dark:border-zinc-800/50 flex flex-col gap-4"
+      className="bg-white dark:bg-[#161b22] rounded-2xl shadow-sm p-6 border border-gray-100 dark:border-zinc-800/50 flex flex-col gap-4"
     >
       <div className="flex justify-between items-center">
         <h3 className="font-black text-[#2e3552] dark:text-white text-lg">All Photos</h3>

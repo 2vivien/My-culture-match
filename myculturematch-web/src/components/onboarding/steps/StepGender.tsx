@@ -1,9 +1,10 @@
 import React from 'react';
+import type { UpdateField } from '@/src/lib/onboarding.schemas';
 
 interface StepGenderProps {
   gender: string;
   seeking: string;
-  updateField: (field: string, value: any) => void;
+  updateField: UpdateField;
 }
 
 export const StepGender: React.FC<StepGenderProps> = ({ gender, seeking, updateField }) => {

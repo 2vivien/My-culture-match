@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react';
 import exploreMock from '@/src/mocks/explore.json';
+import { useUIStore } from '@/src/stores/useUIStore';
 import type { ExploreTab, TribeItem, CompanionItem, ImagePost, VideoPost } from '@/src/types/explore';
 
 export function useExplore() {
   const [activeSubTab, setActiveSubTab] = useState<ExploreTab>('Tribu');
   const [activeCategory, setActiveCategory] = useState<string>('All');
-  const [searchQuery, setSearchQuery] = useState('');
   const [lightboxImage, setLightboxImage] = useState<ImagePost | null>(null);
+
+  const searchQuery = useUIStore((s) => s.searchQuery);
+  const setSearchQuery = useUIStore((s) => s.setSearchQuery);
 
   const [tribes, setTribes] = useState<TribeItem[]>(exploreMock.tribes as TribeItem[]);
   const [moreTribes, setMoreTribes] = useState<TribeItem[]>(exploreMock.moreTribes as TribeItem[]);

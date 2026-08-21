@@ -1,42 +1,34 @@
 import React from 'react';
-import { Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
+import { Mail, ArrowRight } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { emailSchema, type EmailFormValues } from '@/src/lib/validations';
+import { cn } from '@/src/lib/utils';
 
 interface AuthFormProps {
-  mode: 'signin' | 'signup';
-  email: string;
-  setEmail: (email: string) => void;
-  password: string;
-  setPassword: (password: string) => void;
-  confirmPassword?: string;
-  setConfirmPassword?: (password: string) => void;
-  showPassword?: boolean;
-  setShowPassword?: (show: boolean) => void;
-  rememberMe?: boolean;
-  setRememberMe?: (rem: boolean) => void;
   isLoading?: boolean;
-  onSubmit: (e: React.FormEvent) => void;
+  error?: string | null;
+  onSubmit: (email: string) => void;
 }
 
-export const AuthForm: React.FC<AuthFormProps> = ({
-  mode,
-  email,
-  setEmail,
-  password,
-  setPassword,
-  confirmPassword = '',
-  setConfirmPassword = (_val: string) => {},
-  showPassword = false,
-  setShowPassword = (_val: boolean) => {},
-  rememberMe = false,
-  setRememberMe = (_val: boolean) => {},
-  isLoading = false,
-  onSubmit,
-}) => {
+export const AuthForm: React.FC<AuthFormProps> = ({ isLoading = false, error = null, onSubmit }) => {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<EmailFormValues>({
+    resolver: zodResolver(emailSchema),
+    mode: 'onBlur',
+  });
+
   return (
-    <form onSubmit={onSubmit} className="space-y-5">
+    <form onSubmit={handleSubmit((values) => onSubmit(values.email))} className="space-y-5" noValidate>
       {/* Email Field */}
       <div className="space-y-2">
-        <label className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider block">
+        <label
+          htmlFor="email"
+          className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider block"
+        >
           Adresse Email
         </label>
         <div className="relative">
@@ -44,87 +36,25 @@ export const AuthForm: React.FC<AuthFormProps> = ({
             <Mail className="w-5 h-5" />
           </span>
           <input
+            id="email"
             type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
             placeholder="name@example.com"
-            className="w-full pl-12 pr-4 py-4 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 focus:border-primary dark:focus:border-primary rounded-2xl outline-none text-zinc-900 dark:text-white text-base transition-colors placeholder:text-zinc-400"
-            required
+            aria-invalid={!!errors.email}
+            className={cn(
+              'w-full pl-12 pr-4 py-4 bg-zinc-50 dark:bg-zinc-900 border rounded-2xl outline-none text-zinc-900 dark:text-white text-base transition-colors placeholder:text-zinc-400',
+              errors.email
+                ? 'border-red-400 focus:border-red-500'
+                : 'border-zinc-200 dark:border-zinc-800 focus:border-primary dark:focus:border-primary'
+            )}
+            {...register('email')}
           />
         </div>
+        {errors.email && (
+          <p className="text-xs font-bold text-red-500 mt-1" role="alert">
+            {errors.email.message}
+          </p>
+        )}
       </div>
-
-      {/* Password Field */}
-      <div className="space-y-2">
-        <div className="flex justify-between items-center">
-          <label className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-            Mot de passe
-          </label>
-          {mode === 'signin' && (
-            <a href="#" className="text-xs font-bold text-primary hover:underline">
-              Mot de passe oublié ?
-            </a>
-          )}
-        </div>
-        <div className="relative">
-          <span className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-zinc-400">
-            <Lock className="w-5 h-5" />
-          </span>
-          <input
-            type={showPassword ? 'text' : 'password'}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="••••••••"
-            className="w-full pl-12 pr-12 py-4 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 focus:border-primary dark:focus:border-primary rounded-2xl outline-none text-zinc-900 dark:text-white text-base transition-colors placeholder:text-zinc-400"
-            required
-          />
-          <button
-            type="button"
-            onClick={() => setShowPassword(!showPassword)}
-            className="absolute inset-y-0 right-0 pr-4 flex items-center text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 cursor-pointer"
-          >
-            {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-          </button>
-        </div>
-      </div>
-
-      {/* Confirm Password Field (Sign Up Only) */}
-      {mode === 'signup' && (
-        <div className="space-y-2">
-          <label className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider block">
-            Confirmer le mot de passe
-          </label>
-          <div className="relative">
-            <span className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-zinc-400">
-              <Lock className="w-5 h-5" />
-            </span>
-            <input
-              type={showPassword ? 'text' : 'password'}
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="••••••••"
-              className="w-full pl-12 pr-12 py-4 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 focus:border-primary dark:focus:border-primary rounded-2xl outline-none text-zinc-900 dark:text-white text-base transition-colors placeholder:text-zinc-400"
-              required
-            />
-          </div>
-        </div>
-      )}
-
-      {/* Remember me (Sign In Only) */}
-      {mode === 'signin' && (
-        <div className="flex items-center">
-          <input
-            id="remember-me"
-            type="checkbox"
-            checked={rememberMe}
-            onChange={(e) => setRememberMe(e.target.checked)}
-            className="h-4 w-4 rounded border-zinc-300 text-primary focus:ring-primary accent-primary"
-          />
-          <label htmlFor="remember-me" className="ml-2 block text-sm text-zinc-600 dark:text-zinc-400 font-medium select-none">
-            Se souvenir de moi
-          </label>
-        </div>
-      )}
 
       {/* Submit Button */}
       <button
@@ -136,11 +66,17 @@ export const AuthForm: React.FC<AuthFormProps> = ({
           <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
         ) : (
           <>
-            <span>{mode === 'signin' ? 'Se connecter' : 'Créer mon compte'}</span>
+            <span>Continuer</span>
             <ArrowRight className="w-5 h-5" />
           </>
         )}
       </button>
+
+      {error && (
+        <p className="text-xs font-bold text-red-500 text-center mt-1" role="alert">
+          {error}
+        </p>
+      )}
     </form>
   );
 };

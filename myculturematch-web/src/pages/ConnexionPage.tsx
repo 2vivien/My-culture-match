@@ -12,12 +12,12 @@ import { AnimatePresence } from 'framer-motion';
 
 export function ConnexionPage() {
   const { activeSubTab, currentList, sendRequest, acceptRequest, declineRequest } = useConnections();
-  const { setActiveTab } = useUIStore();
+  const { openChat } = useUIStore();
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Handle message redirection to Sandbox chat
+  // Handle message redirection to chat popup
   const handleMessage = (userId: string) => {
-    setActiveTab('Sandbox');
+    openChat();
   };
 
   // Filter current sub-tab list by search query (case-insensitive name check)

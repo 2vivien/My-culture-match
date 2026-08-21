@@ -17,7 +17,7 @@ export const SearchBar = () => {
   return (
     <div className="hidden md:block flex-1 max-w-xl relative group select-none">
       <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-        <Search className="w-5 h-5 text-app-gray group-focus-within:text-app-black transition-colors" />
+        <Search className="w-5 h-5 text-app-gray group-focus-within:text-app-black dark:group-focus-within:text-white transition-colors" />
       </div>
       <input
         type="text"
@@ -30,7 +30,7 @@ export const SearchBar = () => {
       <div className="absolute inset-y-1 right-1">
         <button
           onClick={handleSearchClick}
-          className="bg-app-black text-white px-5 py-2 rounded-full text-xs font-bold hover:bg-gray-800 transition-colors cursor-pointer select-none"
+          className="bg-app-black dark:bg-white text-white dark:text-app-black px-5 py-2 rounded-full text-xs font-bold hover:bg-gray-800 dark:hover:bg-zinc-200 transition-colors cursor-pointer select-none"
         >
           Search
         </button>

@@ -66,7 +66,7 @@ export const CulturalProfileColumn: React.FC<ProfileColumnProps> = ({ partner, o
             {partner.traditions.map((trad, idx) => (
               <div
                 key={idx}
-                className="text-xs bg-slate-50 dark:bg-zinc-900 border border-app-border dark:border-zinc-805 rounded-xl p-2 font-medium text-app-black dark:text-zinc-300"
+                className="text-xs bg-slate-50 dark:bg-zinc-900 border border-app-border dark:border-zinc-800 rounded-xl p-2 font-medium text-app-black dark:text-zinc-300"
               >
                 {trad}
               </div>

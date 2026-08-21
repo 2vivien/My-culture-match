@@ -2,10 +2,12 @@ import React from 'react';
 import { OnboardingStepTerms } from '@/src/components/onboarding/OnboardingStepTerms';
 import { OnboardingHeader } from '@/src/components/onboarding/OnboardingHeader';
 import { OnboardingFooter } from '@/src/components/onboarding/OnboardingFooter';
-import { StepsBasicInfo } from '@/src/components/onboarding/steps/StepsBasicInfo';
-import { StepsRootsOccupation } from '@/src/components/onboarding/steps/StepsRootsOccupation';
-import { StepsPreferences } from '@/src/components/onboarding/steps/StepsPreferences';
-import { StepsDetailsRecap } from '@/src/components/onboarding/steps/StepsDetailsRecap';
+import { StepIdentity } from '@/src/components/onboarding/steps/StepIdentity';
+import { StepGender } from '@/src/components/onboarding/steps/StepGender';
+import { StepBirthdate } from '@/src/components/onboarding/steps/StepBirthdate';
+import { StepRoots } from '@/src/components/onboarding/steps/StepRoots';
+import { StepLanguages } from '@/src/components/onboarding/steps/StepLanguages';
+import { StepIntention } from '@/src/components/onboarding/steps/StepIntention';
 import { useOnboarding } from '@/src/hooks/useOnboarding';
 import { AnimatePresence, motion } from 'framer-motion';
 
@@ -22,12 +24,13 @@ export function OnboardingPage() {
     toggleList,
     handleNext,
     handleBack,
-    shuffleAvatar,
     isStepValid,
+    isSubmitting,
+    submitError,
   } = useOnboarding();
 
   return (
-    <div className="min-h-screen w-full flex flex-col justify-between bg-zinc-50 dark:bg-zinc-955/80 relative overflow-hidden py-12 px-4 sm:px-6">
+    <div className="min-h-screen w-full flex flex-col justify-between bg-zinc-50 dark:bg-[#0d1117]/80 relative overflow-hidden py-12 px-4 sm:px-6">
       <OnboardingStepTerms acceptedTerms={acceptedTerms} checkedTermsCheckbox={checkedTermsCheckbox} setCheckedTermsCheckbox={setCheckedTermsCheckbox} setAcceptedTerms={setAcceptedTerms} />
 
       {/* Decorative Blobs */}
@@ -41,39 +44,55 @@ export function OnboardingPage() {
         <div className="w-full bg-white dark:bg-zinc-900 border border-zinc-200/50 dark:border-zinc-800/50 p-6 sm:p-10 rounded-3xl shadow-xl">
           <AnimatePresence mode="wait">
             <motion.div key={step} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.25 }}>
-              {step <= 3 && (
-                <StepsBasicInfo
-                  step={step} intention={formData.intention} gender={formData.gender} seeking={formData.seeking}
-                  name={formData.name} username={formData.username} avatarSeed={formData.avatarSeed}
-                  usernameSuggestions={usernameSuggestions} setName={(val) => updateField('name', val)}
-                  setUsername={(val) => updateField('username', val)} shuffleAvatar={shuffleAvatar} updateField={updateField}
+              {step === 1 && (
+                <StepIdentity
+                  name={formData.name}
+                  username={formData.username}
+                  usernameSuggestions={usernameSuggestions}
+                  setName={(val) => updateField('name', val)}
+                  setUsername={(val) => updateField('username', val)}
                 />
               )}
-              {step >= 4 && step <= 6 && (
-                <StepsRootsOccupation
-                  step={step} roots={formData.roots} birthdate={formData.birthdate} age={formData.age}
-                  occupation={formData.occupation} updateField={updateField} updateRoots={(roots) => updateField('roots', roots)}
+              {step === 2 && (
+                <StepGender
+                  gender={formData.gender}
+                  seeking={formData.seeking}
+                  updateField={updateField}
                 />
               )}
-              {step >= 7 && step <= 10 && (
-                <StepsPreferences
-                  step={step} values={formData.values} languages={formData.languages} preference={formData.preference}
-                  diaspora={formData.diaspora} updateField={updateField} toggleList={toggleList}
+              {step === 3 && (
+                <StepBirthdate
+                  birthdate={formData.birthdate}
+                  age={formData.age}
+                  updateField={updateField}
                 />
               )}
-              {step >= 11 && (
-                <StepsDetailsRecap
-                  step={step} familyQuiz={formData.familyQuiz} situation={formData.situation} criteria={formData.criteria}
-                  bio={formData.bio} name={formData.name} username={formData.username} avatarSeed={formData.avatarSeed}
-                  roots={formData.roots} updateField={updateField} toggleList={toggleList}
+              {step === 4 && (
+                <StepRoots
+                  country={formData.roots.country}
+                  region={formData.roots.region}
+                  ethnicity={formData.roots.ethnicity}
+                  village={formData.roots.village}
+                  updateRoots={(roots) => updateField('roots', roots)}
                 />
+              )}
+              {step === 5 && (
+                <StepLanguages languages={formData.languages} toggleList={toggleList} />
+              )}
+              {step === 6 && (
+                <StepIntention intention={formData.intention} updateField={updateField} />
               )}
             </motion.div>
           </AnimatePresence>
         </div>
       </div>
 
-      <OnboardingFooter step={step} handleBack={handleBack} handleNext={handleNext} isStepValid={isStepValid} />
+      <OnboardingFooter step={step} handleBack={handleBack} handleNext={handleNext} isStepValid={isStepValid} isSubmitting={isSubmitting} />
+      {submitError && (
+        <p className="w-full max-w-xl mx-auto mt-4 text-center text-xs font-bold text-red-500" role="alert">
+          {submitError}
+        </p>
+      )}
     </div>
   );
 }

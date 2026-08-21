@@ -2,6 +2,7 @@ import React from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { useUIStore } from '@/src/stores/useUIStore';
 import { useExplore } from '@/src/hooks/useExplore';
+import { USE_MOCK } from '@/src/services/api';
 import { ExploreHeader } from './ExploreHeader';
 import { ExploreTabs } from './ExploreTabs';
 import { ExploreCategories } from './ExploreCategories';
@@ -10,6 +11,7 @@ import { ExploreConnectionsTab } from './ExploreConnectionsTab';
 import { ExploreImagesTab } from './ExploreImagesTab';
 import { ExploreVideosTab } from './ExploreVideosTab';
 import { ExploreLightbox } from './ExploreLightbox';
+import { ExploreSearchResults } from './ExploreSearchResults';
 
 export const ExploreColumn: React.FC = () => {
   const { setActiveTab } = useUIStore();
@@ -31,60 +33,70 @@ export const ExploreColumn: React.FC = () => {
     toggleConnectCompanion,
   } = useExplore();
 
+  const showSearchResults = !USE_MOCK && searchQuery.trim().length >= 2;
+
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden select-none px-1">
       {/* Header with Title & Search bar */}
       <ExploreHeader searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
 
-      {/* Sub-tabs switchers */}
-      <ExploreTabs
-        activeSubTab={activeSubTab}
-        setActiveSubTab={setActiveSubTab}
-        setActiveCategory={setActiveCategory}
-      />
+      {!showSearchResults ? (
+        <>
+          {/* Sub-tabs switchers */}
+          <ExploreTabs
+            activeSubTab={activeSubTab}
+            setActiveSubTab={setActiveSubTab}
+            setActiveCategory={setActiveCategory}
+          />
 
-      {/* Category Pills list */}
-      {activeSubTab !== 'Connexion' && (
-        <ExploreCategories
-          activeSubTab={activeSubTab}
-          activeCategory={activeCategory}
-          setActiveCategory={setActiveCategory}
-        />
+          {/* Category Pills list */}
+          {activeSubTab !== 'Connexion' && (
+            <ExploreCategories
+              activeSubTab={activeSubTab}
+              activeCategory={activeCategory}
+              setActiveCategory={setActiveCategory}
+            />
+          )}
+
+          {/* Main scrollable contents window */}
+          <div className="flex-1 overflow-y-auto pr-1 select-none hide-scrollbar">
+            <AnimatePresence mode="wait">
+              {activeSubTab === 'Tribu' && (
+                <ExploreTribesTab
+                  filteredTribes={filteredTribes}
+                  moreTribes={moreTribes}
+                  toggleJoinTribe={toggleJoinTribe}
+                  setActiveTab={setActiveTab}
+                />
+              )}
+
+              {activeSubTab === 'Connexion' && (
+                <ExploreConnectionsTab
+                  filteredCompanions={filteredCompanions}
+                  toggleConnectCompanion={toggleConnectCompanion}
+                />
+              )}
+
+              {activeSubTab === 'Images' && (
+                <ExploreImagesTab
+                  filteredImages={filteredImages}
+                  setLightboxImage={setLightboxImage}
+                />
+              )}
+
+              {activeSubTab === 'Vidéo' && (
+                <ExploreVideosTab
+                  filteredVideos={filteredVideos}
+                />
+              )}
+            </AnimatePresence>
+          </div>
+        </>
+      ) : (
+        <div className="flex-1 overflow-y-auto pr-1 select-none hide-scrollbar">
+          <ExploreSearchResults query={searchQuery} />
+        </div>
       )}
-
-      {/* Main scrollable contents window */}
-      <div className="flex-1 overflow-y-auto pr-1 select-none hide-scrollbar">
-        <AnimatePresence mode="wait">
-          {activeSubTab === 'Tribu' && (
-            <ExploreTribesTab
-              filteredTribes={filteredTribes}
-              moreTribes={moreTribes}
-              toggleJoinTribe={toggleJoinTribe}
-              setActiveTab={setActiveTab}
-            />
-          )}
-
-          {activeSubTab === 'Connexion' && (
-            <ExploreConnectionsTab
-              filteredCompanions={filteredCompanions}
-              toggleConnectCompanion={toggleConnectCompanion}
-            />
-          )}
-
-          {activeSubTab === 'Images' && (
-            <ExploreImagesTab
-              filteredImages={filteredImages}
-              setLightboxImage={setLightboxImage}
-            />
-          )}
-
-          {activeSubTab === 'Vidéo' && (
-            <ExploreVideosTab
-              filteredVideos={filteredVideos}
-            />
-          )}
-        </AnimatePresence>
-      </div>
 
       {/* Fullscreen image viewer */}
       <ExploreLightbox

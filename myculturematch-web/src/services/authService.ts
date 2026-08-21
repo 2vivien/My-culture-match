@@ -1,137 +1,76 @@
-import { useAppStore } from '@/src/stores/useAppStore'
+import { api } from './api';
+import { setAuthToken, clearAuthToken } from './auth.token';
 
-const STORAGE_KEY = 'auth_token'
-const SESSION_DURATION = 24 * 60 * 60 * 1000
-
-interface StoredSession {
-  token: string
-  userId: string
-  expiresAt: number
+export interface AuthUser {
+  id: string;
+  email: string;
+  name: string | null;
+  username: string | null;
+  avatar: string | null;
+  emailVerified: boolean;
+  role: 'user' | 'moderator' | 'admin' | 'superadmin';
+  bannedAt: string | null;
 }
 
-function generateToken(): string {
-  const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }))
-  const payload = btoa(
-    JSON.stringify({
-      sub: `user-${Date.now()}`,
-      iat: Math.floor(Date.now() / 1000),
-      exp: Math.floor((Date.now() + SESSION_DURATION) / 1000),
-    })
-  )
-  const signature = btoa(`${header}.${payload}.secret`)
-  return `${header}.${payload}.${signature}`
+export interface VerifyOtpResponse {
+  token: string;
+  user: AuthUser;
+  isNewUser: boolean;
 }
 
-function hashPassword(password: string): string {
-  let hash = 0
-  for (let i = 0; i < password.length; i++) {
-    const char = password.charCodeAt(i)
-    hash = (hash << 5) - hash + char
-    hash |= 0
-  }
-  return `hashed_${Math.abs(hash).toString(16)}_${password.length}`
+export interface TwoFactorRequiredResponse {
+  twoFactorRequired: true;
+  ticket: string;
+  user: AuthUser;
 }
 
-function verifyPassword(password: string, hash: string): boolean {
-  return hashPassword(password) === hash
-}
+export type LoginResponse = VerifyOtpResponse | TwoFactorRequiredResponse;
 
-function sanitizeInput(input: string): string {
-  return input.replace(/<[^>]*>/g, '').trim()
+export interface SessionResponse {
+  user: AuthUser;
+  token: string;
 }
 
 export const authService = {
-  getStoredSession(): StoredSession | null {
+  async sendOtp(email: string): Promise<{ success: boolean; cooldown: number }> {
+    return api.post<{ success: boolean; cooldown: number }>('/api/auth/send-otp', { email });
+  },
+
+  async verifyOtp(email: string, code: string): Promise<LoginResponse> {
+    const result = await api.post<LoginResponse>('/api/auth/verify-otp', { email, code });
+    if ('token' in result) setAuthToken(result.token);
+    return result;
+  },
+
+  async verifyTwoFactor(ticket: string, code: string): Promise<VerifyOtpResponse> {
+    const result = await api.post<VerifyOtpResponse>('/api/auth/2fa/verify', { ticket, code });
+    setAuthToken(result.token);
+    return result;
+  },
+
+  async loginWithGoogle(idToken: string): Promise<LoginResponse> {
+    const result = await api.post<LoginResponse>('/api/auth/google', { idToken });
+    if ('token' in result) setAuthToken(result.token);
+    return result;
+  },
+
+  async loginWithApple(idToken: string): Promise<LoginResponse> {
+    const result = await api.post<LoginResponse>('/api/auth/apple', { idToken });
+    if ('token' in result) setAuthToken(result.token);
+    return result;
+  },
+
+  async getSession(): Promise<SessionResponse> {
+    return api.get<SessionResponse>('/api/auth/session');
+  },
+
+  async logout(): Promise<void> {
     try {
-      const raw = localStorage.getItem(STORAGE_KEY)
-      if (!raw) return null
-      return JSON.parse(raw) as StoredSession
+      await api.post('/api/auth/logout');
     } catch {
-      return null
+      // Session locale nettoyée même si le serveur est injoignable
+    } finally {
+      clearAuthToken();
     }
   },
-
-  restoreSession(): boolean {
-    const session = this.getStoredSession()
-    if (!session || Date.now() > session.expiresAt) {
-      localStorage.removeItem(STORAGE_KEY)
-      return false
-    }
-    const store = useAppStore.getState()
-    store.setAuthenticated(true)
-    store.setOnboarded(true)
-    return true
-  },
-
-  async signIn(email: string, password: string): Promise<{ success: boolean; error?: string }> {
-    await new Promise((r) => setTimeout(r, 800))
-
-    const stored = localStorage.getItem(`user_${sanitizeInput(email)}`)
-    if (!stored) {
-      return { success: false, error: 'Email ou mot de passe incorrect.' }
-    }
-
-    const userData = JSON.parse(stored)
-    if (!verifyPassword(password, userData.passwordHash)) {
-      return { success: false, error: 'Email ou mot de passe incorrect.' }
-    }
-
-    const token = generateToken()
-    const session: StoredSession = {
-      token,
-      userId: userData.id,
-      expiresAt: Date.now() + SESSION_DURATION,
-    }
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(session))
-
-    const store = useAppStore.getState()
-    store.loginUser({
-      name: userData.name,
-      avatar: userData.avatar,
-      location: userData.location,
-    })
-
-    return { success: true }
-  },
-
-  async signUp(
-    email: string,
-    password: string,
-    name: string
-  ): Promise<{ success: boolean; error?: string }> {
-    await new Promise((r) => setTimeout(r, 800))
-
-    const safeEmail = sanitizeInput(email)
-    const existing = localStorage.getItem(`user_${safeEmail}`)
-    if (existing) {
-      return { success: false, error: 'Un compte existe déjà avec cet email.' }
-    }
-
-    if (password.length < 6) {
-      return { success: false, error: 'Le mot de passe doit faire au moins 6 caractères.' }
-    }
-
-    const userData = {
-      id: `user-${Date.now()}`,
-      name: sanitizeInput(name),
-      email: safeEmail,
-      passwordHash: hashPassword(password),
-      avatar: `https://api.dicebear.com/7.x/open-peeps/svg?seed=${sanitizeInput(name)}`,
-      location: '',
-      createdAt: new Date().toISOString(),
-    }
-
-    localStorage.setItem(`user_${safeEmail}`, JSON.stringify(userData))
-    return { success: true }
-  },
-
-  signOut(): void {
-    localStorage.removeItem(STORAGE_KEY)
-    const store = useAppStore.getState()
-    store.logout()
-  },
-
-  isEmailValid(email: string): boolean {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
-  },
-}
+};

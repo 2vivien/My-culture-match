@@ -1,9 +1,10 @@
 import React from 'react';
 import { Heart, Users, Globe, Compass, Check } from 'lucide-react';
+import type { UpdateField } from '@/src/lib/onboarding.schemas';
 
 interface StepIntentionProps {
   intention: string;
-  updateField: (field: string, value: any) => void;
+  updateField: UpdateField;
 }
 
 const OPTIONS = [

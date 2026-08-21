@@ -9,8 +9,8 @@ interface TribuModsProps {
 
 export const TribuMods: React.FC<TribuModsProps> = ({ moderators }) => {
   return (
-    <div className="bg-white dark:bg-zinc-900/60 border border-app-border dark:border-zinc-850 rounded-[20px] p-5 shadow-xs">
-      <h3 className="font-extrabold text-sm text-app-black dark:text-zinc-200 mb-4 border-b border-app-border/40 dark:border-zinc-850 pb-2 flex items-center gap-1.5">
+    <div className="bg-white dark:bg-zinc-900/60 border border-app-border dark:border-zinc-800 rounded-[20px] p-5 shadow-xs">
+      <h3 className="font-extrabold text-sm text-app-black dark:text-zinc-200 mb-4 border-b border-app-border/40 dark:border-zinc-800 pb-2 flex items-center gap-1.5">
         <Shield className="w-4.5 h-4.5 text-[#E27D60] dark:text-[#E27D60]" />
         Tribe Moderators
       </h3>
