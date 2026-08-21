@@ -1,9 +1,34 @@
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { loveService } from '@/src/services/loveService';
+import { useAppStore } from '@/src/stores/useAppStore';
 import type { LoveMatch, LoveFilters } from '@/src/types/love';
+import type { UserProfile } from '@/src/lib/compatibility/types';
+
+function buildUserProfile(): UserProfile {
+  const u = useAppStore.getState().currentUser;
+  return {
+    id: u.id,
+    name: u.name,
+    age: 25,
+    gender: 'female',
+    country: u.location,
+    location: u.location,
+    tribes: u.tribes,
+    interests: u.tribes,
+    languages: ['English', 'French'],
+  };
+}
 
 export function useLove() {
-  const [matches] = useState<LoveMatch[]>(() => loveService.getLoveMatches());
+  const userProfile = buildUserProfile();
+
+  const { data: matches = [], isLoading, error } = useQuery<LoveMatch[]>({
+    queryKey: ['love-matches'],
+    queryFn: () => loveService.getLoveMatches(userProfile),
+    staleTime: 1000 * 60 * 5,
+  });
+
   const [activeFilter, setActiveFilter] = useState<'All' | 'Online' | 'MatchScore'>('All');
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState<LoveFilters>({
@@ -76,6 +101,8 @@ export function useLove() {
   return {
     matches,
     filteredMatches,
+    isLoading,
+    error,
     activeFilter,
     setActiveFilter,
     showFilters,

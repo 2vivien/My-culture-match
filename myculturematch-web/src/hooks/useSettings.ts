@@ -1,87 +1,52 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { settingsService } from '@/src/services/settingsService';
+import type { UserSettings } from '@/src/types/settings';
 
 export type SettingsTab = 'Account' | 'Profile' | 'Privacy' | 'Preferences' | 'Notifications' | 'Email';
 
 export function useSettings() {
   const [activeTab, setActiveTab] = useState<SettingsTab>('Account');
-  const [email, setEmailState] = useState('');
   const [isEditingEmail, setIsEditingEmail] = useState(false);
-  const [gender, setGenderState] = useState('');
   const [isEditingGender, setIsEditingGender] = useState(false);
-  const [locationType, setLocationTypeState] = useState('');
   const [isEditingLocation, setIsEditingLocation] = useState(false);
-  const [googleConnected, setGoogleConnectedState] = useState(false);
-  const [appleConnected, setAppleConnectedState] = useState(false);
-  const [twoFactor, setTwoFactorState] = useState(false);
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    let isMounted = true;
-    settingsService.getSettings().then((data) => {
-      if (isMounted) {
-        setEmailState(data.email);
-        setGenderState(data.gender);
-        setLocationTypeState(data.locationType);
-        setGoogleConnectedState(data.googleConnected);
-        setAppleConnectedState(data.appleConnected);
-        setTwoFactorState(data.twoFactor);
-      }
-    });
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+  const { data: settings, isLoading, error } = useQuery({
+    queryKey: ['settings'],
+    queryFn: settingsService.getSettings,
+    staleTime: 1000 * 60 * 5,
+  });
 
-  const setEmail = async (val: string) => {
-    setEmailState(val);
-    await settingsService.updateSettings({ email: val });
-  };
-
-  const setGender = async (val: string) => {
-    setGenderState(val);
-    await settingsService.updateSettings({ gender: val });
-  };
-
-  const setLocationType = async (val: string) => {
-    setLocationTypeState(val);
-    await settingsService.updateSettings({ locationType: val });
-  };
-
-  const setGoogleConnected = async (val: boolean) => {
-    setGoogleConnectedState(val);
-    await settingsService.updateSettings({ googleConnected: val });
-  };
-
-  const setAppleConnected = async (val: boolean) => {
-    setAppleConnectedState(val);
-    await settingsService.updateSettings({ appleConnected: val });
-  };
-
-  const setTwoFactor = async (val: boolean) => {
-    setTwoFactorState(val);
-    await settingsService.updateSettings({ twoFactor: val });
-  };
+  const updateSettings = useMutation({
+    mutationFn: (data: Partial<UserSettings>) => settingsService.updateSettings(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['settings'] });
+    },
+  });
 
   return {
     activeTab,
     setActiveTab,
-    email,
-    setEmail,
+    email: settings?.email ?? '',
+    setEmail: (val: string) => updateSettings.mutate({ email: val }),
     isEditingEmail,
     setIsEditingEmail,
-    gender,
-    setGender,
+    gender: settings?.gender ?? '',
+    setGender: (val: string) => updateSettings.mutate({ gender: val }),
     isEditingGender,
     setIsEditingGender,
-    locationType,
-    setLocationType,
+    locationType: settings?.locationType ?? '',
+    setLocationType: (val: string) => updateSettings.mutate({ locationType: val }),
     isEditingLocation,
     setIsEditingLocation,
-    googleConnected,
-    setGoogleConnected,
-    appleConnected,
-    setAppleConnected,
-    twoFactor,
-    setTwoFactor,
+    googleConnected: settings?.googleConnected ?? false,
+    setGoogleConnected: (val: boolean) => updateSettings.mutate({ googleConnected: val }),
+    appleConnected: settings?.appleConnected ?? false,
+    setAppleConnected: (val: boolean) => updateSettings.mutate({ appleConnected: val }),
+    twoFactor: settings?.twoFactor ?? false,
+    setTwoFactor: (val: boolean) => updateSettings.mutate({ twoFactor: val }),
+    isLoading,
+    error,
   };
 }

@@ -87,6 +87,7 @@ export function useOnboarding() {
         location: formData.roots.country || 'Inconnu',
         tribes: [formData.roots.region, formData.roots.ethnicity].filter(Boolean),
       });
+      useAppStore.getState().setOnboarded(true);
     } catch (err) {
       setSubmitError(
         err instanceof Error ? err.message : 'Une erreur est survenue. Veuillez réessayer.'

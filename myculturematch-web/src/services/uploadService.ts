@@ -1,4 +1,4 @@
-import { api } from './api';
+import { api, USE_MOCK } from './api';
 
 export type UploadPurpose = 'avatar' | 'story' | 'post' | 'voice' | 'file';
 
@@ -60,6 +60,15 @@ export const uploadService = {
     size: number,
     purpose: UploadPurpose,
   ): Promise<UploadRequestResult> {
+    if (USE_MOCK) {
+      return {
+        uploadId: `mock-upload-${Date.now()}`,
+        objectKey: `mock/${purpose}/${Date.now()}.${contentType.split('/')[1] || 'bin'}`,
+        contentType,
+        presignedUrl: 'https://mock-presigned.example.com/upload',
+        expiresIn: 300,
+      };
+    }
     return api.post<UploadRequestResult>('/api/uploads/request', { contentType, size, purpose });
   },
 
@@ -75,15 +84,36 @@ export const uploadService = {
   },
 
   async completeUpload(uploadId: string): Promise<UploadCompleteResult> {
+    if (USE_MOCK) {
+      return {
+        objectKey: `mock/${uploadId}`,
+        contentType: 'image/jpeg',
+        status: 'done',
+        thumbKey: null,
+      };
+    }
     return api.post<UploadCompleteResult>('/api/uploads/complete', { uploadId });
   },
 
   async getStatus(uploadId: string): Promise<UploadStatusResult> {
+    if (USE_MOCK) {
+      return { status: 'done' };
+    }
     return api.get<UploadStatusResult>(`/api/uploads/${uploadId}/status`);
   },
 
   async uploadFile(file: File, purpose: UploadPurpose): Promise<UploadCompleteResult> {
     assertSupported(file);
+    if (USE_MOCK) {
+      // In mock mode, simulate upload with the local file URL
+      const objectKey = `mock/${purpose}/${Date.now()}.${file.type.split('/')[1] || 'bin'}`;
+      return {
+        objectKey,
+        contentType: file.type,
+        status: 'done',
+        thumbKey: null,
+      };
+    }
     const request = await this.requestUpload(file.type, file.size, purpose);
     await this.uploadToPresigned(request.presignedUrl, file);
     return this.completeUpload(request.uploadId);

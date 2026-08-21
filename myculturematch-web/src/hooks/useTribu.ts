@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { tribuService } from '@/src/services/tribuService';
 import type { PostItem, TribeRule, TribeModerator } from '@/src/types/tribu';
 
 export function useTribu() {
-  const [posts, setPosts] = useState<PostItem[]>(() => tribuService.getPosts());
   const [joined, setJoined] = useState(true);
   const [notificationsOn, setNotificationsOn] = useState(true);
   const [sortType, setSortType] = useState<'Best' | 'Hot' | 'New'>('Best');
@@ -15,8 +15,23 @@ export function useTribu() {
   const [savedPostIds, setSavedPostIds] = useState<Record<string, boolean>>({});
   const [mutedPostIds, setMutedPostIds] = useState<Record<string, boolean>>({});
 
-  const rules = tribuService.getRules();
-  const moderators = tribuService.getModerators();
+  const { data: posts = [] } = useQuery<PostItem[]>({
+    queryKey: ['tribu-posts'],
+    queryFn: () => tribuService.fetchPosts(),
+    staleTime: 1000 * 60 * 5,
+  });
+
+  const { data: rules = [] } = useQuery<TribeRule[]>({
+    queryKey: ['tribu-rules'],
+    queryFn: () => tribuService.fetchRules(),
+    staleTime: 1000 * 60 * 10,
+  });
+
+  const { data: moderators = [] } = useQuery<TribeModerator[]>({
+    queryKey: ['tribu-moderators'],
+    queryFn: () => tribuService.fetchModerators(),
+    staleTime: 1000 * 60 * 10,
+  });
 
   useEffect(() => {
     const handleOutside = () => {
@@ -26,16 +41,20 @@ export function useTribu() {
     return () => document.removeEventListener('click', handleOutside);
   }, []);
 
+  const [localPosts, setLocalPosts] = useState<PostItem[]>([]);
+  const effectivePosts = localPosts.length > 0 ? localPosts : posts;
+
   const handleFlagClick = (postId: string) => {
-    setPosts((prev) =>
-      prev.map((p) => {
+    setLocalPosts((prev) => {
+      const base = prev.length > 0 ? prev : posts;
+      return base.map((p) => {
         if (p.id !== postId) return p;
         if (p.hasUpvoted) {
           return { ...p, upvotes: p.upvotes - 1, hasUpvoted: false };
         }
         return { ...p, upvotes: p.upvotes + 1, hasUpvoted: true };
-      })
-    );
+      });
+    });
   };
 
   const handleCommentChange = (postId: string, text: string) => {
@@ -45,20 +64,13 @@ export function useTribu() {
   const submitComment = (postId: string) => {
     const text = commentInputs[postId] || '';
     if (!text.trim()) return;
-
-    setPosts((prev) =>
-      prev.map((p) => {
-        if (p.id !== postId) return p;
-        return { ...p, commentsCount: p.commentsCount + 1 };
-      })
-    );
     setCommentInputs((prev) => ({ ...prev, [postId]: '' }));
   };
 
-  const sortedPosts = [...posts].sort((a, b) => {
+  const sortedPosts = [...effectivePosts].sort((a, b) => {
     if (sortType === 'Hot') return b.commentsCount - a.commentsCount;
-    if (sortType === 'New') return b.id.localeCompare(a.id); // fallback sort
-    return b.upvotes - a.upvotes; // Best
+    if (sortType === 'New') return b.id.localeCompare(a.id);
+    return b.upvotes - a.upvotes;
   });
 
   return {

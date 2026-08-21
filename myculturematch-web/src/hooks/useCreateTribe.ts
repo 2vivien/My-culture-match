@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { createTribeService } from '@/src/services/createTribeService';
 import type { TribeTopic, TribeType, TribeSubmission } from '@/src/types/createTribe';
 import { useUIStore } from '@/src/stores/useUIStore';

@@ -7,7 +7,6 @@ import { Button } from '@/src/components/ui/button';
 import { useUIStore } from '@/src/stores/useUIStore';
 import { uploadService } from '@/src/services/uploadService';
 import { mediaUrl } from '@/src/lib/media';
-import { USE_MOCK } from '@/src/services/api';
 
 export const CreatePostBox = () => {
   const { currentUser, setSelectedTotemUserId } = useAppStore();
@@ -23,15 +22,14 @@ export const CreatePostBox = () => {
     e.target.value = '';
     if (!file) return;
 
-    if (USE_MOCK) {
-      setImageUrl(URL.createObjectURL(file));
-      return;
-    }
-
     setIsUploading(true);
     try {
       const uploaded = await uploadService.uploadFile(file, 'post');
-      if (uploaded?.objectKey) setImageUrl(mediaUrl(uploaded.objectKey));
+      if (uploaded?.objectKey) {
+        // In mock mode, use the local file URL; in real mode, use the media URL
+        const url = uploaded.objectKey.startsWith('mock/') ? URL.createObjectURL(file) : mediaUrl(uploaded.objectKey);
+        setImageUrl(url);
+      }
     } catch {
       setImageUrl(undefined);
     } finally {

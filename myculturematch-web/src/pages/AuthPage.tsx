@@ -25,18 +25,21 @@ export function AuthPage() {
 
     console.log('[Auth] handleContinue called:', { value, USE_MOCK });
 
+    setIsLoading(true);
+
     if (USE_MOCK) {
-      console.log('[Auth] MOCK MODE — bypassing API');
-      setIsLoading(true);
-      setTimeout(() => {
+      console.log('[Auth] MOCK MODE — sending OTP');
+      try {
+        await authService.sendOtp(value);
+        setStep('otp');
+      } catch (err) {
+        setAuthError(err instanceof Error ? err.message : 'Erreur lors de l\'envoi du code.');
+      } finally {
         setIsLoading(false);
-        setAuthenticated(true);
-        setOnboarded(false);
-      }, 600);
+      }
       return;
     }
 
-    setIsLoading(true);
     try {
       console.log('[Auth] Calling sendOtp...');
       const result = await authService.sendOtp(value);
@@ -61,7 +64,6 @@ export function AuthPage() {
   };
 
   const handleVerify = async (code: string) => {
-    if (USE_MOCK) return;
     setIsLoading(true);
     setAuthError(null);
     try {
@@ -80,7 +82,6 @@ export function AuthPage() {
   };
 
   const handleTwoFactor = async (code: string) => {
-    if (USE_MOCK) return;
     setIsLoading(true);
     setAuthError(null);
     try {
@@ -95,22 +96,34 @@ export function AuthPage() {
 
   const handleGoogleLogin = async () => {
     console.log('[Auth] Google login clicked');
-    if (USE_MOCK) {
-      setIsLoading(true);
-      setTimeout(() => {
-        setIsLoading(false);
+    setIsLoading(true);
+    setAuthError(null);
+
+    try {
+      if (USE_MOCK) {
+        // Mock Google login — simulate a Google user
+        console.log('[Auth] MOCK Google login');
+        const mockGoogleUser = {
+          id: 'user-google-mock',
+          name: 'Google User',
+          avatar: 'https://api.dicebear.com/7.x/open-peeps/svg?seed=GoogleUser',
+        };
+        loginUser(mockGoogleUser);
         setAuthenticated(true);
         setOnboarded(false);
-      }, 600);
-      return;
-    }
-    try {
+        setIsLoading(false);
+        return;
+      }
+
+      // Real Google OAuth flow
       // @ts-expect-error - Google Identity Services API
       const google = window.google;
       if (!google?.accounts?.id) {
         setAuthError('Google Sign-In n\'est pas disponible. Vérifiez la connexion internet.');
+        setIsLoading(false);
         return;
       }
+
       google.accounts.id.initialize({
         client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID ?? '',
         callback: async (response: { credential: string }) => {
@@ -133,16 +146,39 @@ export function AuthPage() {
       google.accounts.id.prompt();
     } catch {
       setAuthError('Impossible de démarrer Google Sign-In.');
+      setIsLoading(false);
     }
   };
 
   const handleAppleLogin = async () => {
     console.log('[Auth] Apple login clicked');
-    setAuthError('Connexion Apple pas encore disponible.');
+    setIsLoading(true);
+    setAuthError(null);
+
+    try {
+      if (USE_MOCK) {
+        console.log('[Auth] MOCK Apple login');
+        const mockAppleUser = {
+          id: 'user-apple-mock',
+          name: 'Apple User',
+          avatar: 'https://api.dicebear.com/7.x/open-peeps/svg?seed=AppleUser',
+        };
+        loginUser(mockAppleUser);
+        setAuthenticated(true);
+        setOnboarded(false);
+        setIsLoading(false);
+        return;
+      }
+
+      setAuthError('Connexion Apple pas encore disponible.');
+      setIsLoading(false);
+    } catch {
+      setAuthError('Connexion Apple pas encore disponible.');
+      setIsLoading(false);
+    }
   };
 
   const handleResend = async () => {
-    if (USE_MOCK) return;
     setAuthError(null);
     try {
       await authService.sendOtp(email);

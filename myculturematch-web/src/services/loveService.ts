@@ -2,27 +2,16 @@ import loveMock from '@/src/mocks/love.json';
 import type { LoveMatch } from '@/src/types/love';
 import { enrichLoveMatches } from '@/src/lib/compatibility/compatibilityEngine';
 import type { UserProfile } from '@/src/lib/compatibility/types';
-import { useAppStore } from '@/src/stores/useAppStore';
 import { api, USE_MOCK } from './api';
 
 const rawMatches = loveMock as unknown as (LoveMatch & { tribes?: string[]; languages?: string[] })[];
 
 export const loveService = {
-  getLoveMatches(): LoveMatch[] {
-    const currentUser = useAppStore.getState().currentUser;
-
-    const userProfile: UserProfile = {
-      id: currentUser.id,
-      name: currentUser.name,
-      age: 25,
-      gender: 'female',
-      country: currentUser.location,
-      location: currentUser.location,
-      tribes: currentUser.tribes,
-      interests: currentUser.tribes,
-      languages: ['English', 'French'],
-    };
-
+  /**
+   * Enrichit les matches mock avec un score de compatibilité calculé côté client.
+   * @param userProfile — profil de l'utilisateur courant (fourni par le hook appelant).
+   */
+  getLoveMatches(userProfile: UserProfile): LoveMatch[] {
     const enriched = enrichLoveMatches(userProfile, rawMatches);
 
     return enriched
@@ -44,9 +33,9 @@ export const loveService = {
       .sort((a, b) => b.matchScore - a.matchScore);
   },
 
-  async fetchLoveMatches(): Promise<LoveMatch[]> {
+  async fetchLoveMatches(userProfile: UserProfile): Promise<LoveMatch[]> {
     if (USE_MOCK) {
-      return this.getLoveMatches();
+      return this.getLoveMatches(userProfile);
     }
     return api.get<LoveMatch[]>('/api/love/matches');
   },

@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useConnectionsStore } from '@/src/stores/useConnectionsStore';
 
 export function useConnections() {
@@ -12,7 +13,7 @@ export function useConnections() {
   const acceptRequest = useConnectionsStore((state) => state.acceptRequest);
   const declineRequest = useConnectionsStore((state) => state.declineRequest);
 
-  const getFilteredList = () => {
+  const currentList = useMemo(() => {
     switch (activeSubTab) {
       case 'Suggestions': return suggestions;
       case 'Interested': return interested;
@@ -20,7 +21,7 @@ export function useConnections() {
       case 'Compagnons': return compagnons;
       default: return [];
     }
-  };
+  }, [activeSubTab, suggestions, interested, demandes, compagnons]);
 
   return {
     activeSubTab,
@@ -28,7 +29,7 @@ export function useConnections() {
     interestedCount: interested.length,
     demandesCount: demandes.length,
     compagnonsCount: compagnons.length,
-    currentList: getFilteredList(),
+    currentList,
     setActiveSubTab,
     sendRequest,
     acceptRequest,

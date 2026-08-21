@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { notificationService } from '@/src/services/notificationService';
 import type { NotificationItem } from '@/src/types/notification';
 import { useUIStore } from '@/src/stores/useUIStore';
@@ -6,21 +7,15 @@ import { useUIStore } from '@/src/stores/useUIStore';
 export function useNotifications() {
   const { setNotificationsCount } = useUIStore();
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
-  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    let isMounted = true;
-    notificationService.getNotifications().then((data) => {
-      if (isMounted) {
-        setNotifications(data);
-      }
-    });
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+  const { data: notifications = [], isLoading, error } = useQuery<NotificationItem[]>({
+    queryKey: ['notifications'],
+    queryFn: notificationService.getNotifications,
+    staleTime: 1000 * 60 * 2,
+  });
 
-  // Sync unread count to global UI store dynamically on change
+  // Sync unread count to global UI store (in useEffect to avoid render loops)
   useEffect(() => {
     const unreadCount = notifications.filter((n) => n.isUnread).length;
     setNotificationsCount(unreadCount);
@@ -30,45 +25,43 @@ export function useNotifications() {
     filter === 'unread' ? n.isUnread : true
   );
 
-  const handleAction = async (id: string, actionName: 'accept' | 'decline') => {
-    try {
-      await notificationService.handleInviteAction(id, actionName);
-      setNotifications((prev) => prev.filter((n) => n.id !== id));
-    } catch (err) {
-      console.error('Error executing invite action:', err);
-    }
-  };
+  const handleAction = useMutation({
+    mutationFn: ({ id, action }: { id: string; action: 'accept' | 'decline' }) =>
+      notificationService.handleInviteAction(id, action),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+    },
+  });
 
-  const markAllRead = async () => {
-    try {
-      await notificationService.markAllAsRead();
-      setNotifications((prev) => prev.map((n) => ({ ...n, isUnread: false })));
-    } catch (err) {
-      console.error('Error marking all as read:', err);
-    }
-  };
+  const markAllRead = useMutation({
+    mutationFn: notificationService.markAllAsRead,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+    },
+  });
 
-  const toggleReadState = async (id: string) => {
-    const target = notifications.find((n) => n.id === id);
-    if (!target) return;
-    const nextStatus = !target.isUnread;
-
-    try {
-      await notificationService.updateReadStatus(id, nextStatus);
-      setNotifications((prev) =>
-        prev.map((n) => (n.id === id ? { ...n, isUnread: nextStatus } : n))
-      );
-    } catch (err) {
-      console.error('Error updating notification read state:', err);
-    }
-  };
+  const toggleReadState = useMutation({
+    mutationFn: ({ id, isUnread }: { id: string; isUnread: boolean }) =>
+      notificationService.updateReadStatus(id, isUnread),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+    },
+  });
 
   return {
     filter,
     setFilter,
     displayedNotifications,
-    handleAction,
-    markAllRead,
-    toggleReadState,
+    isLoading,
+    error,
+    handleAction: (id: string, action: 'accept' | 'decline') =>
+      handleAction.mutate({ id, action }),
+    markAllRead: () => markAllRead.mutate(),
+    toggleReadState: (id: string) => {
+      const target = notifications.find((n) => n.id === id);
+      if (target) {
+        toggleReadState.mutate({ id, isUnread: !target.isUnread });
+      }
+    },
   };
 }

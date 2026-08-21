@@ -3,7 +3,6 @@ import { Image as ImageIcon, ChevronRight } from 'lucide-react';
 import { useStories } from '@/src/hooks/useStories';
 import { uploadService } from '@/src/services/uploadService';
 import { mediaUrl } from '@/src/lib/media';
-import { USE_MOCK } from '@/src/services/api';
 import { StoryAvatar } from './StoryAvatar';
 
 export const StoriesPanel = () => {
@@ -21,15 +20,14 @@ export const StoriesPanel = () => {
     e.target.value = '';
     if (!file) return;
 
-    if (USE_MOCK) {
-      addStory(URL.createObjectURL(file));
-      return;
-    }
-
     setUploading(true);
     try {
       const uploaded = await uploadService.uploadFile(file, 'story');
-      if (uploaded?.objectKey) addStory(mediaUrl(uploaded.objectKey));
+      if (uploaded?.objectKey) {
+        // In mock mode, use the local file URL; in real mode, use the media URL
+        const url = uploaded.objectKey.startsWith('mock/') ? URL.createObjectURL(file) : mediaUrl(uploaded.objectKey);
+        addStory(url);
+      }
     } catch {
       // Upload échoué : ignoré silencieusement
     } finally {

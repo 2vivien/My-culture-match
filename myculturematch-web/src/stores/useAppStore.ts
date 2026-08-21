@@ -79,7 +79,6 @@ export const useAppStore = create<AppState>()(
       resetProfileDetails: () => set({ profileDetails: defaultProfileDetails }),
       loginUser: (user) => set((state) => ({
         isAuthenticated: true,
-        isOnboarded: true,
         currentUser: { ...state.currentUser, ...user }
       })),
       logout: () => set({ isAuthenticated: false, isOnboarded: false, profileDetails: defaultProfileDetails }),

@@ -2,7 +2,6 @@ import React from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { useUIStore } from '@/src/stores/useUIStore';
 import { useExplore } from '@/src/hooks/useExplore';
-import { USE_MOCK } from '@/src/services/api';
 import { ExploreHeader } from './ExploreHeader';
 import { ExploreTabs } from './ExploreTabs';
 import { ExploreCategories } from './ExploreCategories';
@@ -33,7 +32,7 @@ export const ExploreColumn: React.FC = () => {
     toggleConnectCompanion,
   } = useExplore();
 
-  const showSearchResults = !USE_MOCK && searchQuery.trim().length >= 2;
+  const showSearchResults = searchQuery.trim().length >= 2;
 
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden select-none px-1">

@@ -30,7 +30,7 @@ export function useFeed() {
     onMutate: async (postId) => {
       await queryClient.cancelQueries({ queryKey });
       const previousPosts = queryClient.getQueryData<Post[]>(queryKey);
-      const isLiked = likedPosts.has(postId);
+      const isLiked = likedPosts.includes(postId);
 
       if (previousPosts) {
         queryClient.setQueryData<Post[]>(
@@ -65,7 +65,7 @@ export function useFeed() {
     },
   });
 
-  const isPostLiked = useCallback((postId: string) => likedPosts.has(postId), [likedPosts]);
+  const isPostLiked = useCallback((postId: string) => likedPosts.includes(postId), [likedPosts]);
 
   return {
     posts,
