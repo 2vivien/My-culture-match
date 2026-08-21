@@ -48,3 +48,10 @@ export const unbanUserSchema = z
     reason: z.string().trim().max(500).optional(),
   })
   .strict();
+
+/** GET /api/admin/analytics */
+export const analyticsQuerySchema = z
+  .object({
+    period: z.enum(['7d', '30d', '90d', '12m']).default('7d'),
+  })
+  .strict();

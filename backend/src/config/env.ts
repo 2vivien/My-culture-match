@@ -34,13 +34,9 @@ const envSchema = z.object({
   APPLE_CLIENT_ID: z.string().optional().default(''),
   APPLE_CLIENT_SECRET: z.string().optional().default(''),
 
-  BREVO_API_KEY: z.string().optional().default(''),
+  BREVO_API_KEY: z.string().min(1, 'BREVO_API_KEY est obligatoire'),
   BREVO_SENDER_EMAIL: z.string().email().default('noreply@myculturematch.com'),
   BREVO_SENDER_NAME: z.string().default('My Culture Match'),
-  SMTP_HOST: z.string().default('localhost'),
-  SMTP_PORT: portNumber.default(1025),
-  SMTP_USER: z.string().optional().default(''),
-  SMTP_PASSWORD: z.string().optional().default(''),
 
   MINIO_ENDPOINT: z.string().default('localhost'),
   MINIO_PORT: portNumber.default(9000),

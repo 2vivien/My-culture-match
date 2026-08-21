@@ -13,6 +13,7 @@ interface AppState {
   feedCulture: string;
   currentUser: CurrentUser;
   selectedTotemUserId: string;
+  selectedTribeId: string | null;
   profileActiveTab: 'Posts' | 'Photos' | 'Videos' | 'Traditions' | 'About' | 'Saves';
   isAuthenticated: boolean;
   isOnboarded: boolean;
@@ -23,6 +24,7 @@ interface AppState {
   setFeedSort: (sort: string) => void;
   setFeedCulture: (culture: string) => void;
   setSelectedTotemUserId: (id: string) => void;
+  setSelectedTribeId: (id: string | null) => void;
   setProfileActiveTab: (tab: 'Posts' | 'Photos' | 'Videos' | 'Traditions' | 'About' | 'Saves') => void;
   setAuthenticated: (auth: boolean) => void;
   setOnboarded: (onboarded: boolean) => void;
@@ -59,6 +61,7 @@ export const useAppStore = create<AppState>()(
       feedCulture: 'Toutes les thématiques',
       currentUser: defaultUser,
       selectedTotemUserId: 'user-current',
+  selectedTribeId: null,
       profileActiveTab: 'Posts',
       isAuthenticated: false,
       isOnboarded: false,
@@ -69,6 +72,7 @@ export const useAppStore = create<AppState>()(
       setFeedSort: (feedSort) => set({ feedSort }),
       setFeedCulture: (feedCulture) => set({ feedCulture }),
       setSelectedTotemUserId: (id) => set({ selectedTotemUserId: id }),
+  setSelectedTribeId: (id) => set({ selectedTribeId: id }),
       setProfileActiveTab: (profileActiveTab) => set({ profileActiveTab }),
       setAuthenticated: (isAuthenticated) => set({ isAuthenticated }),
       setOnboarded: (isOnboarded) => set({ isOnboarded }),

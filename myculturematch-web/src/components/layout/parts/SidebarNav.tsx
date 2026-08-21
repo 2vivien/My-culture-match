@@ -1,4 +1,4 @@
-import { Home, LandPlot, Layers, FerrisWheel, Landmark, LucideIcon, Flame, Unplug, Plug, Settings } from 'lucide-react';
+import { Home, LandPlot, Layers, FerrisWheel, Landmark, LucideIcon, Flame, Unplug, Plug, Settings, ShieldCheck } from 'lucide-react';
 import { useUIStore } from '@/src/stores/useUIStore';
 import { useAppStore } from '@/src/stores/useAppStore';
 import { cn } from '@/src/lib/utils';
@@ -28,7 +28,7 @@ const LayersPlusIcon = (props: any) => (
 
 const iconMap: Record<string, any> = {
   Home, Popular: LandPlot, Love: Flame, New: LayersPlusIcon, Explore: FerrisWheel, Tribu: Landmark, Totem: GrimTotemIcon, Sandbox: SandboxIcon,
-  Connexion: Unplug,
+  Connexion: Unplug, Admin: ShieldCheck,
 };
 
 const navItems = [
@@ -43,10 +43,16 @@ const navItems = [
   { name: 'Messages', icon: 'Sandbox', badge: '+09' },
 ];
 
+const adminItem = { name: 'Admin', icon: 'Admin' };
+
+const isAdminRole = (role?: string) => role === 'admin' || role === 'superadmin';
+
 export const SidebarNav = () => {
   const { activeTab, setActiveTab, isSidebarOpen, toggleSidebar, isSidebarCollapsed, openChat } = useUIStore();
-  const { setSelectedTotemUserId, setFeedSort } = useAppStore();
+  const { setSelectedTotemUserId, setFeedSort, currentUser } = useAppStore();
   const isCollapsed = isSidebarCollapsed;
+
+  const showAdmin = isAdminRole(currentUser.role);
 
   const handleNav = (name: string) => {
     if (name === 'Tribu') return; // Do nothing for main Tribu click
@@ -160,6 +166,34 @@ export const SidebarNav = () => {
           </div>
         );
       })}
+      {/* Admin nav item — only visible for admins */}
+      {showAdmin && (() => {
+        const AdminIcon = iconMap[adminItem.icon] || ShieldCheck;
+        const isActive = activeTab === adminItem.name;
+        return (
+          <div className="mt-2 pt-2 border-t border-app-border/40 dark:border-zinc-800">
+            <button
+              onClick={() => handleNav(adminItem.name)}
+              title={adminItem.name}
+              className={cn(
+                'relative flex items-center rounded-2xl transition-all cursor-pointer group w-full',
+                isCollapsed ? 'justify-center p-3 w-12 mx-auto' : 'gap-4 px-4 py-3 text-left font-medium text-sm',
+                isActive ? 'text-white bg-app-black shadow-md' : 'text-app-gray hover:bg-gray-50 dark:hover:bg-zinc-800 hover:text-app-black dark:hover:text-white'
+              )}
+            >
+              {isActive && (
+                <motion.div
+                  layoutId="active-nav"
+                  className="absolute inset-0 bg-app-black dark:bg-zinc-800 rounded-2xl -z-10"
+                  transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                />
+              )}
+              <AdminIcon className={cn('w-5 h-5 transition-transform shrink-0', isActive ? 'scale-100' : 'group-hover:scale-110')} />
+              {!isCollapsed && <span>{adminItem.name}</span>}
+            </button>
+          </div>
+        );
+      })()}
     </nav>
   );
 };

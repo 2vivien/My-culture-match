@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { tribuService } from '@/src/services/tribuService';
+import { useAppStore } from '@/src/stores/useAppStore';
 import type { PostItem, TribeRule, TribeModerator } from '@/src/types/tribu';
 
 export function useTribu() {
+  const tribeId = useAppStore((s) => s.selectedTribeId);
   const [joined, setJoined] = useState(true);
   const [notificationsOn, setNotificationsOn] = useState(true);
   const [sortType, setSortType] = useState<'Best' | 'Hot' | 'New'>('Best');
@@ -16,21 +18,24 @@ export function useTribu() {
   const [mutedPostIds, setMutedPostIds] = useState<Record<string, boolean>>({});
 
   const { data: posts = [] } = useQuery<PostItem[]>({
-    queryKey: ['tribu-posts'],
-    queryFn: () => tribuService.fetchPosts(),
+    queryKey: ['tribu-posts', tribeId],
+    queryFn: () => tribuService.fetchPosts(tribeId ?? undefined),
     staleTime: 1000 * 60 * 5,
+    enabled: !!tribeId,
   });
 
   const { data: rules = [] } = useQuery<TribeRule[]>({
-    queryKey: ['tribu-rules'],
-    queryFn: () => tribuService.fetchRules(),
+    queryKey: ['tribu-rules', tribeId],
+    queryFn: () => tribuService.fetchRules(tribeId ?? undefined),
     staleTime: 1000 * 60 * 10,
+    enabled: !!tribeId,
   });
 
   const { data: moderators = [] } = useQuery<TribeModerator[]>({
-    queryKey: ['tribu-moderators'],
-    queryFn: () => tribuService.fetchModerators(),
+    queryKey: ['tribu-moderators', tribeId],
+    queryFn: () => tribuService.fetchModerators(tribeId ?? undefined),
     staleTime: 1000 * 60 * 10,
+    enabled: !!tribeId,
   });
 
   useEffect(() => {

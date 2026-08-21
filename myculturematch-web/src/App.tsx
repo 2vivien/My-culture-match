@@ -22,6 +22,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { AuthPage } from './pages/AuthPage';
 import { OnboardingPage } from './pages/OnboardingPage';
 import { ConnexionPage } from './pages/ConnexionPage';
+import { AdminPage } from './pages/AdminPage';
 
 export default function App() {
   const { theme, isAuthenticated, isOnboarded } = useAppStore();
@@ -100,6 +101,8 @@ export default function App() {
                   <SettingsPage />
                 ) : activeTab === 'Connexion' || activeTab === 'Connections' ? (
                   <ConnexionPage />
+                ) : activeTab === 'Admin' ? (
+                  <AdminPage />
                 ) : (
                   <motion.div
                     initial={{ opacity: 0, scale: 0.98 }}

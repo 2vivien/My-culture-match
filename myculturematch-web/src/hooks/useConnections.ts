@@ -1,38 +1,42 @@
 import { useMemo } from 'react';
 import { useConnectionsStore } from '@/src/stores/useConnectionsStore';
+import { useConnectionsData } from './useConnectionsData';
 
 export function useConnections() {
   const activeSubTab = useConnectionsStore((state) => state.activeSubTab);
-  const suggestions = useConnectionsStore((state) => state.suggestions);
-  const interested = useConnectionsStore((state) => state.interested);
-  const demandes = useConnectionsStore((state) => state.demandes);
-  const compagnons = useConnectionsStore((state) => state.compagnons);
-  
   const setActiveSubTab = useConnectionsStore((state) => state.setActiveSubTab);
-  const sendRequest = useConnectionsStore((state) => state.sendRequest);
-  const acceptRequest = useConnectionsStore((state) => state.acceptRequest);
-  const declineRequest = useConnectionsStore((state) => state.declineRequest);
+
+  // Utilise les données du backend (React Query) quand USE_MOCK=false
+  const {
+    suggestions,
+    interested,
+    requests,
+    companions,
+    sendRequest: apiSendRequest,
+    acceptRequest: apiAcceptRequest,
+    declineRequest: apiDeclineRequest,
+  } = useConnectionsData();
 
   const currentList = useMemo(() => {
     switch (activeSubTab) {
       case 'Suggestions': return suggestions;
       case 'Interested': return interested;
-      case 'Demandes': return demandes;
-      case 'Compagnons': return compagnons;
+      case 'Demandes': return requests;
+      case 'Compagnons': return companions;
       default: return [];
     }
-  }, [activeSubTab, suggestions, interested, demandes, compagnons]);
+  }, [activeSubTab, suggestions, interested, requests, companions]);
 
   return {
     activeSubTab,
     suggestionsCount: suggestions.length,
     interestedCount: interested.length,
-    demandesCount: demandes.length,
-    compagnonsCount: compagnons.length,
+    demandesCount: requests.length,
+    compagnonsCount: companions.length,
     currentList,
     setActiveSubTab,
-    sendRequest,
-    acceptRequest,
-    declineRequest,
+    sendRequest: apiSendRequest,
+    acceptRequest: apiAcceptRequest,
+    declineRequest: apiDeclineRequest,
   };
 }

@@ -25,7 +25,7 @@ export function useLove() {
 
   const { data: matches = [], isLoading, error } = useQuery<LoveMatch[]>({
     queryKey: ['love-matches'],
-    queryFn: () => loveService.getLoveMatches(userProfile),
+    queryFn: () => loveService.fetchLoveMatches(userProfile),
     staleTime: 1000 * 60 * 5,
   });
 

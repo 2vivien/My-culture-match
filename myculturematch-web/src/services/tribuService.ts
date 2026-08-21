@@ -14,21 +14,21 @@ export const tribuService = {
   },
 
   async fetchPosts(tribeId?: string): Promise<PostItem[]> {
-    if (USE_MOCK) {
+    if (USE_MOCK || !tribeId) {
       return tribuMock.posts as PostItem[];
     }
     return api.get<PostItem[]>(`/api/tribes/${tribeId}/posts`);
   },
 
   async fetchRules(tribeId?: string): Promise<TribeRule[]> {
-    if (USE_MOCK) {
+    if (USE_MOCK || !tribeId) {
       return tribuMock.rules as TribeRule[];
     }
     return api.get<TribeRule[]>(`/api/tribes/${tribeId}/rules`);
   },
 
   async fetchModerators(tribeId?: string): Promise<TribeModerator[]> {
-    if (USE_MOCK) {
+    if (USE_MOCK || !tribeId) {
       return tribuMock.moderators as TribeModerator[];
     }
     return api.get<TribeModerator[]>(`/api/tribes/${tribeId}/moderators`);

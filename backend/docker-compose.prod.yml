@@ -42,10 +42,9 @@ services:
       MINIO_BUCKET_NAME: '${MINIO_BUCKET_NAME:-mcm-media}'
       MEILISEARCH_HOST: 'http://meilisearch:7700'
       MEILISEARCH_API_KEY: '${MEILISEARCH_API_KEY:-masterKey}'
-      SMTP_HOST: '${SMTP_HOST:-mailpit}'
-      SMTP_PORT: '${SMTP_PORT:-1025}'
-      SMTP_USER: '${SMTP_USER:-}'
-      SMTP_PASSWORD: '${SMTP_PASSWORD:-}'
+      BREVO_API_KEY: '${BREVO_API_KEY}'
+      BREVO_SENDER_EMAIL: '${BREVO_SENDER_EMAIL:-noreply@myculturematch.com}'
+      BREVO_SENDER_NAME: '${BREVO_SENDER_NAME:-My Culture Match}'
       SENTRY_DSN: '${SENTRY_DSN:-}'
     depends_on:
       postgres:
@@ -115,17 +114,6 @@ services:
       - mcm_minio_data:/data
     healthcheck:
       test: ['CMD', 'mc', 'ready', 'local']
-      interval: 5s
-      timeout: 5s
-      retries: 10
-
-  mailpit:
-    image: axllent/mailpit:latest
-    restart: unless-stopped
-    ports:
-      - '8025:8025'
-    healthcheck:
-      test: ['CMD', 'wget', '-q', '--spider', 'http://localhost:8025/']
       interval: 5s
       timeout: 5s
       retries: 10

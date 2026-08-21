@@ -2,8 +2,8 @@ import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { requireAuth } from '../auth/require-auth';
 import { requireAdmin } from '../auth/require-admin';
-import { banUserSchema, listAdminUsersQuerySchema, listReportsQuerySchema, reportActionSchema, unbanUserSchema } from './admin.schemas';
-import { banUser, getAdminStats, listAdminUsers, listReports, logAudit, takeReportAction, unbanUser } from './admin.service';
+import { analyticsQuerySchema, banUserSchema, listAdminUsersQuerySchema, listReportsQuerySchema, reportActionSchema, unbanUserSchema } from './admin.schemas';
+import { banUser, getAdminStats, getAnalytics, listAdminUsers, listReports, logAudit, takeReportAction, unbanUser } from './admin.service';
 
 const adminRoutes = new Hono();
 
@@ -53,6 +53,13 @@ adminRoutes.post('/users/:id/unban', zValidator('json', unbanUserSchema), async 
 /** GET /api/admin/stats */
 adminRoutes.get('/stats', async (c) => {
   const result = await getAdminStats();
+  return c.json(result, 200);
+});
+
+/** GET /api/admin/analytics?period=7d|30d|90d|12m */
+adminRoutes.get('/analytics', zValidator('query', analyticsQuerySchema), async (c) => {
+  const { period } = c.req.valid('query');
+  const result = await getAnalytics(period);
   return c.json(result, 200);
 });
 

@@ -37,6 +37,21 @@ export const loveService = {
     if (USE_MOCK) {
       return this.getLoveMatches(userProfile);
     }
-    return api.get<LoveMatch[]>('/api/love/matches');
+    const data = await api.get<Array<Record<string, unknown>>>('/api/love/matches');
+    return (data ?? []).map((c) => ({
+      id: c.id as string,
+      name: c.name as string,
+      age: (c.age as number) ?? 0,
+      gender: 'female' as const,
+      country: (c.country as string) ?? '',
+      flag: '🌍',
+      avatar: (c.avatar as string) ?? `https://api.dicebear.com/7.x/open-peeps/svg?seed=${c.id}`,
+      matchScore: (c.matchScore as number) ?? 0,
+      online: false,
+      interest: ((c.sharedValues as string[]) ?? []).join(', '),
+      about: (c.bio as string) ?? '',
+      tribes: (c.sharedValues as string[]) ?? [],
+      languages: [],
+    }));
   },
 };

@@ -12,6 +12,7 @@ export interface CurrentUser {
   location: string;
   interestedCount?: number;
   companionsCount?: number;
+  role?: string;
 }
 
 export type TotemTitle = 'Explorateur' | 'Voyageur' | 'Gardien' | 'Sage' | 'Ancêtre';

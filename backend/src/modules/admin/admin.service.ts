@@ -270,3 +270,204 @@ export async function getAdminStats(): Promise<Record<string, number>> {
     messages24h: messages24h[0]!.count,
   };
 }
+
+// ── Analytics (charts) ─────────────────────────────────────
+
+export type AnalyticsPeriod = '7d' | '30d' | '90d' | '12m';
+
+function periodToDate(period: AnalyticsPeriod): Date {
+  const now = Date.now();
+  switch (period) {
+    case '7d': return new Date(now - 7 * 86_400_000);
+    case '30d': return new Date(now - 30 * 86_400_000);
+    case '90d': return new Date(now - 90 * 86_400_000);
+    case '12m': return new Date(now - 365 * 86_400_000);
+  }
+}
+
+function dayLabel(d: Date): string {
+  return d.toISOString().slice(0, 10);
+}
+
+function monthLabel(d: Date): string {
+  return d.toISOString().slice(0, 7);
+}
+
+/** GET /api/admin/analytics — données pour les charts admin. */
+export async function getAnalytics(period: AnalyticsPeriod) {
+  const since = periodToDate(period);
+  const isMonthly = period === '12m';
+
+  // ── 1. Activité quotidienne (ou mensuelle) ──
+  const userRows = await db
+    .select({
+      day: sql<string>`date_trunc(${isMonthly ? sql`'month'` : sql`'day'`}, ${schema.users.createdAt})::text`,
+      count: sql<number>`count(*)::int`,
+    })
+    .from(schema.users)
+    .where(gte(schema.users.createdAt, since))
+    .groupBy(sql`date_trunc(${isMonthly ? sql`'month'` : sql`'day'`}, ${schema.users.createdAt})`)
+    .orderBy(sql`date_trunc(${isMonthly ? sql`'month'` : sql`'day'`}, ${schema.users.createdAt})`);
+
+  const postRows = await db
+    .select({
+      day: sql<string>`date_trunc(${isMonthly ? sql`'month'` : sql`'day'`}, ${schema.posts.createdAt})::text`,
+      count: sql<number>`count(*)::int`,
+    })
+    .from(schema.posts)
+    .where(gte(schema.posts.createdAt, since))
+    .groupBy(sql`date_trunc(${isMonthly ? sql`'month'` : sql`'day'`}, ${schema.posts.createdAt})`)
+    .orderBy(sql`date_trunc(${isMonthly ? sql`'month'` : sql`'day'`}, ${schema.posts.createdAt})`);
+
+  const msgRows = await db
+    .select({
+      day: sql<string>`date_trunc(${isMonthly ? sql`'month'` : sql`'day'`}, ${schema.messages.createdAt})::text`,
+      count: sql<number>`count(*)::int`,
+    })
+    .from(schema.messages)
+    .where(gte(schema.messages.createdAt, since))
+    .groupBy(sql`date_trunc(${isMonthly ? sql`'month'` : sql`'day'`}, ${schema.messages.createdAt})`)
+    .orderBy(sql`date_trunc(${isMonthly ? sql`'month'` : sql`'day'`}, ${schema.messages.createdAt})`);
+
+  // Mapper en map label → count
+  const userMap = new Map(userRows.map((r) => [r.day.slice(0, isMonthly ? 7 : 10), r.count]));
+  const postMap = new Map(postRows.map((r) => [r.day.slice(0, isMonthly ? 7 : 10), r.count]));
+  const msgMap = new Map(msgRows.map((r) => [r.day.slice(0, isMonthly ? 7 : 10), r.count]));
+
+  // Générer les labels de dates manquants
+  const activity: Array<{ label: string; utilisateurs: number; posts: number; messages: number }> = [];
+  const start = new Date(since);
+  const end = new Date();
+  const step = isMonthly ? 30 * 86_400_000 : 86_400_000;
+  for (let t = start.getTime(); t <= end.getTime(); t += step) {
+    const d = new Date(t);
+    const key = isMonthly ? monthLabel(d) : dayLabel(d);
+    const shortLabel = isMonthly
+      ? d.toLocaleDateString('fr-FR', { month: 'short' })
+      : d.toLocaleDateString('fr-FR', { weekday: 'short' });
+    activity.push({
+      label: shortLabel,
+      utilisateurs: userMap.get(key) ?? 0,
+      posts: postMap.get(key) ?? 0,
+      messages: msgMap.get(key) ?? 0,
+    });
+  }
+
+  // ── 2. Croissance mensuelle (toujours 12 derniers mois) ──
+  const growthSince = new Date(Date.now() - 12 * 30 * 86_400_000);
+  const growthUserRows = await db
+    .select({
+      month: sql<string>`to_char(${schema.users.createdAt}, 'YYYY-MM')`,
+      count: sql<number>`count(*)::int`,
+    })
+    .from(schema.users)
+    .where(gte(schema.users.createdAt, growthSince))
+    .groupBy(sql`to_char(${schema.users.createdAt}, 'YYYY-MM')`)
+    .orderBy(sql`to_char(${schema.users.createdAt}, 'YYYY-MM')`);
+
+  const growthTribeRows = await db
+    .select({
+      month: sql<string>`to_char(${schema.tribes.createdAt}, 'YYYY-MM')`,
+      count: sql<number>`count(*)::int`,
+    })
+    .from(schema.tribes)
+    .where(gte(schema.tribes.createdAt, growthSince))
+    .groupBy(sql`to_char(${schema.tribes.createdAt}, 'YYYY-MM')`)
+    .orderBy(sql`to_char(${schema.tribes.createdAt}, 'YYYY-MM')`);
+
+  const growthUserMap = new Map(growthUserRows.map((r) => [r.month, r.count]));
+  const growthTribeMap = new Map(growthTribeRows.map((r) => [r.month, r.count]));
+  const months = Array.from({ length: 12 }, (_, i) => {
+    const d = new Date(Date.now() - (11 - i) * 30 * 86_400_000);
+    return monthLabel(d);
+  });
+
+  const growth = months.map((m) => ({
+    month: new Date(m + '-01').toLocaleDateString('fr-FR', { month: 'short' }),
+    utilisateurs: growthUserMap.get(m) ?? 0,
+    tribus: growthTribeMap.get(m) ?? 0,
+  }));
+
+  // ── 3. Distribution des signalements ──
+  const reportRows = await db
+    .select({
+      reason: schema.reports.reason,
+      count: sql<number>`count(*)::int`,
+    })
+    .from(schema.reports)
+    .where(gte(schema.reports.createdAt, since))
+    .groupBy(schema.reports.reason);
+
+  const REPORT_LABELS: Record<string, string> = {
+    harassment: 'Harcèlement', spam: 'Spam', hate_speech: 'Discours haineux',
+    nsfw: 'Contenu NSFW', violence: 'Violence', other: 'Autre',
+  };
+  const REPORT_COLORS = ['#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#f97316', '#6b7280'];
+  const reportDistribution = reportRows.map((r, i) => ({
+    name: REPORT_LABELS[r.reason ?? 'other'] ?? r.reason ?? 'Autre',
+    value: r.count,
+    color: REPORT_COLORS[i % REPORT_COLORS.length],
+  }));
+
+  // ── 4. Distribution des match scores ──
+  const scoreRows = await db
+    .select({
+      range: sql<string>`CASE
+        WHEN ${schema.loveMatches.matchScore} < 20 THEN '0-20'
+        WHEN ${schema.loveMatches.matchScore} < 40 THEN '20-40'
+        WHEN ${schema.loveMatches.matchScore} < 60 THEN '40-60'
+        WHEN ${schema.loveMatches.matchScore} < 80 THEN '60-80'
+        ELSE '80-100'
+      END`,
+      count: sql<number>`count(*)::int`,
+    })
+    .from(schema.loveMatches)
+    .groupBy(sql`CASE
+      WHEN ${schema.loveMatches.matchScore} < 20 THEN '0-20'
+      WHEN ${schema.loveMatches.matchScore} < 40 THEN '20-40'
+      WHEN ${schema.loveMatches.matchScore} < 60 THEN '40-60'
+      WHEN ${schema.loveMatches.matchScore} < 80 THEN '60-80'
+      ELSE '80-100'
+    END`)
+    .orderBy(sql`CASE
+      WHEN ${schema.loveMatches.matchScore} < 20 THEN '0-20'
+      WHEN ${schema.loveMatches.matchScore} < 40 THEN '20-40'
+      WHEN ${schema.loveMatches.matchScore} < 60 THEN '40-60'
+      WHEN ${schema.loveMatches.matchScore} < 80 THEN '60-80'
+      ELSE '80-100'
+    END`);
+
+  const scoreDistribution = ['0-20', '20-40', '40-60', '60-80', '80-100'].map((range) => ({
+    range,
+    count: scoreRows.find((r) => r.range === range)?.count ?? 0,
+  }));
+
+  // ── 5. Engagement par heure (24h) ──
+  const engagementRows = await db
+    .select({
+      hour: sql<string>`extract(hour from ${schema.posts.createdAt})::int`,
+      likes: sql<number>`coalesce(sum(${schema.posts.likes}), 0)::int`,
+      comments: sql<number>`coalesce(sum(${schema.posts.comments}), 0)::int`,
+      shares: sql<number>`coalesce(sum(${schema.posts.shares}), 0)::int`,
+    })
+    .from(schema.posts)
+    .where(gte(schema.posts.createdAt, since))
+    .groupBy(sql`extract(hour from ${schema.posts.createdAt})`)
+    .orderBy(sql`extract(hour from ${schema.posts.createdAt})`);
+
+  const engagementMap = new Map(engagementRows.map((r) => [String(r.hour), r]));
+  const engagement = Array.from({ length: 24 }, (_, h) => ({
+    hour: `${String(h).padStart(2, '0')}h`,
+    likes: engagementMap.get(String(h))?.likes ?? 0,
+    comments: engagementMap.get(String(h))?.comments ?? 0,
+    shares: engagementMap.get(String(h))?.shares ?? 0,
+  }));
+
+  return {
+    activity,
+    growth,
+    reportDistribution,
+    scoreDistribution,
+    engagement,
+  };
+}
