@@ -1,54 +1,59 @@
 import { useState } from 'react';
 import { useAppStore } from '@/src/stores/useAppStore';
 import { userService } from '@/src/services/userService';
-import { useFeed } from '@/src/hooks/useFeed';
+
+const COUNTRY_CODES: Record<string, string> = {
+  benin: 'bj', 'new zealand': 'nz', senegal: 'sn', ethiopia: 'et',
+  mexico: 'mx', japan: 'jp', france: 'fr', jordan: 'jo',
+  morocco: 'ma', brazil: 'br', usa: 'us', uk: 'gb', 'united kingdom': 'gb',
+  canada: 'ca', australia: 'au', germany: 'de', spain: 'es', italy: 'it',
+  'south korea': 'kr', china: 'cn', india: 'in', egypt: 'eg',
+  'ivory coast': 'ci', ghana: 'gh', nigeria: 'ng', kenya: 'ke',
+  tanzania: 'tz', peru: 'pe', colombia: 'co', argentina: 'ar',
+  chile: 'cl', norway: 'no', sweden: 'se', denmark: 'dk',
+};
+
+const COUNTRY_CITIES: Record<string, string> = {
+  benin: 'Cotonou', 'new zealand': 'Wellington', senegal: 'Dakar',
+  ethiopia: 'Addis Ababa', mexico: 'Mexico City', jordan: 'Amman',
+  usa: 'New York', peru: 'Cusco', morocco: 'Casablanca',
+  brazil: 'Rio de Janeiro', france: 'Paris', japan: 'Tokyo',
+  uk: 'London', 'united kingdom': 'London', canada: 'Toronto',
+  australia: 'Sydney', germany: 'Berlin', spain: 'Madrid',
+  italy: 'Rome', 'south korea': 'Seoul', china: 'Beijing',
+  india: 'Mumbai', egypt: 'Cairo', nigeria: 'Lagos', kenya: 'Nairobi',
+};
+
+function getCountryCode(location: string): string {
+  const loc = location.toLowerCase().trim();
+  for (const [key, code] of Object.entries(COUNTRY_CODES)) {
+    if (loc.includes(key)) return code;
+  }
+  return 'us';
+}
+
+function getCityAndCountry(location: string): { city: string; country: string } {
+  if (location.includes(' - ')) {
+    const parts = location.split(' - ');
+    return { city: parts[0], country: parts[1] };
+  }
+  const loc = location.toLowerCase().trim();
+  for (const [key, city] of Object.entries(COUNTRY_CITIES)) {
+    if (loc === key) return { city, country: location };
+  }
+  return { city: location, country: location };
+}
 
 export function useTotemProfile() {
-  const { 
-    selectedTotemUserId, 
-    profileActiveTab: activeTab, 
-    setProfileActiveTab: setActiveTab, 
-    currentUser 
+  const {
+    selectedTotemUserId,
+    profileActiveTab: activeTab,
+    setProfileActiveTab: setActiveTab,
+    currentUser,
   } = useAppStore();
-  
+
   const user = userService.getUserById(selectedTotemUserId);
-  const { posts } = useFeed();
-  
   const [connectionState, setConnectionState] = useState<'none' | 'pending' | 'connected'>('none');
-
-  const getCountryCode = (location: string) => {
-    const loc = location.toLowerCase();
-    if (loc.includes('benin')) return 'bj';
-    if (loc.includes('zealand')) return 'nz';
-    if (loc.includes('senegal')) return 'sn';
-    if (loc.includes('ethiopia')) return 'et';
-    if (loc.includes('mexico')) return 'mx';
-    if (loc.includes('japan')) return 'jp';
-    if (loc.includes('france')) return 'fr';
-    if (loc.includes('jordan')) return 'jo';
-    if (loc.includes('morocco')) return 'ma';
-    if (loc.includes('brazil')) return 'br';
-    return 'us';
-  };
-
-  const getCityAndCountry = (location: string) => {
-    if (location.includes(' - ')) {
-      const parts = location.split(' - ');
-      return { city: parts[0], country: parts[1] };
-    }
-    const loc = location.toLowerCase();
-    if (loc === 'benin') return { city: 'Cotonou', country: 'Benin' };
-    if (loc === 'new zealand') return { city: 'Wellington', country: 'New Zealand' };
-    if (loc === 'senegal') return { city: 'Dakar', country: 'Senegal' };
-    if (loc === 'ethiopia') return { city: 'Addis Ababa', country: 'Ethiopia' };
-    if (loc === 'mexico') return { city: 'Mexico City', country: 'Mexico' };
-    if (loc === 'jordan') return { city: 'Amman', country: 'Jordan' };
-    if (loc === 'usa') return { city: 'New York', country: 'USA' };
-    if (loc === 'peru') return { city: 'Cusco', country: 'Peru' };
-    if (loc === 'morocco') return { city: 'Casablanca', country: 'Morocco' };
-    if (loc === 'brazil') return { city: 'Rio de Janeiro', country: 'Brazil' };
-    return { city: location, country: location };
-  };
 
   const isOwnProfile = user.id === currentUser.id;
 
@@ -63,7 +68,6 @@ export function useTotemProfile() {
   return {
     user,
     currentUser,
-    posts,
     activeTab,
     setActiveTab,
     connectionState,

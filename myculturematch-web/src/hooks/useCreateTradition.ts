@@ -1,19 +1,24 @@
-import { useState, useEffect, type ChangeEvent } from 'react';
+import { useState, type ChangeEvent } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { traditionService } from '@/src/services/traditionService';
 import { uploadService } from '@/src/services/uploadService';
 import { mediaUrl } from '@/src/lib/media';
-import { USE_MOCK } from '@/src/services/api';
 import type { TribeOption, TraditionSubmission } from '@/src/types/createTradition';
 import { useUIStore } from '@/src/stores/useUIStore';
 
 export function useCreateTradition() {
   const { setActiveTab } = useUIStore();
-  
-  const [tribes, setTribes] = useState<TribeOption[]>([]);
+
+  const { data: tribes = [] } = useQuery<TribeOption[]>({
+    queryKey: ['tribe-options'],
+    queryFn: traditionService.getTribes,
+    staleTime: 1000 * 60 * 10,
+  });
+
   const [selectedTribe, setSelectedTribe] = useState<TribeOption | null>(null);
   const [tribuDropdownOpen, setTribuDropdownOpen] = useState(false);
   const [activeSubTab, setActiveSubTab] = useState<'Text' | 'Images' | 'Link'>('Text');
-  
+
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
   const [linkUrl, setLinkUrl] = useState('');
@@ -38,18 +43,6 @@ export function useCreateTradition() {
     quote: false,
     code: false,
   });
-
-  useEffect(() => {
-    let isMounted = true;
-    traditionService.getTribes().then((data) => {
-      if (isMounted) {
-        setTribes(data);
-      }
-    });
-    return () => {
-      isMounted = false;
-    };
-  }, []);
 
   const toggleFormat = (format: string) => {
     setFormats((prev) => ({ ...prev, [format]: !prev[format] }));
@@ -81,10 +74,13 @@ export function useCreateTradition() {
     setIsSubmitting(true);
 
     let resolvedMediaUrl = mediaPreview ?? undefined;
-    if (activeSubTab === 'Images' && mediaFile && !USE_MOCK) {
+    if (activeSubTab === 'Images' && mediaFile) {
       const uploaded = await uploadService.uploadFile(mediaFile, 'post');
       if (uploaded?.objectKey) {
-        resolvedMediaUrl = mediaUrl(uploaded.objectKey);
+        // Mock mode returns objectKey starting with "mock/", use local URL in that case
+        resolvedMediaUrl = uploaded.objectKey.startsWith('mock/')
+          ? mediaPreview ?? undefined
+          : mediaUrl(uploaded.objectKey);
       }
     }
 

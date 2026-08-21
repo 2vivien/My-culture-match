@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { createTribeService } from '@/src/services/createTribeService';
 import type { TribeTopic, TribeType, TribeSubmission } from '@/src/types/createTribe';
 import { useUIStore } from '@/src/stores/useUIStore';
@@ -6,24 +7,17 @@ import { useUIStore } from '@/src/stores/useUIStore';
 export function useCreateTribe() {
   const { showCreateTribeModal, setShowCreateTribeModal } = useUIStore();
   const [createStep, setCreateStep] = useState(1);
-  const [topics, setTopics] = useState<TribeTopic[]>([]);
   const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
   const [tribeType, setTribeType] = useState<TribeType>('public');
   const [tribeName, setTribeName] = useState('');
   const [tribeDescription, setTribeDescription] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  useEffect(() => {
-    let isMounted = true;
-    createTribeService.getTopics().then((data) => {
-      if (isMounted) {
-        setTopics(data);
-      }
-    });
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+  const { data: topics = [] } = useQuery<TribeTopic[]>({
+    queryKey: ['tribe-topics'],
+    queryFn: createTribeService.getTopics,
+    staleTime: 1000 * 60 * 30,
+  });
 
   const toggleTopic = (topicName: string) => {
     setSelectedTopics((prev) => {
@@ -64,7 +58,6 @@ export function useCreateTribe() {
 
   const closeModal = () => {
     setShowCreateTribeModal(false);
-    // Reset state after animation finishes
     setTimeout(() => {
       setCreateStep(1);
       setSelectedTopics([]);

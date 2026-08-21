@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FileText, Images, SquarePlay, ArchiveRestore, Info, Bookmark } from 'lucide-react';
 import { useTotemProfile } from '@/src/hooks/useTotemProfile';
 import { useUIStore } from '@/src/stores/useUIStore';
+import { useFeed } from '@/src/hooks/useFeed';
 import { ProfileHeader } from './ProfileHeader';
 import { ProfileTabs } from './ProfileTabs';
 import { ProfileCompletionPanel } from '@/src/components/profile/ProfileCompletionPanel';
@@ -15,9 +16,9 @@ import { SavesTab } from './tabs/SavesTab';
 
 export const TotemProfile: React.FC = () => {
   const { openChat } = useUIStore();
+  const { posts } = useFeed();
   const {
     user,
-    posts,
     activeTab,
     setActiveTab,
     connectionState,
