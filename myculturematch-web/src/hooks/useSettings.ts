@@ -6,7 +6,6 @@ export type SettingsTab = 'Account' | 'Profile' | 'Privacy' | 'Preferences' | 'N
 export function useSettings() {
   const [activeTab, setActiveTab] = useState<SettingsTab>('Account');
   const [email, setEmailState] = useState('');
-  const [isEditingEmail, setIsEditingEmail] = useState(false);
   const [gender, setGenderState] = useState('');
   const [isEditingGender, setIsEditingGender] = useState(false);
   const [locationType, setLocationTypeState] = useState('');
@@ -31,11 +30,6 @@ export function useSettings() {
       isMounted = false;
     };
   }, []);
-
-  const setEmail = async (val: string) => {
-    setEmailState(val);
-    await settingsService.updateSettings({ email: val });
-  };
 
   const setGender = async (val: string) => {
     setGenderState(val);
@@ -66,9 +60,7 @@ export function useSettings() {
     activeTab,
     setActiveTab,
     email,
-    setEmail,
-    isEditingEmail,
-    setIsEditingEmail,
+    onEmailChanged: setEmailState,
     gender,
     setGender,
     isEditingGender,
