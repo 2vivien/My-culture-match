@@ -30,3 +30,5 @@ Outils choisis :
 
 ## Entrées de cycle
 
+- [securite] [2026-08-25] hypothèse : les secrets en littéral dans deploy.yml (BETTER_AUTH_SECRET, METRICS_TOKEN, identifiants DB/Meili/MinIO) constituent une fuite versionnée qu'on peut supprimer sans casser le smoke test | changement : génération openssl rand à l'exécution via GITHUB_ENV, injectée symétriquement dans `docker compose up` et le conteneur API ; ci.yml conservé (conteneurs de service GitHub impossibles à alimenter par step, valeurs éphémères localhost-only sur runner jetable — risque résiduel accepté, jamais réutilisées en prod) | résultat : 0 littéral restant dans deploy.yml, YAML valide, typecheck/lint/tests unit verts (95/95), commit f3438da | verdict : gardé | leçon : distinguer secret réel exposé (deploy.yml :3000 publié) de fixture de test jetable (ci.yml) ; l'ancien BETTER_AUTH_SECRET CI reste dans l'historique git → rotation/purge à faire par Vivien (hors périmètre agent).
+

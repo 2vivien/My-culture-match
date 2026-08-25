@@ -5,6 +5,7 @@ import { Redis } from 'ioredis';
 import { env } from '../../config/env';
 import { logger } from '../../middleware/logger';
 import { getSession } from '../../modules/auth/auth.service';
+import { isConversationParticipant } from '../../modules/messages/conversation-access';
 
 const PRESENCE_TTL = 120; // secondes (heartbeat 30s, 2min de latence max)
 
@@ -57,6 +58,15 @@ export function initSocketServer(httpServer: HttpServer, redisClient: Redis): Se
 
   io.on('connection', async (socket) => {
     const userId: string = socket.data.userId;
+    // Conversations dont l'appartenance du socket a déjà été prouvée en base
+    const allowedConversations = new Set<string>();
+
+    const ensureParticipant = async (conversationId: string): Promise<boolean> => {
+      if (allowedConversations.has(conversationId)) return true;
+      if (!(await isConversationParticipant(conversationId, userId))) return false;
+      allowedConversations.add(conversationId);
+      return true;
+    };
 
     // Room personnelle : permet d'envoyer des events ciblés (notifications, love, messages)
     socket.join(`user:${userId}`);
@@ -69,24 +79,36 @@ export function initSocketServer(httpServer: HttpServer, redisClient: Redis): Se
       void markOnline(userId);
     }, 30_000);
 
-    socket.on('join:conversation', (conversationId: string) => {
-      socket.join(roomOf(String(conversationId)));
+    socket.on('join:conversation', async (rawConversationId: string) => {
+      const conversationId = String(rawConversationId);
+      if (!conversationId || !(await ensureParticipant(conversationId))) return;
+      socket.join(roomOf(conversationId));
     });
 
-    socket.on('leave:conversation', (conversationId: string) => {
-      socket.leave(roomOf(String(conversationId)));
+    socket.on('leave:conversation', (rawConversationId: string) => {
+      const conversationId = String(rawConversationId);
+      allowedConversations.delete(conversationId);
+      socket.leave(roomOf(conversationId));
     });
 
-    socket.on('typing:start', (conversationId: string) => {
-      socket.to(roomOf(String(conversationId))).emit('typing:start', { conversationId, userId });
+    socket.on('typing:start', async (rawConversationId: string) => {
+      const conversationId = String(rawConversationId);
+      if (!(await ensureParticipant(conversationId))) return;
+      socket.to(roomOf(conversationId)).emit('typing:start', { conversationId, userId });
     });
 
-    socket.on('typing:stop', (conversationId: string) => {
-      socket.to(roomOf(String(conversationId))).emit('typing:stop', { conversationId, userId });
+    socket.on('typing:stop', async (rawConversationId: string) => {
+      const conversationId = String(rawConversationId);
+      if (!(await ensureParticipant(conversationId))) return;
+      socket.to(roomOf(conversationId)).emit('typing:stop', { conversationId, userId });
     });
 
-    socket.on('message:read', (conversationId: string, messageId: string) => {
-      socket.to(roomOf(String(conversationId))).emit('message:read', { conversationId, messageId, userId });
+    socket.on('message:read', async (rawConversationId: string, messageId: string) => {
+      const conversationId = String(rawConversationId);
+      if (!(await ensureParticipant(conversationId))) return;
+      socket
+        .to(roomOf(conversationId))
+        .emit('message:read', { conversationId, messageId: String(messageId), userId });
     });
 
     socket.on('disconnect', async () => {
