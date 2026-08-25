@@ -6,10 +6,10 @@ export const THEMES = ['light', 'dark', 'system'] as const;
 
 /** GET /api/settings → renvoyé par le service (pas de body). */
 
-/** PUT /api/settings — mise à jour partielle des préférences. */
+/** PUT /api/settings — mise à jour partielle des préférences.
+ * L'email n'est pas modifiable ici : passer par /settings/email/request puis /email/change (OTP). */
 export const settingsPatchSchema = z
   .object({
-    email: emailSchema.optional(),
     gender: z.string().trim().max(30).optional(),
     locationType: z.enum(LOCATION_TYPES).optional(),
     theme: z.enum(THEMES).optional(),
