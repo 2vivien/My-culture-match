@@ -1,0 +1,69 @@
+import { execSync } from 'node:child_process';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { expect, type Page } from '@playwright/test';
+
+const HERE = fileURLToPath(import.meta.url);
+const ROOT = path.resolve(path.dirname(HERE), '..', '..');
+const BACKEND_DIR = process.env.PLAYWRIGHT_BACKEND_DIR ?? path.join(ROOT, 'backend');
+
+function nodeScript(cwd: string, script: string): string {
+  return execSync(`node -e "${script}"`, { cwd, encoding: 'utf8', timeout: 15_000 }).trim();
+}
+
+/** Supprime les rate-limits OTP (email + IP) et l'ancien code en Redis. */
+export function resetOtpState(email: string): void {
+  const script =
+    `const Redis=require('ioredis');const r=new Redis('redis://localhost:6379');` +
+    `(async()=>{try{const keys=await r.keys('otp:send:email:${email}');const ip=await r.keys('otp:send:ip:*');` +
+    `const all=[...keys,...ip,'otp:${email}'];if(all.length)await r.del(all);` +
+    `console.log('cleared '+all.length);}catch(e){console.error(e.message);process.exit(1);}finally{await r.quit();}})();`;
+  nodeScript(BACKEND_DIR, script);
+}
+
+/** Lit le dernier code OTP généré pour un email dans Redis. */
+export function getLatestOtp(email: string): string {
+  const script =
+    `const Redis=require('ioredis');const r=new Redis('redis://localhost:6379');` +
+    `r.get('otp:${email}').then(v=>{console.log(v?JSON.parse(v).code:'');return r.quit();})` +
+    `.catch(e=>{console.error(e.message);process.exit(1);});`;
+  const out = nodeScript(BACKEND_DIR, script);
+  if (!out) throw new Error(`Aucun code OTP trouvé pour ${email}`);
+  return out;
+}
+
+export const uniqueEmail = (prefix: string) => `${prefix}.${Date.now()}@e2e.local`;
+
+/** Connexion par l'UI : email → OTP (code lu dans Redis) → app attendue. */
+export async function loginByOtp(page: Page, email: string, expectApp: boolean) {
+  resetOtpState(email);
+  await page.goto('/');
+  await expect(page.getByLabel('Adresse Email')).toBeVisible();
+  await page.getByLabel('Adresse Email').fill(email);
+  await page.getByRole('button', { name: 'Continuer' }).click();
+
+  await expect(page.getByLabel('Code de vérification')).toBeVisible({ timeout: 15_000 });
+  const code = getLatestOtp(email);
+  await page.getByLabel('Code de vérification').fill(code);
+  await page.getByRole('button', { name: 'Vérifier' }).click();
+
+  if (expectApp) {
+    await expect(page.locator('nav').getByTitle('Home')).toBeVisible({ timeout: 15_000 });
+  }
+}
+
+/** Force le rôle admin côté store local (pour exposer l'onglet Admin). */
+export async function forceAdminRole(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    const raw = localStorage.getItem('app-store');
+    const store = raw ? JSON.parse(raw) : {};
+    store.state = {
+      ...(store.state ?? {}),
+      currentUser: { ...(store.state?.currentUser ?? {}), role: 'admin' },
+      isAuthenticated: true,
+      isOnboarded: true,
+    };
+    localStorage.setItem('app-store', JSON.stringify(store));
+  });
+  await page.reload();
+}
