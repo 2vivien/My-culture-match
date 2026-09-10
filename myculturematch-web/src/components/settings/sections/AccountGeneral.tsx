@@ -5,9 +5,7 @@ import { LocationRow } from '../rows/LocationRow';
 
 interface AccountGeneralProps {
   email: string;
-  setEmail: (val: string) => void;
-  isEditingEmail: boolean;
-  setIsEditingEmail: (val: boolean) => void;
+  onEmailChanged: (email: string) => void;
   gender: string;
   setGender: (val: string) => void;
   isEditingGender: boolean;
@@ -25,12 +23,7 @@ export const AccountGeneral: React.FC<AccountGeneralProps> = (props) => {
         General
       </h2>
       <div className="divide-y divide-app-border/40 dark:divide-zinc-800/40">
-        <EmailRow
-          email={props.email}
-          setEmail={props.setEmail}
-          isEditingEmail={props.isEditingEmail}
-          setIsEditingEmail={props.setIsEditingEmail}
-        />
+        <EmailRow email={props.email} onEmailChanged={props.onEmailChanged} />
         <GenderRow
           gender={props.gender}
           setGender={props.setGender}

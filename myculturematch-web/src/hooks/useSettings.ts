@@ -7,7 +7,8 @@ export type SettingsTab = 'Account' | 'Profile' | 'Privacy' | 'Preferences' | 'N
 
 export function useSettings() {
   const [activeTab, setActiveTab] = useState<SettingsTab>('Account');
-  const [isEditingEmail, setIsEditingEmail] = useState(false);
+  const [email, setEmailState] = useState('');
+  const [gender, setGenderState] = useState('');
   const [isEditingGender, setIsEditingGender] = useState(false);
   const [isEditingLocation, setIsEditingLocation] = useState(false);
   const queryClient = useQueryClient();
@@ -18,34 +19,46 @@ export function useSettings() {
     staleTime: 1000 * 60 * 5,
   });
 
-  const updateSettings = useMutation({
-    mutationFn: (data: Partial<UserSettings>) => settingsService.updateSettings(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['settings'] });
-    },
-  });
+  const setGender = async (val: string) => {
+    setGenderState(val);
+    await settingsService.updateSettings({ gender: val });
+  };
+
+  const setLocationType = async (val: string) => {
+    await settingsService.updateSettings({ locationType: val });
+  };
+
+  const setGoogleConnected = async (val: boolean) => {
+    await settingsService.updateSettings({ googleConnected: val });
+  };
+
+  const setAppleConnected = async (val: boolean) => {
+    await settingsService.updateSettings({ appleConnected: val });
+  };
+
+  const setTwoFactor = async (val: boolean) => {
+    await settingsService.updateSettings({ twoFactor: val });
+  };
 
   return {
     activeTab,
     setActiveTab,
-    email: settings?.email ?? '',
-    setEmail: (val: string) => updateSettings.mutate({ email: val }),
-    isEditingEmail,
-    setIsEditingEmail,
-    gender: settings?.gender ?? '',
-    setGender: (val: string) => updateSettings.mutate({ gender: val }),
+    email,
+    onEmailChanged: setEmailState,
+    gender,
+    setGender,
     isEditingGender,
     setIsEditingGender,
     locationType: settings?.locationType ?? '',
-    setLocationType: (val: string) => updateSettings.mutate({ locationType: val }),
+    setLocationType,
     isEditingLocation,
     setIsEditingLocation,
     googleConnected: settings?.googleConnected ?? false,
-    setGoogleConnected: (val: boolean) => updateSettings.mutate({ googleConnected: val }),
+    setGoogleConnected,
     appleConnected: settings?.appleConnected ?? false,
-    setAppleConnected: (val: boolean) => updateSettings.mutate({ appleConnected: val }),
+    setAppleConnected,
     twoFactor: settings?.twoFactor ?? false,
-    setTwoFactor: (val: boolean) => updateSettings.mutate({ twoFactor: val }),
+    setTwoFactor,
     isLoading,
     error,
   };

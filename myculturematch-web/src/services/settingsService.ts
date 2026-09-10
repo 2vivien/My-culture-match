@@ -16,4 +16,23 @@ export const settingsService = {
     }
     await api.put('/api/settings', data);
   },
+
+  async requestEmailChange(newEmail: string): Promise<EmailChangeRequestResult> {
+    if (USE_MOCK) {
+      return { sentTo: newEmail, expiresInSeconds: 300 };
+    }
+    return api.post<EmailChangeRequestResult>('/api/settings/email/request', { newEmail });
+  },
+
+  async confirmEmailChange(newEmail: string, code: string): Promise<UserSettings> {
+    if (USE_MOCK) {
+      return settingsMock as UserSettings;
+    }
+    return api.post<UserSettings>('/api/settings/email/change', { newEmail, code });
+  },
 };
+
+export interface EmailChangeRequestResult {
+  sentTo: string;
+  expiresInSeconds: number;
+}

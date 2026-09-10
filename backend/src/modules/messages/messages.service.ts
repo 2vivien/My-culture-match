@@ -2,6 +2,7 @@ import { and, desc, eq, inArray, lt, ne, or, sql } from 'drizzle-orm';
 import { db, schema } from '../../infrastructure/database';
 import { redis } from '../../infrastructure/redis';
 import { AppError } from '../../shared/utils/AppError';
+import { isConversationParticipant } from './conversation-access';
 import type { SendMessageInput } from './messages.schemas';
 import { emitToUser } from '../../infrastructure/websocket';
 import { messagesSentTotal } from '../../infrastructure/monitoring/metrics';
@@ -40,17 +41,9 @@ export interface ChatMessageDto {
 }
 
 async function isParticipant(conversationId: string, userId: string): Promise<void> {
-  const [row] = await db
-    .select({ userId: schema.conversationParticipants.userId })
-    .from(schema.conversationParticipants)
-    .where(
-      and(
-        eq(schema.conversationParticipants.conversationId, conversationId),
-        eq(schema.conversationParticipants.userId, userId),
-      ),
-    )
-    .limit(1);
-  if (!row) throw AppError.forbidden('Vous n’êtes pas participant de cette conversation', 'NOT_A_PARTICIPANT');
+  if (!(await isConversationParticipant(conversationId, userId))) {
+    throw AppError.forbidden('Vous n’êtes pas participant de cette conversation', 'NOT_A_PARTICIPANT');
+  }
 }
 
 async function isBlocked(a: string, b: string): Promise<boolean> {
