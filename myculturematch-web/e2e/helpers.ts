@@ -34,6 +34,41 @@ export function getLatestOtp(email: string): string {
 
 export const uniqueEmail = (prefix: string) => `${prefix}.${Date.now()}@e2e.local`;
 
+const API_URL = process.env.PLAYWRIGHT_API_URL ?? 'http://localhost:3000';
+
+/** Connexion 100% API (OTP lu dans Redis) → token. */
+export async function apiOtpLogin(email: string): Promise<string> {
+  resetOtpState(email);
+  await fetch(`${API_URL}/api/auth/send-otp`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email }),
+  });
+  const code = getLatestOtp(email);
+  const res = await fetch(`${API_URL}/api/auth/verify-otp`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, code }),
+  });
+  if (!res.ok) throw new Error(`verify-otp ${res.status}: ${await res.text()}`);
+  const data = (await res.json()) as { token?: string };
+  if (!data.token) throw new Error('verify-otp : aucun token');
+  return data.token;
+}
+
+/** Crée un compte distant et publie un post Text avec. Retourne token + postId. */
+export async function createRemoteUserAndPost(email: string, body: string): Promise<{ token: string; postId: string }> {
+  const token = await apiOtpLogin(email);
+  const res = await fetch(`${API_URL}/api/posts`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ type: 'Text', title: 'Tradition partagée e2e', body }),
+  });
+  if (!res.ok) throw new Error(`create post ${res.status}: ${await res.text()}`);
+  const post = (await res.json()) as { id: string };
+  return { token, postId: post.id };
+}
+
 /** Connexion par l'UI : email → OTP (code lu dans Redis) → app attendue. */
 export async function loginByOtp(page: Page, email: string, expectApp: boolean) {
   resetOtpState(email);
