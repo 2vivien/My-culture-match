@@ -1,7 +1,0 @@
-[
-  { "id": "m1", "name": "Stevian", "role": "Notifications User", "img": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80", "notificationsOn": true, "lastMessage": "Hey! Let's talk about the culture festival." },
-  { "id": "m2", "name": "Jumana", "role": "Notifications User", "img": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=100&q=80", "notificationsOn": true, "lastMessage": "Great post about traditions!" },
-  { "id": "m3", "name": "Halean", "role": "Notifications User", "img": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80", "notificationsOn": true, "lastMessage": "Would love to match on tribes!" },
-  { "id": "m4", "name": "Sofaia", "role": "Notifications User", "img": "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=100&q=80", "notificationsOn": true, "lastMessage": "Let's connect this weekend." },
-  { "id": "m5", "name": "Fatimah", "role": "Notifications User", "img": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=100&q=80", "notificationsOn": true, "lastMessage": "Salam! Excited to share our recipes." }
-]

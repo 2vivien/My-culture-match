@@ -1,6 +1,5 @@
 import { getAuthToken } from './auth.token';
 
-const USE_MOCK = (import.meta.env.VITE_USE_MOCK ?? 'true') === 'true';
 const API_BASE = '';
 
 export interface ApiErrorPayload {
@@ -78,5 +77,3 @@ export const api = {
     request<T>(path, { method: 'PATCH', body: body ? JSON.stringify(body) : undefined }),
   delete: <T>(path: string) => request<T>(path, { method: 'DELETE' }),
 };
-
-export { USE_MOCK };

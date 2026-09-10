@@ -1,5 +1,6 @@
 import { and, desc, eq, gte, gt, like, or, sql } from 'drizzle-orm';
-import { db, schema } from '../../infrastructure/database';
+import { db, schema, checkDatabase } from '../../infrastructure/database';
+import { checkRedis, redis } from '../../infrastructure/redis';
 import { AppError } from '../../shared/utils/AppError';
 import { createNotification } from '../notifications/notifications.service';
 import { invalidateRoleCache } from '../auth/require-admin';
@@ -469,5 +470,183 @@ export async function getAnalytics(period: AnalyticsPeriod) {
     reportDistribution,
     scoreDistribution,
     engagement,
+  };
+}
+
+// ── Audit logs ─────────────────────────────────────────────
+
+/** GET /api/admin/logs — journal d'audit détaillé. */
+export async function listAuditLogs(opts: { cursor?: string; limit?: number }): Promise<{ logs: Array<Record<string, unknown>>; nextCursor: string | null }> {
+  const { cursor, limit = 50 } = opts;
+
+  const where = [cursor ? gt(schema.auditLogs.createdAt, new Date(cursor)) : undefined].filter(Boolean) as Array<ReturnType<typeof eq>>;
+
+  const rows = await db
+    .select({
+      id: schema.auditLogs.id,
+      userId: schema.auditLogs.userId,
+      userName: schema.users.name,
+      action: schema.auditLogs.action,
+      metadata: schema.auditLogs.metadata,
+      ipAddress: schema.auditLogs.ipAddress,
+      userAgent: schema.auditLogs.userAgent,
+      createdAt: schema.auditLogs.createdAt,
+    })
+    .from(schema.auditLogs)
+    .innerJoin(schema.users, eq(schema.users.id, schema.auditLogs.userId))
+    .where(where.length > 0 ? and(...where) : undefined)
+    .orderBy(desc(schema.auditLogs.createdAt))
+    .limit(limit + 1);
+
+  const hasMore = rows.length > limit;
+  const page = rows.slice(0, limit);
+  const nextCursor = hasMore && page.length > 0 ? new Date(page[page.length - 1]!.createdAt).toISOString() : null;
+
+  return {
+    logs: page.map((l) => ({ ...l, createdAt: new Date(l.createdAt).toISOString() })),
+    nextCursor,
+  };
+}
+
+// ── Activité récente ───────────────────────────────────────
+
+/**
+ * GET /api/admin/activity — dernière activité de la plateforme.
+ * Agrège les logins, inscriptions, posts, matches et actions de modération.
+ */
+export async function getRecentActivity(opts: { limit?: number }): Promise<Array<Record<string, unknown>>> {
+  const { limit = 30 } = opts;
+  const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
+  const [recentUsers, recentPosts, recentReports, recentAudit] = await Promise.all([
+    db
+      .select({ id: schema.users.id, name: schema.users.name, createdAt: schema.users.createdAt })
+      .from(schema.users)
+      .orderBy(desc(schema.users.createdAt))
+      .limit(10),
+    db
+      .select({ id: schema.posts.id, authorName: schema.users.name, createdAt: schema.posts.createdAt })
+      .from(schema.posts)
+      .innerJoin(schema.users, eq(schema.users.id, schema.posts.authorId))
+      .orderBy(desc(schema.posts.createdAt))
+      .limit(10),
+    db
+      .select({ id: schema.reports.id, reason: schema.reports.reason, createdAt: schema.reports.createdAt })
+      .from(schema.reports)
+      .where(gte(schema.reports.createdAt, dayAgo))
+      .orderBy(desc(schema.reports.createdAt))
+      .limit(10),
+    db
+      .select({ id: schema.auditLogs.id, userId: schema.auditLogs.userId, action: schema.auditLogs.action, createdAt: schema.auditLogs.createdAt })
+      .from(schema.auditLogs)
+      .where(gte(schema.auditLogs.createdAt, dayAgo))
+      .orderBy(desc(schema.auditLogs.createdAt))
+      .limit(10),
+  ]);
+
+  const events: Array<Record<string, unknown>> = [
+    ...recentUsers.map((u) => ({
+      id: `user_register_${u.id}`,
+      type: 'user_register',
+      userId: u.id,
+      userName: u.name,
+      details: `${u.name} a rejoint la plateforme`,
+      createdAt: new Date(u.createdAt).toISOString(),
+    })),
+    ...recentPosts.map((p) => ({
+      id: `post_created_${p.id}`,
+      type: 'post_created',
+      userId: p.id,
+      userName: p.authorName,
+      details: `${p.authorName} a publié un post`,
+      createdAt: new Date(p.createdAt).toISOString(),
+    })),
+    ...recentReports.map((r) => ({
+      id: `report_${r.id}`,
+      type: 'report' as const,
+      userId: r.id,
+      userName: 'Modération',
+      details: `Nouveau signalement : ${r.reason ?? 'autre'}`,
+      createdAt: new Date(r.createdAt).toISOString(),
+    })),
+    ...recentAudit.map((a) => ({
+      id: `log_${a.id}`,
+      type: a.action.includes('ban') ? ('ban' as const) : ('login' as const),
+      userId: a.userId,
+      userName: a.action,
+      details: `Action admin : ${a.action}`,
+      createdAt: new Date(a.createdAt).toISOString(),
+    })),
+  ];
+
+  return events.sort((a, b) => new Date(b.createdAt as string).getTime() - new Date(a.createdAt as string).getTime()).slice(0, limit);
+}
+
+// ── System health ──────────────────────────────────────────
+
+/** GET /api/admin/health — métriques système du dashboard admin. */
+export async function getSystemHealth(): Promise<Record<string, unknown>> {
+  const [dbLatency, redisLatency, activeConnections] = await Promise.all([
+    (async () => {
+      const start = Date.now();
+      try {
+        await checkDatabase();
+        return Date.now() - start;
+      } catch {
+        return -1;
+      }
+    })(),
+    (async () => {
+      const start = Date.now();
+      try {
+        await checkRedis();
+        return Date.now() - start;
+      } catch {
+        return -1;
+      }
+    })(),
+    db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(sql`pg_stat_activity`)
+      .then((rows) => rows[0]?.count ?? 0)
+      .catch(() => 0),
+  ]);
+
+  const os = await import('node:os');
+  const load1 = os.loadavg()[0] ?? 0;
+  const cpuCount = os.cpus().length || 1;
+  const totalMem = os.totalmem();
+  const freeMem = os.freemem();
+
+  let diskUsage = 0;
+  try {
+    const { statfsSync } = await import('node:fs');
+    const { bsize, blocks, bfree } = statfsSync('/');
+    if (bsize > 0 && blocks > 0) {
+      diskUsage = Math.round(((blocks - bfree) / blocks) * 100);
+    }
+  } catch {
+    diskUsage = 0;
+  }
+
+  let queueDepth = 0;
+  try {
+    queueDepth = await redis.zcard('bull:queue:activity').catch(() => 0);
+  } catch {
+    queueDepth = 0;
+  }
+
+  const degraded = dbLatency < 0 || redisLatency < 0;
+
+  return {
+    status: degraded ? 'degraded' : 'healthy',
+    uptime: process.uptime(),
+    dbLatency,
+    redisLatency,
+    memoryUsage: totalMem > 0 ? Math.round(((totalMem - freeMem) / totalMem) * 100) : 0,
+    cpuUsage: Math.round((load1 / cpuCount) * 100),
+    diskUsage,
+    activeConnections,
+    queueDepth,
   };
 }

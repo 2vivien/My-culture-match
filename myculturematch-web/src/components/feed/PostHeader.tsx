@@ -3,7 +3,6 @@ import { MoreHorizontal, Bookmark, Share2, BellOff, AlertTriangle, Check } from 
 import { TotemAvatar } from '@/src/components/ui/TotemAvatar';
 import { Button } from '@/src/components/ui/button';
 import { PostAuthor } from '@/src/types/post';
-import { userService } from '@/src/services/userService';
 import { useAppStore } from '@/src/stores/useAppStore';
 import { useUIStore } from '@/src/stores/useUIStore';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -17,7 +16,6 @@ interface PostHeaderProps {
 export const PostHeader = ({ author, date, tribe }: PostHeaderProps) => {
   const { setSelectedTotemUserId, currentUser, joinTribe } = useAppStore();
   const { setActiveTab } = useUIStore();
-  const user = userService.getUserById(author.id);
   const isMember = tribe ? currentUser.tribes.includes(tribe.name) : false;
 
   const handleJoin = (e: React.MouseEvent) => {
@@ -80,8 +78,7 @@ export const PostHeader = ({ author, date, tribe }: PostHeaderProps) => {
           src={author.avatar}
           alt={author.name}
           size="md"
-          glow={user?.glow || 'none'}
-          level={user?.level}
+          glow="none"
           onClick={handleClick}
         />
         <div>

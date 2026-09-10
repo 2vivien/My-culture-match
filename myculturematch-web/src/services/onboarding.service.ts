@@ -1,4 +1,4 @@
-import { api, USE_MOCK } from './api';
+import { api } from './api';
 import type { OnboardingData } from '@/src/lib/onboarding.schemas';
 
 export const DOMAINS = [
@@ -31,8 +31,8 @@ export const LANGUAGES = {
 };
 
 export const CRITERIA = [
-  'Communication', 'Respect mutuel', 'Foi partagée', 'Ambition commune', 
-  'Humour', 'Stabilité financière', 'Tendresse', 'Honnêteté', 
+  'Communication', 'Respect mutuel', 'Foi partagée', 'Ambition commune',
+  'Humour', 'Stabilité financière', 'Tendresse', 'Honnêteté',
   'Passion', 'Autonomie', 'Projet familial', 'Culture', 'Proximité'
 ];
 
@@ -41,10 +41,10 @@ export function generateUsernameSuggestions(fullName: string): string[] {
   const clean = fullName.toLowerCase().trim().replace(/[^a-z0-9 ]/g, '');
   const parts = clean.split(/\s+/).filter(Boolean);
   if (parts.length === 0) return [];
-  
+
   const p1 = parts[0];
   const p2 = parts[1] || '';
-  
+
   const suggestions: string[] = [];
   if (p2) {
     suggestions.push(`${p1}.${p2}`);
@@ -95,7 +95,6 @@ const INTENTION_TO_SEEKING: Record<string, string> = {
   explore: 'friendship',
 };
 
-/** Convertit le formulaire web en payload conforme au schéma strict backend. */
 export function toOnboardingApiPayload(data: OnboardingSubmitPayload) {
   if (!data.email) throw new Error('Adresse email manquante.');
   if (!data.acceptedTermsAt) throw new Error('Vous devez accepter les conditions générales.');
@@ -121,10 +120,5 @@ export function toOnboardingApiPayload(data: OnboardingSubmitPayload) {
 export async function submitProfile(
   data: OnboardingSubmitPayload
 ): Promise<{ success: boolean }> {
-  if (USE_MOCK) {
-    await new Promise((resolve) => setTimeout(resolve, 600));
-    return { success: true };
-  }
   return api.post<{ success: boolean }>('/api/onboarding', toOnboardingApiPayload(data));
 }
-

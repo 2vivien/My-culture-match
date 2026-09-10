@@ -20,7 +20,6 @@ declare module '*.svg' {
 
 interface ImportMetaEnv {
   readonly VITE_API_URL?: string;
-  readonly VITE_USE_MOCK?: string;
   readonly VITE_MEDIA_URL?: string;
   readonly VITE_GOOGLE_CLIENT_ID?: string;
 }

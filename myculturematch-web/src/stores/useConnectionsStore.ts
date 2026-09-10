@@ -29,19 +29,12 @@ interface ConnectionsState {
   declineRequest: (id: string) => void;
 }
 
-import connectionsMock from '@/src/mocks/connections.json';
-
-const mockSuggestions = connectionsMock.suggestions as ConnectionUser[];
-const mockInterested = connectionsMock.interested as ConnectionUser[];
-const mockDemandes = connectionsMock.demandes as ConnectionUser[];
-const mockCompagnons = connectionsMock.compagnons as ConnectionUser[];
-
 export const useConnectionsStore = create<ConnectionsState>((set) => ({
   activeSubTab: 'Suggestions',
-  suggestions: mockSuggestions,
-  interested: mockInterested,
-  demandes: mockDemandes,
-  compagnons: mockCompagnons,
+  suggestions: [],
+  interested: [],
+  demandes: [],
+  compagnons: [],
   setActiveSubTab: (activeSubTab) => set({ activeSubTab }),
   sendRequest: (id) => set((s) => ({
     suggestions: s.suggestions.filter((u) => u.id !== id),

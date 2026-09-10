@@ -1,8 +1,6 @@
-import notificationsMock from '@/src/mocks/notifications.json';
 import type { NotificationItem } from '@/src/types/notification';
-import { api, USE_MOCK } from './api';
+import { api } from './api';
 
-/** Backend NotificationDto shape. */
 interface BackendNotification {
   id: string;
   type: string;
@@ -31,31 +29,20 @@ function mapNotification(n: BackendNotification): NotificationItem {
 
 export const notificationService = {
   async getNotifications(): Promise<NotificationItem[]> {
-    if (USE_MOCK) {
-      return notificationsMock as NotificationItem[];
-    }
-    const data = await api.get<{ notifications: BackendNotification[]; nextCursor: string | null }>('/api/notifications');
-    return (data.notifications ?? []).map(mapNotification);
+    const data = await api.get<{ notifications: BackendNotification[]; nextCursor: string | null } | BackendNotification[]>('/api/notifications');
+    const raw = Array.isArray(data) ? data : (data.notifications ?? []);
+    return raw.map(mapNotification);
   },
 
   async markAllAsRead(): Promise<void> {
-    if (USE_MOCK) {
-      return;
-    }
     await api.post('/api/notifications/read-all');
   },
 
   async updateReadStatus(id: string, isUnread: boolean): Promise<void> {
-    if (USE_MOCK) {
-      return;
-    }
     await api.patch(`/api/notifications/${id}`, { isUnread });
   },
 
   async handleInviteAction(id: string, action: 'accept' | 'decline'): Promise<void> {
-    if (USE_MOCK) {
-      return;
-    }
     await api.post(`/api/notifications/${id}/${action}`);
   },
 };

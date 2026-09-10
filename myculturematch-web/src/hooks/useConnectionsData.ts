@@ -4,7 +4,6 @@ import type { ConnectionUser } from '@/src/stores/useConnectionsStore';
 
 /**
  * Hook React Query pour les connexions.
- * Appelle le vrai backend quand USE_MOCK=false, utilise les mocks sinon.
  */
 export function useConnectionsData() {
   const queryClient = useQueryClient();

@@ -1,8 +1,6 @@
-import { api, USE_MOCK } from './api';
-import connectionsMock from '@/src/mocks/connections.json';
+import { api } from './api';
 import type { ConnectionUser } from '@/src/stores/useConnectionsStore';
 
-/** Backend → Frontend mapping helpers. */
 interface BackendProfile {
   id: string;
   name: string;
@@ -57,7 +55,6 @@ function mapProfileToConnectionUser(p: BackendProfile): ConnectionUser {
 
 export const connectionsService = {
   async getSuggestions(): Promise<ConnectionUser[]> {
-    if (USE_MOCK) return connectionsMock.suggestions as ConnectionUser[];
     const data = await api.get<{ suggestions: BackendSuggestion[]; remaining: number }>('/api/connections/suggestions');
     return (data.suggestions ?? []).map((s) => ({
       ...mapProfileToConnectionUser(s.profile),
@@ -66,40 +63,33 @@ export const connectionsService = {
   },
 
   async getInterested(): Promise<ConnectionUser[]> {
-    if (USE_MOCK) return connectionsMock.interested as ConnectionUser[];
     const data = await api.get<{ success: boolean; connections: BackendConnection[] }>('/api/connections/interested');
     return (data.connections ?? []).map((c) => mapProfileToConnectionUser(c.profile));
   },
 
   async getRequests(): Promise<ConnectionUser[]> {
-    if (USE_MOCK) return connectionsMock.demandes as ConnectionUser[];
     const data = await api.get<{ success: boolean; connections: BackendConnection[] }>('/api/connections/requests');
     return (data.connections ?? []).map((c) => mapProfileToConnectionUser(c.profile));
   },
 
   async getCompanions(): Promise<ConnectionUser[]> {
-    if (USE_MOCK) return connectionsMock.compagnons as ConnectionUser[];
     const data = await api.get<{ success: boolean; connections: BackendConnection[] }>('/api/connections/companions');
     return (data.connections ?? []).map((c) => ({ ...mapProfileToConnectionUser(c.profile), isConnected: true }));
   },
 
   async sendRequest(targetId: string): Promise<void> {
-    if (USE_MOCK) return;
     await api.post(`/api/connections/${targetId}/request`);
   },
 
   async acceptRequest(requesterId: string): Promise<void> {
-    if (USE_MOCK) return;
     await api.post(`/api/requests/${requesterId}/accept`);
   },
 
   async declineRequest(requesterId: string): Promise<void> {
-    if (USE_MOCK) return;
     await api.post(`/api/requests/${requesterId}/decline`);
   },
 
   async blockRequest(requesterId: string): Promise<void> {
-    if (USE_MOCK) return;
     await api.post(`/api/requests/${requesterId}/block`);
   },
 };

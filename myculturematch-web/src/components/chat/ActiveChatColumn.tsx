@@ -3,7 +3,6 @@ import { Phone, Video, Smile, Paperclip, Mic, Send, ArrowLeft } from 'lucide-rea
 import { Conversation, ChatMessage } from '@/src/types/chat.types';
 import { ChatMessageBubble } from './ChatMessageBubble';
 import { TotemAvatar } from '@/src/components/ui/TotemAvatar';
-import { getAutomatedReply } from '@/src/services/chat.service';
 
 interface ActiveChatProps {
   partner: Conversation;
@@ -95,7 +94,7 @@ export const ActiveChatColumn: React.FC<ActiveChatProps> = ({
             ✨ Protected Cultural Exchange Space
           </span>
         </div>
-        
+
         {messages.map((m) => (
           <ChatMessageBubble key={m.id} message={m} />
         ))}
@@ -108,7 +107,7 @@ export const ActiveChatColumn: React.FC<ActiveChatProps> = ({
           <button type="button" className="text-app-gray hover:text-app-black dark:hover:text-white cursor-pointer p-1">
             <Paperclip className="w-4 h-4" />
           </button>
-          
+
           <input
             type="text"
             placeholder={`Say customized culture greeting to ${partner.name.split(' ')[0]}...`}
@@ -124,7 +123,7 @@ export const ActiveChatColumn: React.FC<ActiveChatProps> = ({
           <button type="button" className="text-app-gray hover:text-[#E27D60] cursor-pointer p-1">
             <Mic className="w-4 h-4" />
           </button>
-          
+
           <button
             type="submit"
             disabled={!input.trim()}

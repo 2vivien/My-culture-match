@@ -1,6 +1,8 @@
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useAppStore } from '@/src/stores/useAppStore';
 import { userService } from '@/src/services/userService';
+import type { CurrentUser } from '@/src/types/user';
 
 const COUNTRY_CODES: Record<string, string> = {
   benin: 'bj', 'new zealand': 'nz', senegal: 'sn', ethiopia: 'et',
@@ -44,6 +46,25 @@ function getCityAndCountry(location: string): { city: string; country: string } 
   return { city: location, country: location };
 }
 
+function hydrateCurrentUser(id: string, apiUser: Partial<CurrentUser> | undefined, fallback: CurrentUser): CurrentUser {
+  return {
+    id: apiUser?.id ?? fallback.id ?? id,
+    name: apiUser?.name ?? fallback.name ?? 'Utilisateur',
+    avatar: apiUser?.avatar ?? fallback.avatar ?? '',
+    locale: apiUser?.locale ?? fallback.locale ?? 'fr',
+    level: fallback.level ?? 1,
+    glow: (fallback.glow ?? 'orange') as CurrentUser['glow'],
+    tribes: apiUser?.tribes ?? fallback.tribes ?? [],
+    traditionsCount: apiUser?.traditionsCount ?? fallback.traditionsCount ?? 0,
+    culturesCount: apiUser?.culturesCount ?? fallback.culturesCount ?? 0,
+    tribesCount: apiUser?.tribesCount ?? fallback.tribesCount ?? 0,
+    location: apiUser?.location ?? fallback.location ?? 'Bénin',
+    interestedCount: apiUser?.interestedCount ?? fallback.interestedCount ?? 0,
+    companionsCount: apiUser?.companionsCount ?? fallback.companionsCount ?? 0,
+    role: apiUser?.role ?? fallback.role ?? 'user',
+  };
+}
+
 export function useTotemProfile() {
   const {
     selectedTotemUserId,
@@ -52,10 +73,19 @@ export function useTotemProfile() {
     currentUser,
   } = useAppStore();
 
-  const user = userService.getUserById(selectedTotemUserId);
+  const targetId = selectedTotemUserId && selectedTotemUserId !== currentUser.id ? selectedTotemUserId : currentUser.id;
+
+  const { data: apiUser } = useQuery<Partial<CurrentUser>>({
+    queryKey: ['user', targetId],
+    queryFn: () => userService.fetchUserById(targetId),
+    enabled: !!targetId,
+    staleTime: 1000 * 60 * 5,
+  });
+
+  const user = hydrateCurrentUser(targetId, apiUser, currentUser);
   const [connectionState, setConnectionState] = useState<'none' | 'pending' | 'connected'>('none');
 
-  const isOwnProfile = user.id === currentUser.id;
+  const isOwnProfile = targetId === currentUser.id;
 
   const toggleConnection = () => {
     setConnectionState((prev) => {

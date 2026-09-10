@@ -8,7 +8,6 @@ import { AuthFooter } from '@/src/components/auth/AuthFooter';
 import { OtpForm } from '@/src/components/auth/OtpForm';
 import { TwoFactorForm } from '@/src/components/auth/TwoFactorForm';
 import { authService } from '@/src/services/authService';
-import { USE_MOCK } from '@/src/services/api';
 
 export function AuthPage() {
   const { setAuthenticated, setOnboarded, setEmail, loginUser } = useAppStore();
@@ -22,31 +21,12 @@ export function AuthPage() {
     setEmail(value);
     setEmailValue(value);
     setAuthError(null);
-
-    console.log('[Auth] handleContinue called:', { value, USE_MOCK });
-
     setIsLoading(true);
 
-    if (USE_MOCK) {
-      console.log('[Auth] MOCK MODE — sending OTP');
-      try {
-        await authService.sendOtp(value);
-        setStep('otp');
-      } catch (err) {
-        setAuthError(err instanceof Error ? err.message : 'Erreur lors de l\'envoi du code.');
-      } finally {
-        setIsLoading(false);
-      }
-      return;
-    }
-
     try {
-      console.log('[Auth] Calling sendOtp...');
-      const result = await authService.sendOtp(value);
-      console.log('[Auth] sendOtp success:', result);
+      await authService.sendOtp(value);
       setStep('otp');
     } catch (err) {
-      console.error('[Auth] sendOtp error:', err);
       setAuthError(err instanceof Error ? err.message : 'Erreur lors de l\'envoi du code.');
     } finally {
       setIsLoading(false);
@@ -95,27 +75,10 @@ export function AuthPage() {
   };
 
   const handleGoogleLogin = async () => {
-    console.log('[Auth] Google login clicked');
     setIsLoading(true);
     setAuthError(null);
 
     try {
-      if (USE_MOCK) {
-        // Mock Google login — simulate a Google user
-        console.log('[Auth] MOCK Google login');
-        const mockGoogleUser = {
-          id: 'user-google-mock',
-          name: 'Google User',
-          avatar: 'https://api.dicebear.com/7.x/open-peeps/svg?seed=GoogleUser',
-        };
-        loginUser(mockGoogleUser);
-        setAuthenticated(true);
-        setOnboarded(false);
-        setIsLoading(false);
-        return;
-      }
-
-      // Real Google OAuth flow
       // @ts-expect-error - Google Identity Services API
       const google = window.google;
       if (!google?.accounts?.id) {
@@ -151,31 +114,9 @@ export function AuthPage() {
   };
 
   const handleAppleLogin = async () => {
-    console.log('[Auth] Apple login clicked');
     setIsLoading(true);
-    setAuthError(null);
-
-    try {
-      if (USE_MOCK) {
-        console.log('[Auth] MOCK Apple login');
-        const mockAppleUser = {
-          id: 'user-apple-mock',
-          name: 'Apple User',
-          avatar: 'https://api.dicebear.com/7.x/open-peeps/svg?seed=AppleUser',
-        };
-        loginUser(mockAppleUser);
-        setAuthenticated(true);
-        setOnboarded(false);
-        setIsLoading(false);
-        return;
-      }
-
-      setAuthError('Connexion Apple pas encore disponible.');
-      setIsLoading(false);
-    } catch {
-      setAuthError('Connexion Apple pas encore disponible.');
-      setIsLoading(false);
-    }
+    setAuthError('Connexion Apple pas encore disponible.');
+    setIsLoading(false);
   };
 
   const handleResend = async () => {
@@ -189,10 +130,8 @@ export function AuthPage() {
 
   return (
     <div className="h-screen w-full flex overflow-hidden bg-white dark:bg-zinc-950">
-      {/* Left side Illustration & Branding */}
       <AuthIllustration />
 
-      {/* Right side: email + continue / OTP verification / 2FA */}
       <div className="w-full md:w-1/2 lg:w-2/5 h-full flex flex-col px-6 sm:px-12 lg:px-16 overflow-y-auto bg-[#FEFEFE] dark:bg-zinc-950 py-12">
         <div className="max-w-md w-full mx-auto my-auto">
           <AuthHeader />

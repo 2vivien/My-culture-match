@@ -3,7 +3,6 @@ import { Heart, X } from 'lucide-react';
 import { useRequests } from '@/src/hooks/useRequests';
 import { TotemAvatar } from '@/src/components/ui/TotemAvatar';
 import { Button } from '@/src/components/ui/button';
-import { userService } from '@/src/services/userService';
 import { useAppStore } from '@/src/stores/useAppStore';
 import { useUIStore } from '@/src/stores/useUIStore';
 import { NotificationDropdown } from '../layout/parts/NotificationDropdown';
@@ -30,10 +29,9 @@ export const RequestCard = () => {
   if (requests.length === 0) return null;
 
   const current = requests[0];
-  const user = userService.getUserById('req-1');
 
   const handleClick = () => {
-    setSelectedTotemUserId('req-1');
+    setSelectedTotemUserId(current.id);
     setActiveTab('Totem');
   };
 
@@ -64,7 +62,7 @@ export const RequestCard = () => {
 
       <div className="flex items-center gap-3 bg-[#FCFCFC] dark:bg-zinc-900/50 p-3 rounded-2xl mb-4 text-app-black dark:text-zinc-200 border border-app-border dark:border-zinc-800">
         <div className="relative">
-          <TotemAvatar src={current.avatar} alt={current.name} size="md" glow={user?.glow || 'turquoise'} level={user?.level} onClick={handleClick} />
+          <TotemAvatar src={current.avatar} alt={current.name} size="md" glow="turquoise" onClick={handleClick} />
           <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center border border-white dark:border-zinc-950 bg-white dark:bg-zinc-950 shadow-sm select-none z-20">
             <span className="w-3.5 h-3.5 rounded-full flex items-center justify-center bg-[#E27D60]/10 dark:bg-[#E27D60]/20">
               <Heart className="w-2 h-2 text-[#E27D60] dark:text-[#E27D60] fill-[#E27D60] dark:fill-[#E27D60]" />

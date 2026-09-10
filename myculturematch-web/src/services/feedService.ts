@@ -1,18 +1,9 @@
-import feedMock from '@/src/mocks/feed.json';
 import type { Post } from '@/src/types/post';
-import { api, USE_MOCK } from './api';
+import { api } from './api';
 
 export const feedService = {
   async getPosts(filter: 'following' | 'for-you' | 'popular' = 'following'): Promise<Post[]> {
-    if (USE_MOCK) {
-      const posts = feedMock as Post[];
-      if (filter === 'for-you') {
-        return [...posts].reverse();
-      }
-      return posts;
-    }
     const data = await api.get<{ posts: unknown[]; total: number; nextCursor: string | null }>(`/api/feed?filter=${filter}`);
-    // Mapper HydratedPost → Post (types compatibles)
     return (data.posts ?? []).map((p: Record<string, unknown>) => ({
       id: p.id as string,
       author: {
@@ -34,24 +25,10 @@ export const feedService = {
   },
 
   async likePost(postId: string): Promise<void> {
-    if (USE_MOCK) {
-      return;
-    }
     await api.post(`/api/posts/${postId}/like`);
   },
 
   async createPost(data: Omit<Post, 'id' | 'createdAt' | 'likes' | 'comments' | 'views'>): Promise<Post> {
-    if (USE_MOCK) {
-      return {
-        ...data,
-        id: crypto.randomUUID(),
-        createdAt: new Date().toISOString(),
-        likes: 0,
-        comments: 0,
-        views: 0,
-      };
-    }
-    // Mapper Post → CreatePostInput backend
     const payload: Record<string, unknown> = {
       title: data.text?.slice(0, 50) || 'Tradition',
       body: data.text,

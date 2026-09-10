@@ -3,7 +3,7 @@ import { zValidator } from '@hono/zod-validator';
 import { requireAuth } from '../auth/require-auth';
 import { requireAdmin } from '../auth/require-admin';
 import { analyticsQuerySchema, banUserSchema, listAdminUsersQuerySchema, listReportsQuerySchema, reportActionSchema, unbanUserSchema } from './admin.schemas';
-import { banUser, getAdminStats, getAnalytics, listAdminUsers, listReports, logAudit, takeReportAction, unbanUser } from './admin.service';
+import { banUser, getAdminStats, getAnalytics, getRecentActivity, getSystemHealth, listAdminUsers, listAuditLogs, listReports, logAudit, takeReportAction, unbanUser } from './admin.service';
 
 const adminRoutes = new Hono();
 
@@ -60,6 +60,24 @@ adminRoutes.get('/stats', async (c) => {
 adminRoutes.get('/analytics', zValidator('query', analyticsQuerySchema), async (c) => {
   const { period } = c.req.valid('query');
   const result = await getAnalytics(period);
+  return c.json(result, 200);
+});
+
+/** GET /api/admin/logs — journal d'audit. */
+adminRoutes.get('/logs', async (c) => {
+  const result = await listAuditLogs({ cursor: c.req.query('cursor'), limit: c.req.query('limit') ? Number(c.req.query('limit')) : undefined });
+  return c.json(result, 200);
+});
+
+/** GET /api/admin/activity — dernière activité. */
+adminRoutes.get('/activity', async (c) => {
+  const result = await getRecentActivity({ limit: c.req.query('limit') ? Number(c.req.query('limit')) : undefined });
+  return c.json(result, 200);
+});
+
+/** GET /api/admin/health — métriques système. */
+adminRoutes.get('/health', async (c) => {
+  const result = await getSystemHealth();
   return c.json(result, 200);
 });
 

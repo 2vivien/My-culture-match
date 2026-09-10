@@ -2,7 +2,6 @@ import React from 'react';
 import { Plus } from 'lucide-react';
 import { Story } from '@/src/types/story';
 import { TotemAvatar } from '../ui/TotemAvatar';
-import { userService } from '@/src/services/userService';
 import { useUIStore } from '@/src/stores/useUIStore';
 import { useAppStore } from '@/src/stores/useAppStore';
 
@@ -26,8 +25,6 @@ export const StoryAvatar: React.FC<StoryAvatarProps> = ({ story, onAddClick }) =
     );
   }
 
-  const user = userService.getUserById(story.id);
-
   const handleClick = () => {
     setSelectedTotemUserId(story.id);
     setActiveTab('Totem');
@@ -39,8 +36,7 @@ export const StoryAvatar: React.FC<StoryAvatarProps> = ({ story, onAddClick }) =
         size="md"
         src={story.img}
         alt={story.name}
-        glow={user?.glow || 'none'}
-        level={user?.level}
+        glow="none"
         hasStory={true}
         onClick={handleClick}
       />

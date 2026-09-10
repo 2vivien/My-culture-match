@@ -6,7 +6,7 @@ export function useConnections() {
   const activeSubTab = useConnectionsStore((state) => state.activeSubTab);
   const setActiveSubTab = useConnectionsStore((state) => state.setActiveSubTab);
 
-  // Utilise les données du backend (React Query) quand USE_MOCK=false
+  // Données du backend via React Query
   const {
     suggestions,
     interested,

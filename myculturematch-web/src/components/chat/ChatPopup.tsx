@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, MessageSquare, Users, Search } from 'lucide-react';
-import { mockConversations, initialMessages, getAutomatedReply } from '@/src/services/chat.service';
+import { chatService } from '@/src/services/chat.service';
 import { ActiveChatColumn } from './ActiveChatColumn';
 import { ConversationListItem } from './ConversationListItem';
-import { ChatMessage } from '@/src/types/chat.types';
+import { Conversation, ChatMessage } from '@/src/types/chat.types';
 import { useUIStore } from '@/src/stores/useUIStore';
 import { TotemAvatar } from '@/src/components/ui/TotemAvatar';
 import { cn } from '@/src/lib/utils';
@@ -15,10 +15,12 @@ export const ChatPopup: React.FC = () => {
   const { isChatOpen, closeChat } = useUIStore();
   const popupRef = useRef<HTMLDivElement>(null);
   const [tab, setTab] = useState<Tab>('messages');
-  const [conversations, setConversations] = useState(mockConversations);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
-  const [messagesMap, setMessagesMap] = useState<Record<string, ChatMessage[]>>(initialMessages);
+  const [messagesMap, setMessagesMap] = useState<Record<string, ChatMessage[]>>({});
   const [search, setSearch] = useState('');
+  const [loadingConversations, setLoadingConversations] = useState(false);
+  const [loadingMessages, setLoadingMessages] = useState(false);
 
   const activeConversation = conversations.find((c) => c.id === activeId) ?? null;
   const activeMessages = activeId ? messagesMap[activeId] || [] : [];
@@ -36,9 +38,46 @@ export const ChatPopup: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleOutside);
   }, [isChatOpen, closeChat]);
 
-  const handleSendMessage = (text: string) => {
+  useEffect(() => {
+    if (!isChatOpen) return;
+    setLoadingConversations(true);
+    chatService.getConversations()
+      .then(setConversations)
+      .catch(() => setConversations([]))
+      .finally(() => setLoadingConversations(false));
+  }, [isChatOpen]);
+
+  const loadMessages = useCallback(async (conversationId: string) => {
+    if (messagesMap[conversationId]) return;
+    setLoadingMessages(true);
+    try {
+      const msgs = await chatService.getMessages(conversationId);
+      setMessagesMap((prev) => ({ ...prev, [conversationId]: msgs }));
+    } catch {
+      // Silently handle — messages stay empty
+    } finally {
+      setLoadingMessages(false);
+    }
+  }, [messagesMap]);
+
+  const openConversation = useCallback((id: string) => {
+    setActiveId(id);
+    setTab('messages');
+    loadMessages(id);
+  }, [loadMessages]);
+
+  useEffect(() => {
+    if (activeId) {
+      setConversations((prevList) =>
+        prevList.map((c) => (c.id === activeId ? { ...c, unreadCount: 0 } : c))
+      );
+    }
+  }, [activeId]);
+
+  const handleSendMessage = async (text: string) => {
     if (!activeId) return;
-    const newMessage: ChatMessage = {
+
+    const optimisticMsg: ChatMessage = {
       id: `msg-${Date.now()}`,
       senderId: 'me',
       senderName: 'Moi',
@@ -48,7 +87,7 @@ export const ChatPopup: React.FC = () => {
 
     setMessagesMap((prev) => ({
       ...prev,
-      [activeId]: [...(prev[activeId] || []), newMessage],
+      [activeId]: [...(prev[activeId] || []), optimisticMsg],
     }));
 
     setConversations((prevList) =>
@@ -57,38 +96,15 @@ export const ChatPopup: React.FC = () => {
       )
     );
 
-    const { reply, afterMs } = getAutomatedReply(activeConversation.name, text);
-    setTimeout(() => {
-      const responseMessage: ChatMessage = {
-        id: `msg-resp-${Date.now()}`,
-        senderId: activeConversation.id,
-        senderName: activeConversation.name,
-        text: reply,
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      };
-
+    try {
+      const sentMsg = await chatService.sendMessage(activeId, text);
       setMessagesMap((prev) => ({
         ...prev,
-        [activeId]: [...(prev[activeId] || []), responseMessage],
+        [activeId]: [...(prev[activeId] || []).filter((m) => m.id !== optimisticMsg.id), sentMsg],
       }));
-
-      setConversations((prevList) =>
-        prevList.map((c) =>
-          c.id === activeId ? { ...c, lastMsg: reply, timeAgo: 'Just now' } : c
-        )
-      );
-    }, afterMs);
-  };
-
-  useEffect(() => {
-    setConversations((prevList) =>
-      prevList.map((c) => (c.id === activeId ? { ...c, unreadCount: 0 } : c))
-    );
-  }, [activeId]);
-
-  const openConversation = (id: string) => {
-    setActiveId(id);
-    setTab('messages');
+    } catch {
+      // Keep optimistic message — real messages will sync on next fetch
+    }
   };
 
   const filteredConversations = conversations.filter((c) =>
@@ -187,13 +203,15 @@ export const ChatPopup: React.FC = () => {
                     />
                   </div>
                   <div className="flex-1 overflow-y-auto space-y-1 pr-0.5 hide-scrollbar">
-                    {filteredConversations.length > 0 ? (
+                    {loadingConversations ? (
+                      <div className="text-center py-10 text-xs text-app-gray">Chargement...</div>
+                    ) : filteredConversations.length > 0 ? (
                       filteredConversations.map((c) => (
                         <ConversationListItem
                           key={c.id}
                           conversation={c}
                           isActive={c.id === activeId}
-                          onClick={() => setActiveId(c.id)}
+                          onClick={() => openConversation(c.id)}
                         />
                       ))
                     ) : (
@@ -216,7 +234,7 @@ export const ChatPopup: React.FC = () => {
   );
 };
 
-const ProfilesTab: React.FC<{ conversations: typeof mockConversations; onMessage: (id: string) => void }> = ({
+const ProfilesTab: React.FC<{ conversations: Conversation[]; onMessage: (id: string) => void }> = ({
   conversations,
   onMessage,
 }) => {

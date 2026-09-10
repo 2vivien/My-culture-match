@@ -1,8 +1,6 @@
-import requestsMock from '@/src/mocks/requests.json';
 import type { RequestItem } from '@/src/types/request';
-import { api, USE_MOCK } from './api';
+import { api } from './api';
 
-/** Backend connection shape for requests. */
 interface BackendConnection {
   profile: { id: string; name: string; avatar: string | null; matchScore: number };
   status: string;
@@ -24,17 +22,11 @@ function mapRequest(c: BackendConnection): RequestItem {
 
 export const requestsService = {
   async getRequests(): Promise<RequestItem[]> {
-    if (USE_MOCK) {
-      return requestsMock as RequestItem[];
-    }
     const data = await api.get<{ success: boolean; connections: BackendConnection[] }>('/api/connections/requests');
     return (data.connections ?? []).map(mapRequest);
   },
 
   async handleRequest(requestId: string, action: 'block' | 'okay'): Promise<void> {
-    if (USE_MOCK) {
-      return;
-    }
     const endpoint = action === 'okay' ? 'accept' : 'block';
     await api.post(`/api/requests/${requestId}/${endpoint}`);
   },
