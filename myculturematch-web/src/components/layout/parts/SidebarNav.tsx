@@ -60,7 +60,6 @@ const navItems = [
   { name: 'Love', icon: 'Love' },
   { name: 'Tribu', icon: 'Tribu' },
   { name: 'Totem', icon: 'Totem' },
-  { name: 'Messages', icon: 'Sandbox' },
 ];
 
 const adminItem = { name: 'Admin', icon: 'Admin' };
