@@ -1,0 +1,13 @@
+{
+  "name": "myculturematch",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently -n backend,web -c blue,green \"npm:dev:backend\" \"npm:dev:web\"",
+    "dev:backend": "npm run dev --prefix backend",
+    "dev:web": "npm run dev --prefix myculturematch-web"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
