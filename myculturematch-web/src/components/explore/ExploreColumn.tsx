@@ -7,6 +7,7 @@ import { ExploreTabs } from './ExploreTabs';
 import { ExploreCategories } from './ExploreCategories';
 import { ExploreTribesTab } from './ExploreTribesTab';
 import { ExploreTraditionsTab } from './ExploreTraditionsTab';
+import { ExploreReelsTab } from './ExploreReelsTab';
 import { ExploreVideosTab } from './ExploreVideosTab';
 import { ExploreSearchResults } from './ExploreSearchResults';
 import { useFeed } from '@/src/hooks/useFeed';
@@ -65,6 +66,10 @@ export const ExploreColumn: React.FC = () => {
 
               {activeSubTab === 'Traditions' && (
                 <ExploreTraditionsTab posts={posts} />
+              )}
+
+              {activeSubTab === 'Reels' && (
+                <ExploreReelsTab />
               )}
 
               {activeSubTab === 'Vidéo' && (

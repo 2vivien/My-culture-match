@@ -64,13 +64,7 @@
       "when": 1789068185058,
       "tag": "0008_add_banner",
       "breakpoints": true
-    },
-    {
-      "idx": 9,
-      "version": "7",
-      "when": 1789068186000,
-      "tag": "0009_add_repost",
-      "breakpoints": true
-    }
+    },    { "idx": 9, "version": "7", "when": 1789068186000, "tag": "0009_add_repost", "breakpoints": true },
+    { "idx": 10, "version": "7", "when": 1789154586000, "tag": "0010_add_geolocation", "breakpoints": true }
   ]
 }

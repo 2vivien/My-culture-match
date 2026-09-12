@@ -11,6 +11,7 @@ interface ExploreCategoriesProps {
 const CATEGORIES_MAP = {
   Tribu: ['All', ...launchThemes],
   Traditions: ['All', ...launchThemes],
+  Reels: ['All'],
   Vidéo: ['All', ...launchThemes],
 };
 

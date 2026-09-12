@@ -142,6 +142,50 @@ export async function getCurrentUser(userId: string): Promise<PublicUser> {
   return serializePublic(user, tribes);
 }
 
+/**
+ * PATCH /api/users/me/location — partage de position (style Snap Map).
+ * Active/désactive le partage et enregistre les dernières coordonnées.
+ */
+export async function updateLocation(
+  userId: string,
+  input: { latitude?: number; longitude?: number; enabled?: boolean },
+): Promise<{ success: true; latitude: number | null; longitude: number | null; locationSharingEnabled: boolean }> {
+  const enabled = input.enabled ?? true;
+
+  if (!enabled) {
+    await db
+      .update(schema.users)
+      .set({ locationSharingEnabled: false, updatedAt: new Date() })
+      .where(eq(schema.users.id, userId));
+    await redis.del(userCacheKey(userId));
+    return { success: true, latitude: null, longitude: null, locationSharingEnabled: false };
+  }
+
+  await db
+    .update(schema.users)
+    .set({
+      latitude: input.latitude,
+      longitude: input.longitude,
+      locationSharingEnabled: true,
+      locationUpdatedAt: new Date(),
+      updatedAt: new Date(),
+    })
+    .where(eq(schema.users.id, userId));
+  await redis.del(userCacheKey(userId));
+  return { success: true, latitude: input.latitude ?? null, longitude: input.longitude ?? null, locationSharingEnabled: true };
+}
+
+/** Distance Haversine en km entre deux points. */
+export function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
 /** GET /api/users/:id — profil public (mis en cache 1h, hors champs liés au viewer). */
 export async function getPublicUser(userId: string, viewerId?: string): Promise<PublicUser> {
   const profile = await cachedPublicUser(userId);

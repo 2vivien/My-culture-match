@@ -1,4 +1,4 @@
-import { and, eq, or } from 'drizzle-orm';
+import { and, eq, or, inArray, isNotNull } from 'drizzle-orm';
 import { db, schema } from '../../infrastructure/database';
 import { redis } from '../../infrastructure/redis';
 import { AppError } from '../../shared/utils/AppError';
@@ -269,6 +269,84 @@ export async function getCompanions(userId: string): Promise<ConnectionDto[]> {
   );
 
   return profiles.filter((p): p is ConnectionDto => p !== null);
+}
+
+/**
+ * GET /api/connections/nearby — amis visibles sur la carte proximity :
+ *  - connexions établies (companion) OU suggestions (bubble Snap) ;
+ *  - partage de localisation activé chez eux ET chez moi ;
+ *  - distance en km via Haversine.
+ */
+export async function getNearbyFriends(
+  userId: string,
+): Promise<{
+  me: { latitude: number | null; longitude: number | null; locationSharingEnabled: boolean };
+  friends: Array<ProfileDto & { latitude: number; longitude: number; distanceKm: number | null; lastSeen: string | null; isCompanion: boolean }>;
+}> {
+  const [me] = await db
+    .select({
+      latitude: schema.users.latitude,
+      longitude: schema.users.longitude,
+      locationSharingEnabled: schema.users.locationSharingEnabled,
+    })
+    .from(schema.users)
+    .where(eq(schema.users.id, userId))
+    .limit(1);
+
+  // Mon partage désactivé → carte vide (comme Snap : personne ne me voit)
+  if (!me?.locationSharingEnabled || me.latitude === null || me.longitude === null) {
+    return { me: { latitude: null, longitude: null, locationSharingEnabled: false }, friends: [] };
+  }
+
+  const { haversineKm } = await import('../users/users.service');
+
+  // Amis (companion) avec géoloc activée + suggestions proches (bubble)
+  const rows = await db
+    .select({
+      id: schema.users.id,
+      name: schema.users.name,
+      username: schema.users.username,
+      avatar: schema.users.avatar,
+      bio: schema.users.bio,
+      location: schema.users.location,
+      country: schema.users.country,
+      latitude: schema.users.latitude,
+      longitude: schema.users.longitude,
+      locationUpdatedAt: schema.users.locationUpdatedAt,
+      status: schema.connections.status,
+    })
+    .from(schema.connections)
+    .innerJoin(schema.users, eq(schema.users.id, schema.connections.toUserId))
+    .where(
+      and(
+        eq(schema.connections.fromUserId, userId),
+        inArray(schema.connections.status, ['companion', 'suggestion', 'interested']),
+        eq(schema.users.locationSharingEnabled, true),
+        isNotNull(schema.users.latitude),
+        isNotNull(schema.users.longitude),
+      ),
+    )
+    .limit(200);
+
+  const friends = rows
+    .filter((r) => r.latitude !== null && r.longitude !== null)
+    .map((r) => ({
+      id: r.id,
+      name: r.name,
+      username: r.username,
+      avatar: r.avatar,
+      bio: r.bio,
+      location: r.location,
+      country: r.country,
+      matchScore: 0,
+      latitude: r.latitude as number,
+      longitude: r.longitude as number,
+      distanceKm: haversineKm(me.latitude as number, me.longitude as number, r.latitude as number, r.longitude as number),
+      lastSeen: r.locationUpdatedAt ? r.locationUpdatedAt.toISOString() : null,
+      isCompanion: r.status === 'companion',
+    }));
+
+  return { me: { latitude: me.latitude, longitude: me.longitude, locationSharingEnabled: true }, friends };
 }
 
 /** POST /api/connections/:userId/request — envoyer une demande. */

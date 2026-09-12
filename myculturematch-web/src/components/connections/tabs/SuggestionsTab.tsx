@@ -5,38 +5,21 @@ import { UserRow } from '../UserRow';
 import { FriendsProximityMap } from '../FriendsProximityMap';
 import type { ConnectionUser } from '@/src/stores/useConnectionsStore';
 
-/**
- * Positions de démo (comme Snap Map) : les amis sans coordonnées réelles
- * sont répartis autour de Cotonou pour la démo de la carte.
- * À remplacer par les vraies coordonnées quand le backend les expose.
- */
-const DEMO_COORDS: Array<{ lat: number; lon: number }> = [
-  { lat: 6.3703, lon: 2.3912 }, // Cotonou
-  { lat: 6.365, lon: 2.418 }, // Cotonou est
-  { lat: 6.355, lon: 2.375 }, // Cotonou ouest
-  { lat: 14.716, lon: -17.467 }, // Dakar
-  { lat: 4.051, lon: 9.767 }, // Douala
-  { lat: 5.359, lon: -4.008 }, // Abidjan
-  { lat: 9.307, lon: 2.315 }, // Porto-Novo
-  { lat: 6.131, lon: 1.222 }, // Lomé
-];
-
 interface SuggestionsTabProps {
   list: ConnectionUser[];
   onConnect: (id: string) => void;
 }
 
+/**
+ * Friends Proximity — la carte est la pièce centrale (style Snap Map) :
+ *  - vrais utilisateurs de la DB avec partage de localisation activé ;
+ *  - clusters, distance, recherche, ghost mode (voir FriendsProximityMap) ;
+ *  - liste de profils en dessous.
+ */
 export const SuggestionsTab: React.FC<SuggestionsTabProps> = ({ list, onConnect }) => {
-  // Coordonnées : fallback démo réparti autour de la carte (Snap Map style)
-  const usersWithCoords = list.map((u, i) => ({
-    ...u,
-    lat: DEMO_COORDS[i % DEMO_COORDS.length].lat + (i % 3) * 0.01,
-    lon: DEMO_COORDS[i % DEMO_COORDS.length].lon + (i % 2) * 0.008,
-  }));
-
   return (
     <>
-      {/* Carte Friends Proximity (Snap Map-like) */}
+      {/* Carte Friends Proximity (Snap Map-like) — données réelles DB */}
       <motion.div
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
@@ -44,7 +27,7 @@ export const SuggestionsTab: React.FC<SuggestionsTabProps> = ({ list, onConnect 
         transition={{ duration: 0.25 }}
         className="mb-6"
       >
-        <FriendsProximityMap users={usersWithCoords} />
+        <FriendsProximityMap />
       </motion.div>
 
       {/* Desktop list */}

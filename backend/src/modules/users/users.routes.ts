@@ -1,8 +1,8 @@
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { requireAuth } from '../auth/require-auth';
-import { profilePatchSchema } from './users.schemas';
-import { getCurrentUser, getPublicUser, updateProfile, followUser, unfollowUser } from './users.service';
+import { profilePatchSchema, locationUpdateSchema } from './users.schemas';
+import { getCurrentUser, getPublicUser, updateProfile, updateLocation, followUser, unfollowUser } from './users.service';
 
 /** Routes /api/users (auth requise). */
 export const usersModule = new Hono();
@@ -22,6 +22,14 @@ usersModule.patch('/me', zValidator('json', profilePatchSchema), async (c) => {
   const patch = c.req.valid('json');
   const user = await updateProfile(userId, patch);
   return c.json(user, 200);
+});
+
+// PATCH /api/users/me/location — partage de position (Snap Map)
+usersModule.patch('/me/location', zValidator('json', locationUpdateSchema), async (c) => {
+  const { userId } = c.get('auth');
+  const input = c.req.valid('json');
+  const result = await updateLocation(userId, input);
+  return c.json(result, 200);
 });
 
 // GET /api/users/:id — profil public (isFollowing si vu par un utilisateur connecté)

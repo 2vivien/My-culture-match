@@ -7,6 +7,7 @@ import {
   declineRequest,
   getCompanions,
   getInterested,
+  getNearbyFriends,
   getRequests,
   getSuggestions,
   removeCompanion,
@@ -43,6 +44,13 @@ connectionsRoutes.get('/connections/companions', async (c) => {
   const { userId } = c.get('auth');
   const connections = await getCompanions(userId);
   return c.json({ success: true, connections });
+});
+
+/** GET /api/connections/nearby — amis sur la carte proximity (Snap Map). */
+connectionsRoutes.get('/connections/nearby', async (c) => {
+  const { userId } = c.get('auth');
+  const result = await getNearbyFriends(userId);
+  return c.json({ success: true, ...result });
 });
 
 /** POST /api/connections/:userId/request — envoyer une demande. */

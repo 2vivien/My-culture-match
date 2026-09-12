@@ -1,5 +1,6 @@
 import React from 'react';
 import { Landmark, SquarePlay, FileText } from 'lucide-react';
+import { IconBrandParsinta } from '@tabler/icons-react';
 import { ExploreTab } from '@/src/types/explore';
 
 interface ExploreTabsProps {
@@ -11,6 +12,7 @@ interface ExploreTabsProps {
 const TABS: { id: ExploreTab; icon: React.ComponentType<any> }[] = [
   { id: 'Tribu', icon: Landmark },
   { id: 'Traditions', icon: FileText },
+  { id: 'Reels', icon: IconBrandParsinta },
   { id: 'Vidéo', icon: SquarePlay },
 ];
 

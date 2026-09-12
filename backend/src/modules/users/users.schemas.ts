@@ -44,3 +44,21 @@ export const profilePatchSchema = z
   });
 
 export type ProfilePatchInput = z.infer<typeof profilePatchSchema>;
+
+/**
+ * PATCH /api/users/me/location — partage de position (style Snap Map).
+ * { latitude, longitude } active le partage ; { enabled: false } le désactive.
+ */
+export const locationUpdateSchema = z
+  .object({
+    latitude: z.number().min(-90).max(90).optional(),
+    longitude: z.number().min(-180).max(180).optional(),
+    enabled: z.boolean().optional(),
+  })
+  .strict()
+  .refine(
+    (v) => v.enabled === false || (typeof v.latitude === 'number' && typeof v.longitude === 'number'),
+    { message: 'latitude et longitude sont requis pour activer le partage' },
+  );
+
+export type LocationUpdateInput = z.infer<typeof locationUpdateSchema>;

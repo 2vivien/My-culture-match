@@ -38,6 +38,11 @@ export const users = pgTable(
     region: text('region'),
     ethnicity: text('ethnicity'),
     village: text('village'),
+    // ── Géolocalisation (Friends Proximity, style Snap Map) ──
+    latitude: doublePrecision('latitude'),
+    longitude: doublePrecision('longitude'),
+    locationSharingEnabled: boolean('location_sharing_enabled').notNull().default(false),
+    locationUpdatedAt: timestamp('location_updated_at', { withTimezone: true }),
     bio: text('bio'),
     roots: jsonb('roots'),
     occupation: jsonb('occupation'),

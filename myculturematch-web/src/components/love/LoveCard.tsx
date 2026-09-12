@@ -11,9 +11,9 @@ interface LoveCardProps {
 }
 
 /**
- * Carte Love — photo pleine, et en bas une ligne : photo de profil en forme
- * dentelée (cloud Totem, comme sur le site) + nom + % de match.
- * Le clic ouvre le popup détail.
+ * Carte Love — photo pleine avec le % de match en haut de la carte
+ * (badge visible, comme "99% match"), et en bas : photo de profil en forme
+ * dentelée (cloud Totem) + nom. Le clic ouvre le popup détail.
  */
 export const LoveCard: React.FC<LoveCardProps> = ({
   match,
@@ -38,10 +38,17 @@ export const LoveCard: React.FC<LoveCardProps> = ({
         loading="lazy"
       />
 
+      {/* Badge % de match en haut de la carte */}
+      <div className="absolute top-3 left-3 right-3 flex justify-center">
+        <span className="px-4 py-1.5 rounded-full bg-black/45 backdrop-blur-md text-white text-xs font-black tracking-wide shadow-md border border-white/20">
+          {match.matchScore}% match
+        </span>
+      </div>
+
       {/* Dégradé bas pour la lisibilité */}
       <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black/70 via-black/30 to-transparent pointer-events-none" />
 
-      {/* Ligne du bas : photo de profil dentelée (cloud) + nom + % de match */}
+      {/* Ligne du bas : photo de profil dentelée (cloud) + nom */}
       <div className="absolute bottom-4 inset-x-4 flex items-center gap-2.5 select-none">
         <TotemAvatar
           src={match.avatar}
@@ -52,9 +59,6 @@ export const LoveCard: React.FC<LoveCardProps> = ({
         />
         <span className="font-extrabold text-white text-base truncate drop-shadow-md leading-tight">
           {match.name}
-        </span>
-        <span className="text-sm text-white/90 font-bold drop-shadow-md shrink-0">
-          {match.matchScore}%
         </span>
       </div>
     </motion.div>
