@@ -33,12 +33,14 @@ export function AuthPage() {
     }
   };
 
-  const finishLogin = (user: { id: string; name: string | null; avatar: string | null }, isNewUser: boolean) => {
+  const finishLogin = (user: { id: string; name: string | null; username?: string | null; avatar: string | null; email?: string }, isNewUser: boolean) => {
     loginUser({
       id: user.id,
       name: user.name ?? email,
+      username: user.username ?? email.split('@')[0] ?? 'user',
       avatar: user.avatar ?? undefined,
     });
+    setEmail((user.email ?? email).trim());
     setAuthenticated(true);
     setOnboarded(!isNewUser);
   };

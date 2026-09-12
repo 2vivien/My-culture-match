@@ -83,7 +83,7 @@ export const PostHeader = ({ author, date, tribe }: PostHeaderProps) => {
         />
         <div>
           <h3 onClick={handleClick} className="font-bold text-sm cursor-pointer hover:underline text-app-black dark:text-zinc-300">
-            {author.name}
+            {author.username || author.name}
           </h3>
           <p className="text-xs text-app-gray">{author.location}</p>
         </div>
@@ -98,7 +98,7 @@ export const PostHeader = ({ author, date, tribe }: PostHeaderProps) => {
               <button
                 type="button"
                 onClick={handleJoin}
-                className="px-2.5 py-0.5 rounded-full bg-app-black text-white dark:bg-white dark:text-app-black text-[9px] font-black hover:scale-105 active:scale-95 transition-all cursor-pointer border-none outline-none"
+                className="px-2.5 py-0.5 rounded-full bg-[#E27D60] text-white text-[9px] font-black hover:scale-105 active:scale-95 transition-all cursor-pointer border-none outline-none"
               >
                 Join
               </button>

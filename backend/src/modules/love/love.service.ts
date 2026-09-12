@@ -27,6 +27,7 @@ export interface LoveCandidateDto {
   bio: string | null;
   location: string | null;
   country: string | null;
+  gender: string | null;
   age: number | null;
   matchScore: number;
   sharedValues: string[];
@@ -105,6 +106,7 @@ export async function getLoveCandidates(userId: string): Promise<{ candidates: L
       country: schema.users.country,
       region: schema.users.region,
       birthdate: schema.users.birthdate,
+      gender: schema.users.gender,
       profileCompleted: schema.users.profileCompleted,
       values: schema.users.values,
       languages: schema.users.languages,
@@ -130,6 +132,7 @@ export async function getLoveCandidates(userId: string): Promise<{ candidates: L
     bio: c.bio,
     location: c.location,
     country: c.country,
+    gender: c.gender,
     age: computeAge(c.birthdate),
     matchScore: compatLove(toUserFeatures(me), toUserFeatures(c)),
     sharedValues: (c.values ?? []).filter((v) => (me.values ?? []).includes(v)),
@@ -137,6 +140,62 @@ export async function getLoveCandidates(userId: string): Promise<{ candidates: L
 
   await redis.set(candidatesKey(userId), JSON.stringify(result), 'EX', CANDIDATES_TTL);
   return { candidates: result };
+}
+
+/**
+ * GET /api/love/active — matchs ACTIFS = likes réciproques acceptés (isMutual),
+ * c'est-à-dire les personnes avec qui on peut déjà discuter.
+ */
+export async function getActiveLoveMatches(userId: string): Promise<{ candidates: Array<LoveCandidateDto & { connected: boolean; conversationId: string | null }> }> {
+  const rows = await db
+    .select({
+      candidateId: schema.loveMatches.candidateId,
+      conversationId: schema.loveMatches.conversationId,
+      matchScore: schema.loveMatches.matchScore,
+    })
+    .from(schema.loveMatches)
+    .where(and(eq(schema.loveMatches.userId, userId), eq(schema.loveMatches.isMutual, true)));
+
+  if (rows.length === 0) return { candidates: [] };
+
+  const ids = rows.map((r) => r.candidateId);
+  const users = await db
+    .select({
+      id: schema.users.id,
+      name: schema.users.name,
+      username: schema.users.username,
+      avatar: schema.users.avatar,
+      bio: schema.users.bio,
+      location: schema.users.location,
+      country: schema.users.country,
+      gender: schema.users.gender,
+      birthdate: schema.users.birthdate,
+    })
+    .from(schema.users)
+    .where(inArray(schema.users.id, ids));
+
+  const byId = new Map(users.map((u) => [u.id, u]));
+  const candidates = rows.flatMap((r) => {
+    const u = byId.get(r.candidateId);
+    if (!u) return [];
+    return [{
+      id: u.id,
+      name: u.name,
+      username: u.username,
+      avatar: u.avatar,
+      bio: u.bio,
+      location: u.location,
+      country: u.country,
+      gender: u.gender,
+      age: computeAge(u.birthdate),
+      matchScore: r.matchScore,
+      sharedValues: [],
+      connected: true,
+      conversationId: r.conversationId,
+    }];
+  });
+
+  return { candidates };
 }
 
 /** GET /api/love/matches/:id — détail d'un candidat. */

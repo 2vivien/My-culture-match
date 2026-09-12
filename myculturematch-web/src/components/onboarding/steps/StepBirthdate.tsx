@@ -23,7 +23,7 @@ export const StepBirthdate: React.FC<StepBirthdateProps> = ({
           Quelle est votre date de naissance ?
         </h2>
         <p className="text-sm text-zinc-500 mt-2">
-          Vous devez avoir au moins 18 ans pour utiliser MyCultureMatch. Votre âge est calculé automatiquement.
+          Vous devez avoir au moins 16 ans pour utiliser MyCultureMatch. Votre âge est calculé automatiquement.
         </p>
       </div>
 
@@ -45,10 +45,10 @@ export const StepBirthdate: React.FC<StepBirthdateProps> = ({
           <div className="text-center p-6 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200/50 dark:border-zinc-800/50 rounded-2xl">
             <span className="text-zinc-400 font-bold block text-xs uppercase tracking-wider">Votre âge calculé</span>
             <span className="text-4xl font-black text-primary mt-1 block">{age} ans</span>
-            {age < 18 ? (
+            {age < 16 ? (
               <div className="flex items-center justify-center gap-1.5 text-red-500 font-bold text-xs mt-2">
                 <AlertCircle className="w-4 h-4 shrink-0" />
-                <span>Vous devez avoir au moins 18 ans.</span>
+                <span>Vous devez avoir au moins 16 ans.</span>
               </div>
             ) : (
               <div className="flex items-center justify-center gap-1.5 text-green-600 dark:text-green-400 font-bold text-xs mt-2">

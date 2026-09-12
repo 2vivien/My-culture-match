@@ -13,6 +13,7 @@ import {
 } from './tribes.schemas';
 import {
   listTribes,
+  listMyTribes,
   createTribe,
   getTribeDetail,
   patchTribe,
@@ -48,6 +49,14 @@ tribesModule.get('/', zValidator('query', listTribesQuerySchema), async (c) => {
   const { search, cursor, limit } = c.req.valid('query');
   const result = await listTribes(search, cursor, limit);
   return c.json(result, 200);
+});
+
+// GET /api/tribes/mine — tribus de l'utilisateur courant (sidebar "Your Own Tribes")
+// Déclaré avant '/:id' pour que 'mine' ne soit pas intercepté comme id.
+tribesModule.get('/mine', async (c) => {
+  const { userId } = c.get('auth');
+  const tribes = await listMyTribes(userId);
+  return c.json({ tribes }, 200);
 });
 
 // POST /api/tribes
@@ -99,8 +108,9 @@ tribesModule.delete('/:id/leave', async (c) => {
 
 // GET /api/tribes/:id/posts
 tribesModule.get('/:id/posts', zValidator('query', listTribesQuerySchema), async (c) => {
+  const { userId } = c.get('auth');
   const { cursor, limit } = c.req.valid('query');
-  const result = await tribePosts(c.req.param('id'), cursor, limit);
+  const result = await tribePosts(c.req.param('id'), userId, cursor, limit);
   return c.json(result, 200);
 });
 

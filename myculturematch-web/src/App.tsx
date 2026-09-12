@@ -12,11 +12,13 @@ import { ExploreColumn } from './components/explore/ExploreColumn';
 import { TribuDetailView } from './components/explore/TribuDetailView';
 import { TribuSettingsView } from './components/explore/TribuSettingsView';
 import { CreateTraditionView } from './components/feed/CreateTraditionView';
+import { PostDetailPage } from './components/feed/PostDetailPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { LoveColumn } from './components/explore/LoveColumn';
 import { CreateTribeModal } from './components/explore/CreateTribeModal';
 import { useAppStore } from './stores/useAppStore';
 import { useUIStore } from './stores/useUIStore';
+import { startRouter } from './lib/router';
 import { cn } from './lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AuthPage } from './pages/AuthPage';
@@ -30,6 +32,9 @@ export default function App() {
 
   useEffect(() => {
     authService.restoreSession();
+    // Routeur par hash : deep-links (#/totem/:id, #/tribu/:id, ...) + back/forward navigateur.
+    // Les stores sont abonnés au routeur : l'URL se met à jour à chaque navigation.
+    startRouter();
   }, []);
 
   useEffect(() => {
@@ -97,9 +102,11 @@ export default function App() {
                   <TribuSettingsView />
                 ) : activeTab === 'Create' ? (
                   <CreateTraditionView />
+                ) : activeTab === 'PostDetail' ? (
+                  <PostDetailPage />
                 ) : activeTab === 'Settings' ? (
                   <SettingsPage />
-                ) : activeTab === 'Connexion' || activeTab === 'Connections' ? (
+                ) : activeTab === 'Friends' || activeTab === 'Connexion' || activeTab === 'Connections' ? (
                   <ConnexionPage />
                 ) : activeTab === 'Admin' ? (
                   <AdminPage />

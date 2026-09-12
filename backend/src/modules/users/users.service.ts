@@ -17,6 +17,7 @@ export interface PublicUser {
   name: string;
   username: string;
   avatar: string | null;
+  banner: string | null;
   avatarSeed: string | null;
   locale: string;
   level: number;
@@ -27,6 +28,7 @@ export interface PublicUser {
   region: string | null;
   gender: string | null;
   seeking: string | null;
+  age: number | null;
   roots: Record<string, unknown> | null;
   languages: string[] | null;
   intention: string | null;
@@ -57,6 +59,7 @@ function serializePublic(row: schema.User, tribeNames: string[], extra?: Partial
     name: row.name,
     username: row.username,
     avatar: row.avatar,
+    banner: row.banner,
     avatarSeed: row.avatarSeed,
     locale: row.locale,
     level: row.level,
@@ -67,6 +70,7 @@ function serializePublic(row: schema.User, tribeNames: string[], extra?: Partial
     region: row.region,
     gender: row.gender,
     seeking: row.seeking,
+    age: row.age,
     roots: (row.roots as Record<string, unknown>) ?? null,
     languages: row.languages ?? null,
     intention: row.intention,

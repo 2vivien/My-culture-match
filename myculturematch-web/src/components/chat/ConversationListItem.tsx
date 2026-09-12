@@ -28,7 +28,7 @@ export const ConversationListItem: React.FC<ListItemProps> = ({
         <TotemAvatar
           src={conversation.avatar}
           alt={conversation.name}
-          size="sm"
+          size="md"
           glow={conversation.glow as any}
           level={conversation.level}
         />
@@ -39,14 +39,14 @@ export const ConversationListItem: React.FC<ListItemProps> = ({
 
       <div className="flex-1 min-w-0 select-none">
         <div className="flex justify-between items-baseline mb-0.5">
-          <span className="font-bold text-xs truncate text-app-black dark:text-zinc-100 group-hover:text-[#E27D60] transition-colors">
+          <span className="font-bold text-sm truncate text-app-black dark:text-zinc-100 group-hover:text-[#E27D60] transition-colors">
             {conversation.name}
           </span>
-          <span className="text-[10px] text-app-gray dark:text-zinc-500 shrink-0">
+          <span className="text-[11px] text-app-gray dark:text-zinc-500 shrink-0">
             {conversation.timeAgo}
           </span>
         </div>
-        <p className="text-[11px] text-app-gray dark:text-zinc-400 truncate leading-tight">
+        <p className="text-[13px] text-app-gray dark:text-zinc-400 truncate leading-snug">
           {conversation.lastMsg}
         </p>
       </div>

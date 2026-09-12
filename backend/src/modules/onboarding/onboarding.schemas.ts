@@ -30,6 +30,8 @@ export const onboardingSchema = z
     seeking: z.enum(SEEKING),
     birthdate: z.coerce.date().refine((d) => !Number.isNaN(d.getTime()), 'Date de naissance invalide'),
     roots: rootsSchema,
+    // Localisation détectée par IP (pré-remplie, modifiable) — optionnelle
+    location: z.string().trim().max(100).optional(),
     languages: z.array(z.string().trim().min(1)).min(1, 'Au moins une langue'),
     intention: z.enum(INTENTION),
     acceptedTermsAt: z.coerce.date().refine((d) => d.getTime() <= Date.now(), 'acceptedTermsAt doit être ≤ now'),

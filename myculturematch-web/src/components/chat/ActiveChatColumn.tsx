@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Phone, Video, Smile, Paperclip, Mic, Send, ArrowLeft } from 'lucide-react';
 import { Conversation, ChatMessage } from '@/src/types/chat.types';
 import { ChatMessageBubble } from './ChatMessageBubble';
+import { AssistantPanel } from './AssistantPanel';
 import { TotemAvatar } from '@/src/components/ui/TotemAvatar';
 
 interface ActiveChatProps {
@@ -18,7 +19,11 @@ export const ActiveChatColumn: React.FC<ActiveChatProps> = ({
   onBack,
 }) => {
   const [input, setInput] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [lyraOpen, setLyraOpen] = useState(false);
+  const [lyraContext, setLyraContext] = useState<ChatMessage | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const lastMessage = messages.length > 0 ? messages[messages.length - 1]?.text : undefined;
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -89,14 +94,13 @@ export const ActiveChatColumn: React.FC<ActiveChatProps> = ({
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 bg-[#FEFEFE] dark:bg-zinc-950/40 hide-scrollbar flex flex-col">
-        <div className="my-6 text-center select-none">
-          <span className="text-[10px] font-bold uppercase tracking-widest text-[#777777] bg-white dark:bg-zinc-900 border border-[#ECECEC] dark:border-zinc-800 px-3 py-1 rounded-full px-4 py-1.5 scroll-py-1 shadow-xs">
-            ✨ Protected Cultural Exchange Space
-          </span>
-        </div>
 
         {messages.map((m) => (
-          <ChatMessageBubble key={m.id} message={m} />
+          <ChatMessageBubble
+            key={m.id}
+            message={m}
+            onAskLyra={(msg) => { setLyraContext(msg); setLyraOpen(true); }}
+          />
         ))}
         <div ref={messagesEndRef} />
       </div>
@@ -109,17 +113,33 @@ export const ActiveChatColumn: React.FC<ActiveChatProps> = ({
           </button>
 
           <input
+            ref={inputRef}
             type="text"
             placeholder={`Say customized culture greeting to ${partner.name.split(' ')[0]}...`}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyPress}
-            className="flex-1 bg-transparent text-xs text-app-black dark:text-zinc-200 placeholder:text-app-gray outline-none font-medium h-8"
+            className="flex-1 bg-transparent text-sm text-app-black dark:text-zinc-200 placeholder:text-app-gray outline-none font-medium h-8"
           />
 
           <button type="button" className="text-app-gray hover:text-amber-500 cursor-pointer p-1">
             <Smile className="w-4 h-4" />
           </button>
+          <AssistantPanel
+            partner={partner}
+            lastMessage={lyraContext?.text ?? lastMessage}
+            onPick={(suggestion) => {
+              // Envoi direct de la suggestion sélectionnée + focus sur la saisie.
+              const text = suggestion.trim();
+              if (text) onSendMessage(text);
+              setInput('');
+              setLyraOpen(false);
+              setLyraContext(null);
+              inputRef.current?.focus();
+            }}
+            open={lyraOpen}
+            onOpenChange={setLyraOpen}
+          />
           <button type="button" className="text-app-gray hover:text-[#E27D60] cursor-pointer p-1">
             <Mic className="w-4 h-4" />
           </button>
@@ -127,7 +147,7 @@ export const ActiveChatColumn: React.FC<ActiveChatProps> = ({
           <button
             type="submit"
             disabled={!input.trim()}
-            className="w-8 h-8 rounded-xl bg-app-black dark:bg-white text-white dark:text-app-black flex items-center justify-center hover:scale-105 disabled:opacity-50 disabled:hover:scale-100 transition-all cursor-pointer shrink-0 ml-1"
+            className="w-8 h-8 rounded-xl bg-[#E27D60] hover:bg-[#c66b50] text-white flex items-center justify-center hover:scale-105 disabled:opacity-50 disabled:hover:scale-100 transition-all cursor-pointer shrink-0 ml-1"
           >
             <Send className="w-3.5 h-3.5 ml-0.5 text-white dark:text-app-black" />
           </button>

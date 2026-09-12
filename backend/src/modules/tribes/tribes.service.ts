@@ -3,6 +3,7 @@ import { db, schema } from '../../infrastructure/database';
 import { redis } from '../../infrastructure/redis';
 import { AppError } from '../../shared/utils/AppError';
 import { recordAudit } from '../audit/audit.service';
+import { getPostsByIds } from '../posts/posts.service';
 import type { CreateTribeInput, PatchTribeInput, CreateRuleInput, PatchRuleInput } from './tribes.schemas';
 
 const MAX_TRIBES_PER_USER = 5;
@@ -82,6 +83,29 @@ export async function listTribes(search: string | undefined, cursor: string | un
   const page = rows.slice(0, limit);
   const nextCursor = hasMore ? page[page.length - 1]?.createdAt.toISOString() ?? null : null;
   return { tribes: page, nextCursor };
+}
+
+/** GET /api/tribes/mine — tribus de l'utilisateur (owner d'abord, + récentes d'abord). */
+export async function listMyTribes(userId: string): Promise<Array<Record<string, unknown>>> {
+  const rows = await db
+    .select({
+      id: schema.tribes.id,
+      name: schema.tribes.name,
+      tag: schema.tribes.tag,
+      topic: schema.tribes.topic,
+      description: schema.tribes.desc,
+      avatar: schema.tribes.avatar,
+      glow: schema.tribes.glow,
+      membersCount: schema.tribes.memberCount,
+      role: schema.tribeMembers.role,
+      createdAt: schema.tribes.createdAt,
+    })
+    .from(schema.tribeMembers)
+    .innerJoin(schema.tribes, eq(schema.tribes.id, schema.tribeMembers.tribeId))
+    .where(eq(schema.tribeMembers.userId, userId))
+    .orderBy(desc(schema.tribes.createdAt))
+    .limit(25);
+  return rows.map((r) => ({ ...r, createdAt: r.createdAt.toISOString() }));
 }
 
 /** Vérifie que name/tag sont libres (check applicatif doublant la contrainte DB unique). */
@@ -246,8 +270,8 @@ async function memberCount(tribeId: string): Promise<number> {
   return tribe?.count ?? 0;
 }
 
-/** GET /api/tribes/:id/posts — posts tribu (cursor). */
-export async function tribePosts(tribeId: string, cursor: string | undefined, limit: number): Promise<{ posts: schema.Post[]; nextCursor: string | null }> {
+/** GET /api/tribes/:id/posts — posts tribu (cursor), hydratés (auteur, likes, votes). */
+export async function tribePosts(tribeId: string, viewerId: string, cursor: string | undefined, limit: number): Promise<{ posts: Awaited<ReturnType<typeof getPostsByIds>>; nextCursor: string | null }> {
   const query = db
     .select()
     .from(schema.posts)
@@ -258,7 +282,8 @@ export async function tribePosts(tribeId: string, cursor: string | undefined, li
   const hasMore = rows.length > limit;
   const page = rows.slice(0, limit);
   const nextCursor = hasMore ? page[page.length - 1]?.createdAt.toISOString() ?? null : null;
-  return { posts: page, nextCursor };
+  const posts = await getPostsByIds(page.map((p) => p.id), viewerId);
+  return { posts, nextCursor };
 }
 
 /** POST /api/tribu/posts/:id/upvote — toggle up/down. */

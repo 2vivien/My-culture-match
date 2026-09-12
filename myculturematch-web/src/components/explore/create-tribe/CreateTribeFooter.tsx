@@ -1,5 +1,6 @@
 import React from 'react';
 import { cn } from '@/src/lib/utils';
+import { useUIStore } from '@/src/stores/useUIStore';
 
 interface CreateTribeFooterProps {
   step: number;
@@ -24,8 +25,15 @@ export const CreateTribeFooter: React.FC<CreateTribeFooterProps> = ({
   tribeName,
   tribeDescription,
 }) => {
+  const tribeCreateError = useUIStore((s) => s.tribeCreateError);
   return (
-    <div className="flex items-center justify-between pt-3 border-t border-app-border/40 dark:border-zinc-800/40 select-none">
+    <div className="flex flex-col gap-2.5 pt-3 border-t border-app-border/40 dark:border-zinc-800/40 select-none">
+      {tribeCreateError && (
+        <p className="text-[11px] font-bold text-[#E27D60] bg-[#E27D60]/10 border border-[#E27D60]/25 rounded-xl px-3 py-2">
+          {tribeCreateError}
+        </p>
+      )}
+      <div className="flex items-center justify-between">
       {/* Dots */}
       <div className="flex gap-2">
         {[1, 2, 3, 4].map((stepNum) => (
@@ -113,6 +121,7 @@ export const CreateTribeFooter: React.FC<CreateTribeFooterProps> = ({
             Done
           </button>
         )}
+      </div>
       </div>
     </div>
   );

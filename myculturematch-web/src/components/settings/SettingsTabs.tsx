@@ -20,7 +20,7 @@ export const SettingsTabs: React.FC<SettingsTabsProps> = ({ activeTab, setActive
             key={tab}
             onClick={() => setActiveTab(tab)}
             className={cn(
-              "px-4.5 py-2 text-xs font-black rounded-full cursor-pointer tracking-wider transition-all relative",
+              "px-5 py-2.5 text-sm font-black rounded-full cursor-pointer tracking-wide transition-all relative",
               isActive 
                 ? "text-[#E27D60] dark:text-[#E27D60]" 
                 : "text-app-gray hover:text-app-black dark:hover:text-zinc-200"

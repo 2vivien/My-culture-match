@@ -2,62 +2,77 @@ import React from 'react';
 import { ChatMessage } from '@/src/types/chat.types';
 import { cn } from '@/src/lib/utils';
 import { Volume2, FileText, CheckCheck } from 'lucide-react';
+import { IconRobot } from '@tabler/icons-react';
 
 interface BubbleProps {
   message: ChatMessage;
+  /** Ouvre l'assistante Lyra à côté de ce message (seulement pour les messages reçus). */
+  onAskLyra?: (message: ChatMessage) => void;
 }
 
-export const ChatMessageBubble: React.FC<BubbleProps> = ({ message }) => {
+export const ChatMessageBubble: React.FC<BubbleProps> = ({ message, onAskLyra }) => {
   const isMe = message.senderId === 'me';
 
   return (
     <div className={cn('flex flex-col mb-3 animate-fade-in max-w-[85%]', isMe ? 'ml-auto items-end' : 'mr-auto items-start')}>
       <span className="text-[10px] text-app-gray dark:text-zinc-500 mb-1 px-1.5 select-none font-medium">
         {message.senderName} • {message.time}
-      </span>
+      </span>      <div className={cn('group/bubble flex items-end gap-1.5', isMe ? 'flex-row-reverse' : '')}>
+        <div
+          className={cn(
+            'p-4 rounded-2xl text-sm leading-relaxed shadow-xs relative border font-medium select-text',
+            isMe
+              ? 'bg-[#E27D60] text-white border-[#E27D60] rounded-tr-sm'
+              : 'bg-[#FCFCFC] text-app-black dark:bg-zinc-900 dark:text-zinc-100 border-[#ECECEC] dark:border-zinc-800 rounded-tl-sm'
+          )
+        }>
+          {message.text && <p className="whitespace-pre-wrap">{message.text}</p>}
 
-      <div
-        className={cn(
-          'p-3.5 rounded-2xl text-xs leading-relaxed shadow-xs relative border font-medium select-text',
-          isMe
-            ? 'bg-app-black text-white dark:bg-white dark:text-app-black border-app-black dark:border-white rounded-tr-sm'
-            : 'bg-[#FCFCFC] text-app-black dark:bg-zinc-900 dark:text-zinc-100 border-[#ECECEC] dark:border-zinc-800 rounded-tl-sm'
-        )}
-      >
-        {message.text && <p className="whitespace-pre-wrap">{message.text}</p>}
+          {message.img && (
+            <div className="rounded-xl overflow-hidden mt-1.5 border border-app-border dark:border-zinc-800">
+              <img src={message.img} alt="attachment" className="max-w-full max-h-48 object-cover" referrerPolicy="no-referrer" />
+            </div>
+          )}
 
-        {message.img && (
-          <div className="rounded-xl overflow-hidden mt-1.5 border border-app-border dark:border-zinc-800">
-            <img src={message.img} alt="attachment" className="max-w-full max-h-48 object-cover" referrerPolicy="no-referrer" />
-          </div>
-        )}
-
-        {message.audioDur && (
-          <div className="flex items-center gap-3 py-1 font-semibold text-xs select-none">
-            <button className="w-8 h-8 rounded-full bg-[#E27D60]/10 text-[#E27D60] flex items-center justify-center cursor-pointer shrink-0">
-              <Volume2 className="w-4 h-4" />
-            </button>
-            <div>
-              <div className="flex gap-0.5 items-end h-4 w-28">
-                {[2, 4, 3, 5, 2, 6, 4, 7, 3, 5, 4, 2].map((h, i) => (
-                  <span key={i} className="bg-[#E27D60] dark:bg-[#E27D60] w-[2px] rounded-full" style={{ height: `${h * 2}px` }} />
-                ))}
+          {message.audioDur && (
+            <div className="flex items-center gap-3 py-1 font-semibold text-xs select-none">
+              <button className="w-8 h-8 rounded-full bg-[#E27D60]/10 text-[#E27D60] flex items-center justify-center cursor-pointer shrink-0">
+                <Volume2 className="w-4 h-4" />
+              </button>
+              <div>
+                <div className="flex gap-0.5 items-end h-4 w-28">
+                  {[2, 4, 3, 5, 2, 6, 4, 7, 3, 5, 4, 2].map((h, i) => (
+                    <span key={i} className="bg-[#E27D60] dark:bg-[#E27D60] w-[2px] rounded-full" style={{ height: `${h * 2}px` }} />
+                  ))}
+                </div>
+                <p className="text-[9px] text-app-gray dark:text-zinc-400 mt-0.5">Voice Note • {message.audioDur}</p>
               </div>
-              <p className="text-[9px] text-app-gray dark:text-zinc-400 mt-0.5">Voice Note • {message.audioDur}</p>
             </div>
-          </div>
-        )}
+          )}
 
-        {message.file && (
-          <div className="flex items-center gap-2.5 py-1 text-xs select-none">
-            <div className="w-8 h-8 rounded-lg bg-orange-500/10 text-orange-600 flex items-center justify-center shrink-0">
-              <FileText className="w-4 h-4" />
+          {message.file && (
+            <div className="flex items-center gap-2.5 py-1 text-xs select-none">
+              <div className="w-8 h-8 rounded-lg bg-orange-500/10 text-orange-600 flex items-center justify-center shrink-0">
+                <FileText className="w-4 h-4" />
+              </div>
+              <div className="min-w-0">
+                <p className="font-bold truncate text-app-black dark:text-zinc-200">{message.file.name}</p>
+                <p className="text-[9px] text-app-gray dark:text-zinc-500">{message.file.size}</p>
+              </div>
             </div>
-            <div className="min-w-0">
-              <p className="font-bold truncate text-app-black dark:text-zinc-200">{message.file.name}</p>
-              <p className="text-[9px] text-app-gray dark:text-zinc-500">{message.file.size}</p>
-            </div>
-          </div>
+          )}
+        </div>
+
+        {/* Lyra — juste l'icône robot, en bas derrière la bulle, visible au hover */}
+        {!isMe && onAskLyra && (
+          <button
+            type="button"
+            onClick={() => onAskLyra(message)}
+            title="Propositions de réponse"
+            className="opacity-0 group-hover/bubble:opacity-100 focus-visible:opacity-100 transition-opacity w-9 h-9 rounded-full bg-white dark:bg-zinc-900 border border-app-border dark:border-zinc-700 text-violet-500 hover:text-[#E27D60] hover:scale-110 shadow-sm flex items-center justify-center cursor-pointer shrink-0 mb-0.5"
+          >
+            <IconRobot size={16} />
+          </button>
         )}
       </div>
 

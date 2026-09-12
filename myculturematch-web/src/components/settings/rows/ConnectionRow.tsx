@@ -23,10 +23,10 @@ export const ConnectionRow: React.FC<ConnectionRowProps> = ({
           {icon}
         </div>
         <div>
-          <h4 className="font-extrabold text-xs text-app-black dark:text-zinc-200 leading-snug">
+          <h4 className="font-extrabold text-sm text-app-black dark:text-zinc-200 leading-snug">
             {title}
           </h4>
-          <p className="text-[10.5px] text-app-gray dark:text-zinc-400 leading-snug mt-0.5">
+          <p className="text-xs text-app-gray dark:text-zinc-400 leading-snug mt-0.5">
             {description}
           </p>
         </div>
@@ -35,7 +35,7 @@ export const ConnectionRow: React.FC<ConnectionRowProps> = ({
       <button
         onClick={onToggle}
         className={cn(
-          "px-5 py-2 rounded-full text-xs font-black transition-all cursor-pointer",
+          "px-5 py-2 rounded-full text-sm font-black transition-all cursor-pointer",
           isConnected 
             ? "border border-app-border hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900 text-app-black dark:text-zinc-200" 
             : "bg-[#E27D60] hover:bg-[#c66b50] text-white"

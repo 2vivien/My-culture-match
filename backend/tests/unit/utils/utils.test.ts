@@ -31,10 +31,10 @@ describe('âge', () => {
     expect(calculateAge(birth)).toBe(25);
   });
 
-  it('isAdult : 18 ans minimum', () => {
+  it('isAdult : 16 ans minimum', () => {
     const now = new Date();
-    expect(isAdult(new Date(now.getFullYear() - 18, now.getMonth(), now.getDate()))).toBe(true);
-    expect(isAdult(new Date(now.getFullYear() - 17, now.getMonth(), now.getDate()))).toBe(false);
+    expect(isAdult(new Date(now.getFullYear() - 16, now.getMonth(), now.getDate()))).toBe(true);
+    expect(isAdult(new Date(now.getFullYear() - 15, now.getMonth(), now.getDate()))).toBe(false);
   });
 });
 

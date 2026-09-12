@@ -15,6 +15,15 @@ const occupationSchema = z
  */
 export const profilePatchSchema = z
   .object({
+    name: z.string().trim().min(2, 'Nom : 2 caractères minimum').max(50).optional(),
+    /** Photo de profil / bannière : URL publique (MinIO) produite par /api/uploads. */
+    avatar: z.string().trim().url('URL avatar invalide').max(2048).optional(),
+    banner: z.string().trim().url('URL bannière invalide').max(2048).optional(),
+    location: z.string().trim().max(100).optional(),
+    country: z.string().trim().max(80).optional(),
+    region: z.string().trim().max(80).optional(),
+    ethnicity: z.string().trim().max(80).optional(),
+    village: z.string().trim().max(80).optional(),
     occupation: occupationSchema.optional(),
     values: z.array(z.string().trim().min(1).max(50)).max(12).optional(),
     preference: z.string().trim().max(100).optional(),

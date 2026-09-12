@@ -23,7 +23,7 @@ export interface ConversationSummary {
   lastMessage: string | null;
   lastMessageAt: string;
   unreadCount: number;
-  participant: { id: string; name: string; avatar: string | null } | null;
+  participant: { id: string; name: string; username: string; avatar: string | null } | null;
 }
 
 export interface ChatMessageDto {
@@ -142,6 +142,7 @@ async function getConversationSummary(conversationId: string, userId: string): P
     .select({
       userId: schema.conversationParticipants.userId,
       name: schema.users.name,
+      username: schema.users.username,
       avatar: schema.users.avatar,
     })
     .from(schema.conversationParticipants)
@@ -153,7 +154,7 @@ async function getConversationSummary(conversationId: string, userId: string): P
       ),
     );
 
-  const other = others[0] ? { id: others[0].userId, name: others[0].name, avatar: others[0].avatar } : null;
+  const other = others[0] ? { id: others[0].userId, name: others[0].name, username: others[0].username, avatar: others[0].avatar } : null;
   const online = other ? await isUserOnline(other.id) : false;
 
   return {

@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FileText, Images, SquarePlay, ArchiveRestore, Info, Bookmark } from 'lucide-react';
+import { FileText, Images, SquarePlay, Info, Bookmark } from 'lucide-react';
 import { useTotemProfile } from '@/src/hooks/useTotemProfile';
 import { useUIStore } from '@/src/stores/useUIStore';
 import { useFeed } from '@/src/hooks/useFeed';
@@ -10,7 +10,6 @@ import { ProfileCompletionPanel } from '@/src/components/profile/ProfileCompleti
 import { PostsTab } from './tabs/PostsTab';
 import { PhotosTab } from './tabs/PhotosTab';
 import { VideosTab } from './tabs/VideosTab';
-import { TraditionsTab } from './tabs/TraditionsTab';
 import { AboutTab } from './tabs/AboutTab';
 import { SavesTab } from './tabs/SavesTab';
 
@@ -33,12 +32,12 @@ export const TotemProfile: React.FC = () => {
   };
 
   const profileTabs = [
-    { id: 'Posts', icon: FileText, label: 'Posts' },
+    { id: 'Posts', icon: FileText, label: 'Traditions' },
     { id: 'Photos', icon: Images, label: 'Photos' },
     { id: 'Videos', icon: SquarePlay, label: 'Vidéos' },
-    { id: 'Traditions', icon: ArchiveRestore, label: 'Traditions' },
     { id: 'About', icon: Info, label: 'À propos' },
-    ...(isOwnProfile ? [{ id: 'Saves', icon: Bookmark, label: 'Enregistrements' }] : []),
+    // Save : les posts enregistrés — uniquement sur son propre profil.
+    ...(isOwnProfile ? [{ id: 'Saves', icon: Bookmark, label: 'Save' }] : []),
   ];
 
   return (
@@ -79,15 +78,11 @@ export const TotemProfile: React.FC = () => {
           )}
 
           {activeTab === 'Photos' && (
-            <PhotosTab key="photos" />
+            <PhotosTab key="photos" posts={posts} />
           )}
 
           {activeTab === 'Videos' && (
-            <VideosTab key="videos" />
-          )}
-
-          {activeTab === 'Traditions' && (
-            <TraditionsTab key="traditions" user={user} />
+            <VideosTab key="videos" posts={posts} />
           )}
 
           {activeTab === 'About' && (

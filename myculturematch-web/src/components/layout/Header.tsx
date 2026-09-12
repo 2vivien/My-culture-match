@@ -7,13 +7,15 @@ import { useAppStore } from '@/src/stores/useAppStore';
 import { TotemAvatar } from '@/src/components/ui/TotemAvatar';
 import { NotificationDropdown } from './parts/NotificationDropdown';
 import { UserProfileDropdown } from './parts/UserProfileDropdown';
+import { useUnreadMessagesCount } from '@/src/hooks/useUnreadMessagesCount';
 
 import { AnimatePresence } from 'framer-motion';
 
 export const Header = () => {
   const { toggleSidebar, notificationsCount, setActiveTab, openChat } = useUIStore();
   const { currentUser } = useAppStore();
-  
+  const { data: unreadMessages } = useUnreadMessagesCount();
+
   const [showNotif, setShowNotif] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
 
@@ -29,10 +31,6 @@ export const Header = () => {
     document.addEventListener('mousedown', clickOutside);
     return () => document.removeEventListener('mousedown', clickOutside);
   }, []);
-
-  const formatCount = (count: number) => {
-    return count < 10 ? `0${count}` : count.toString();
-  };
 
   return (
     <header className="h-20 md:h-24 px-4 sm:px-6 md:px-10 flex items-center justify-between gap-4 shrink-0 bg-[#FEFEFE]/85 dark:bg-[#0d1117]/80 backdrop-blur-md sticky top-0 z-40 w-full border-b border-app-border/40 dark:border-zinc-800/40">
@@ -55,7 +53,7 @@ export const Header = () => {
         {/* Create Tradition Action Button */}
         <button
           onClick={() => setActiveTab('Create')}
-          className="h-10 w-10 md:h-12 md:w-auto md:px-6 rounded-full bg-app-black text-white dark:bg-white dark:text-app-black font-extrabold text-xs shadow-sm hover:opacity-90 hover:scale-[1.02] tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer uppercase shrink-0"
+          className="h-10 w-10 md:h-12 md:w-auto md:px-6 rounded-full bg-white dark:bg-zinc-900 text-app-black dark:text-zinc-100 border border-app-border dark:border-zinc-700 font-extrabold text-xs shadow-sm hover:shadow-md hover:scale-[1.02] tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer uppercase shrink-0"
           title="Create a tradition"
         >
           <SquarePen className="w-5 h-5 md:w-4 md:h-4" />
@@ -69,9 +67,11 @@ export const Header = () => {
           title="Messages"
         >
           <SandboxIcon className="w-4.5 h-4.5 md:w-5 md:h-5 text-app-black dark:text-zinc-300" />
-          <span className="absolute -top-1 -right-1.5 min-w-[16px] h-4 px-1 rounded-full flex items-center justify-center bg-[#E27D60] text-[9px] font-black text-white shadow-sm animate-pulse">
-            99+
-          </span>
+          {(unreadMessages ?? 0) > 0 && (
+            <span className="absolute -top-1 -right-1.5 min-w-[16px] h-4 px-1 rounded-full flex items-center justify-center bg-[#E27D60] text-[9px] font-black text-white shadow-sm">
+              {String(unreadMessages ?? 0)}
+            </span>
+          )}
         </button>
 
         {/* Notification Icon and Trigger */}
@@ -79,8 +79,8 @@ export const Header = () => {
           <button onClick={() => setShowNotif(!showNotif)} className="w-10 h-10 md:w-12 md:h-12 bg-white dark:bg-zinc-900 rounded-full shadow-sm border border-app-border dark:border-zinc-800 flex items-center justify-center text-app-gray hover:text-app-black dark:hover:text-white hover:shadow-md transition-all relative cursor-pointer">
             <Bell className="w-4.5 h-4.5 md:w-5 md:h-5 text-app-black dark:text-zinc-300" />
             {notificationsCount > 0 && (
-              <span className="absolute -top-1 -right-1.5 min-w-[16px] h-4 px-1 rounded-full flex items-center justify-center bg-[#E27D60] text-[9px] font-black text-white shadow-sm animate-pulse">
-                {formatCount(notificationsCount)}
+              <span className="absolute -top-1 -right-1.5 min-w-[16px] h-4 px-1 rounded-full flex items-center justify-center bg-[#E27D60] text-[9px] font-black text-white shadow-sm">
+                {String(notificationsCount)}
               </span>
             )}
           </button>
@@ -90,9 +90,9 @@ export const Header = () => {
         {/* User Profile Avatar and Trigger (Desktop only) */}
         <div ref={profileRef} className="hidden md:block relative shrink-0">
           <div onClick={() => setShowProfile(!showProfile)} className="bg-white dark:bg-zinc-900 p-0.5 md:pl-2.5 md:pr-4 md:py-1.5 rounded-full shadow-sm border border-app-border dark:border-zinc-800 flex items-center gap-2 cursor-pointer hover:shadow-md transition-all">
-            <TotemAvatar size="xs" src={currentUser.avatar} alt={currentUser.name} glow={currentUser.glow} />
+            <TotemAvatar size="xs" src={currentUser.avatar} alt={currentUser.name} countryFlag={currentUser.country} glow={currentUser.glow} />
             <div className="hidden md:flex items-center gap-1.5">
-              <span className="text-xs font-black text-app-black dark:text-zinc-200">{currentUser.name}</span>
+              <span className="text-xs font-black text-app-black dark:text-zinc-200">{currentUser.username}</span>
               <ChevronDown className="w-3.5 h-3.5 text-app-gray transition-transform duration-250 group-hover:translate-y-0.5" />
             </div>
           </div>

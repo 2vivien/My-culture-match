@@ -8,6 +8,7 @@ import { createSession, revokeSession, verifySession } from './session.service';
 import { verifyIdToken, type OAuthProvider } from './oauth.service';
 import { sendOtpEmail } from '../email/otp.templates';
 import { verifyTotpCode } from '../../shared/utils/totp';
+import { detectLocationForUser } from '../../shared/utils/geo';
 
 const LOCK_THRESHOLD = 5;
 const LOCK_DURATION_MS = 30 * 60 * 1000; // 30 minutes
@@ -145,6 +146,9 @@ export async function verifyOtpAndLogin(
     .set({ failedLoginAttempts: 0, lockedUntil: null, lastLoginAt: new Date(), updatedAt: new Date() })
     .where(eq(schema.users.id, user.id));
 
+  // Détection silencieuse de la localisation par IP (pré-remplissage, non bloquant)
+  void detectLocationForUser(user.id, meta.ip);
+
   // 2FA activée → pré-auth (ticket) en attendant le code TOTP
   const twoFactor = await maybeRequireTwoFactor(user);
   if (twoFactor) return twoFactor;
@@ -215,6 +219,8 @@ export async function loginWithOAuth(
 
   if (!oauthLink) {
     const { user, isNewUser } = await ensureUser(claims.email, claims.name);
+    // Détection silencieuse de la localisation par IP (pré-remplissage, non bloquant)
+    void detectLocationForUser(user.id, meta.ip);
     await db.insert(schema.userOAuthAccounts).values({
       userId: user.id,
       provider,

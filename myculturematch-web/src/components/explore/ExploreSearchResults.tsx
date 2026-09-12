@@ -85,7 +85,7 @@ export const ExploreSearchResults: React.FC<ExploreSearchResultsProps> = ({ quer
                 <div className="min-w-0">
                   <p className="font-extrabold text-sm text-app-black dark:text-zinc-100 truncate">{user.name}</p>
                   <p className="text-[10px] text-app-gray dark:text-zinc-400 font-bold uppercase tracking-wider truncate">
-                    @{user.username}{user.country ? ` · ${user.country}` : ''}
+                    {user.username}{user.country ? ` · ${user.country}` : ''}
                   </p>
                 </div>
               </button>

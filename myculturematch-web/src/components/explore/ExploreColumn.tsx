@@ -6,14 +6,14 @@ import { ExploreHeader } from './ExploreHeader';
 import { ExploreTabs } from './ExploreTabs';
 import { ExploreCategories } from './ExploreCategories';
 import { ExploreTribesTab } from './ExploreTribesTab';
-import { ExploreConnectionsTab } from './ExploreConnectionsTab';
-import { ExploreImagesTab } from './ExploreImagesTab';
+import { ExploreTraditionsTab } from './ExploreTraditionsTab';
 import { ExploreVideosTab } from './ExploreVideosTab';
-import { ExploreLightbox } from './ExploreLightbox';
 import { ExploreSearchResults } from './ExploreSearchResults';
+import { useFeed } from '@/src/hooks/useFeed';
 
 export const ExploreColumn: React.FC = () => {
   const { setActiveTab } = useUIStore();
+  const { posts } = useFeed();
   const {
     activeSubTab,
     setActiveSubTab,
@@ -21,16 +21,12 @@ export const ExploreColumn: React.FC = () => {
     setActiveCategory,
     searchQuery,
     setSearchQuery,
-    lightboxImage,
-    setLightboxImage,
     filteredTribes,
     moreTribes,
-    filteredCompanions,
-    filteredImages,
+    filteredTraditions,
     filteredVideos,
     toggleJoinTribe,
-    toggleConnectCompanion,
-  } = useExplore();
+  } = useExplore(posts);
 
   const showSearchResults = searchQuery.trim().length >= 2;
 
@@ -49,13 +45,11 @@ export const ExploreColumn: React.FC = () => {
           />
 
           {/* Category Pills list */}
-          {activeSubTab !== 'Connexion' && (
-            <ExploreCategories
-              activeSubTab={activeSubTab}
-              activeCategory={activeCategory}
-              setActiveCategory={setActiveCategory}
-            />
-          )}
+          <ExploreCategories
+            activeSubTab={activeSubTab}
+            activeCategory={activeCategory}
+            setActiveCategory={setActiveCategory}
+          />
 
           {/* Main scrollable contents window */}
           <div className="flex-1 overflow-y-auto pr-1 select-none hide-scrollbar">
@@ -69,18 +63,8 @@ export const ExploreColumn: React.FC = () => {
                 />
               )}
 
-              {activeSubTab === 'Connexion' && (
-                <ExploreConnectionsTab
-                  filteredCompanions={filteredCompanions}
-                  toggleConnectCompanion={toggleConnectCompanion}
-                />
-              )}
-
-              {activeSubTab === 'Images' && (
-                <ExploreImagesTab
-                  filteredImages={filteredImages}
-                  setLightboxImage={setLightboxImage}
-                />
+              {activeSubTab === 'Traditions' && (
+                <ExploreTraditionsTab posts={posts} />
               )}
 
               {activeSubTab === 'Vidéo' && (
@@ -96,12 +80,6 @@ export const ExploreColumn: React.FC = () => {
           <ExploreSearchResults query={searchQuery} />
         </div>
       )}
-
-      {/* Fullscreen image viewer */}
-      <ExploreLightbox
-        lightboxImage={lightboxImage}
-        setLightboxImage={setLightboxImage}
-      />
     </div>
   );
 };

@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useAppStore } from '@/src/stores/useAppStore';
 import { userService } from '@/src/services/userService';
+import { connectionsService } from '@/src/services/connectionsService';
 import type { CurrentUser } from '@/src/types/user';
 
 const COUNTRY_CODES: Record<string, string> = {
@@ -13,6 +14,8 @@ const COUNTRY_CODES: Record<string, string> = {
   'ivory coast': 'ci', ghana: 'gh', nigeria: 'ng', kenya: 'ke',
   tanzania: 'tz', peru: 'pe', colombia: 'co', argentina: 'ar',
   chile: 'cl', norway: 'no', sweden: 'se', denmark: 'dk',
+  togo: 'tg', cameroon: 'cm', mali: 'ml', 'burkina faso': 'bf',
+  guinea: 'gn', niger: 'ne', 'united states': 'us',
 };
 
 const COUNTRY_CITIES: Record<string, string> = {
@@ -35,6 +38,10 @@ function getCountryCode(location: string): string {
 }
 
 function getCityAndCountry(location: string): { city: string; country: string } {
+  if (location.includes(',')) {
+    const parts = location.split(',');
+    return { city: parts[0]?.trim() ?? '', country: parts[1]?.trim() ?? '' };
+  }
   if (location.includes(' - ')) {
     const parts = location.split(' - ');
     return { city: parts[0], country: parts[1] };
@@ -50,18 +57,49 @@ function hydrateCurrentUser(id: string, apiUser: Partial<CurrentUser> | undefine
   return {
     id: apiUser?.id ?? fallback.id ?? id,
     name: apiUser?.name ?? fallback.name ?? 'Utilisateur',
+    username: apiUser?.username ?? fallback.username ?? 'user',
     avatar: apiUser?.avatar ?? fallback.avatar ?? '',
     locale: apiUser?.locale ?? fallback.locale ?? 'fr',
-    level: fallback.level ?? 1,
-    glow: (fallback.glow ?? 'orange') as CurrentUser['glow'],
+    level: apiUser?.level ?? fallback.level ?? 1,
+    glow: (apiUser?.glow ?? fallback.glow ?? 'none') as CurrentUser['glow'],
     tribes: apiUser?.tribes ?? fallback.tribes ?? [],
     traditionsCount: apiUser?.traditionsCount ?? fallback.traditionsCount ?? 0,
     culturesCount: apiUser?.culturesCount ?? fallback.culturesCount ?? 0,
     tribesCount: apiUser?.tribesCount ?? fallback.tribesCount ?? 0,
-    location: apiUser?.location ?? fallback.location ?? 'Bénin',
+    location: apiUser?.location ?? fallback.location ?? '',
+    country: apiUser?.country ?? fallback.country ?? '',
+    bio: apiUser?.bio ?? fallback.bio ?? null,
+    age: (apiUser as { age?: number | null })?.age ?? fallback.age ?? null,
     interestedCount: apiUser?.interestedCount ?? fallback.interestedCount ?? 0,
     companionsCount: apiUser?.companionsCount ?? fallback.companionsCount ?? 0,
     role: apiUser?.role ?? fallback.role ?? 'user',
+  };
+}
+
+/** Statut de connexion réel avec un autre utilisateur (API connections). */
+function useConnectionState(targetId: string, isOwn: boolean) {
+  const { data: companions } = useQuery({
+    queryKey: ['connections', 'companions'],
+    queryFn: connectionsService.getCompanions,
+    enabled: !isOwn,
+    staleTime: 1000 * 60 * 3,
+  });
+
+  const isConnected = Boolean(companions?.some((c) => c.id === targetId));
+  // 'sent' = demande déjà émise (on ne re-vérifie pas les 'request' sortants côté API pour l'instant)
+  const [pendingSent, setPendingSent] = useState(false);
+
+  useEffect(() => {
+    setPendingSent(false);
+  }, [targetId]);
+
+  return {
+    connectionState: (isConnected ? 'connected' : pendingSent ? 'pending' : 'none') as 'none' | 'pending' | 'connected',
+    connect: async () => {
+      if (isConnected || pendingSent) return;
+      await connectionsService.sendRequest(targetId);
+      setPendingSent(true);
+    },
   };
 }
 
@@ -73,26 +111,27 @@ export function useTotemProfile() {
     currentUser,
   } = useAppStore();
 
-  const targetId = selectedTotemUserId && selectedTotemUserId !== currentUser.id ? selectedTotemUserId : currentUser.id;
+  // 'user-current' est le placeholder du store persisté : on le remplace par le
+  // vrai id courant pour que l'API renvoie les VRAIES stats (jamais des mocks).
+  const fallbackId = currentUser.id === 'user-current' ? selectedTotemUserId : currentUser.id;
+  const targetId = selectedTotemUserId && selectedTotemUserId !== 'user-current' ? selectedTotemUserId : (fallbackId ?? 'user-current');
 
-  const { data: apiUser } = useQuery<Partial<CurrentUser>>({
+  const { data: apiUser, refetch: refetchUser } = useQuery<Partial<CurrentUser>>({
     queryKey: ['user', targetId],
     queryFn: () => userService.fetchUserById(targetId),
     enabled: !!targetId,
-    staleTime: 1000 * 60 * 5,
+    staleTime: 1000 * 30,
   });
 
   const user = hydrateCurrentUser(targetId, apiUser, currentUser);
-  const [connectionState, setConnectionState] = useState<'none' | 'pending' | 'connected'>('none');
 
   const isOwnProfile = targetId === currentUser.id;
 
+  const { connectionState, connect } = useConnectionState(targetId, isOwnProfile);
+
   const toggleConnection = () => {
-    setConnectionState((prev) => {
-      if (prev === 'none') return 'pending';
-      if (prev === 'pending') return 'connected';
-      return 'none';
-    });
+    if (isOwnProfile || connectionState === 'connected') return;
+    connect().catch(() => undefined);
   };
 
   return {
@@ -102,6 +141,7 @@ export function useTotemProfile() {
     setActiveTab,
     connectionState,
     toggleConnection,
+    refetchUser,
     getCountryCode,
     getCityAndCountry,
     isOwnProfile,

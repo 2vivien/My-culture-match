@@ -23,7 +23,7 @@ export const UserRow: React.FC<UserRowProps> = ({ user, onConnect, isInterested 
       <div className="flex items-center gap-4 flex-1 min-w-0">
         <div className="relative shrink-0 select-none">
           <TotemAvatar src={user.avatar} alt={user.name} size="md" glow="turquoise" />
-          <div className="absolute -bottom-1 -right-1 bg-app-black dark:bg-zinc-800 text-white text-[8px] font-black w-5.5 h-5.5 rounded-full flex items-center justify-center border border-white dark:border-zinc-900 uppercase shadow-sm">
+          <div className="absolute -bottom-1 -right-1 bg-white dark:bg-zinc-800 text-app-black dark:text-white text-[8px] font-black w-5.5 h-5.5 rounded-full flex items-center justify-center border border-white dark:border-zinc-900 uppercase shadow-sm">
             {user.countryCode}
           </div>
         </div>

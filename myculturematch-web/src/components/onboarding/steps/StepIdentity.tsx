@@ -38,7 +38,7 @@ export const StepIdentity: React.FC<StepIdentityProps> = ({
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="Ex: Amal Bénin, Malik Diop..."
+            placeholder="Ex: Emma Martin, Awa Diallo, Kwame Mensah..."
             className="w-full p-4 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 focus:border-primary dark:focus:border-primary rounded-2xl outline-none text-zinc-900 dark:text-white text-base transition-colors"
             required
           />
@@ -49,15 +49,12 @@ export const StepIdentity: React.FC<StepIdentityProps> = ({
             Nom d'utilisateur (Username)
           </label>
           <div className="relative">
-            <span className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-zinc-400 font-bold">
-              @
-            </span>
             <input
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9._]/g, ''))}
               placeholder="nomutilisateur"
-              className="w-full pl-8 pr-4 py-4 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 focus:border-primary dark:focus:border-primary rounded-2xl outline-none text-zinc-900 dark:text-white text-base transition-colors"
+              className="w-full px-4 py-4 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 focus:border-primary dark:focus:border-primary rounded-2xl outline-none text-zinc-900 dark:text-white text-base transition-colors"
               required
             />
           </div>
@@ -74,7 +71,7 @@ export const StepIdentity: React.FC<StepIdentityProps> = ({
                   onClick={() => setUsername(sug)}
                   className="px-3 py-1.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-full text-xs font-bold hover:bg-primary hover:text-white dark:hover:bg-primary transition-colors cursor-pointer border border-zinc-200 dark:border-zinc-700"
                 >
-                  @{sug}
+                  {sug}
                 </button>
               ))}
             </div>

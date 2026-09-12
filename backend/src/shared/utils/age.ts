@@ -1,5 +1,5 @@
 /** Âge minimum requis pour le produit. */
-export const MIN_AGE = 18;
+export const MIN_AGE = 16;
 
 /** Calcule l'âge en années révolues à partir d'une date de naissance. */
 export function calculateAge(birthdate: Date): number {
@@ -12,7 +12,7 @@ export function calculateAge(birthdate: Date): number {
   return age;
 }
 
-/** Vérifie que l'utilisateur a au moins 18 ans. */
+/** Vérifie que l'utilisateur a au moins 16 ans. */
 export function isAdult(birthdate: Date): boolean {
   return calculateAge(birthdate) >= MIN_AGE;
 }

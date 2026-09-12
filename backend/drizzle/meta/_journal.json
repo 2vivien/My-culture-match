@@ -57,6 +57,20 @@
       "when": 1786466807561,
       "tag": "0007_vengeful_speedball",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1789068185058,
+      "tag": "0008_add_banner",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1789068186000,
+      "tag": "0009_add_repost",
+      "breakpoints": true
     }
   ]
 }

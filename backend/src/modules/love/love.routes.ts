@@ -3,7 +3,7 @@ import { zValidator } from '@hono/zod-validator';
 import { requireAuth } from '../auth/require-auth';
 import { swipeSchema } from './love.schemas';
 import { withIdempotency, idempotencyKeyFrom } from '../../shared/utils/idempotency';
-import { getLoveCandidates, getLoveCandidate, swipe } from './love.service';
+import { getLoveCandidates, getLoveCandidate, getActiveLoveMatches, swipe } from './love.service';
 
 const loveRoutes = new Hono();
 
@@ -13,6 +13,13 @@ loveRoutes.use('*', requireAuth);
 loveRoutes.get('/love/matches', async (c) => {
   const { userId } = c.get('auth');
   const { candidates } = await getLoveCandidates(userId);
+  return c.json(candidates, 200);
+});
+
+/** GET /api/love/active — matchs actifs (likes réciproques acceptés). */
+loveRoutes.get('/love/active', async (c) => {
+  const { userId } = c.get('auth');
+  const { candidates } = await getActiveLoveMatches(userId);
   return c.json(candidates, 200);
 });
 

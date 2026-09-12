@@ -11,23 +11,46 @@ const EXTRA_LANGUAGES = [
   { value: 'Soninké', label: 'Soninké' },
   { value: 'Moore', label: 'Moore' },
   { value: 'Bamiléké', label: 'Bamiléké' },
+  { value: 'Peul', label: 'Peul' },
+  { value: 'Twi', label: 'Twi' },
+  { value: 'Éwé', label: 'Éwé' },
+  { value: 'Zoulou', label: 'Zoulou' },
+  { value: 'Kinyarwanda', label: 'Kinyarwanda' },
+  { value: 'Malgache', label: 'Malgache' },
+  { value: 'Kabyle', label: 'Kabyle' },
   { value: 'Créole haïtien', label: 'Créole haïtien' },
   { value: 'Créole antillais', label: 'Créole antillais' },
+  { value: 'Créole mauricien', label: 'Créole mauricien' },
+  { value: 'Allemand', label: 'Allemand' },
+  { value: 'Italien', label: 'Italien' },
+  { value: 'Néerlandais', label: 'Néerlandais' },
 ];
 
 const POPULAR = [
   'Français',
   'Anglais',
-  'Arabe',
   'Espagnol',
+  'Arabe',
   'Portugais',
+  'Allemand',
+  'Italien',
+  'Néerlandais',
   'Wolof',
+  'Bambara',
+  'Soninké',
+  'Peul',
   'Yoruba',
   'Igbo',
   'Haoussa',
-  'Swahili',
+  'Twi',
+  'Éwé',
   'Lingala',
-  'Bambara',
+  'Moore',
+  'Bamiléké',
+  'Swahili',
+  'Zoulou',
+  'Créole haïtien',
+  'Créole antillais',
 ];
 
 export const StepLanguages: React.FC<StepLanguagesProps> = ({ languages, toggleList }) => {
@@ -45,8 +68,6 @@ export const StepLanguages: React.FC<StepLanguagesProps> = ({ languages, toggleL
     );
   }, [libLanguages]);
 
-  const popular = POPULAR.filter((p) => allOptions.some((o) => o.value === p));
-
   return (
     <div className="space-y-8">
       <div className="text-center md:text-left">
@@ -59,27 +80,29 @@ export const StepLanguages: React.FC<StepLanguagesProps> = ({ languages, toggleL
         <label className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider block">
           Vos langues
         </label>
-        <SearchableSelect
-          options={allOptions}
-          value={languages}
-          onChange={(value) => {
-            const list = value as string[];
-            const added = list.find((l) => !languages.includes(l));
-            const removed = languages.find((l) => !list.includes(l));
-            if (added) toggleList('languages', added);
-            if (removed) toggleList('languages', removed);
-          }}
-          placeholder="Recherchez une langue..."
-          multiple
-          loading={isLoading}
-          inputClassName="p-5"
-        />
+        <div className="relative">
+          <SearchableSelect
+            options={allOptions}
+            value={languages}
+            onChange={(value) => {
+              const list = value as string[];
+              const added = list.find((l) => !languages.includes(l));
+              const removed = languages.find((l) => !list.includes(l));
+              if (added) toggleList('languages', added);
+              if (removed) toggleList('languages', removed);
+            }}
+            placeholder="Recherchez une langue..."
+            multiple
+            loading={isLoading}
+            inputClassName="p-5"
+          />
+        </div>
       </div>
 
       <div className="space-y-3">
         <h3 className="text-xs font-black uppercase text-zinc-400 tracking-wider">Langues populaires</h3>
         <div className="flex flex-wrap gap-2">
-          {popular.map((lang) => (
+          {POPULAR.map((lang) => (
             <button
               key={lang}
               type="button"

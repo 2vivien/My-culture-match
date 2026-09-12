@@ -40,7 +40,7 @@ export function OnboardingPage() {
       <OnboardingHeader step={step} />
 
       {/* Main Card Wrapper */}
-      <div className="flex-1 w-full max-w-xl mx-auto flex items-center justify-center z-10 mb-8 animate-all">
+      <div className="flex-1 w-full max-w-xl mx-auto flex items-center justify-center z-20 mb-8 animate-all">
         <div className="w-full bg-white dark:bg-zinc-900 border border-zinc-200/50 dark:border-zinc-800/50 p-6 sm:p-10 rounded-3xl shadow-xl">
           <AnimatePresence mode="wait">
             <motion.div key={step} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.25 }}>

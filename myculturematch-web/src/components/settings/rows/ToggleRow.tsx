@@ -19,8 +19,8 @@ export const ToggleRow: React.FC<ToggleRowProps> = ({
   return (
     <div className="py-4.5 flex items-center justify-between gap-4">
       <div>
-        <h4 className="font-extrabold text-xs text-app-black dark:text-zinc-200">{title}</h4>
-        <p className="text-[10.5px] text-app-gray dark:text-zinc-400 mt-0.5">{description}</p>
+        <h4 className="font-extrabold text-sm text-app-black dark:text-zinc-200">{title}</h4>
+        <p className="text-xs text-app-gray dark:text-zinc-400 mt-0.5">{description}</p>
       </div>
       <button
         onClick={onToggle}

@@ -7,7 +7,7 @@ export const EmailSection: React.FC = () => {
   return (
     <div className="space-y-8 animate-fade-in">
       <div>
-        <h2 className="text-xs uppercase font-extrabold tracking-wider text-app-gray dark:text-zinc-500 mb-4">
+        <h2 className="text-sm uppercase font-extrabold tracking-wider text-app-gray dark:text-zinc-500 mb-4">
           Email Preferences
         </h2>
         <div className="divide-y divide-app-border/40 dark:divide-zinc-800/40">

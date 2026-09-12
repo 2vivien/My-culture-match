@@ -82,7 +82,7 @@ export async function completeOnboarding(input: OnboardingInput): Promise<Onboar
 
   // Âge minimum
   if (!isAdult(input.birthdate)) {
-    throw AppError.forbidden('Vous devez avoir au moins 18 ans', 'UNDERAGE');
+    throw AppError.forbidden('Vous devez avoir au moins 16 ans', 'UNDERAGE');
   }
 
   // Username unique
@@ -110,6 +110,11 @@ export async function completeOnboarding(input: OnboardingInput): Promise<Onboar
       birthdate: input.birthdate,
       age,
       roots: input.roots,
+      country: input.roots.country,
+      region: input.roots.region ?? null,
+      ethnicity: input.roots.ethnicity ?? null,
+      village: input.roots.village ?? null,
+      location: input.location ?? existing.location,
       languages: input.languages,
       intention: input.intention,
       acceptedTermsAt: input.acceptedTermsAt,

@@ -1,5 +1,6 @@
 import { api } from './api';
 import { getAuthToken, setAuthToken, clearAuthToken } from './auth.token';
+import { userService } from './userService';
 import { useAppStore } from '@/src/stores/useAppStore';
 
 export interface AuthUser {
@@ -43,8 +44,25 @@ export const authService = {
         store.loginUser({
           id: session.user.id,
           name: session.user.name ?? session.user.email,
+          username: session.user.username ?? session.user.email.split('@')[0] ?? 'user',
           avatar: session.user.avatar ?? undefined,
         });
+        // Le profil complet (username à jour, pays, tribus…) vient de /api/users/me
+        userService
+          .fetchCurrentUser()
+          .then((me) =>
+            store.loginUser({
+              name: me.name,
+              username: me.username,
+              avatar: me.avatar ?? undefined,
+              location: me.location ?? '',
+              country: me.country ?? '',
+              level: me.level,
+              tribes: me.tribes ?? [],
+              role: me.role,
+            }),
+          )
+          .catch(() => undefined);
         store.setAuthenticated(true);
         store.setOnboarded(true);
       })

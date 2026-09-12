@@ -33,7 +33,7 @@ function UserDetailModal({ user, onClose }: { user: AdminUser; onClose: () => vo
             </div>
             <div>
               <h3 className="text-sm font-bold text-app-black dark:text-white">{user.name}</h3>
-              <p className="text-xs text-app-gray dark:text-zinc-500">@{user.username}</p>
+              <p className="text-xs text-app-gray dark:text-zinc-500">{user.username}</p>
             </div>
           </div>
           <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-800 cursor-pointer bg-transparent border-none">
@@ -191,7 +191,7 @@ export const AdminUsersPage: React.FC = () => {
                         </div>
                         <div className="min-w-0">
                           <p className="text-sm font-semibold text-app-black dark:text-white truncate">{user.name}</p>
-                          <p className="text-[11px] text-app-gray dark:text-zinc-500">@{user.username}</p>
+                          <p className="text-[11px] text-app-gray dark:text-zinc-500">{user.username}</p>
                         </div>
                       </div>
                     </td>

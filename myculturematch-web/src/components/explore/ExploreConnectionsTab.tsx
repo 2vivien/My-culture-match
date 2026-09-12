@@ -22,8 +22,8 @@ export const ExploreConnectionsTab: React.FC<ExploreConnectionsTabProps> = ({
     country: 'Japan',
     countryFlag: '🇯🇵',
     countryCode: comp.name === 'Keisuke' ? 'JP' : comp.name === 'Jumana' ? 'JO' : comp.name === 'Kaelen' ? 'NO' : 'BJ',
-    interestedCount: 125,
-    compagnonsCount: 48,
+    interestedCount: 0,
+    compagnonsCount: 0,
     interests: comp.interests,
     isConnected: comp.connected,
   });

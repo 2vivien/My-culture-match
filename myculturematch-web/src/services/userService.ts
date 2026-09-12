@@ -9,4 +9,8 @@ export const userService = {
   async fetchCurrentUser(): Promise<CurrentUser> {
     return api.get<CurrentUser>('/api/users/me');
   },
+
+  async updateProfile(patch: Record<string, unknown>): Promise<CurrentUser> {
+    return api.patch<CurrentUser>('/api/users/me', patch);
+  },
 };

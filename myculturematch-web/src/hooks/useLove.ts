@@ -29,6 +29,13 @@ export function useLove() {
     staleTime: 1000 * 60 * 5,
   });
 
+  // Matchs ACTIFS = likes réciproques acceptés (avec qui on peut discuter).
+  const { data: activeMatches = [] } = useQuery<LoveMatch[]>({
+    queryKey: ['love-active'],
+    queryFn: () => loveService.fetchActiveMatches(),
+    staleTime: 1000 * 60 * 2,
+  });
+
   const [activeFilter, setActiveFilter] = useState<'All' | 'Online' | 'MatchScore'>('All');
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState<LoveFilters>({
@@ -48,9 +55,8 @@ export function useLove() {
     const isLoved = !lovedIds[id];
     setLovedIds((prev) => ({ ...prev, [id]: isLoved }));
 
+    // Plus de popup de célébration : un seul popup (le détail) à la fois.
     if (isLoved) {
-      setMatchCelebrating(id);
-      
       // Floating hearts animation setup
       const newHearts = Array.from({ length: 8 }).map((_, i) => ({
         id: Date.now() + i,
@@ -100,6 +106,7 @@ export function useLove() {
 
   return {
     matches,
+    activeMatches,
     filteredMatches,
     isLoading,
     error,

@@ -2,13 +2,13 @@ import React from 'react';
 import { useConnections } from '@/src/hooks/useConnections';
 import { cn } from '@/src/lib/utils';
 import { motion } from 'framer-motion';
-import { Compass, MousePointerClick, Plug, Unplug, BluetoothSearching } from 'lucide-react';
+import { MapPin, MousePointerClick, Plug, Unplug, BluetoothSearching } from 'lucide-react';
 
 export const ConnectionsTabs: React.FC = () => {
   const { activeSubTab, setActiveSubTab, suggestionsCount, interestedCount, demandesCount, compagnonsCount } = useConnections();
 
   const tabs = [
-    { key: 'Suggestions', label: 'Suggestions', count: suggestionsCount, icon: Compass, showCount: false },
+    { key: 'Suggestions', label: 'Friends Proximity', count: suggestionsCount, icon: MapPin, showCount: false },
     { key: 'Interested', label: 'Interested', count: interestedCount, icon: MousePointerClick, showCount: true },
     { key: 'Demandes', label: 'Demandes', count: demandesCount, icon: BluetoothSearching, showCount: true },
     { key: 'Compagnons', label: 'Compagnons', count: compagnonsCount, icon: Unplug, showCount: true },

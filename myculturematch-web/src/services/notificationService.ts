@@ -8,23 +8,50 @@ interface BackendNotification {
   target: string | null;
   time: string;
   isUnread: boolean;
-  user: { id: string; name: string; avatar: string | null; label: string; subText?: string };
+  user: { id: string; name: string; username?: string; avatar: string | null; label: string; subText?: string };
 }
+
+/** Textes d'action en anglais selon le type de notification. */
+const ACTION_LABEL_EN: Record<string, string> = {
+  comment: 'commented on your tradition',
+  like: 'liked your tradition',
+  invite: 'sent you a friend request',
+  request: 'sent you a friend request',
+  match: 'is interested in you',
+  message: 'sent you a message',
+  system: 'system',
+};
 
 function mapNotification(n: BackendNotification): NotificationItem {
   return {
     id: n.id,
     user: {
       name: n.user.name,
+      username: n.user.username ?? '',
       avatar: n.user.avatar ?? '',
-      action: n.user.label,
-      target: n.target ?? '',
-      subText: n.user.subText,
+      action: ACTION_LABEL_EN[n.type] ?? n.user.label,
+      // Jamais d'IDs/hashes techniques dans l'affichage (ex: md5 hex).
+      target: '',
+      subText: undefined,
     },
     type: n.type as NotificationItem['type'],
-    time: n.time,
+    time: timeAgo(n.time),
     isUnread: n.isUnread,
   };
+}
+
+/** Convertit une date ISO en temps relatif court ("5 min", "3 h", "2 j"). */
+function timeAgo(iso: string): string {
+  const then = new Date(iso).getTime();
+  if (Number.isNaN(then)) return '';
+  const diffMin = Math.floor((Date.now() - then) / 60000);
+  if (diffMin < 1) return 'now';
+  if (diffMin < 60) return `${diffMin}m`;
+  const diffH = Math.floor(diffMin / 60);
+  if (diffH < 24) return `${diffH}h`;
+  const diffJ = Math.floor(diffH / 24);
+  if (diffJ < 7) return `${diffJ}d`;
+  return new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
 }
 
 export const notificationService = {

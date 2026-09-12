@@ -12,6 +12,7 @@ import {
   sharePost,
   toggleSave,
   deletePost,
+  listSaves,
 } from './posts.service';
 
 /** Routes /api/posts (auth requise). */
@@ -27,6 +28,14 @@ postsModule.post('/', zValidator('json', createPostSchema), async (c) => {
     createPost(userId, input),
   );
   return c.json(post, 201);
+});
+
+// GET /api/posts/saves/list — posts enregistrés par l'utilisateur
+// (déclaré avant '/:id' pour que 'saves' ne soit pas intercepté comme id)
+postsModule.get('/saves/list', async (c) => {
+  const { userId } = c.get('auth');
+  const saves = await listSaves(userId);
+  return c.json({ posts: saves }, 200);
 });
 
 // GET /api/posts/:id — détail

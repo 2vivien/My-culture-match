@@ -10,8 +10,7 @@ interface ExploreCategoriesProps {
 
 const CATEGORIES_MAP = {
   Tribu: ['All', ...launchThemes],
-  Connexion: ['All', '90%+ Matches', 'Shared Totems', 'Active Level'],
-  Images: ['All', ...launchThemes],
+  Traditions: ['All', ...launchThemes],
   Vidéo: ['All', ...launchThemes],
 };
 

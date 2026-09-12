@@ -52,7 +52,7 @@ export const CreateTraditionMediaForm: React.FC<CreateTraditionMediaFormProps> =
           disabled={!mediaPreview || isSubmitting}
           className={`px-8 py-2 rounded-full font-black text-sm tracking-wider transition-all cursor-pointer ${
             mediaPreview && !isSubmitting
-              ? 'bg-app-black hover:bg-zinc-800 text-white dark:bg-white dark:text-app-black dark:hover:bg-zinc-200' 
+              ? 'bg-[#E27D60] hover:bg-[#c66b50] text-white' 
               : 'bg-zinc-200 text-zinc-400 dark:bg-zinc-800 dark:text-zinc-600 cursor-not-allowed'
           }`}
         >

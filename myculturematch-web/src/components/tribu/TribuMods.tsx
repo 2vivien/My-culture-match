@@ -15,6 +15,9 @@ export const TribuMods: React.FC<TribuModsProps> = ({ moderators }) => {
         Tribe Moderators
       </h3>
       <div className="flex flex-col gap-3.5">
+        {moderators.length === 0 && (
+          <p className="text-[11px] text-app-gray dark:text-zinc-500 py-2 select-none">Aucun modérateur.</p>
+        )}
         {moderators.map((mod) => (
           <div key={mod.name} className="flex items-center justify-between text-xs">
             <div className="flex items-center gap-2">

@@ -53,7 +53,7 @@ export const AdminPage: React.FC = () => {
                 className={cn(
                   'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all cursor-pointer border-none w-full text-left',
                   isActive
-                    ? 'bg-app-black dark:bg-zinc-800 text-white shadow-sm'
+                    ? 'bg-zinc-100 dark:bg-zinc-800 text-app-black dark:text-white shadow-none'
                     : 'text-app-gray dark:text-zinc-400 hover:bg-gray-50 dark:hover:bg-zinc-800/50 hover:text-app-black dark:hover:text-white'
                 )}
               >

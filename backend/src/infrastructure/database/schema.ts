@@ -4,7 +4,7 @@ import { generateId } from '../../shared/utils/ids';
 
 // ── Enums ──────────────────────────────────────────────────
 export const connectionStatusEnum = pgEnum('connection_status', ['suggestion', 'interested', 'request', 'companion', 'blocked']);
-export const postTypeEnum = pgEnum('post_type', ['Text', 'Images', 'Link']);
+export const postTypeEnum = pgEnum('post_type', ['Text', 'Images', 'Link', 'Repost']);
 export const glowEnum = pgEnum('glow', ['turquoise', 'violet', 'amber', 'emerald', 'orange', 'red', 'blue', 'none']);
 export const swipeActionEnum = pgEnum('swipe_action', ['like', 'pass']);
 export const notificationTypeEnum = pgEnum('notification_type', ['comment', 'like', 'invite', 'request', 'match', 'message', 'system']);
@@ -24,6 +24,7 @@ export const users = pgTable(
     name: text('name').notNull(),
     username: text('username').notNull(),
     avatar: text('avatar'),
+    banner: text('banner'),
     avatarSeed: text('avatar_seed'),
     locale: text('locale').notNull().default('fr'),
     gender: text('gender'),
@@ -270,6 +271,9 @@ export const posts = pgTable(
     views: integer('views').notNull().default(0),
     saves: integer('saves').notNull().default(0),
     shares: integer('shares').notNull().default(0),
+    /** Repost : référence du post original partagé dans une tribu. */
+    originalPostId: text('original_post_id').references((): AnyPgColumn => posts.id, { onDelete: 'set null' }),
+    originalAuthorId: text('original_author_id').references(() => users.id, { onDelete: 'set null' }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },

@@ -11,9 +11,12 @@ interface UIState {
   setSearchQuery: (query: string) => void;
   setActiveTab: (tab: string) => void;
   notificationsCount: number;
-  setNotificationsCount: (count: number) => void;
+  setNotificationsCount: (count: number | ((prev: number) => number)) => void;
   showCreateTribeModal: boolean;
   setShowCreateTribeModal: (show: boolean) => void;
+  /** Message d'erreur de création de tribu (nom/tag déjà pris, limite atteinte…). */
+  tribeCreateError: string | null;
+  setTribeCreateError: (error: string | null) => void;
   likedPosts: string[];
   toggleLikedPost: (postId: string) => void;
   isChatOpen: boolean;
@@ -33,9 +36,17 @@ export const useUIStore = create<UIState>()(
       setSearchQuery: (searchQuery) => set({ searchQuery }),
       setActiveTab: (activeTab) => set({ activeTab, isSidebarCollapsed: false }),
       notificationsCount: 0,
-      setNotificationsCount: (notificationsCount) => set({ notificationsCount }),
+      setNotificationsCount: (notificationsCount) =>
+        set((s) => {
+          const next =
+            typeof notificationsCount === 'function' ? notificationsCount(s.notificationsCount) : notificationsCount;
+          // Inchangé : on retourne le même état → zustand n'informe personne (pas de boucle).
+          return next === s.notificationsCount ? s : { notificationsCount: next };
+        }),
       showCreateTribeModal: false,
       setShowCreateTribeModal: (showCreateTribeModal) => set({ showCreateTribeModal }),
+      tribeCreateError: null,
+      setTribeCreateError: (tribeCreateError) => set({ tribeCreateError }),
       likedPosts: [],
       toggleLikedPost: (postId) => set((s) => {
         const has = s.likedPosts.includes(postId);

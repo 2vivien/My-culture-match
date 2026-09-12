@@ -1,11 +1,24 @@
-import { Home, LandPlot, Layers, FerrisWheel, Landmark, LucideIcon, Flame, Unplug, Plug, Settings, ShieldCheck } from 'lucide-react';
+import { Home, LandPlot, Layers, FerrisWheel, Landmark, LucideIcon, Settings, ShieldCheck } from 'lucide-react';
+import { IconFriends } from '@tabler/icons-react';
 import { useUIStore } from '@/src/stores/useUIStore';
 import { useAppStore } from '@/src/stores/useAppStore';
+import { useExplore } from '@/src/hooks/useExplore';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { traditionService } from '@/src/services/traditionService';
 import { cn } from '@/src/lib/utils';
 import { motion } from 'framer-motion';
 import { SandboxIcon } from '@/src/components/ui/SandboxIcon';
 
-const GrimTotemIcon = (props: any) => (
+/** Icône Tabler "cloud-heart" (ti-cloud-heart, unicode f853) pour Love. */
+const CloudHeartIcon = (props: any) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <path d="M10 18.004h-3.343c-2.572 -.004 -4.657 -2.011 -4.657 -4.487c0 -2.475 2.085 -4.482 4.657 -4.482c.393 -1.762 1.794 -3.2 3.675 -3.773c1.88 -.572 3.956 -.193 5.444 1c1.488 1.19 2.162 3.007 1.77 4.769h.99" />
+    <path d="M18 22l3.35 -3.284a2.143 2.143 0 0 0 .005 -3.071a2.242 2.242 0 0 0 -3.129 -.006l-.224 .22l-.223 -.22a2.242 2.242 0 0 0 -3.128 -.006a2.143 2.143 0 0 0 -.006 3.071l3.355 3.296" />
+  </svg>
+);
+
+/** Icône Totem (idem sidebar) — exportée pour le menu profil. */
+export const GrimTotemIcon = (props: any) => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
     <path d="M12 2v20" />
     <path d="M8 6h8" />
@@ -26,9 +39,16 @@ const LayersPlusIcon = (props: any) => (
   </svg>
 );
 
+/** Tribu possédée/adhésion renvoyée par GET /api/tribes/mine. */
+interface OwnedTribe {
+  id: string;
+  name: string;
+  role?: string | null;
+}
+
 const iconMap: Record<string, any> = {
-  Home, Popular: LandPlot, Love: Flame, New: LayersPlusIcon, Explore: FerrisWheel, Tribu: Landmark, Totem: GrimTotemIcon, Sandbox: SandboxIcon,
-  Connexion: Unplug, Admin: ShieldCheck,
+  Home, Popular: LandPlot, Love: CloudHeartIcon, New: LayersPlusIcon, Explore: FerrisWheel, Tribu: Landmark, Totem: GrimTotemIcon, Sandbox: SandboxIcon,
+  Friends: IconFriends, Admin: ShieldCheck,
 };
 
 const navItems = [
@@ -36,11 +56,11 @@ const navItems = [
   { name: 'Popular', icon: 'Popular' },
   { name: 'New', icon: 'New' },
   { name: 'Explore', icon: 'Explore' },
-  { name: 'Connexion', icon: 'Connexion' },
+  { name: 'Friends', icon: 'Friends' },
   { name: 'Love', icon: 'Love' },
   { name: 'Tribu', icon: 'Tribu' },
   { name: 'Totem', icon: 'Totem' },
-  { name: 'Messages', icon: 'Sandbox', badge: '+09' },
+  { name: 'Messages', icon: 'Sandbox' },
 ];
 
 const adminItem = { name: 'Admin', icon: 'Admin' };
@@ -49,8 +69,22 @@ const isAdminRole = (role?: string) => role === 'admin' || role === 'superadmin'
 
 export const SidebarNav = () => {
   const { activeTab, setActiveTab, isSidebarOpen, toggleSidebar, isSidebarCollapsed, openChat } = useUIStore();
-  const { setSelectedTotemUserId, setFeedSort, currentUser } = useAppStore();
+  const { setSelectedTotemUserId, setFeedSort, currentUser, setSelectedTribeId } = useAppStore();
+  const { tribes } = useExplore();
+  const queryClient = useQueryClient();
   const isCollapsed = isSidebarCollapsed;
+
+  // Tribus réelles : celles de l'utilisateur en priorité, sinon les plus populaires (API)
+  const suggestedTribes = tribes.slice(0, 3);
+
+  // Mes tribus — endpoint dédié /api/tribes/mine (owner d'abord), rafraîchi après création
+  // (useCreateTribe invalide ['my-tribes'] et ['tribe-options'] à la soumission).
+  const { data: myTribesData = [] } = useQuery<OwnedTribe[]>({
+    queryKey: ['my-tribes'],
+    queryFn: traditionService.getMyTribes,
+    staleTime: 1000 * 30,
+  });
+  const myTribes = myTribesData.slice(0, 4);
 
   const showAdmin = isAdminRole(currentUser.role);
 
@@ -68,8 +102,10 @@ export const SidebarNav = () => {
     } else if (name === 'Home') {
       setFeedSort('Best');
     }
-    
+
     if (name === 'Totem') {
+      // "My Totem Profile" : l'icône Totem de la sidebar ouvre toujours
+      // SON propre profil (jamais le profil d'un autre utilisateur).
       setSelectedTotemUserId('user-current');
     }
     if (window.innerWidth < 768 && isSidebarOpen) {
@@ -91,76 +127,58 @@ export const SidebarNav = () => {
               className={cn(
                 'relative flex items-center rounded-2xl transition-all cursor-pointer group w-full',
                 isCollapsed ? 'justify-center p-3 w-12 mx-auto' : 'gap-4 px-4 py-3 text-left font-medium text-sm',
-                isActive ? 'text-white bg-app-black shadow-md' : 'text-app-gray hover:bg-gray-50 dark:hover:bg-zinc-800 hover:text-app-black dark:hover:text-white'
+                isActive ? 'text-app-black dark:text-white bg-zinc-100 dark:bg-zinc-800/60 shadow-none' : 'text-app-gray hover:bg-gray-50 dark:hover:bg-zinc-800 hover:text-app-black dark:hover:text-white'
               )}
             >
               {isActive && (
                 <motion.div
                   layoutId="active-nav"
-                  className="absolute inset-0 bg-app-black dark:bg-zinc-800 rounded-2xl -z-10"
+                  className="absolute inset-0 bg-zinc-100 dark:bg-zinc-800/60 rounded-2xl -z-10"
                   transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                 />
               )}
               <div className="relative">
-                <IconComponent className={cn('w-5 h-5 transition-transform shrink-0', isActive ? 'scale-100' : 'group-hover:scale-110')} />
-                {isCollapsed && item.badge && (
-                  <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-[#E27D60] text-[8px] font-bold text-white flex items-center justify-center animate-pulse">
-                    !
-                  </span>
-                )}
+                <IconComponent className={cn('w-6 h-6 transition-transform shrink-0', isActive ? 'scale-100' : 'group-hover:scale-110')} />
               </div>
-              {!isCollapsed && <span>{item.name}</span>}
-              {!isCollapsed && item.badge && (
-                <span className={cn('ml-auto text-xs font-bold px-2 py-0.5 rounded-full z-10', isActive ? 'bg-white/20 text-white' : 'bg-gray-100 dark:bg-zinc-800 text-app-black dark:text-zinc-300')}>
-                  {item.badge}
-                </span>
-              )}
+              {!isCollapsed && <span className="text-base font-semibold">{item.name}</span>}
             </button>
 
             {item.name === 'Tribu' && !isCollapsed && (
-              <div className="flex flex-col gap-1 text-[11px] font-bold text-app-gray dark:text-zinc-400 pl-8 mt-1">
-                <button onClick={() => { setActiveTab('Tribu'); if (window.innerWidth < 768 && isSidebarOpen) toggleSidebar(); }} className="flex items-center gap-1.5 hover:text-[#E27D60] cursor-pointer text-left py-1 text-app-black dark:text-zinc-300 bg-transparent border-none">
-                  <span className="w-1 h-1 rounded-full bg-[#E27D60] shrink-0" />
-                  t/YamatoTribe
-                </button>
-                <button onClick={() => { setActiveTab('Tribu'); if (window.innerWidth < 768 && isSidebarOpen) toggleSidebar(); }} className="flex items-center gap-1.5 hover:text-[#E27D60] cursor-pointer text-left py-1 text-app-black dark:text-zinc-300 bg-transparent border-none">
-                  <span className="w-1 h-1 rounded-full bg-[#E27D60] shrink-0" />
-                  t/AndeanTribe
-                </button>
-                <button onClick={() => { setActiveTab('Tribu'); if (window.innerWidth < 768 && isSidebarOpen) toggleSidebar(); }} className="flex items-center gap-1.5 hover:text-[#E27D60] cursor-pointer text-left py-1 text-app-black dark:text-zinc-300 bg-transparent border-none">
-                  <span className="w-1 h-1 rounded-full bg-[#E27D60] shrink-0" />
-                  t/AinuTribe
-                </button>
+              <div className="flex flex-col gap-1 text-sm font-bold text-app-gray dark:text-zinc-400 pl-9 mt-1">
+                {suggestedTribes.length === 0 && (
+                  <p className="text-xs text-app-gray/70 dark:text-zinc-500 py-1 select-none">Aucune tribu pour l'instant</p>
+                )}
+                {suggestedTribes.map((tribe) => (
+                  <button
+                    key={tribe.id}
+                    onClick={() => { setSelectedTribeId(tribe.id); setActiveTab('Tribu'); if (window.innerWidth < 768 && isSidebarOpen) toggleSidebar(); }}
+                    className="flex items-center gap-1.5 hover:text-[#E27D60] cursor-pointer text-left py-1 text-app-black dark:text-zinc-300 bg-transparent border-none"
+                  >
+                    <span className="w-1 h-1 rounded-full bg-[#E27D60] shrink-0" />
+                    <span className="truncate">t/{tribe.name}</span>
+                  </button>
+                ))}
 
-                <div className="flex flex-col gap-1 mt-3 border-t border-app-border/40 dark:border-zinc-800 pt-2 w-full">
-                  <span className="text-[9px] uppercase tracking-wider text-app-gray/60 dark:text-zinc-500 font-black mb-1 select-none">Your Own Tribes</span>
-                  <div className="group/item flex items-center justify-between hover:text-[#E27D60] py-1 text-app-black dark:text-zinc-300 select-none">
-                    <button onClick={() => { setActiveTab('Tribu'); if (window.innerWidth < 768 && isSidebarOpen) toggleSidebar(); }} className="flex items-center gap-1.5 cursor-pointer text-left text-app-black dark:text-zinc-300 bg-transparent border-none hover:text-[#E27D60] flex-1 min-w-0 font-bold text-[11px]">
-                      <span className="w-1 h-1 rounded-full bg-zinc-400 dark:bg-zinc-600 shrink-0" />
-                      <span className="truncate">t/MyFonHeritage</span>
-                    </button>
-                    <button 
-                      onClick={(e) => { e.stopPropagation(); setActiveTab('TribuSettings'); }}
-                      className="opacity-0 group-hover/item:opacity-100 hover:text-[#E27D60] p-1 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-all cursor-pointer mr-1 flex items-center justify-center border-none bg-transparent"
-                      title="Tribe Settings"
-                    >
-                      <Settings className="w-3.5 h-3.5 text-app-gray hover:text-[#E27D60] dark:text-zinc-400" />
-                    </button>
+                {myTribes.length > 0 && (
+                  <div className="flex flex-col gap-1 mt-3 border-t border-app-border/40 dark:border-zinc-800 pt-2 w-full">
+                    <span className="text-[11px] uppercase tracking-wider text-app-gray/60 dark:text-zinc-500 font-black mb-1 select-none">Your Own Tribes</span>
+                    {myTribes.map((tribe) => (
+                      <div key={tribe.id} className="group/item flex items-center justify-between hover:text-[#E27D60] py-1 text-app-black dark:text-zinc-300 select-none">
+                        <button onClick={() => { setSelectedTribeId(tribe.id); setActiveTab('Tribu'); if (window.innerWidth < 768 && isSidebarOpen) toggleSidebar(); }} className="flex items-center gap-1.5 cursor-pointer text-left text-app-black dark:text-zinc-300 bg-transparent border-none hover:text-[#E27D60] flex-1 min-w-0 font-bold text-sm">
+                          <span className="w-1 h-1 rounded-full bg-zinc-400 dark:bg-zinc-600 shrink-0" />
+                          <span className="truncate">t/{tribe.name}</span>
+                        </button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setActiveTab('TribuSettings'); }}
+                          className="opacity-0 group-hover/item:opacity-100 hover:text-[#E27D60] p-1 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-all cursor-pointer mr-1 flex items-center justify-center border-none bg-transparent"
+                          title="Tribe Settings"
+                        >
+                          <Settings className="w-4 h-4 text-app-gray hover:text-[#E27D60] dark:text-zinc-400" />
+                        </button>
+                      </div>
+                    ))}
                   </div>
-                  <div className="group/item flex items-center justify-between hover:text-[#E27D60] py-1 text-app-black dark:text-zinc-300 select-none">
-                    <button onClick={() => { setActiveTab('Tribu'); if (window.innerWidth < 768 && isSidebarOpen) toggleSidebar(); }} className="flex items-center gap-1.5 cursor-pointer text-left text-app-black dark:text-zinc-300 bg-transparent border-none hover:text-[#E27D60] flex-1 min-w-0 font-bold text-[11px]">
-                      <span className="w-1 h-1 rounded-full bg-zinc-400 dark:bg-zinc-600 shrink-0" />
-                      <span className="truncate">t/VoodooSecrets</span>
-                    </button>
-                    <button 
-                      onClick={(e) => { e.stopPropagation(); setActiveTab('TribuSettings'); }}
-                      className="opacity-0 group-hover/item:opacity-100 hover:text-[#E27D60] p-1 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-all cursor-pointer mr-1 flex items-center justify-center border-none bg-transparent"
-                      title="Tribe Settings"
-                    >
-                      <Settings className="w-3.5 h-3.5 text-app-gray hover:text-[#E27D60] dark:text-zinc-400" />
-                    </button>
-                  </div>
-                </div>
+                )}
               </div>
             )}
           </div>
@@ -178,18 +196,18 @@ export const SidebarNav = () => {
               className={cn(
                 'relative flex items-center rounded-2xl transition-all cursor-pointer group w-full',
                 isCollapsed ? 'justify-center p-3 w-12 mx-auto' : 'gap-4 px-4 py-3 text-left font-medium text-sm',
-                isActive ? 'text-white bg-app-black shadow-md' : 'text-app-gray hover:bg-gray-50 dark:hover:bg-zinc-800 hover:text-app-black dark:hover:text-white'
+                isActive ? 'text-app-black dark:text-white bg-zinc-100 dark:bg-zinc-800/60 shadow-none' : 'text-app-gray hover:bg-gray-50 dark:hover:bg-zinc-800 hover:text-app-black dark:hover:text-white'
               )}
             >
               {isActive && (
                 <motion.div
-                  layoutId="active-nav"
-                  className="absolute inset-0 bg-app-black dark:bg-zinc-800 rounded-2xl -z-10"
+                  layoutId="active-nav-admin"
+                  className="absolute inset-0 bg-zinc-100 dark:bg-zinc-800/60 rounded-2xl -z-10"
                   transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                 />
               )}
-              <AdminIcon className={cn('w-5 h-5 transition-transform shrink-0', isActive ? 'scale-100' : 'group-hover:scale-110')} />
-              {!isCollapsed && <span>{adminItem.name}</span>}
+              <AdminIcon className={cn('w-6 h-6 transition-transform shrink-0', isActive ? 'scale-100' : 'group-hover:scale-110')} />
+              {!isCollapsed && <span className="text-base font-semibold">{adminItem.name}</span>}
             </button>
           </div>
         );

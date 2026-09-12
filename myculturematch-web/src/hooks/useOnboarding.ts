@@ -75,16 +75,22 @@ export function useOnboarding() {
     setIsSubmitting(true);
     setSubmitError(null);
     try {
-      const avatarUrl = `https://api.dicebear.com/7.x/open-peeps/svg?seed=${encodeURIComponent(formData.avatarSeed || formData.username || formData.name || 'default')}`;
-      await submitProfile({
+      const result = await submitProfile({
         ...formData,
         email: email || undefined,
         acceptedTermsAt: acceptedTerms ? new Date().toISOString() : null,
       });
+      // Utilise l'utilisateur renvoyé par le backend (avatar, username générés côté serveur)
+      const onboarded = result?.user;
       loginUser({
-        name: formData.name || 'Anonyme',
-        avatar: avatarUrl,
-        location: formData.roots.country || 'Inconnu',
+        id: onboarded?.id,
+        name: onboarded?.name ?? (formData.name || 'Anonyme'),
+        username: onboarded?.username ?? formData.username,
+        avatar: onboarded?.avatar ?? '',
+        location: formData.roots.village
+          ? `${formData.roots.village}, ${formData.roots.country}`
+          : formData.roots.country || '',
+        country: formData.roots.country || '',
         tribes: [formData.roots.region, formData.roots.ethnicity].filter(Boolean),
       });
       useAppStore.getState().setOnboarded(true);

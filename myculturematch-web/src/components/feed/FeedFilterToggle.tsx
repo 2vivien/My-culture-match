@@ -4,6 +4,7 @@ import { cn } from '@/src/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useUIStore } from '@/src/stores/useUIStore';
 import { launchThemes, feedThemeOptions } from '@/src/lib/themes';
+import { Play } from 'lucide-react';
 
 const sortOptions = ['Best', 'Popular', 'New', 'Hot'];
 const themeOptions = feedThemeOptions;
@@ -43,7 +44,10 @@ export const FeedFilterToggle = () => {
             isSortDisabled ? "cursor-default opacity-85" : "hover:shadow-md cursor-pointer"
           )}
         >
-          {isSortDisabled ? activeTab : feedSort}
+          <span className="flex items-center gap-1.5">
+            {isSortDisabled ? activeTab : feedSort}
+            <Play className={cn('w-3 h-3 rotate-90 text-app-gray', openSort && 'rotate-[270deg]')} />
+          </span>
         </button>
 
         {!isSortDisabled && (
@@ -82,7 +86,10 @@ export const FeedFilterToggle = () => {
           onClick={() => { setOpenCulture(!openCulture); setOpenSort(false); }}
           className="bg-white dark:bg-zinc-950 px-4 py-2 rounded-full shadow-sm border border-app-border dark:border-zinc-800 text-sm font-bold text-app-black dark:text-white hover:shadow-md transition-all focus:outline-none"
         >
-          {feedCulture}
+          <span className="flex items-center gap-1.5">
+            {feedCulture}
+            <Play className={cn('w-3 h-3 rotate-90 text-app-gray', openCulture && 'rotate-[270deg]')} />
+          </span>
         </button>
 
         <AnimatePresence>

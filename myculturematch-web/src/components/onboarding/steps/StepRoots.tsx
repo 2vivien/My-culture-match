@@ -43,6 +43,10 @@ export const StepRoots: React.FC<StepRootsProps> = ({
 
   const cityOptions = (cities ?? []).map((c) => ({ value: c.name, label: c.name }));
 
+  const hasStates = selectedCountry?.hasStates ?? true;
+  const stateReady = hasStates ? selectedState != null : selectedCountry != null;
+  const useCitySelect = stateReady && cityOptions.length > 0;
+
   return (
     <div className="space-y-6">
       <div className="text-center md:text-left">
@@ -72,30 +76,55 @@ export const StepRoots: React.FC<StepRootsProps> = ({
           />
         </div>
 
-        <div className="space-y-2">
-          <label className={labelClass}>Région d'origine</label>
-          <SearchableSelect
-            options={stateOptions}
-            value={region}
-            onChange={(value) => updateRoots({ country, region: value as string, ethnicity, village: '' })}
-            placeholder={selectedCountry ? 'Sélectionnez votre région...' : 'Choisissez d\'abord un pays'}
-            loading={statesLoading}
-            disabled={!selectedCountry}
-            inputClassName="p-5"
-          />
-        </div>
+        {!hasStates ? (
+          <div className="space-y-2">
+            <label className={labelClass}>Région d'origine</label>
+            <p className="text-xs text-zinc-400 font-bold px-1">
+              {selectedCountry ? 'Ce pays n\'a pas de région administrative.' : 'Choisissez d\'abord un pays'}
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <label className={labelClass}>Région d'origine</label>
+            <SearchableSelect
+              options={stateOptions}
+              value={region}
+              onChange={(value) => updateRoots({ country, region: value as string, ethnicity, village: '' })}
+              placeholder={selectedCountry ? 'Sélectionnez votre région...' : 'Choisissez d\'abord un pays'}
+              loading={statesLoading}
+              disabled={!selectedCountry}
+              inputClassName="p-5"
+            />
+          </div>
+        )}
 
         <div className="space-y-2">
           <label className={labelClass}>Ville ou Village natal</label>
-          <SearchableSelect
-            options={cityOptions}
-            value={village}
-            onChange={(value) => updateRoots({ country, region, ethnicity, village: value as string })}
-            placeholder={selectedState ? 'Sélectionnez votre ville...' : 'Choisissez d\'abord un pays et une région'}
-            loading={citiesLoading}
-            disabled={!selectedState}
-            inputClassName="p-5"
-          />
+          {useCitySelect ? (
+            <SearchableSelect
+              options={cityOptions}
+              value={village}
+              onChange={(value) => updateRoots({ country, region, ethnicity, village: value as string })}
+              placeholder="Sélectionnez votre ville..."
+              loading={citiesLoading}
+              disabled={!stateReady}
+              inputClassName="p-5"
+            />
+          ) : (
+            <>
+              <input
+                type="text"
+                value={village}
+                onChange={(e) => updateRoots({ country, region, ethnicity, village: e.target.value })}
+                placeholder={hasStates && !selectedState ? 'Choisissez d\'abord un pays et une région' : 'Tapez votre ville ou village natal...'}
+                className={inputClass}
+                disabled={!selectedCountry || (hasStates && !selectedState)}
+              />
+              {selectedCountry && !useCitySelect && (hasStates ? selectedState != null : true) && (
+                <p className="text-xs text-zinc-400 font-bold px-1">Saisie libre : votre ville ou village n'apparaît pas dans les listes.</p>
+              )}
+            </>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -104,7 +133,7 @@ export const StepRoots: React.FC<StepRootsProps> = ({
             type="text"
             value={ethnicity}
             onChange={(e) => updateRoots({ country, region, ethnicity: e.target.value, village })}
-            placeholder="Ex: Fon, Yoruba, Wolof, Diola, Baoulé..."
+            placeholder="Ex: Française, Américaine, Métisse, Fon, Yoruba, Baoulé..."
             className={inputClass}
             required
           />

@@ -1,5 +1,5 @@
 import { useState, type ChangeEvent } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { traditionService } from '@/src/services/traditionService';
 import { uploadService } from '@/src/services/uploadService';
 import { mediaUrl } from '@/src/lib/media';
@@ -8,6 +8,7 @@ import { useUIStore } from '@/src/stores/useUIStore';
 
 export function useCreateTradition() {
   const { setActiveTab } = useUIStore();
+  const queryClient = useQueryClient();
 
   const { data: tribes = [] } = useQuery<TribeOption[]>({
     queryKey: ['tribe-options'],
@@ -83,9 +84,18 @@ export function useCreateTradition() {
           : mediaUrl(uploaded.objectKey);
       }
     }
+    // Le backend exige un titre de 3 caractères minimum pour TOUS les types de posts.
+    if (title.trim().length < 3 && activeSubTab !== 'Text') {
+      setTitle(body.trim().slice(0, 60) || 'Ma tradition');
+    }
 
     const submission: TraditionSubmission = {
-      title,
+      title:
+        title.trim().length >= 3
+          ? title
+          : activeSubTab === 'Link'
+            ? 'Partage de lien'
+            : body.trim().slice(0, 60) || 'Ma tradition',
       body: activeSubTab === 'Text' ? body : undefined,
       mediaUrl: activeSubTab === 'Images' ? resolvedMediaUrl : undefined,
       linkUrl: activeSubTab === 'Link' ? linkUrl : undefined,
@@ -96,6 +106,9 @@ export function useCreateTradition() {
 
     try {
       await traditionService.submitTradition(submission);
+      // Le feed et les posts de tribu doivent montrer la nouvelle publication.
+      await queryClient.invalidateQueries({ queryKey: ['feed'] });
+      await queryClient.invalidateQueries({ queryKey: ['tribu-posts'] });
       setActiveTab('Home');
     } catch (err) {
       console.error('Error submitting tradition:', err);

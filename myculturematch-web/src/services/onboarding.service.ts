@@ -117,8 +117,24 @@ export function toOnboardingApiPayload(data: OnboardingSubmitPayload) {
   };
 }
 
+export interface OnboardingSubmitResult {
+  success: boolean;
+  user: {
+    id: string;
+    email: string;
+    username: string;
+    name: string;
+    avatar: string | null;
+    avatarSeed: string | null;
+    level: number;
+    xp: number;
+    glow: string;
+    profileCompleted: boolean;
+  };
+}
+
 export async function submitProfile(
   data: OnboardingSubmitPayload
-): Promise<{ success: boolean }> {
-  return api.post<{ success: boolean }>('/api/onboarding', toOnboardingApiPayload(data));
+): Promise<OnboardingSubmitResult> {
+  return api.post<OnboardingSubmitResult>('/api/onboarding', toOnboardingApiPayload(data));
 }

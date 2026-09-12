@@ -43,7 +43,7 @@ export const TribeCard: React.FC<TribeCardProps> = ({ item, onJoin, onSelect, de
         className={`w-full py-2 rounded-xl text-xs font-black cursor-pointer tracking-wider flex items-center justify-center gap-1.5 transition-all ${
           item.joined
             ? 'bg-zinc-100 dark:bg-zinc-800 text-app-black dark:text-zinc-200 border border-app-border dark:border-zinc-700'
-            : 'bg-app-black text-white dark:bg-white dark:text-app-black hover:opacity-90'
+            : 'bg-[#E27D60] hover:bg-[#c66b50] text-white'
         }`}
       >
         {item.joined ? (

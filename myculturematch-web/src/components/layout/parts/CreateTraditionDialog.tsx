@@ -162,7 +162,7 @@ export const CreateTraditionDialog: React.FC<CreateTraditionDialogProps> = ({ on
             <button
               type="submit"
               disabled={!title.trim() || !description.trim() || isCreating}
-              className="flex-1 py-3 text-xs font-black bg-app-black dark:bg-white text-white dark:text-app-black hover:opacity-90 rounded-xl cursor-pointer flex items-center justify-center gap-1.5 transition-colors disabled:opacity-50"
+              className="flex-1 py-3 text-xs font-black bg-[#E27D60] hover:bg-[#c66b50] text-white rounded-xl cursor-pointer flex items-center justify-center gap-1.5 transition-colors disabled:opacity-50"
             >
               <Send className="w-3.5 h-3.5" />
               <span>{isCreating ? 'Publishing...' : 'Publish'}</span>

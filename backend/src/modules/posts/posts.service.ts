@@ -1,4 +1,4 @@
-import { eq, and, lt, desc, inArray } from 'drizzle-orm';
+import { eq, and, lt, desc, inArray, ne } from 'drizzle-orm';
 import { db, schema } from '../../infrastructure/database';
 import { redis } from '../../infrastructure/redis';
 import { AppError } from '../../shared/utils/AppError';
@@ -39,6 +39,8 @@ export interface HydratedPost {
   views: number;
   saves: number;
   shares: number;
+  /** Post original si type=Repost (hydraté : auteur + contenu complet). */
+  originalPost: Omit<HydratedPost, 'originalPost'> | null;
   likedByMe: boolean;
   savedByMe: boolean;
   myVote: number;
@@ -46,7 +48,7 @@ export interface HydratedPost {
   updatedAt: string;
 }
 
-/** Crée une tradition. Fanout + indexation + embedding en arrière-plan. */
+/** Crée une tradition ou un repost. Fanout + indexation + embedding en arrière-plan. */
 export async function createPost(userId: string, input: CreatePostInput): Promise<HydratedPost> {
   if (input.type === 'Images' && (!input.mediaUrls || input.mediaUrls.length === 0)) {
     throw AppError.badRequest('Un post Images nécessite au moins un média', 'MEDIA_REQUIRED');
@@ -60,6 +62,21 @@ export async function createPost(userId: string, input: CreatePostInput): Promis
   if (input.type === 'Text' && !input.body?.trim()) {
     throw AppError.badRequest('Un post Text nécessite un contenu', 'BODY_REQUIRED');
   }
+  if (input.type === 'Repost') {
+    if (!input.tribeId) throw AppError.badRequest('Choisissez une communauté pour reposter', 'TRIBE_REQUIRED');
+    if (!input.originalPostId) throw AppError.badRequest('Post original manquant', 'ORIGINAL_POST_REQUIRED');
+    const [original] = await db
+      .select({ id: schema.posts.id, status: schema.posts.status, authorId: schema.posts.authorId })
+      .from(schema.posts)
+      .where(eq(schema.posts.id, input.originalPostId))
+      .limit(1);
+    if (!original || original.status === 'deleted') {
+      throw AppError.notFound('Post original introuvable', 'POST_NOT_FOUND');
+    }
+    if (original.authorId === userId) {
+      throw AppError.badRequest('Vous ne pouvez pas reposter votre propre publication', 'SELF_REPOST_NOT_ALLOWED');
+    }
+  }
 
   if (input.tribeId) {
     const member = await db
@@ -70,7 +87,7 @@ export async function createPost(userId: string, input: CreatePostInput): Promis
     if (!member[0]) throw AppError.forbidden('Vous devez être membre de cette tribu pour y poster', 'TRIBE_MEMBERSHIP_REQUIRED');
   }
 
-  const moderation = moderatePost(input.title, input.body);
+  const moderation = moderatePost(input.title ?? '', input.body);
   const status = moderation.flag ? 'flagged' : 'published';
   const tags = input.tags ?? [];
   for (const t of extractHashtags(`${input.title} ${input.body ?? ''}`)) {
@@ -84,12 +101,22 @@ export async function createPost(userId: string, input: CreatePostInput): Promis
       authorId: userId,
       tribeId: input.tribeId ?? null,
       type: input.type,
-      title: input.title,
+      title: input.title ?? null,
       body: input.body ?? null,
       mediaUrls: input.mediaUrls ?? [],
       linkUrl: input.linkUrl ?? null,
       tags,
       status,
+      // Repost : référence du post original partagé.
+      originalPostId: input.type === 'Repost' ? input.originalPostId ?? null : null,
+      originalAuthorId:
+        input.type === 'Repost' && input.originalPostId
+          ? (await db
+              .select({ authorId: schema.posts.authorId })
+              .from(schema.posts)
+              .where(eq(schema.posts.id, input.originalPostId))
+              .limit(1))[0]?.authorId ?? null
+          : null,
     })
     .returning();
 
@@ -113,12 +140,32 @@ async function postRelations(postId: string, userId: string): Promise<{ liked: b
   return { liked: Boolean(like), saved: Boolean(save), vote: vote?.value ?? 0 };
 }
 
-async function hydratePost(post: schema.Post, _viewerId: string, rel: { liked: boolean; saved: boolean; vote: number }): Promise<HydratedPost> {
+async function hydratePost(
+  post: schema.Post,
+  viewerId: string,
+  rel: { liked: boolean; saved: boolean; vote: number },
+  /** Anti-récursion : on n'hydrate pas l'original d'un original. */
+  isOriginal = false,
+): Promise<HydratedPost> {
   const [author] = await db.select().from(schema.users).where(eq(schema.users.id, post.authorId)).limit(1);
   const tribe = post.tribeId
     ? (await db.select().from(schema.tribes).where(eq(schema.tribes.id, post.tribeId)).limit(1))[0] ?? null
     : null;
   const deltas = await getCounterDeltas(post.id);
+
+  // Repost : hydrate le post original (auteur + contenu complet) pour l'affichage.
+  let originalPost: HydratedPost['originalPost'] = null;
+  if (!isOriginal && post.type === 'Repost' && post.originalPostId) {
+    const [original] = await db
+      .select()
+      .from(schema.posts)
+      .where(and(eq(schema.posts.id, post.originalPostId), ne(schema.posts.status, 'deleted')))
+      .limit(1);
+    if (original) {
+      const origRel = await postRelations(original.id, viewerId);
+      originalPost = await hydratePost(original, viewerId, origRel, true);
+    }
+  }
 
   return {
     id: post.id,
@@ -140,6 +187,7 @@ async function hydratePost(post: schema.Post, _viewerId: string, rel: { liked: b
     views: post.views + deltas.views,
     saves: post.saves + deltas.saves,
     shares: post.shares + deltas.shares,
+    originalPost,
     likedByMe: rel.liked,
     savedByMe: rel.saved,
     myVote: rel.vote,
@@ -318,6 +366,21 @@ export async function toggleSave(userId: string, postId: string): Promise<{ save
   await db.insert(schema.saves).values({ postId, userId });
   await incrementCounter(postId, 'saves');
   return { saved: true, saves: await counterValue(postId, 'saves') };
+}
+
+/** GET /api/posts/saves/list — posts enregistrés par l'utilisateur. */
+export async function listSaves(userId: string, limit = 50): Promise<HydratedPost[]> {
+  const rows = await db
+    .select({ postId: schema.saves.postId, createdAt: schema.saves.createdAt })
+    .from(schema.saves)
+    .where(eq(schema.saves.userId, userId))
+    .orderBy(desc(schema.saves.createdAt))
+    .limit(limit);
+  if (rows.length === 0) return [];
+  return getPostsByIds(
+    rows.map((r) => r.postId),
+    userId,
+  );
 }
 
 /** DELETE /api/posts/:id — soft delete (auteur ou admin). */

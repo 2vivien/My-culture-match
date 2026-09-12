@@ -4,16 +4,18 @@ import { Heart } from 'lucide-react';
 import { useUIStore } from '@/src/stores/useUIStore';
 import { FiltersModal } from '@/src/components/ui/FiltersModal';
 import { useLove } from '@/src/hooks/useLove';
+import { chatService } from '@/src/services/chat.service';
 import { LoveHeader } from '../love/LoveHeader';
 import { LoveActiveMatches } from '../love/LoveActiveMatches';
 import { LoveCard } from '../love/LoveCard';
-import { LoveMatchCelebrate } from '../love/LoveMatchCelebrate';
 import { LoveDetailModal } from './LoveDetailModal';
+import type { LoveMatch } from '@/src/types/love';
 
 export const LoveColumn: React.FC = () => {
   const { openChat } = useUIStore();
   const {
     matches,
+    activeMatches,
     filteredMatches,
     showFilters,
     setShowFilters,
@@ -21,19 +23,24 @@ export const LoveColumn: React.FC = () => {
     setFilters,
     selectedMatch,
     setSelectedMatch,
-    matchCelebrating,
-    setMatchCelebrating,
     lovedIds,
     floatingHearts,
     handleLoveClick,
     isFiltersActive,
   } = useLove();
 
-  const celebratingMatch = matches.find((m) => m.id === matchCelebrating);
-
   const startChat = () => {
-    setMatchCelebrating(null);
     setSelectedMatch(null);
+    openChat();
+  };
+
+  /** Ouvre la messagerie directement avec ce match (conversation 1:1). */
+  const openChatWith = async (match: LoveMatch) => {
+    try {
+      await chatService.ensureConversationWith(match.id);
+    } catch {
+      // non bloquant : on ouvre quand même la messagerie
+    }
     openChat();
   };
 
@@ -45,10 +52,11 @@ export const LoveColumn: React.FC = () => {
         isFiltersActive={!!isFiltersActive}
       />
 
-      {/* Spotlight Stories / Active Matches */}
+      {/* Active Matches — uniquement les likes réciproques acceptés */}
       <LoveActiveMatches
-        matches={matches}
+        matches={activeMatches}
         setSelectedMatch={setSelectedMatch}
+        onOpenChat={openChatWith}
       />
 
       {/* Cards Grid Spotlight Feed */}
@@ -72,20 +80,9 @@ export const LoveColumn: React.FC = () => {
         </div>
       </div>
 
-      {/* Celebration Match Modal */}
+      {/* Profile Detail Modal — UNE SEULE popup (pas de popup de célébration) */}
       <AnimatePresence>
-        {celebratingMatch && (
-          <LoveMatchCelebrate
-            match={celebratingMatch}
-            onClose={() => setMatchCelebrating(null)}
-            onStartChat={startChat}
-          />
-        )}
-      </AnimatePresence>
-
-      {/* Profile Detail Modal */}
-      <AnimatePresence>
-        {selectedMatch && !matchCelebrating && (
+        {selectedMatch && (
           <LoveDetailModal
             match={selectedMatch}
             isLoved={!!lovedIds[selectedMatch.id]}

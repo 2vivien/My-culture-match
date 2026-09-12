@@ -2,6 +2,7 @@ export interface NotificationItem {
   id: string;
   user: {
     name: string;
+    username: string;
     avatar: string;
     action: string;
     target: string;

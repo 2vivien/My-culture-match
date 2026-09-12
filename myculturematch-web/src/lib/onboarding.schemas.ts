@@ -80,7 +80,7 @@ export const onboardingDataSchema = z.object({
     .min(3, 'Votre pseudo doit contenir au moins 3 caractères')
     .regex(/^[a-zA-Z0-9._]+$/, 'Lettres, chiffres, points et underscores uniquement'),
   birthdate: z.string().min(1, 'Indiquez votre date de naissance'),
-  age: z.number().min(18, 'Vous devez avoir au moins 18 ans'),
+  age: z.number().min(16, 'Vous devez avoir au moins 16 ans'),
   avatarSeed: z.string(),
   roots: z.object({
     country: z.string().trim().min(1, 'Indiquez votre pays'),

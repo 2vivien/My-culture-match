@@ -1,6 +1,7 @@
 import { Plus, MoreHorizontal } from 'lucide-react';
 import { SandboxIcon } from '@/src/components/ui/SandboxIcon';
 import { useMessages } from '@/src/hooks/useMessages';
+import { useUnreadMessagesCount } from '@/src/hooks/useUnreadMessagesCount';
 import { MessageItem } from './MessageItem';
 import { Button } from '@/src/components/ui/button';
 import { TotemAvatar } from '@/src/components/ui/TotemAvatar';
@@ -10,7 +11,8 @@ import { useAppStore } from '@/src/stores/useAppStore';
 export const MessagesPanel = () => {
   const { messages, toggleNotifications } = useMessages();
   const { openChat } = useUIStore();
-  const { setSelectedTotemUserId } = useAppStore();
+  const { currentUser } = useAppStore();
+  const { data: unreadMessages } = useUnreadMessagesCount();
 
   const handleActiveClick = () => {
     openChat();
@@ -23,14 +25,19 @@ export const MessagesPanel = () => {
           <SandboxIcon className="w-4 h-4 text-app-black dark:text-zinc-200" />
           <span className="font-bold text-sm text-app-black dark:text-zinc-200">Messages</span>
           <TotemAvatar
-            src="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=50&q=80"
-            alt="active user"
+            src={currentUser.avatar}
+            alt={currentUser.name}
+            countryFlag={currentUser.country}
             size="xs"
             glow="violet"
-            level={21}
           />
         </div>
         <div className="flex items-center gap-2">
+          {(unreadMessages ?? 0) > 0 && (
+            <span className="min-w-[20px] h-5 px-1.5 rounded-full flex items-center justify-center bg-[#E27D60] text-[9px] font-black text-white shadow-sm">
+              {(unreadMessages ?? 0) > 99 ? '99+' : unreadMessages}
+            </span>
+          )}
           <button className="w-8 h-8 rounded-full bg-[#FCFCFC] dark:bg-zinc-800 border border-app-border flex items-center justify-center hover:bg-white dark:hover:bg-zinc-700 transition-colors cursor-pointer text-app-black dark:text-zinc-100">
             <Plus className="w-4 h-4" />
           </button>

@@ -10,6 +10,7 @@ import { AnimatePresence } from 'framer-motion';
 
 export const RequestCard = () => {
   const { requests, respondToRequest } = useRequests();
+  const unreadCount = useUIStore((s) => s.notificationsCount);
   const { setSelectedTotemUserId } = useAppStore();
   const { setActiveTab } = useUIStore();
   
@@ -41,7 +42,7 @@ export const RequestCard = () => {
         onClick={() => setShowNotif(!showNotif)}
         className="absolute -top-3 left-6 bg-white dark:bg-zinc-900 border border-app-border dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800 rounded-full px-3 py-1 text-xs font-bold shadow-sm z-30 flex items-center gap-1 text-app-black dark:text-zinc-200 cursor-pointer"
       >
-        +9 Notifications
+        {unreadCount > 0 ? `${unreadCount} Notifications` : 'Notifications'}
       </button>
 
       <AnimatePresence>
@@ -53,7 +54,7 @@ export const RequestCard = () => {
       </AnimatePresence>
 
       <div className="flex items-center justify-between mb-4 pt-2">
-        <h3 className="font-semibold text-sm text-app-black dark:text-zinc-200">Connexions</h3>
+        <h3 className="font-semibold text-sm text-app-black dark:text-zinc-200">Friends</h3>
         <span className="text-xs text-app-gray dark:text-zinc-400">{current.timeAgo}</span>
         <button onClick={() => respondToRequest({ id: current.id, action: 'block' })} className="text-app-gray hover:text-app-black dark:hover:text-white cursor-pointer">
           <X className="w-4 h-4 animate-spin-hover" />

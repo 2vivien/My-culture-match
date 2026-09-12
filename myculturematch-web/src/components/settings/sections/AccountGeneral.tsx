@@ -19,7 +19,7 @@ interface AccountGeneralProps {
 export const AccountGeneral: React.FC<AccountGeneralProps> = (props) => {
   return (
     <div>
-      <h2 className="text-xs uppercase font-extrabold tracking-wider text-app-gray dark:text-zinc-500 mb-4">
+      <h2 className="text-sm uppercase font-extrabold tracking-wider text-app-gray dark:text-zinc-500 mb-4">
         General
       </h2>
       <div className="divide-y divide-app-border/40 dark:divide-zinc-800/40">

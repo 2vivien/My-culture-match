@@ -88,7 +88,7 @@ export const CreateTraditionTextForm: React.FC<CreateTraditionTextFormProps> = (
                 input.value = '';
               }
             }}
-            className="px-4 py-2.5 rounded-2xl bg-app-black dark:bg-white text-white dark:text-app-black font-extrabold text-xs cursor-pointer hover:opacity-90 transition-all flex items-center justify-center border-none"
+            className="px-4 py-2.5 rounded-2xl bg-[#E27D60] hover:bg-[#c66b50] text-white font-extrabold text-xs cursor-pointer transition-all flex items-center justify-center border-none"
           >
             Add
           </button>
@@ -148,7 +148,7 @@ export const CreateTraditionTextForm: React.FC<CreateTraditionTextFormProps> = (
           disabled={!title.trim() || isSubmitting}
           className={`px-8 py-2 rounded-full font-black text-sm tracking-wider transition-all cursor-pointer ${
             title.trim() && !isSubmitting
-              ? 'bg-app-black hover:bg-zinc-800 text-white dark:bg-white dark:text-app-black dark:hover:bg-zinc-200' 
+              ? 'bg-[#E27D60] hover:bg-[#c66b50] text-white' 
               : 'bg-zinc-200 text-zinc-400 dark:bg-zinc-800 dark:text-zinc-600 cursor-not-allowed'
           }`}
         >

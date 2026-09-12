@@ -45,6 +45,7 @@ export interface NotificationDto {
   user: {
     id: string;
     name: string;
+    username: string;
     avatar: string | null;
     label: string;
     subText?: string;
@@ -99,7 +100,7 @@ export async function createNotification(input: CreateNotificationInput): Promis
 async function toDto(row: schema.Notification): Promise<NotificationDto | null> {
   const actorId = row.actorId;
   const [actor] = actorId
-    ? await db.select({ id: schema.users.id, name: schema.users.name, avatar: schema.users.avatar }).from(schema.users).where(eq(schema.users.id, actorId)).limit(1)
+    ? await db.select({ id: schema.users.id, name: schema.users.name, username: schema.users.username, avatar: schema.users.avatar }).from(schema.users).where(eq(schema.users.id, actorId)).limit(1)
     : [];
   const label = actor ? ACTION_LABEL[row.type] ?? row.action ?? '' : '';
 
@@ -114,6 +115,7 @@ async function toDto(row: schema.Notification): Promise<NotificationDto | null> 
     user: {
       id: actorId ?? '',
       name: actor?.name ?? 'My Culture Match',
+      username: actor?.username ?? '',
       avatar: actor?.avatar ?? null,
       label,
       subText: row.action === 'accept' ? 'a accepté votre demande' : undefined,

@@ -1,7 +1,10 @@
 export interface CurrentUser {
   id: string;
   name: string;
+  username: string;
   avatar: string;
+  /** Bannière de profil (URL publique MinIO). */
+  banner?: string | null;
   locale: string;
   level: number;
   glow: 'orange' | 'red' | 'blue' | 'turquoise' | 'violet';
@@ -10,6 +13,9 @@ export interface CurrentUser {
   culturesCount: number;
   tribesCount: number;
   location: string;
+  country: string;
+  bio?: string | null;
+  age?: number | null;
   interestedCount?: number;
   companionsCount?: number;
   role?: string;

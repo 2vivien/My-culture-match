@@ -15,10 +15,10 @@ export const TwoFactorRow: React.FC<TwoFactorRowProps> = ({ twoFactor, setTwoFac
           <ShieldCheck className="w-5 h-5 text-app-gray dark:text-zinc-400" />
         </div>
         <div>
-          <h4 className="font-extrabold text-xs text-app-black dark:text-zinc-200 leading-snug">
+          <h4 className="font-extrabold text-sm text-app-black dark:text-zinc-200 leading-snug">
             Two-factor authentication
           </h4>
-          <p className="text-[10.5px] text-app-gray dark:text-zinc-400 leading-snug mt-0.5">
+          <p className="text-xs text-app-gray dark:text-zinc-400 leading-snug mt-0.5">
             Add an extra layer of security to safeguard your ceremonial contributions
           </p>
         </div>

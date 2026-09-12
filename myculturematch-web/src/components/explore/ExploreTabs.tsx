@@ -1,5 +1,5 @@
 import React from 'react';
-import { Landmark, Unplug, Images, SquarePlay } from 'lucide-react';
+import { Landmark, SquarePlay, FileText } from 'lucide-react';
 import { ExploreTab } from '@/src/types/explore';
 
 interface ExploreTabsProps {
@@ -10,8 +10,7 @@ interface ExploreTabsProps {
 
 const TABS: { id: ExploreTab; icon: React.ComponentType<any> }[] = [
   { id: 'Tribu', icon: Landmark },
-  { id: 'Connexion', icon: Unplug },
-  { id: 'Images', icon: Images },
+  { id: 'Traditions', icon: FileText },
   { id: 'Vidéo', icon: SquarePlay },
 ];
 
@@ -33,7 +32,7 @@ export const ExploreTabs: React.FC<ExploreTabsProps> = ({
             }}
             className={`flex items-center gap-1.5 px-4.5 py-2 rounded-full text-xs font-black transition-all cursor-pointer ${
               isActive
-                ? 'bg-app-black text-white dark:bg-white dark:text-app-black shadow-sm'
+                ? 'bg-white dark:bg-zinc-800 text-app-black dark:text-white shadow-sm'
                 : 'text-app-gray hover:text-app-black dark:hover:text-zinc-200'
             }`}
           >

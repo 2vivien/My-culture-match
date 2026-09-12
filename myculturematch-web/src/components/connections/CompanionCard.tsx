@@ -36,7 +36,7 @@ export const CompanionCard: React.FC<CompanionCardProps> = ({ user, onMessage })
       
       <button
         onClick={() => onMessage(user.id)}
-        className="w-full py-2.5 rounded-xl text-xs font-black bg-app-black dark:bg-white text-white dark:text-app-black hover:opacity-90 flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+        className="w-full py-2.5 rounded-xl text-xs font-black bg-[#E27D60] hover:bg-[#c66b50] text-white flex items-center justify-center gap-1.5 transition-all cursor-pointer"
       >
         <MessageSquare className="w-3.5 h-3.5" />
         Message

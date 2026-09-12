@@ -14,6 +14,8 @@ interface AppState {
   currentUser: CurrentUser;
   selectedTotemUserId: string;
   selectedTribeId: string | null;
+  /** Publication ouverte dans la page détail (#/post/:id). */
+  selectedPostId: string | null;
   profileActiveTab: 'Posts' | 'Photos' | 'Videos' | 'Traditions' | 'About' | 'Saves';
   isAuthenticated: boolean;
   isOnboarded: boolean;
@@ -25,6 +27,7 @@ interface AppState {
   setFeedCulture: (culture: string) => void;
   setSelectedTotemUserId: (id: string) => void;
   setSelectedTribeId: (id: string | null) => void;
+  setSelectedPostId: (id: string | null) => void;
   setProfileActiveTab: (tab: 'Posts' | 'Photos' | 'Videos' | 'Traditions' | 'About' | 'Saves') => void;
   setAuthenticated: (auth: boolean) => void;
   setOnboarded: (onboarded: boolean) => void;
@@ -38,18 +41,20 @@ interface AppState {
 
 const defaultUser: CurrentUser = {
   id: 'user-current',
-  name: 'Amal',
-  avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80',
-  locale: 'English',
-  level: 24,
+  name: 'Utilisateur',
+  username: 'user',
+  avatar: '',
+  locale: 'fr',
+  level: 1,
   glow: 'orange',
-  location: 'Benin',
-  tribes: ['Fon', 'Yoruba', 'Adja'],
-  traditionsCount: 18,
-  culturesCount: 32,
-  tribesCount: 4,
-  interestedCount: 125,
-  companionsCount: 48,
+  location: '',
+  country: '',
+  tribes: [],
+  traditionsCount: 0,
+  culturesCount: 0,
+  tribesCount: 0,
+  interestedCount: 0,
+  companionsCount: 0,
 };
 
 export const useAppStore = create<AppState>()(
@@ -62,6 +67,8 @@ export const useAppStore = create<AppState>()(
       currentUser: defaultUser,
       selectedTotemUserId: 'user-current',
   selectedTribeId: null,
+  selectedPostId: null,
+  setSelectedPostId: (selectedPostId) => set({ selectedPostId }),
       profileActiveTab: 'Posts',
       isAuthenticated: false,
       isOnboarded: false,
@@ -85,7 +92,7 @@ export const useAppStore = create<AppState>()(
         isAuthenticated: true,
         currentUser: { ...state.currentUser, ...user }
       })),
-      logout: () => set({ isAuthenticated: false, isOnboarded: false, profileDetails: defaultProfileDetails }),
+      logout: () => set({ isAuthenticated: false, isOnboarded: false, profileDetails: defaultProfileDetails, currentUser: defaultUser }),
       joinTribe: (tribeName) => set((s) => ({
         currentUser: {
           ...s.currentUser,

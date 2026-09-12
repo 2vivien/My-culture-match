@@ -6,6 +6,8 @@ import {defineConfig} from 'vite';
 export default defineConfig(() => {
   return {
     plugins: [react(), tailwindcss()],
+    // Expose aussi les vars sans préfixe VITE_ (GEMINI_API_KEY du .env du projet).
+    envPrefix: ['VITE_', 'GEMINI_'],
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),

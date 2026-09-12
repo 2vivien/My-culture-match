@@ -32,7 +32,7 @@ export const LoveHeader: React.FC<LoveHeaderProps> = ({
       <div>
         <h1 className="text-2xl font-black tracking-tight text-app-black dark:text-white flex items-center gap-2">
           <Flame className="w-6 h-6 text-[#E27D60] fill-[#E27D60]" />
-          Love Matchmaker
+          Find Love
         </h1>
         <p className="text-xs text-app-gray mt-1 font-medium">
           Find high-vibe soul matches and explore shared cultural heritages worldwide.

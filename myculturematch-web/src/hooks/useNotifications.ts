@@ -5,7 +5,7 @@ import type { NotificationItem } from '@/src/types/notification';
 import { useUIStore } from '@/src/stores/useUIStore';
 
 export function useNotifications() {
-  const { setNotificationsCount } = useUIStore();
+  const setNotificationsCount = useUIStore((s) => s.setNotificationsCount);
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
   const queryClient = useQueryClient();
 
@@ -15,11 +15,15 @@ export function useNotifications() {
     staleTime: 1000 * 60 * 2,
   });
 
-  // Sync unread count to global UI store (in useEffect to avoid render loops)
+  // Sync unread count to global UI store — uniquement si la valeur change,
+  // sinon zustand persist re-déclenche les abonnés et boucle infiniment.
+  const unreadCount = notifications.filter((n) => n.isUnread).length;
   useEffect(() => {
-    const unreadCount = notifications.filter((n) => n.isUnread).length;
-    setNotificationsCount(unreadCount);
-  }, [notifications, setNotificationsCount]);
+    setNotificationsCount((prev: number) => {
+      if (prev === unreadCount) return prev;
+      return unreadCount;
+    });
+  }, [unreadCount, setNotificationsCount]);
 
   const displayedNotifications = notifications.filter((n) =>
     filter === 'unread' ? n.isUnread : true

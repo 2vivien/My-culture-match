@@ -1,4 +1,5 @@
 import { cn } from '@/src/lib/utils';
+import { fallbackAvatar } from '@/src/lib/media';
 
 export interface TotemAvatarProps {
   src?: string;
@@ -55,28 +56,48 @@ const createLacePath = (centerX = 50, centerY = 50, baseRadius = 45.5, amplitude
 
 const cloudPath = createLacePath();
 
-const nameFlagMap: Record<string, string> = {
-  'amal': '🇧🇯',
-  'rito': '🇳🇿',
-  'safala': '🇸🇳',
-  'keno': '🇪🇹',
-  'dany': '🇲🇽',
-  'yuki': '🇯🇵',
-  'stevian': '🇫🇷',
-  'jumana': '🇯🇴',
-  'halean': '🇺🇸',
-  'sofaia': '🇵🇪',
-  'fatimah': '🇲🇦',
-  'zeoo': '🇧🇷',
-  'chloe': '🇺🇸',
-  'sophia': '🇯🇵',
-  'grace': '🇬🇧',
-  'elena': '🇵🇪',
-  'nala': '🇧🇯',
-  'zara': '🇳🇿',
-  'caleb': '🇳🇴',
-  'ethan': '🇯🇵',
+// Drapeaux résolus depuis le nom du pays d'origine (jamais depuis le prénom).
+const countryFlagMap: Record<string, string> = {
+  benin: '🇧🇯', 'new zealand': '🇳🇿', senegal: '🇸🇳', ethiopia: '🇪🇹',
+  mexico: '🇲🇽', japan: '🇯🇵', france: '🇫🇷', jordan: '🇯🇴',
+  morocco: '🇲🇦', brazil: '🇧🇷', usa: '🇺🇸', uk: '🇬🇧',
+  canada: '🇨🇦', australia: '🇦🇺', germany: '🇩🇪', spain: '🇪🇸',
+  italy: '🇮🇹', 'south korea': '🇰🇷', china: '🇨🇳', india: '🇮🇳',
+  egypt: '🇪🇬', ghana: '🇬🇭', nigeria: '🇳🇬', kenya: '🇰🇪',
+  peru: '🇵🇪', colombia: '🇨🇴', argentina: '🇦🇷',
+  togo: '🇹🇬', 'côte d’ivoire': '🇨🇮', 'côte d ivoire': '🇨🇮', "côte d'ivoire": '🇨🇮', 'ivory coast': '🇨🇮', cameroon: '🇨🇲',
+  mali: '🇲🇱', 'burkina faso': '🇧🇫', guinea: '🇬🇳', niger: '🇳🇪',
+  'united states': '🇺🇸', 'united kingdom': '🇬🇧', 'united states of america': '🇺🇸',
+  // Afrique de l'Ouest & Centrale
+  gabon: '🇬🇦', congo: '🇨🇬', 'democratic republic of the congo': '🇨🇩', 'rd congo': '🇨🇩', drc: '🇨🇩',
+  chad: '🇹🇩', 'central african republic': '🇨🇫', 'equatorial guinea': '🇬🇶',
+  'sierra leone': '🇸🇱', liberia: '🇱🇷', gambia: '🇬🇲', 'guinea-bissau': '🇬🇼', 'cape verde': '🇨🇻',
+  // Afrique de l'Est & australe
+  uganda: '🇺🇬', rwanda: '🇷🇼', burundi: '🇧🇮', 'south africa': '🇿🇦', zambia: '🇿🇲',
+  zimbabwe: '🇿🇼', mozambique: '🇲🇿', angola: '🇦🇴', botswana: '🇧🇼', namibia: '🇳🇦',
+  madagascar: '🇲🇬', tanzania: '🇹🇿', somalia: '🇸🇴', sudan: '🇸🇩', 'south sudan': '🇸🇸', eritrea: '🇪🇷', djibouti: '🇩🇯',
+  // Maghreb & Moyen-Orient
+  algeria: '🇩🇿', tunisia: '🇹🇳', libya: '🇱🇾', mauritania: '🇲🇷',
+  'saudi arabia': '🇸🇦', 'united arab emirates': '🇦🇪', qatar: '🇶🇦', kuwait: '🇰🇼', lebanon: '🇱🇧', syria: '🇸🇾', iraq: '🇮🇶', turkey: '🇹🇷', israel: '🇮🇱', palestine: '🇵🇸', iran: '🇮🇷',
+  // Europe
+  portugal: '🇵🇹', netherlands: '🇳🇱', belgium: '🇧🇪', switzerland: '🇨🇭', austria: '🇦🇹',
+  poland: '🇵🇱', romania: '🇷🇴', greece: '🇬🇷', sweden: '🇸🇪', norway: '🇳🇴', denmark: '🇩🇰', finland: '🇫🇮', ireland: '🇮🇪', russia: '🇷🇺', ukraine: '🇺🇦',
+  // Amériques
+  'united states of america (usa)': '🇺🇸', haiti: '🇭🇹', jamaica: '🇯🇲', 'trinidad and tobago': '🇹🇹',
+  'dominican republic': '🇩🇴', cuba: '🇨🇺', 'costa rica': '🇨🇷', panama: '🇵🇦', guatemala: '🇬🇹',
+  ecuador: '🇪🇨', bolivia: '🇧🇴', venezuela: '🇻🇪', paraguay: '🇵🇾', uruguay: '🇺🇾', chile: '🇨🇱',
+  // Asie & Océanie
+  pakistan: '🇵🇰', bangladesh: '🇧🇩', 'sri lanka': '🇱🇰', nepal: '🇳🇵', afghanistan: '🇦🇫',
+  thailand: '🇹🇭', vietnam: '🇻🇳', philippines: '🇵🇭', indonesia: '🇮🇩', malaysia: '🇲🇾', singapore: '🇸🇬',
+  'hong kong': '🇭🇰', taiwan: '🇹🇼', mongolia: '🇲🇳', cambodia: '🇰🇭', laos: '🇱🇦', myanmar: '🇲🇲',
+  'north korea': '🇰🇵', 'new caledonia': '🇳🇨', fiji: '🇫🇯', 'papua new guinea': '🇵🇬',
 };
+
+/** Résout le drapeau à partir du pays d'origine (nom du pays). */
+export function resolveCountryFlag(country?: string | null): string | undefined {
+  if (!country) return undefined;
+  return countryFlagMap[country.trim().toLowerCase()];
+}
 
 export const TotemAvatar = ({
   src,
@@ -95,12 +116,11 @@ export const TotemAvatar = ({
   const glowKey = hasStory ? 'orange' : (glow || 'turquoise');
   const stops = glowStops[glowKey] || glowStops['turquoise'];
   
-  // Resolve country flag based on prop, or search map by alt name (user name)
-  let resolvedFlag = countryFlag;
-  if (!resolvedFlag && alt) {
-    const firstWord = alt.trim().split(' ')[0].toLowerCase();
-    resolvedFlag = nameFlagMap[firstWord];
-  }
+  // Le drapeau vient du pays d'origine passé explicitement (prop countryFlag)
+  const resolvedFlag = countryFlag;
+
+  // Photo réelle si fournie, sinon avatar généré (jamais d'initiales type "vi").
+  const resolvedSrc = src || fallbackAvatar(alt);
 
   // Unique ID for the SVG gradient reference
   const gradId = `avatar-grad-${size}-${glow}-${hasStory ? 'story' : 'std'}-${shape}`;
@@ -176,31 +196,16 @@ export const TotemAvatar = ({
             />
             {/* Couche 3 : Image clippée (rendu interne SVG pour alignement parfait) */}
             <g clipPath={`url(#${clipId})`}>
-              {src ? (
+              {resolvedSrc ? (
                 <image
-                  href={src}
+                  href={resolvedSrc}
                   x="0"
                   y="0"
                   width="100"
                   height="100"
                   preserveAspectRatio="xMidYMid slice"
                 />
-              ) : (
-                <>
-                  <rect x="0" y="0" width="100" height="100" fill="#27272a" />
-                  <text
-                    x="50"
-                    y="55"
-                    textAnchor="middle"
-                    fill="#ffffff"
-                    fontSize="18"
-                    fontWeight="900"
-                    fontFamily="var(--font-sans)"
-                  >
-                    {alt ? alt.substring(0, 2).toUpperCase() : 'CM'}
-                  </text>
-                </>
-              )}
+              ) : null}
             </g>
           </>
         ) : isHexagon ? (
@@ -269,18 +274,14 @@ export const TotemAvatar = ({
           }}
           className="bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center transition-colors"
         >
-          {src ? (
+          {resolvedSrc ? (
             <img
-              src={src}
+              src={resolvedSrc}
               alt={alt}
               className="w-full h-full object-cover select-none"
               referrerPolicy="no-referrer"
             />
-          ) : (
-            <span className="text-[10px] md:text-xs font-black text-zinc-600 dark:text-zinc-400 uppercase tracking-tight select-none">
-              {alt ? alt.substring(0, 2) : 'CM'}
-            </span>
-          )}
+          ) : null}
         </div>
       )}
 

@@ -1,22 +1,33 @@
 import { z } from 'zod';
 
-export const POST_TYPES = ['Text', 'Images', 'Link'] as const;
+export const POST_TYPES = ['Text', 'Images', 'Link', 'Repost'] as const;
 export type PostType = (typeof POST_TYPES)[number];
 
 const TAG_REGEX = /^[a-z0-9-]+$/;
 
-/** POST /api/posts — création d'une tradition. */
+const basePostFields = {
+  title: z.string().trim().min(3, 'Titre : 3 caractères minimum').max(200, 'Titre : 200 caractères maximum').optional(),
+  body: z.string().trim().max(5000, 'Contenu : 5000 caractères maximum').optional(),
+  mediaUrls: z.array(z.string().url()).min(1, 'Au moins un média requis').max(10, '10 médias maximum').optional(),
+  linkUrl: z.string().url('URL invalide').optional(),
+  tribeId: z.string().trim().min(1).optional(),
+  tags: z.array(z.string().regex(TAG_REGEX, 'Tag : lettres minuscules, chiffres ou tirets uniquement')).max(5, '5 tags maximum').optional(),
+};
+
+/** POST /api/posts — création d'une tradition (ou d'un repost). */
 export const createPostSchema = z
   .object({
     type: z.enum(POST_TYPES),
-    title: z.string().trim().min(3, 'Titre : 3 caractères minimum').max(200, 'Titre : 200 caractères maximum'),
-    body: z.string().trim().max(5000, 'Contenu : 5000 caractères maximum').optional(),
-    mediaUrls: z.array(z.string().url()).min(1, 'Au moins un média requis').max(10, '10 médias maximum').optional(),
-    linkUrl: z.string().url('URL invalide').optional(),
-    tribeId: z.string().trim().min(1).optional(),
-    tags: z.array(z.string().regex(TAG_REGEX, 'Tag : lettres minuscules, chiffres ou tirets uniquement')).max(5, '5 tags maximum').optional(),
+    ...basePostFields,
+    /** Requis si type=Repost : le post original à repartager. */
+    originalPostId: z.string().trim().min(1).optional(),
   })
-  .strict();
+  .strict()
+  .superRefine((val, ctx) => {
+    if (val.type === 'Repost' && !val.originalPostId) {
+      ctx.addIssue({ code: 'custom', path: ['originalPostId'], message: "originalPostId est requis pour un repost" });
+    }
+  });
 
 export type CreatePostInput = z.infer<typeof createPostSchema>;
 

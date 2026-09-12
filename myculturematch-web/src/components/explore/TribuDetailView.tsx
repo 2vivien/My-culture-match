@@ -28,6 +28,7 @@ export const TribuDetailView: React.FC = () => {
     setMutedPostIds,
     rules,
     moderators,
+    tribeInfo,
     sortedPosts,
     handleFlagClick,
     handleCommentChange,
@@ -42,6 +43,7 @@ export const TribuDetailView: React.FC = () => {
         setJoined={setJoined}
         notificationsOn={notificationsOn}
         setNotificationsOn={setNotificationsOn}
+        tribeInfo={tribeInfo}
       />
 
       {/* Main Grid layout: Left Feed & Right Sidebar Info */}
@@ -77,6 +79,7 @@ export const TribuDetailView: React.FC = () => {
               <TribuPostCard
                 key={post.id}
                 post={post}
+                tribeName={tribeInfo?.name}
                 commentInput={commentInputs[post.id] || ''}
                 isMenuOpen={openMenuPostId === post.id}
                 isSaved={!!savedPostIds[post.id]}
@@ -117,11 +120,12 @@ export const TribuDetailView: React.FC = () => {
         {/* Right Sidebar Column */}
         <div className="w-full lg:w-80 shrink-0 flex flex-col gap-5">
           {/* About Community Card */}
-          <TribuAbout />
+          <TribuAbout tribeInfo={tribeInfo} />
 
           {/* Tribe Rules Card Accordion */}
           <TribuRules
             rules={rules}
+            tribeName={tribeInfo?.name}
             expandedRule={expandedRule}
             setExpandedRule={setExpandedRule}
           />

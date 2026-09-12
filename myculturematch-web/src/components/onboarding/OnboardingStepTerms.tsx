@@ -53,7 +53,7 @@ export const OnboardingStepTerms: React.FC<OnboardingStepTermsProps> = ({
               </div>
               <div>
                 <h4 className="font-bold text-zinc-900 dark:text-white text-xs uppercase tracking-wider mb-1">4. Conditions d'Accès</h4>
-                <p>L'accès à l'application est réservé aux personnes majeures de 18 ans et plus. En continuant, vous confirmez remplir cette condition essentielle.</p>
+                <p>L'accès à l'application est réservé aux personnes de 16 ans et plus. En continuant, vous confirmez remplir cette condition essentielle.</p>
               </div>
             </div>
 

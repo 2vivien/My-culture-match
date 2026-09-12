@@ -5,6 +5,7 @@ import type { PostItem } from '@/src/types/tribu';
 
 interface TribuPostCardProps {
   post: PostItem;
+  tribeName?: string;
   commentInput: string;
   isMenuOpen: boolean;
   isSaved: boolean;
@@ -22,6 +23,7 @@ interface TribuPostCardProps {
 
 export const TribuPostCard: React.FC<TribuPostCardProps> = ({
   post,
+  tribeName,
   commentInput,
   isMenuOpen,
   isSaved,
@@ -55,7 +57,7 @@ export const TribuPostCard: React.FC<TribuPostCardProps> = ({
 
           <div className="flex items-center gap-1.5 text-xs text-app-gray dark:text-zinc-400 font-medium">
             <span className="font-black text-[#E27D60] dark:text-[#E27D60]">
-              t/YamatoTribe
+              t/{tribeName ?? 'Tribu'}
             </span>
             <span>•</span>
             <span className="font-extrabold text-app-black dark:text-zinc-300">
