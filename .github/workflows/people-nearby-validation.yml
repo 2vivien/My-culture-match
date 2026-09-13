@@ -1,0 +1,54 @@
+name: People Nearby validation
+
+on:
+  push:
+    paths:
+      - 'backend/src/modules/location/**'
+      - 'backend/src/modules/users/**'
+      - 'backend/src/infrastructure/websocket/**'
+      - 'backend/drizzle/**'
+      - 'myculturematch-web/src/components/connections/**'
+      - 'myculturematch-web/package.json'
+      - 'myculturematch-web/package-lock.json'
+      - '.github/workflows/people-nearby-validation.yml'
+  pull_request:
+    paths:
+      - 'backend/src/modules/location/**'
+      - 'backend/src/modules/users/**'
+      - 'backend/src/infrastructure/websocket/**'
+      - 'backend/drizzle/**'
+      - 'myculturematch-web/src/components/connections/**'
+      - 'myculturematch-web/package.json'
+      - 'myculturematch-web/package-lock.json'
+      - '.github/workflows/people-nearby-validation.yml'
+
+jobs:
+  backend-location:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+      - run: npx vitest run src/modules/location/location.policy.test.ts
+      - run: npm run typecheck
+
+  web-location:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: myculturematch-web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install --no-audit --no-fund
+      - run: npm run lint
+      - run: npm run build
