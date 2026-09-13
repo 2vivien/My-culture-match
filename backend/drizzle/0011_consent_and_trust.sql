@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS "consent_settings" (
   "discovery_visibility" text NOT NULL DEFAULT 'everyone',
   "request_visibility" text NOT NULL DEFAULT 'everyone',
   "love_like_visibility" text NOT NULL DEFAULT 'everyone',
-  "contact_visibility" text NOT NULL DEFAULT 'companions',
+  "contact_visibility" text NOT NULL DEFAULT 'friends',
   "profile_visibility" text NOT NULL DEFAULT 'everyone',
   "photos_visibility" text NOT NULL DEFAULT 'everyone',
   "country_visibility" text NOT NULL DEFAULT 'everyone',
