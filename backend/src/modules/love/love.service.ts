@@ -8,6 +8,7 @@ import { createConversationForUsers } from '../messages/messages.service';
 import { compatLove } from '../culture-engine/scoring';
 import { matchesCreatedTotal } from '../../infrastructure/monitoring/metrics';
 import { canLikeForLove } from '../consent/consent.service';
+import { parseLoveQuery } from './love.ai';
 
 const CANDIDATES_TTL = 60 * 60;
 const PASS_TTL = 30 * 24 * 60 * 60;
@@ -20,26 +21,12 @@ const swipedKey = (userId: string) => `love:swiped:${userId}`;
 const pairLock = (a: string, b: string) => `love:pair:${[a, b].sort().join(':')}`;
 const searchQuotaKey = (userId: string) => `love:search:quota:${userId}`;
 
-export interface LoveCandidateDto {
-  id: string; name: string; username: string; avatar: string | null; bio: string | null;
-  location: string | null; country: string | null; gender: string | null; age: number | null;
-  matchScore: number; sharedValues: string[];
-}
-
-export interface LoveSearchCriteria {
-  ageMin?: number; ageMax?: number; genders?: string[]; countries?: string[];
-  relationshipGoal?: 'serious' | 'casual' | 'friendship' | 'open';
-  keywords?: string[]; distanceKm?: number;
-}
-
-export interface LoveSearchResult extends LoveCandidateDto {
-  rank: number;
-  reasons: string[];
-  breakdown: { values: number; goals: number; language: number; culture: number; interests: number };
-}
+export interface LoveCandidateDto { id: string; name: string; username: string; avatar: string | null; bio: string | null; location: string | null; country: string | null; gender: string | null; age: number | null; matchScore: number; sharedValues: string[]; }
+export interface LoveSearchResult extends LoveCandidateDto { rank: number; reasons: string[]; breakdown: { values: number; goals: number; language: number; culture: number; interests: number }; }
 
 function computeAge(birthdate: Date | null): number | null { if (!birthdate) return null; return Math.floor((Date.now() - birthdate.getTime()) / (365.25 * 24 * 60 * 60 * 1000)); }
 function toUserFeatures(row: { values: string[] | null; languages: string[] | null; ethnicity: string | null; country: string | null; region: string | null; interests?: string[] }) { return { id: '', values: row.values, languages: row.languages, ethnicity: row.ethnicity, country: row.country, region: row.region, interests: row.interests ?? row.values ?? [] }; }
+function normalized(value: string | null | undefined): string { return (value ?? '').toLocaleLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); }
 async function blockedIds(userId: string): Promise<string[]> { const rows = await db.select({ blockedId: schema.blocks.blockedId }).from(schema.blocks).where(eq(schema.blocks.blockerId, userId)); return rows.map((r) => r.blockedId); }
 async function isBlockedBetween(a: string, b: string): Promise<boolean> { const rows = await db.select({ blockerId: schema.blocks.blockerId }).from(schema.blocks).where(or(and(eq(schema.blocks.blockerId, a), eq(schema.blocks.blockedId, b)), and(eq(schema.blocks.blockerId, b), eq(schema.blocks.blockedId, a)))).limit(1); return rows.length > 0; }
 
@@ -55,25 +42,9 @@ export async function getLoveCandidates(userId: string): Promise<{ candidates: L
   await redis.set(candidatesKey(userId), JSON.stringify(result), 'EX', CANDIDATES_TTL); return { candidates: result };
 }
 
-function normalized(value: string | null | undefined): string { return (value ?? '').toLocaleLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); }
-function parseLoveQuery(query: string): LoveSearchCriteria {
-  const q = normalized(query);
-  const ages = q.match(/(?:entre|de)\s*(\d{2})\s*(?:et|a|à|-)\s*(\d{2})/);
-  const criteria: LoveSearchCriteria = {};
-  if (ages) { criteria.ageMin = Number(ages[1]); criteria.ageMax = Number(ages[2]); }
-  if (/femme|femmes|une femme/.test(q)) criteria.genders = ['female'];
-  else if (/homme|hommes|un homme/.test(q)) criteria.genders = ['male'];
-  if (/serieuse|serieux|engagement|long terme|mariage/.test(q)) criteria.relationshipGoal = 'serious';
-  else if (/sans engagement|casual|legere/.test(q)) criteria.relationshipGoal = 'casual';
-  if (/pres|proche|voisin|voisine|ma region/.test(q)) criteria.distanceKm = 50;
-  const keywords = ['voyage', 'voyager', 'culture', 'musique', 'sport', 'lecture', 'cuisine', 'famille', 'ouvert', 'ouverte', 'spirituel', 'aventure'];
-  criteria.keywords = keywords.filter((k) => q.includes(k));
-  return criteria;
-}
-
 function overlap(a: string[] | null | undefined, b: string[]): number { const aa = new Set((a ?? []).map(normalized)); return b.filter((v) => aa.has(normalized(v))).length; }
 
-export async function searchLove(userId: string, query: string): Promise<{ query: string; criteria: LoveSearchCriteria; results: LoveSearchResult[]; remainingSearches: number }> {
+export async function searchLove(userId: string, query: string): Promise<{ query: string; criteria: Awaited<ReturnType<typeof parseLoveQuery>>; results: LoveSearchResult[]; remainingSearches: number }> {
   const clean = query.trim(); if (clean.length < 3) throw AppError.badRequest('Décris un peu la personne que tu recherches', 'LOVE_QUERY_TOO_SHORT');
   const [me] = await db.select().from(schema.users).where(eq(schema.users.id, userId)).limit(1); if (!me) throw AppError.notFound('Utilisateur introuvable', 'USER_NOT_FOUND');
   const consent = await import('../consent/consent.service').then((m) => m.getConsentSettings(userId));
@@ -81,7 +52,7 @@ export async function searchLove(userId: string, query: string): Promise<{ query
   const quota = await redis.incr(searchQuotaKey(userId)); if (quota === 1) await redis.expire(searchQuotaKey(userId), LOVE_SEARCH_WINDOW);
   if (quota > LOVE_SEARCH_LIMIT) { const ttl = await redis.ttl(searchQuotaKey(userId)); throw AppError.tooMany(`Tu as utilisé tes 3 recherches de la semaine. Réessaie dans ${Math.max(1, Math.ceil(ttl / 86400))} jour(s).`, 'LOVE_SEARCH_QUOTA'); }
 
-  const criteria = parseLoveQuery(clean);
+  const criteria = await parseLoveQuery(clean);
   const blocked = await blockedIds(userId);
   const existingRows = await db.select({ candidateId: schema.loveMatches.candidateId }).from(schema.loveMatches).where(eq(schema.loveMatches.userId, userId));
   const excluded = new Set([userId, ...blocked, ...existingRows.map((r) => r.candidateId)]);
@@ -93,25 +64,25 @@ export async function searchLove(userId: string, query: string): Promise<{ query
     if (criteria.ageMin !== undefined && age < criteria.ageMin) continue;
     if (criteria.ageMax !== undefined && age > criteria.ageMax) continue;
     if (criteria.genders?.length && !criteria.genders.includes(c.gender ?? '')) continue;
+    if (criteria.countries?.length && !criteria.countries.some((country) => normalized(country) === normalized(c.country))) continue;
     if (!(await canLikeForLove(userId, c.id))) continue;
     visible.push(c);
   }
   const meFeatures = toUserFeatures(me);
   const ranked = visible.map((c) => {
     const sharedValues = (c.values ?? []).filter((v) => (me.values ?? []).some((mine) => normalized(mine) === normalized(v)));
-    const valueOverlap = overlap(c.values, criteria.keywords ?? []);
-    const interestOverlap = overlap(c.values, criteria.keywords ?? []);
+    const keywordOverlap = overlap([...(c.values ?? []), ...(c.languages ?? []), c.country, c.region, c.bio].filter(Boolean) as string[], criteria.keywords ?? []);
     const scoreBase = compatLove(meFeatures, toUserFeatures(c));
     const values = Math.min(100, Math.round(scoreBase * 0.45 + Math.min(100, sharedValues.length * 20) * 0.55));
     const goals = criteria.relationshipGoal ? 72 : 55;
     const language = overlap(c.languages, me.languages ?? []) > 0 ? 95 : 55;
     const culture = c.country && me.country && normalized(c.country) === normalized(me.country) ? 92 : 65;
-    const interests = criteria.keywords?.length ? Math.min(100, 50 + valueOverlap * 20 + interestOverlap * 10) : 65;
+    const interests = criteria.keywords?.length ? Math.min(100, 50 + keywordOverlap * 15) : 65;
     const score = Math.min(97, Math.max(50, Math.round(values * 0.4 + goals * 0.15 + language * 0.1 + culture * 0.15 + interests * 0.2)));
     const reasons: string[] = [];
     if (sharedValues.length) reasons.push(`${sharedValues.slice(0, 2).join(' et ')} en commun`);
     if (criteria.relationshipGoal === 'serious') reasons.push('Objectif orienté relation sérieuse');
-    if (criteria.keywords?.some((k) => ['voyage', 'voyager'].includes(k))) reasons.push('Profil compatible avec ton intérêt pour les voyages');
+    if (criteria.keywords?.some((k) => ['voyage', 'voyager'].includes(k)) && keywordOverlap > 0) reasons.push('Intérêt compatible avec les voyages');
     if (language > 80) reasons.push('Langues compatibles');
     if (culture > 85) reasons.push('Proximité culturelle intéressante');
     if (!reasons.length) reasons.push('Bonne compatibilité globale avec tes critères');
