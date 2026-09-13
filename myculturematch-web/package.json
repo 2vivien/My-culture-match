@@ -31,6 +31,7 @@
     "react-dom": "^19.0.1",
     "react-hook-form": "^7.79.0",
     "recharts": "^3.10.1",
+    "socket.io-client": "^4.8.3",
     "supercluster": "^9.1.0",
     "tailwind-merge": "^3.6.0",
     "vite": "^6.2.3",
@@ -43,9 +44,8 @@
     "@types/node": "^22.14.0",
     "autoprefixer": "^10.4.21",
     "esbuild": "^0.25.0",
-    "tailwindcss": "^4.1.14",
+    "tailwindcss": "^4.1.0",
     "tsx": "^4.21.0",
-    "typescript": "~5.8.2",
-    "vite": "^6.2.3"
+    "typescript": "~5.8.2"
   }
 }
