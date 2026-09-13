@@ -3,6 +3,7 @@ import { db, schema } from '../../infrastructure/database';
 import { redis } from '../../infrastructure/redis';
 import { emitToUser } from '../../infrastructure/websocket';
 import { userLocationSettings, locationPrecision, locationVisibility, type LocationPrecision, type LocationVisibility } from './location.schema';
+import { canDiscoverUser, shouldHideLocation } from './location.policy';
 import { AppError } from '../../shared/utils/AppError';
 import { haversineKm } from '../users/users.service';
 
@@ -59,24 +60,19 @@ export async function updateLocationSettings(userId: string, input: Partial<Loca
   if (expiresAt && Number.isNaN(expiresAt.getTime())) throw AppError.badRequest('Expiration invalide', 'INVALID_LOCATION_EXPIRY');
 
   await db.insert(userLocationSettings).values({
-    userId,
-    visibility,
-    precision,
+    userId, visibility, precision,
     ghostMode: input.ghostMode ?? current.ghostMode,
     showDistance: input.showDistance ?? current.showDistance,
     showActiveStatus: input.showActiveStatus ?? current.showActiveStatus,
-    expiresAt,
-    updatedAt: new Date(),
+    expiresAt, updatedAt: new Date(),
   }).onConflictDoUpdate({
     target: userLocationSettings.userId,
     set: {
-      visibility,
-      precision,
+      visibility, precision,
       ghostMode: input.ghostMode ?? current.ghostMode,
       showDistance: input.showDistance ?? current.showDistance,
       showActiveStatus: input.showActiveStatus ?? current.showActiveStatus,
-      expiresAt,
-      updatedAt: new Date(),
+      expiresAt, updatedAt: new Date(),
     },
   });
 
@@ -89,7 +85,6 @@ export async function updateLocationSettings(userId: string, input: Partial<Loca
       updatedAt: new Date(),
     }).where(eq(schema.users.id, userId));
   }
-
   await redis.del(cacheKey(userId));
   const settings = await getLocationSettings(userId);
   await notifyLocationChange(userId, settings);
@@ -101,12 +96,10 @@ function jitter(value: number, seed: string, magnitude: number) {
   for (const ch of seed) h = Math.imul(h ^ ch.charCodeAt(0), 16777619);
   return value + ((((h >>> 0) % 100000) / 100000) - 0.5) * magnitude;
 }
-
 function fuzz(lat: number, lon: number, id: string, precision: LocationPrecision) {
   const magnitude = precision === 'area' ? 0.02 : 0.006;
   return { latitude: jitter(lat, `${id}:lat`, magnitude), longitude: jitter(lon, `${id}:lon`, magnitude) };
 }
-
 function boundingBox(latitude: number, longitude: number, radiusKm: number) {
   const latDelta = radiusKm / 111;
   const lonDelta = radiusKm / (111 * Math.max(Math.cos((latitude * Math.PI) / 180), 0.2));
@@ -141,25 +134,16 @@ async function blockedBetween(userId: string): Promise<Set<string>> {
   return new Set(rows.map(r => r.blockerId === userId ? r.blockedId : r.blockerId));
 }
 
-function allowedByVisibility(visibility: LocationVisibility, isFriend: boolean, isFriendOfFriend: boolean) {
-  if (visibility === 'nobody') return false;
-  if (visibility === 'friends') return isFriend;
-  if (visibility === 'friends_of_friends') return isFriend || isFriendOfFriend;
-  return true;
-}
-
 export async function getPeopleNearby(userId: string, viewerLocation?: { latitude: number; longitude: number }) {
   const [viewer] = await db.select({ latitude: schema.users.latitude, longitude: schema.users.longitude, sharingEnabled: schema.users.locationSharingEnabled })
     .from(schema.users).where(eq(schema.users.id, userId)).limit(1);
   if (!viewer) throw AppError.notFound('Utilisateur introuvable', 'USER_NOT_FOUND');
-
   const origin = viewer.sharingEnabled && viewer.latitude !== null && viewer.longitude !== null ? { latitude: viewer.latitude, longitude: viewer.longitude } : viewerLocation;
   if (!origin) return { people: [], total: 0 };
 
   const [friends, blocked] = await Promise.all([companionIds(userId), blockedBetween(userId)]);
   const fof = await friendsOfFriendsIds(friends, userId);
   const { minLat, maxLat, minLon, maxLon } = boundingBox(origin.latitude, origin.longitude, NEARBY_RADIUS_KM);
-
   const candidates = await db.select({
     id: schema.users.id, name: schema.users.name, username: schema.users.username, avatar: schema.users.avatar,
     bio: schema.users.bio, country: schema.users.country, location: schema.users.location, languages: schema.users.languages,
@@ -174,12 +158,10 @@ export async function getPeopleNearby(userId: string, viewerLocation?: { latitud
 
   const people: Array<Record<string, unknown>> = [];
   for (const c of candidates) {
-    if (c.id === userId || blocked.has(c.id) || c.latitude === null || c.longitude === null || c.ghost) continue;
-    if (c.expiresAt && c.expiresAt.getTime() <= Date.now()) continue;
+    if (c.id === userId || blocked.has(c.id) || c.latitude === null || c.longitude === null) continue;
     const visibility = validVisibility(c.visibility) ? c.visibility : 'nearby';
-    const isFriend = friends.has(c.id);
-    const isFof = fof.has(c.id);
-    if (!allowedByVisibility(visibility, isFriend, isFof)) continue;
+    if (shouldHideLocation({ sharingEnabled: true, ghostMode: c.ghost ?? false, expiresAt: c.expiresAt })) continue;
+    if (!canDiscoverUser(visibility, friends.has(c.id), fof.has(c.id))) continue;
     const distance = haversineKm(origin.latitude, origin.longitude, c.latitude, c.longitude);
     if (distance > NEARBY_RADIUS_KM) continue;
     const precision = validPrecision(c.precision) ? c.precision : 'approximate';
@@ -189,23 +171,24 @@ export async function getPeopleNearby(userId: string, viewerLocation?: { latitud
       id: c.id, name: c.name, username: c.username, avatar: c.avatar, bio: c.bio, country: c.country, location: c.location,
       languages: c.languages, values: c.values, intention: c.intention, matchScore: 0, ...position, distanceKm,
       distanceLabel: distanceKm === null ? null : distanceKm < 1 ? 'Nearby' : `~${distanceKm} km away`,
-      isCompanion: isFriend, isFriendOfFriend: isFof, isActive: c.showActive ? !!c.updated && Date.now() - c.updated.getTime() < 120000 : false,
+      isCompanion: friends.has(c.id), isFriendOfFriend: fof.has(c.id),
+      isActive: c.showActive ? !!c.updated && Date.now() - c.updated.getTime() < 120000 : false,
     });
   }
   people.sort((a, b) => Number(a.distanceKm ?? 999) - Number(b.distanceKm ?? 999));
   return { people: people.slice(0, 200), total: people.length };
 }
 
-/** Push a privacy-safe event to eligible users. The event contains no raw coordinates. */
 async function notifyLocationChange(userId: string, settings: LocationSettingsDto) {
   if (!settings.sharingEnabled || settings.ghostMode) return;
   const friends = await companionIds(userId);
   for (const recipientId of friends) emitToUser(recipientId, LOCATION_EVENT, { userId, action: 'refresh' });
   const [user] = await db.select({ latitude: schema.users.latitude, longitude: schema.users.longitude }).from(schema.users).where(eq(schema.users.id, userId)).limit(1);
-  if (!user?.latitude || !user.longitude) return;
+  if (user?.latitude === null || user?.latitude === undefined || user.longitude === null || user.longitude === undefined) return;
   const { minLat, maxLat, minLon, maxLon } = boundingBox(user.latitude, user.longitude, NEARBY_RADIUS_KM);
   const nearby = await db.select({ id: schema.users.id }).from(schema.users).leftJoin(userLocationSettings, eq(userLocationSettings.userId, schema.users.id)).where(and(
-    eq(schema.users.profileCompleted, true), eq(schema.users.locationSharingEnabled, true), gte(schema.users.latitude, minLat), lte(schema.users.latitude, maxLat), gte(schema.users.longitude, minLon), lte(schema.users.longitude, maxLon),
+    eq(schema.users.profileCompleted, true), eq(schema.users.locationSharingEnabled, true),
+    gte(schema.users.latitude, minLat), lte(schema.users.latitude, maxLat), gte(schema.users.longitude, minLon), lte(schema.users.longitude, maxLon),
   )).limit(300);
   for (const recipient of nearby) if (recipient.id !== userId && !friends.has(recipient.id)) emitToUser(recipient.id, LOCATION_EVENT, { userId, action: 'refresh' });
 }
