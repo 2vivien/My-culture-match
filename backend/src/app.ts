@@ -15,6 +15,7 @@ import { postsModule } from './modules/posts/posts.routes';
 import { tribesModule, tribuModule } from './modules/tribes/tribes.routes';
 import { messagesRoutes } from './modules/messages/messages.routes';
 import { connectionsRoutes } from './modules/connections/connections.routes';
+import { locationRoutes } from './modules/location/location.routes';
 import { loveRoutes } from './modules/love/love.routes';
 import { notificationsRoutes } from './modules/notifications/notifications.routes';
 import { storiesRoutes } from './modules/stories/stories.routes';
@@ -24,70 +25,13 @@ import { adminRoutes } from './modules/admin/admin.routes';
 import { reportsRoutes } from './modules/reports/reports.routes';
 import { exploreRoutes } from './modules/explore/explore.routes';
 
-export type AppBindings = {
-  Variables: {
-    requestId: string;
-    correlationId: string;
-  };
-};
+export type AppBindings = { Variables: { requestId: string; correlationId: string } };
 
-/** Construit l'application Hono complète (testable sans serveur). */
 export function createApp(): Hono<AppBindings> {
   const app = new Hono<AppBindings>();
-
-  // Middlewares globaux (ordre = ordre d'exécution)
-  app.use('*', requestId);
-  app.use('*', cors);
-  app.use('*', httpLogger);
-  app.use('*', metricsMiddleware);
-
-  // Observabilité (MP18) — /metrics protégé par token en prod (Prometheus scrape)
-  app.get('/metrics', (c) => {
-    const auth = c.req.header('Authorization')?.replace(/^Bearer\s+/i, '');
-    const xToken = c.req.header('X-Metrics-Token');
-    if (env.METRICS_TOKEN) {
-      if (auth !== env.METRICS_TOKEN && xToken !== env.METRICS_TOKEN) {
-        return c.json({ error: { code: 'UNAUTHORIZED', message: 'Token de métriques invalide' } }, 401);
-      }
-    } else if (env.NODE_ENV === 'production') {
-      return c.json({ error: { code: 'UNAUTHORIZED', message: 'Métriques non exposées' } }, 401);
-    }
-    return renderMetrics();
-  });
-
-  // Routes
-  app.route('/health', healthModule);
-  app.route('/api/auth', authModule);
-  app.route('/api/onboarding', onboardingModule);
-  app.route('/api/users', usersModule);
-  app.route('/api/settings', settingsModule);
-  app.route('/api/uploads', uploadsModule);
-  app.route('/api/posts', postsModule);
-  app.route('/api/tribes', tribesModule);
-  app.route('/api/tribu', tribuModule);
-  app.route('/api', messagesRoutes);
-  app.route('/api', connectionsRoutes);
-  app.route('/api', loveRoutes);
-  app.route('/api', notificationsRoutes);
-  app.route('/api', storiesRoutes);
-  app.route('/api', searchRoutes);
-  app.route('/api', feedRoutes);
-  app.route('/api', reportsRoutes);
-  app.route('/api', exploreRoutes);
-  app.route('/api/admin', adminRoutes);
-
-  // 404 JSON
-  app.notFound((c) =>
-    c.json(
-      {
-        error: { code: 'NOT_FOUND', message: `Route introuvable : ${c.req.method} ${c.req.path}` },
-      },
-      404,
-    ),
-  );
-
-  // Handler d'erreurs global
-  app.onError(errorHandler);
-
-  return app;
+  app.use('*', requestId); app.use('*', cors); app.use('*', httpLogger); app.use('*', metricsMiddleware);
+  app.get('/metrics', (c) => { const auth=c.req.header('Authorization')?.replace(/^Bearer\s+/i,''); const xToken=c.req.header('X-Metrics-Token'); if(env.METRICS_TOKEN){if(auth!==env.METRICS_TOKEN&&xToken!==env.METRICS_TOKEN)return c.json({error:{code:'UNAUTHORIZED',message:'Token de métriques invalide'}},401);}else if(env.NODE_ENV==='production')return c.json({error:{code:'UNAUTHORIZED',message:'Métriques non exposées'}},401);return renderMetrics(); });
+  app.route('/health', healthModule); app.route('/api/auth', authModule); app.route('/api/onboarding', onboardingModule); app.route('/api/users', usersModule); app.route('/api/settings', settingsModule); app.route('/api/uploads', uploadsModule); app.route('/api/posts', postsModule); app.route('/api/tribes', tribesModule); app.route('/api/tribu', tribuModule); app.route('/api', messagesRoutes); app.route('/api', connectionsRoutes); app.route('/api', locationRoutes); app.route('/api', loveRoutes); app.route('/api', notificationsRoutes); app.route('/api', storiesRoutes); app.route('/api', searchRoutes); app.route('/api', feedRoutes); app.route('/api', reportsRoutes); app.route('/api', exploreRoutes); app.route('/api/admin', adminRoutes);
+  app.notFound((c)=>c.json({error:{code:'NOT_FOUND',message:`Route introuvable : ${c.req.method} ${c.req.path}`}},404));
+  app.onError(errorHandler); return app;
 }
