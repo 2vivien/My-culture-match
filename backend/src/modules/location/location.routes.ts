@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import { requireAuth } from '../auth/require-auth';
 import { getLocationSettings, updateLocationSettings, getPeopleNearby } from './location.service';
+import { updateLocationHeartbeat } from './location.heartbeat';
 
 const locationRoutes = new Hono();
 locationRoutes.use('*', requireAuth);
@@ -14,6 +15,15 @@ locationRoutes.patch('/location/settings', async (c) => {
   const { userId } = c.get('auth');
   const body = await c.req.json();
   return c.json({ success: true, settings: await updateLocationSettings(userId, body) });
+});
+
+locationRoutes.post('/location/heartbeat', async (c) => {
+  const { userId } = c.get('auth');
+  const body = await c.req.json() as { latitude?: number; longitude?: number };
+  if (typeof body.latitude !== 'number' || typeof body.longitude !== 'number') {
+    return c.json({ error: { code: 'INVALID_COORDINATES', message: 'latitude et longitude sont requises' } }, 400);
+  }
+  return c.json(await updateLocationHeartbeat(userId, body.latitude, body.longitude));
 });
 
 locationRoutes.get('/location/nearby', async (c) => {
