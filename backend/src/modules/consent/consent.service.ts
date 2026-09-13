@@ -2,13 +2,12 @@ import { and, eq, inArray, or } from 'drizzle-orm';
 import { db, schema } from '../../infrastructure/database';
 import { AppError } from '../../shared/utils/AppError';
 import { haversineKm } from '../users/users.service';
-import type { ConsentSettings, ConsentVisibility } from './consent.schema';
+import type { ConsentSettings } from './consent.schema';
+import { visibilityAllows } from './consent.policy';
 
-const DEFAULTS: Omit<ConsentSettings, 'id' | 'userId' | 'createdAt' | 'updatedAt'> = {
-  discoveryVisibility: 'everyone', requestVisibility: 'everyone', loveLikeVisibility: 'everyone', contactVisibility: 'companions', profileVisibility: 'everyone', photosVisibility: 'everyone', countryVisibility: 'everyone', friendshipEnabled: true, loveEnabled: false, loveProposalEnabled: true,
-};
-const VISIBILITIES: ConsentVisibility[] = ['nobody', 'friends', 'friends_of_friends', 'nearby', 'everyone'];
-function validVisibility(value: unknown): value is ConsentVisibility { return typeof value === 'string' && VISIBILITIES.includes(value as ConsentVisibility); }
+const DEFAULTS: Omit<ConsentSettings, 'id' | 'userId' | 'createdAt' | 'updatedAt'> = { discoveryVisibility: 'everyone', requestVisibility: 'everyone', loveLikeVisibility: 'everyone', contactVisibility: 'companions', profileVisibility: 'everyone', photosVisibility: 'everyone', countryVisibility: 'everyone', friendshipEnabled: true, loveEnabled: false, loveProposalEnabled: true };
+const VISIBILITIES = ['nobody', 'friends', 'friends_of_friends', 'nearby', 'everyone'] as const;
+function validVisibility(value: unknown): boolean { return typeof value === 'string' && VISIBILITIES.includes(value as typeof VISIBILITIES[number]); }
 
 export async function getConsentSettings(userId: string): Promise<ConsentSettings> {
   const [row] = await db.select().from(schema.consentSettings).where(eq(schema.consentSettings.userId, userId)).limit(1); if (row) return row;
@@ -18,8 +17,7 @@ export async function updateConsentSettings(userId: string, patch: Partial<Omit<
   const current = await getConsentSettings(userId); const keys = ['discoveryVisibility','requestVisibility','loveLikeVisibility','contactVisibility','profileVisibility','photosVisibility','countryVisibility'] as const;
   for (const key of keys) if (patch[key] !== undefined && !validVisibility(patch[key])) throw AppError.badRequest(`Valeur invalide pour ${key}`, 'INVALID_CONSENT_VISIBILITY');
   if (patch.loveEnabled === false) patch.loveProposalEnabled = false;
-  const [updated] = await db.update(schema.consentSettings).set({ ...patch, updatedAt: new Date() }).where(eq(schema.consentSettings.userId, userId)).returning();
-  if (!updated) throw AppError.notFound('Préférences introuvables', 'CONSENT_NOT_FOUND'); return updated ?? current;
+  const [updated] = await db.update(schema.consentSettings).set({ ...patch, updatedAt: new Date() }).where(eq(schema.consentSettings.userId, userId)).returning(); if (!updated) throw AppError.notFound('Préférences introuvables', 'CONSENT_NOT_FOUND'); return updated ?? current;
 }
 async function relationFlags(viewerId: string, targetId: string): Promise<{ friend: boolean; fof: boolean; nearby: boolean }> {
   const rows = await db.select({ from: schema.connections.fromUserId, to: schema.connections.toUserId, status: schema.connections.status }).from(schema.connections).where(and(or(eq(schema.connections.fromUserId, viewerId), eq(schema.connections.toUserId, viewerId)), inArray(schema.connections.status, ['companion'])));
@@ -32,7 +30,6 @@ async function isNearby(viewerId: string, targetId: string): Promise<boolean> {
   const rows = await db.select({ id: schema.users.id, latitude: schema.users.latitude, longitude: schema.users.longitude }).from(schema.users).where(inArray(schema.users.id, [viewerId, targetId])); if (rows.length !== 2 || rows.some((r) => r.latitude === null || r.longitude === null)) return false;
   const a = rows.find((r) => r.id === viewerId)!; const b = rows.find((r) => r.id === targetId)!; return haversineKm(a.latitude!, a.longitude!, b.latitude!, b.longitude!) <= 50;
 }
-export function visibilityAllows(value: string, flags: { friend: boolean; fof: boolean; nearby: boolean }): boolean { switch (value) { case 'nobody': return false; case 'friends': return flags.friend; case 'friends_of_friends': return flags.friend || flags.fof; case 'nearby': return flags.nearby; case 'everyone': return true; default: return false; } }
 export async function canDiscover(viewerId: string, targetId: string): Promise<boolean> {
   if (viewerId === targetId) return true; const [target] = await db.select({ bannedAt: schema.users.bannedAt }).from(schema.users).where(eq(schema.users.id, targetId)).limit(1); if (!target || target.bannedAt) return false;
   const blocked = await db.select({ blockerId: schema.blocks.blockerId }).from(schema.blocks).where(or(and(eq(schema.blocks.blockerId, viewerId), eq(schema.blocks.blockedId, targetId)), and(eq(schema.blocks.blockerId, targetId), eq(schema.blocks.blockedId, viewerId)))).limit(1); if (blocked.length) return false;
