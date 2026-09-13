@@ -1,0 +1,56 @@
+name: Trust & Safety Validation
+
+on:
+  push:
+    paths:
+      - 'backend/src/modules/consent/**'
+      - 'backend/src/modules/safety/**'
+      - 'backend/src/modules/love/**'
+      - 'backend/src/modules/connections/**'
+      - 'backend/src/modules/messages/**'
+      - 'backend/src/modules/users/**'
+      - 'backend/drizzle/**'
+      - 'myculturematch-web/src/components/settings/**'
+      - 'myculturematch-web/src/pages/SettingsPage.tsx'
+  pull_request:
+    paths:
+      - 'backend/src/modules/consent/**'
+      - 'backend/src/modules/safety/**'
+      - 'backend/src/modules/love/**'
+      - 'backend/src/modules/connections/**'
+      - 'backend/src/modules/messages/**'
+      - 'backend/src/modules/users/**'
+      - 'backend/drizzle/**'
+      - 'myculturematch-web/src/components/settings/**'
+      - 'myculturematch-web/src/pages/SettingsPage.tsx'
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+      - run: npx vitest run src/modules/consent/consent.policy.test.ts
+      - run: npm run typecheck
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: myculturematch-web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install --no-audit --no-fund
+      - run: npm run lint
+      - run: npm run build
