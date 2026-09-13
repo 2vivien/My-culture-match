@@ -1,96 +1,29 @@
 import { Hono } from 'hono';
 import { requireAuth } from '../auth/require-auth';
 import { requestIdParamsSchema, requestParamsSchema } from './connections.schemas';
-import {
-  acceptRequest,
-  blockRequester,
-  declineRequest,
-  getCompanions,
-  getInterested,
-  getNearbyFriends,
-  getRequests,
-  getSuggestions,
-  removeCompanion,
-  sendRequest,
-} from './connections.service';
+import { canSendFriendRequest } from '../consent/consent.service';
+import { AppError } from '../../shared/utils/AppError';
+import { acceptRequest, blockRequester, declineRequest, getCompanions, getInterested, getNearbyFriends, getRequests, getSuggestions, removeCompanion, sendRequest } from './connections.service';
 
 const connectionsRoutes = new Hono();
-
 connectionsRoutes.use('*', requireAuth);
 
-/** GET /api/connections/suggestions — profils recommandés. */
-connectionsRoutes.get('/connections/suggestions', async (c) => {
-  const { userId } = c.get('auth');
-  const result = await getSuggestions(userId);
-  return c.json({ success: true, ...result });
-});
+connectionsRoutes.get('/connections/suggestions', async (c) => { const { userId } = c.get('auth'); return c.json({ success: true, ...(await getSuggestions(userId)) }); });
+connectionsRoutes.get('/connections/interested', async (c) => { const { userId } = c.get('auth'); return c.json({ success: true, connections: await getInterested(userId) }); });
+connectionsRoutes.get('/connections/requests', async (c) => { const { userId } = c.get('auth'); return c.json({ success: true, connections: await getRequests(userId) }); });
+connectionsRoutes.get('/connections/companions', async (c) => { const { userId } = c.get('auth'); return c.json({ success: true, connections: await getCompanions(userId) }); });
+connectionsRoutes.get('/connections/nearby', async (c) => { const { userId } = c.get('auth'); return c.json({ success: true, ...(await getNearbyFriends(userId)) }); });
 
-/** GET /api/connections/interested — intéressés par moi. */
-connectionsRoutes.get('/connections/interested', async (c) => {
-  const { userId } = c.get('auth');
-  const connections = await getInterested(userId);
-  return c.json({ success: true, connections });
-});
-
-/** GET /api/connections/requests — demandes reçues. */
-connectionsRoutes.get('/connections/requests', async (c) => {
-  const { userId } = c.get('auth');
-  const connections = await getRequests(userId);
-  return c.json({ success: true, connections });
-});
-
-/** GET /api/connections/companions — connexions établies. */
-connectionsRoutes.get('/connections/companions', async (c) => {
-  const { userId } = c.get('auth');
-  const connections = await getCompanions(userId);
-  return c.json({ success: true, connections });
-});
-
-/** GET /api/connections/nearby — amis sur la carte proximity (Snap Map). */
-connectionsRoutes.get('/connections/nearby', async (c) => {
-  const { userId } = c.get('auth');
-  const result = await getNearbyFriends(userId);
-  return c.json({ success: true, ...result });
-});
-
-/** POST /api/connections/:userId/request — envoyer une demande. */
 connectionsRoutes.post('/connections/:userId/request', async (c) => {
   const { userId } = c.get('auth');
   const { userId: targetId } = requestParamsSchema.parse(c.req.param());
-  const result = await sendRequest(userId, targetId);
-  return c.json(result, 200);
+  if (!(await canSendFriendRequest(userId, targetId))) throw AppError.forbidden('Cette personne n’accepte pas les demandes Friendship dans ses préférences de consentement', 'FRIENDSHIP_CONSENT_REQUIRED');
+  return c.json(await sendRequest(userId, targetId), 200);
 });
 
-/** POST /api/requests/:id/accept — accepter. */
-connectionsRoutes.post('/requests/:id/accept', async (c) => {
-  const { userId } = c.get('auth');
-  const { id } = requestIdParamsSchema.parse(c.req.param());
-  const result = await acceptRequest(userId, id);
-  return c.json(result, 200);
-});
-
-/** POST /api/requests/:id/decline — refuser. */
-connectionsRoutes.post('/requests/:id/decline', async (c) => {
-  const { userId } = c.get('auth');
-  const { id } = requestIdParamsSchema.parse(c.req.param());
-  const result = await declineRequest(userId, id);
-  return c.json(result, 200);
-});
-
-/** POST /api/requests/:id/block — bloquer. */
-connectionsRoutes.post('/requests/:id/block', async (c) => {
-  const { userId } = c.get('auth');
-  const { id } = requestIdParamsSchema.parse(c.req.param());
-  const result = await blockRequester(userId, id);
-  return c.json(result, 200);
-});
-
-/** DELETE /api/connections/:userId — supprimer un compagnon. */
-connectionsRoutes.delete('/connections/:userId', async (c) => {
-  const { userId } = c.get('auth');
-  const { userId: targetId } = requestParamsSchema.parse(c.req.param());
-  const result = await removeCompanion(userId, targetId);
-  return c.json(result, 200);
-});
+connectionsRoutes.post('/requests/:id/accept', async (c) => { const { userId } = c.get('auth'); const { id } = requestIdParamsSchema.parse(c.req.param()); return c.json(await acceptRequest(userId, id), 200); });
+connectionsRoutes.post('/requests/:id/decline', async (c) => { const { userId } = c.get('auth'); const { id } = requestIdParamsSchema.parse(c.req.param()); return c.json(await declineRequest(userId, id), 200); });
+connectionsRoutes.post('/requests/:id/block', async (c) => { const { userId } = c.get('auth'); const { id } = requestIdParamsSchema.parse(c.req.param()); return c.json(await blockRequester(userId, id), 200); });
+connectionsRoutes.delete('/connections/:userId', async (c) => { const { userId } = c.get('auth'); const { userId: targetId } = requestParamsSchema.parse(c.req.param()); return c.json(await removeCompanion(userId, targetId), 200); });
 
 export { connectionsRoutes };
