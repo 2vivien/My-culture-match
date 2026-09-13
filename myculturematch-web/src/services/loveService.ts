@@ -1,64 +1,81 @@
-import type { LoveMatch } from '@/src/types/love';
+import type { LoveMatch, LoveSearchQuota, LoveSearchResponse, LoveSearchResult } from '@/src/types/love';
 import { api } from './api';
 import { resolveCountryFlag } from '@/src/components/ui/TotemAvatar';
 import { fallbackAvatar } from '@/src/lib/media';
 import type { UserProfile } from '@/src/lib/compatibility/types';
 
+function mapResult(c: Record<string, unknown>): LoveSearchResult {
+  const country = (c.country as string) ?? '';
+  return {
+    id: c.id as string,
+    name: (c.name as string) ?? 'Profil',
+    age: (c.age as number) ?? 0,
+    gender: (c.gender as LoveMatch['gender']) ?? 'female',
+    country,
+    flag: resolveCountryFlag(country) ?? '🌍',
+    avatar: (c.avatar as string) || fallbackAvatar(c.name as string) || '',
+    matchScore: (c.matchScore as number) ?? 0,
+    online: Boolean(c.online ?? c.connected),
+    interest: ((c.sharedValues as string[]) ?? []).join(', '),
+    about: (c.bio as string) ?? '',
+    tribes: (c.sharedValues as string[]) ?? [],
+    languages: (c.languages as string[]) ?? [],
+    rank: (c.rank as number) ?? 0,
+    reasons: (c.reasons as string[]) ?? [],
+    breakdown: (c.breakdown as LoveSearchResult['breakdown']) ?? { values: 0, goals: 0, language: 0, culture: 0, interests: 0 },
+  };
+}
+
 export const loveService = {
-  /** POST /api/love/swipe — like réel ("I'm Interested") pour un candidat. */
-  async expressInterest(candidateId: string): Promise<{ matched: boolean; conversationId?: string }> {
-    return api.post<{ matched: boolean; conversationId?: string }>('/api/love/swipe', {
-      userId: candidateId,
-      action: 'like',
-    });
+  async search(query: string): Promise<LoveSearchResponse> {
+    const data = await api.post<LoveSearchResponse>('/api/love/search', { query });
+    return { ...data, results: (data.results ?? []).map(mapResult) };
   },
 
-  /** GET /api/love/active — matchs actifs (likes réciproques acceptés). */
+  async getSearchQuota(): Promise<LoveSearchQuota> {
+    return api.get<LoveSearchQuota>('/api/love/search/quota');
+  },
+
+  async expressInterest(candidateId: string): Promise<{ matched: boolean; conversationId?: string }> {
+    return api.post<{ matched: boolean; conversationId?: string }>('/api/love/swipe', { userId: candidateId, action: 'like' });
+  },
+
   async fetchActiveMatches(): Promise<LoveMatch[]> {
     const list = await api.get<Array<Record<string, unknown>>>('/api/love/active');
-    return (list ?? []).map((c) => {
-      const country = (c.country as string) ?? '';
-      return {
-        id: c.id as string,
-        name: c.name as string,
-        age: (c.age as number) ?? 0,
-        gender: (c.gender as LoveMatch['gender']) ?? 'female',
-        country,
-        flag: resolveCountryFlag(country) ?? '🌍',
-        avatar: (c.avatar as string) || fallbackAvatar(c.name as string) || '',
-        matchScore: (c.matchScore as number) ?? 0,
-        online: true, // actif = like réciproque accepté → discussion ouverte
-        interest: '',
-        about: (c.bio as string) ?? '',
-        tribes: [],
-        languages: [],
-      };
-    });
+    return (list ?? []).map((c) => ({
+      id: c.id as string,
+      name: c.name as string,
+      age: (c.age as number) ?? 0,
+      gender: (c.gender as LoveMatch['gender']) ?? 'female',
+      country: (c.country as string) ?? '',
+      flag: resolveCountryFlag((c.country as string) ?? '') ?? '🌍',
+      avatar: (c.avatar as string) || fallbackAvatar(c.name as string) || '',
+      matchScore: (c.matchScore as number) ?? 0,
+      online: true,
+      interest: '',
+      about: (c.bio as string) ?? '',
+      tribes: [],
+      languages: [],
+    }));
   },
 
   async fetchLoveMatches(_userProfile: UserProfile): Promise<LoveMatch[]> {
-    // Le backend renvoie { candidates: [...] } — on déballe la liste.
     const data = await api.get<{ candidates?: Array<Record<string, unknown>> } | Array<Record<string, unknown>>>('/api/love/matches');
     const list = Array.isArray(data) ? data : (data?.candidates ?? []);
-    return (list ?? []).map((c) => {
-      const country = (c.country as string) ?? '';
-      return {
-        id: c.id as string,
-        name: c.name as string,
-        age: (c.age as number) ?? 0,
-        gender: (c.gender as LoveMatch['gender']) ?? 'female',
-        country,
-        // Vrai drapeau du pays d'origine (plus le mock 🌍)
-        flag: resolveCountryFlag(country) ?? '🌍',
-        avatar: (c.avatar as string) || fallbackAvatar(c.name as string) || '',
-        matchScore: (c.matchScore as number) ?? 0,
-        // Les matchs "actifs" sont les connections acceptées (companions).
-        online: Boolean((c as { connected?: boolean }).connected),
-        interest: ((c.sharedValues as string[]) ?? []).join(', '),
-        about: (c.bio as string) ?? '',
-        tribes: (c.sharedValues as string[]) ?? [],
-        languages: [],
-      };
-    });
+    return list.map((c) => ({
+      id: c.id as string,
+      name: c.name as string,
+      age: (c.age as number) ?? 0,
+      gender: (c.gender as LoveMatch['gender']) ?? 'female',
+      country: (c.country as string) ?? '',
+      flag: resolveCountryFlag((c.country as string) ?? '') ?? '🌍',
+      avatar: (c.avatar as string) || fallbackAvatar(c.name as string) || '',
+      matchScore: (c.matchScore as number) ?? 0,
+      online: Boolean((c as { connected?: boolean }).connected),
+      interest: ((c.sharedValues as string[]) ?? []).join(', '),
+      about: (c.bio as string) ?? '',
+      tribes: (c.sharedValues as string[]) ?? [],
+      languages: [],
+    }));
   },
 };
