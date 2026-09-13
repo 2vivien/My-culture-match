@@ -4,9 +4,10 @@ import { env } from '../../config/env';
 import * as schemaBase from './schema';
 import * as consentSchema from '../../modules/consent/consent.schema';
 import * as safetySchema from '../../modules/safety/safety.schema';
+import * as abuseSchema from '../../modules/safety/abuse.schema';
 
 const client = postgres(env.DATABASE_URL, { max: env.DATABASE_POOL_SIZE, idle_timeout: 20, connect_timeout: 10, prepare: false });
-const schema = { ...schemaBase, ...consentSchema, ...safetySchema };
+const schema = { ...schemaBase, ...consentSchema, ...safetySchema, ...abuseSchema };
 export { schema };
 export const db = drizzle(client, { schema });
 export async function checkDatabase(): Promise<void> { await client`SELECT 1`; }
