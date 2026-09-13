@@ -3,55 +3,27 @@ import { zValidator } from '@hono/zod-validator';
 import { requireAuth } from '../auth/require-auth';
 import { profilePatchSchema, locationUpdateSchema } from './users.schemas';
 import { getCurrentUser, getPublicUser, updateProfile, updateLocation, followUser, unfollowUser } from './users.service';
+import { canDiscover, canViewField } from '../consent/consent.service';
+import { AppError } from '../../shared/utils/AppError';
 
-/** Routes /api/users (auth requise). */
 export const usersModule = new Hono();
-
 usersModule.use('*', requireAuth);
 
-// GET /api/users/me — profil courant
-usersModule.get('/me', async (c) => {
-  const { userId } = c.get('auth');
-  const user = await getCurrentUser(userId);
-  return c.json(user, 200);
-});
+usersModule.get('/me', async (c) => { const { userId } = c.get('auth'); return c.json(await getCurrentUser(userId), 200); });
+usersModule.patch('/me', zValidator('json', profilePatchSchema), async (c) => { const { userId } = c.get('auth'); return c.json(await updateProfile(userId, c.req.valid('json')), 200); });
+usersModule.patch('/me/location', zValidator('json', locationUpdateSchema), async (c) => { const { userId } = c.get('auth'); return c.json(await updateLocation(userId, c.req.valid('json')), 200); });
 
-// PATCH /api/users/me — mise à jour ProfileDetails champ par champ
-usersModule.patch('/me', zValidator('json', profilePatchSchema), async (c) => {
-  const { userId } = c.get('auth');
-  const patch = c.req.valid('json');
-  const user = await updateProfile(userId, patch);
-  return c.json(user, 200);
-});
-
-// PATCH /api/users/me/location — partage de position (Snap Map)
-usersModule.patch('/me/location', zValidator('json', locationUpdateSchema), async (c) => {
-  const { userId } = c.get('auth');
-  const input = c.req.valid('json');
-  const result = await updateLocation(userId, input);
-  return c.json(result, 200);
-});
-
-// GET /api/users/:id — profil public (isFollowing si vu par un utilisateur connecté)
 usersModule.get('/:id', async (c) => {
-  const userId = c.req.param('id');
+  const targetId = c.req.param('id');
   const viewerId = c.get('auth').userId;
-  const user = await getPublicUser(userId, viewerId);
-  return c.json(user, 200);
+  if (!(await canDiscover(viewerId, targetId))) throw AppError.forbidden('Ce profil n’est pas accessible avec ses préférences de confidentialité', 'PROFILE_DISCOVERY_RESTRICTED');
+  const profile = await getPublicUser(targetId, viewerId);
+  if (viewerId === targetId) return c.json(profile, 200);
+  const safe = { ...(profile as Record<string, unknown>) };
+  if (!(await canViewField(viewerId, targetId, 'country'))) { delete safe.country; delete safe.region; }
+  if (!(await canViewField(viewerId, targetId, 'photos'))) { delete safe.photos; delete safe.media; delete safe.mediaUrls; delete safe.gallery; }
+  return c.json(safe, 200);
 });
 
-// POST /api/users/:id/follow — suivre
-usersModule.post('/:id/follow', async (c) => {
-  const { userId } = c.get('auth');
-  const targetId = c.req.param('id');
-  const result = await followUser(userId, targetId);
-  return c.json(result, 200);
-});
-
-// DELETE /api/users/:id/follow — ne plus suivre
-usersModule.delete('/:id/follow', async (c) => {
-  const { userId } = c.get('auth');
-  const targetId = c.req.param('id');
-  const result = await unfollowUser(userId, targetId);
-  return c.json(result, 200);
-});
+usersModule.post('/:id/follow', async (c) => { const { userId } = c.get('auth'); return c.json(await followUser(userId, c.req.param('id')), 200); });
+usersModule.delete('/:id/follow', async (c) => { const { userId } = c.get('auth'); return c.json(await unfollowUser(userId, c.req.param('id')), 200); });
