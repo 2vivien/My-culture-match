@@ -17,7 +17,13 @@ const capsuleSchema = z.object({
 
 routes.get('/conversations/:id/relationship-timeline', async (c) => {
   const { userId } = c.get('auth');
-  return c.json(await getRelationshipTimeline(c.req.param('id'), userId), 200);
+  const conversationId = c.req.param('id');
+  let timeline = await getRelationshipTimeline(conversationId, userId);
+  if (timeline.memories.length === 0) {
+    await rebuildRelationshipMemory(conversationId, userId);
+    timeline = await getRelationshipTimeline(conversationId, userId);
+  }
+  return c.json(timeline, 200);
 });
 
 routes.post('/conversations/:id/relationship-memory/rebuild', async (c) => {
