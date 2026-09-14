@@ -15,6 +15,7 @@
     { "idx": 10, "version": "7", "when": 1789154586000, "tag": "0010_add_geolocation", "breakpoints": true },
     { "idx": 11, "version": "7", "when": 1789154587000, "tag": "0011_consent_and_trust", "breakpoints": true },
     { "idx": 12, "version": "7", "when": 1789154588000, "tag": "0012_trust_safety", "breakpoints": true },
-    { "idx": 13, "version": "7", "when": 1789154589000, "tag": "0013_abuse_events", "breakpoints": true }
+    { "idx": 13, "version": "7", "when": 1789154589000, "tag": "0013_abuse_events", "breakpoints": true },
+    { "idx": 14, "version": "7", "when": 1790000000000, "tag": "0014_relationship_memory", "breakpoints": true }
   ]
 }
