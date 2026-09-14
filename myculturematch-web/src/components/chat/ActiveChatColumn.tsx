@@ -1,63 +1,73 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Phone, Video, Smile, Paperclip, Mic, Send, ArrowLeft, BookHeart } from 'lucide-react';
+import { Phone, Video, Smile, Paperclip, Mic, Send, ArrowLeft, BookHeart, X, Reply, Pencil, Loader2 } from 'lucide-react';
 import { Conversation, ChatMessage } from '@/src/types/chat.types';
 import { ChatMessageBubble } from './ChatMessageBubble';
 import { AssistantPanel } from './AssistantPanel';
 import { RelationshipTimeline } from './RelationshipTimeline';
 import { TotemAvatar } from '@/src/components/ui/TotemAvatar';
+import { chatService } from '@/src/services/chat.service';
 
-interface ActiveChatProps {
-  partner: Conversation;
-  messages: ChatMessage[];
-  onSendMessage: (text: string) => void;
-  onBack?: () => void;
-}
+interface ActiveChatProps { partner: Conversation; messages: ChatMessage[]; onSendMessage: (text: string, replyToId?: string) => void; onRefresh?: () => void; onBack?: () => void; }
 
-export const ActiveChatColumn: React.FC<ActiveChatProps> = ({ partner, messages, onSendMessage, onBack }) => {
+export const ActiveChatColumn: React.FC<ActiveChatProps> = ({ partner, messages, onSendMessage, onRefresh, onBack }) => {
   const [input, setInput] = useState('');
-  const inputRef = useRef<HTMLInputElement>(null);
+  const [replyingTo, setReplyingTo] = useState<ChatMessage | null>(null);
+  const [editing, setEditing] = useState<ChatMessage | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [typing, setTyping] = useState(false);
   const [lyraOpen, setLyraOpen] = useState(false);
   const [lyraContext, setLyraContext] = useState<ChatMessage | null>(null);
   const [timelineOpen, setTimelineOpen] = useState(false);
+  const [pins, setPins] = useState<Set<string>>(new Set());
+  const inputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const lastMessage = messages.length > 0 ? messages[messages.length - 1]?.text : undefined;
 
-  useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
+  useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages.length]);
+  useEffect(() => { let mounted = true; chatService.getPins(partner.id).then((rows) => { if (mounted) setPins(new Set(rows.map((r) => r.messageId))); }).catch(() => undefined); return () => { mounted = false; }; }, [partner.id]);
+  useEffect(() => { const timer = window.setInterval(() => onRefresh?.(), 5000); return () => window.clearInterval(timer); }, [onRefresh]);
 
-  const handleSend = (e: React.FormEvent) => { e.preventDefault(); if (!input.trim()) return; onSendMessage(input); setInput(''); };
-  const handleKeyPress = (e: React.KeyboardEvent) => { if (e.key === 'Enter') handleSend(e); };
+  const handleSend = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    const text = input.trim(); if (!text || saving) return;
+    if (editing) {
+      setSaving(true); try { await chatService.editMessage(partner.id, editing.id, text); setEditing(null); setInput(''); onRefresh?.(); } finally { setSaving(false); } return;
+    }
+    onSendMessage(text, replyingTo?.id); setInput(''); setReplyingTo(null); void chatService.setTyping(partner.id, false);
+  };
 
-  return (
-    <div className="flex-1 border border-app-border dark:border-zinc-800 bg-white dark:bg-zinc-950 rounded-[24px] flex flex-col h-full select-none shadow-soft overflow-hidden">
-      <div className="p-4 border-b border-app-border dark:border-zinc-800 flex items-center justify-between bg-white dark:bg-zinc-950 shrink-0">
-        <div className="flex items-center gap-2 sm:gap-3">
-          {onBack && <button onClick={onBack} className="w-8 h-8 rounded-full border border-app-border dark:border-zinc-800/80 flex items-center justify-center text-app-gray hover:text-app-black dark:hover:text-white hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors mr-1 cursor-pointer" title="Retour"><ArrowLeft className="w-4 h-4" /></button>}
-          <div className="relative"><TotemAvatar src={partner.avatar} alt={partner.name} size="md" glow={partner.glow as any} level={partner.level} />{partner.online && <span className="absolute top-0 right-0 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white dark:border-zinc-950 z-10" />}</div>
-          <div><h3 className="font-bold text-sm text-app-black dark:text-zinc-100 flex items-center gap-2">{partner.name}<span className="text-[10px] uppercase font-bold text-app-gray tracking-wider bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded-full">{partner.country.split(' ')[0]} Match</span></h3><p className="text-xs text-app-gray truncate max-w-[200px] sm:max-w-[300px] leading-snug">{partner.culture} • <span className="text-[#E27D60] dark:text-[#E27D60] font-semibold">{partner.lang.split(' ')[0]}</span></p></div>
-        </div>
-        <div className="flex items-center gap-1.5 md:gap-2">
-          <button type="button" onClick={() => setTimelineOpen(true)} title="Notre histoire" className="w-9 h-9 border border-app-border dark:border-zinc-800 rounded-full flex items-center justify-center text-app-gray hover:text-app-black dark:hover:text-white hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors cursor-pointer"><BookHeart className="w-4 h-4" /></button>
-          <button className="w-9 h-9 border border-app-border dark:border-zinc-800 rounded-full flex items-center justify-center text-app-gray hover:text-app-black dark:hover:text-white hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors cursor-pointer"><Phone className="w-4 h-4" /></button>
-          <button className="w-9 h-9 border border-app-border dark:border-zinc-800 rounded-full flex items-center justify-center text-app-gray hover:text-app-black dark:hover:text-white hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors cursor-pointer"><Video className="w-4 h-4" /></button>
-        </div>
+  const handleInput = (value: string) => { setInput(value); if (!typing) { setTyping(true); void chatService.setTyping(partner.id, true); } window.clearTimeout((handleInput as any)._timer); (handleInput as any)._timer = window.setTimeout(() => { setTyping(false); void chatService.setTyping(partner.id, false); }, 1200); };
+  const editMessage = (m: ChatMessage) => { setEditing(m); setReplyingTo(null); setInput(m.text ?? ''); window.setTimeout(() => inputRef.current?.focus(), 0); };
+  const deleteMessage = async (m: ChatMessage) => { if (!window.confirm('Supprimer ce message ?')) return; await chatService.deleteMessage(partner.id, m.id); onRefresh?.(); };
+  const react = async (m: ChatMessage, reaction: string) => { await chatService.toggleReaction(partner.id, m.id, reaction); onRefresh?.(); };
+  const pin = async (m: ChatMessage) => { const next = !pins.has(m.id); await chatService.pinMessage(partner.id, m.id, next); setPins((prev) => { const n = new Set(prev); if (next) n.add(m.id); else n.delete(m.id); return n; }); onRefresh?.(); };
+
+  return <div className="flex-1 border border-app-border dark:border-zinc-800 bg-white dark:bg-zinc-950 rounded-[24px] flex flex-col h-full select-none shadow-soft overflow-hidden">
+    <div className="p-4 border-b border-app-border dark:border-zinc-800 flex items-center justify-between bg-white dark:bg-zinc-950 shrink-0">
+      <div className="flex items-center gap-2 sm:gap-3">
+        {onBack && <button onClick={onBack} className="w-8 h-8 rounded-full border border-app-border dark:border-zinc-800/80 flex items-center justify-center text-app-gray hover:text-app-black dark:hover:text-white transition-colors"><ArrowLeft className="w-4 h-4" /></button>}
+        <div className="relative"><TotemAvatar src={partner.avatar} alt={partner.name} size="md" glow={partner.glow as any} level={partner.level} />{partner.online && <span className="absolute top-0 right-0 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white dark:border-zinc-950" />}</div>
+        <div><h3 className="font-bold text-sm text-app-black dark:text-zinc-100">{partner.name}</h3><p className="text-xs text-app-gray truncate max-w-[240px]">{partner.culture || partner.lang}{typing && <span className="ml-2 text-[#E27D60]">écrit…</span>}</p></div>
       </div>
-
-      <div className="flex-1 overflow-y-auto p-4 bg-[#FEFEFE] dark:bg-zinc-950/40 hide-scrollbar flex flex-col">
-        {messages.map((m) => <ChatMessageBubble key={m.id} message={m} onAskLyra={(msg) => { setLyraContext(msg); setLyraOpen(true); }} />)}
-        <div ref={messagesEndRef} />
-      </div>
-
-      <form onSubmit={handleSend} className="p-4 border-t border-app-border dark:border-zinc-800 bg-white dark:bg-zinc-950 shrink-0">
-        <div className="flex items-center gap-2 bg-[#FCFCFC] dark:bg-zinc-900 border border-[#ECECEC] dark:border-zinc-800 rounded-2xl px-3 py-2 focus-within:ring-1 focus-within:ring-[#E27D60] focus-within:border-[#E27D60] transition-all">
-          <button type="button" className="text-app-gray hover:text-app-black dark:hover:text-white cursor-pointer p-1"><Paperclip className="w-4 h-4" /></button>
-          <input ref={inputRef} type="text" placeholder={`Say customized culture greeting to ${partner.name.split(' ')[0]}...`} value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={handleKeyPress} className="flex-1 bg-transparent text-sm text-app-black dark:text-zinc-200 placeholder:text-app-gray outline-none font-medium h-8" />
-          <button type="button" className="text-app-gray hover:text-amber-500 cursor-pointer p-1"><Smile className="w-4 h-4" /></button>
-          <AssistantPanel partner={partner} lastMessage={lyraContext?.text ?? lastMessage} onPick={(suggestion) => { const text = suggestion.trim(); if (text) onSendMessage(text); setInput(''); setLyraOpen(false); setLyraContext(null); inputRef.current?.focus(); }} open={lyraOpen} onOpenChange={setLyraOpen} />
-          <button type="button" className="text-app-gray hover:text-[#E27D60] cursor-pointer p-1"><Mic className="w-4 h-4" /></button>
-          <button type="submit" disabled={!input.trim()} className="w-8 h-8 rounded-xl bg-[#E27D60] hover:bg-[#c66b50] text-white flex items-center justify-center hover:scale-105 disabled:opacity-50 disabled:hover:scale-100 transition-all cursor-pointer shrink-0 ml-1"><Send className="w-3.5 h-3.5 ml-0.5 text-white dark:text-app-black" /></button>
-        </div>
-      </form>
-      <RelationshipTimeline conversationId={partner.id} partnerName={partner.name} open={timelineOpen} onClose={() => setTimelineOpen(false)} />
+      <div className="flex items-center gap-1.5"><button type="button" onClick={() => setTimelineOpen(true)} title="Notre histoire" className="w-9 h-9 border border-app-border dark:border-zinc-800 rounded-full flex items-center justify-center text-app-gray"><BookHeart className="w-4 h-4" /></button><button type="button" title="Appel audio" className="w-9 h-9 border border-app-border dark:border-zinc-800 rounded-full flex items-center justify-center text-app-gray"><Phone className="w-4 h-4" /></button><button type="button" title="Appel vidéo" className="w-9 h-9 border border-app-border dark:border-zinc-800 rounded-full flex items-center justify-center text-app-gray"><Video className="w-4 h-4" /></button></div>
     </div>
-  );
+
+    <div className="flex-1 overflow-y-auto p-4 bg-[#FEFEFE] dark:bg-zinc-950/40 hide-scrollbar flex flex-col">
+      {messages.map((m) => <ChatMessageBubble key={m.id} message={{ ...m, pinned: pins.has(m.id) }} onAskLyra={(msg) => { setLyraContext(msg); setLyraOpen(true); }} onReply={setReplyingTo} onEdit={editMessage} onDelete={(m) => void deleteMessage(m)} onReact={(m,r) => void react(m,r)} onPin={(m) => void pin(m)} />)}
+      <div ref={messagesEndRef} />
+    </div>
+
+    <form onSubmit={(e) => void handleSend(e)} className="p-4 border-t border-app-border dark:border-zinc-800 bg-white dark:bg-zinc-950 shrink-0">
+      {(replyingTo || editing) && <div className="mb-2 flex items-center gap-2 rounded-xl border border-app-border dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 px-3 py-2"><div className="flex-1 min-w-0"><p className="text-[10px] uppercase font-bold text-app-gray">{editing ? 'Modification' : 'Réponse à'}</p><p className="text-xs truncate">{(editing ?? replyingTo)?.text || 'Message'}</p></div><button type="button" onClick={() => { setEditing(null); setReplyingTo(null); setInput(''); }}><X className="w-4 h-4 text-app-gray" /></button></div>}
+      <div className="flex items-center gap-2 bg-[#FCFCFC] dark:bg-zinc-900 border border-[#ECECEC] dark:border-zinc-800 rounded-2xl px-3 py-2 focus-within:ring-1 focus-within:ring-[#E27D60]">
+        <button type="button" title="Pièce jointe" className="text-app-gray p-1"><Paperclip className="w-4 h-4" /></button>
+        <input ref={inputRef} type="text" placeholder={editing ? 'Modifier le message…' : `Écrire à ${partner.name.split(' ')[0]}…`} value={input} onChange={(e) => handleInput(e.target.value)} className="flex-1 bg-transparent text-sm text-app-black dark:text-zinc-200 placeholder:text-app-gray outline-none font-medium h-8" />
+        <button type="button" title="Emoji" className="text-app-gray p-1"><Smile className="w-4 h-4" /></button>
+        <AssistantPanel partner={partner} lastMessage={lyraContext?.text ?? lastMessage} onPick={(suggestion) => { setInput(suggestion.trim()); setLyraOpen(false); setLyraContext(null); inputRef.current?.focus(); }} open={lyraOpen} onOpenChange={setLyraOpen} />
+        <button type="button" title="Note vocale" className="text-app-gray p-1"><Mic className="w-4 h-4" /></button>
+        <button type="submit" disabled={!input.trim() || saving} className="w-8 h-8 rounded-xl bg-[#E27D60] text-white flex items-center justify-center disabled:opacity-50">{saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : editing ? <Pencil className="w-3.5 h-3.5" /> : replyingTo ? <Reply className="w-3.5 h-3.5" /> : <Send className="w-3.5 h-3.5" />}</button>
+      </div>
+    </form>
+    <RelationshipTimeline conversationId={partner.id} partnerName={partner.name} open={timelineOpen} onClose={() => setTimelineOpen(false)} />
+  </div>;
 };
