@@ -5,6 +5,7 @@ import { db, schema } from '../../infrastructure/database';
 import { redis } from '../../infrastructure/redis';
 import { logger } from '../../middleware/logger';
 import { getSuggestions } from '../connections/connections.service';
+import { revealDueTemporalMessages } from '../temporal-messages/temporal-messages.service';
 
 // ── presence.cleanup (toutes les 5 min) ────────────────────
 export const PRESENCE_CLEANUP_QUEUE_NAME = 'presence.cleanup';
@@ -70,11 +71,23 @@ export async function generateDailySuggestions(limit = 100): Promise<number> {
   return generated;
 }
 
+// ── temporal-message.reveal (toutes les minutes) ──────────
+export const TEMPORAL_MESSAGE_REVEAL_QUEUE_NAME = 'temporal-message.reveal';
+const temporalMessageRevealQueue = new Queue(TEMPORAL_MESSAGE_REVEAL_QUEUE_NAME, {
+  connection: { url: env.REDIS_URL },
+  defaultJobOptions: { removeOnComplete: 100, removeOnFail: 100 },
+});
+
+export async function revealTemporalMessages(): Promise<number> {
+  return revealDueTemporalMessages(100);
+}
+
 // ── Scheduler global ───────────────────────────────────────
 const SCHEDULERS: Array<{ queue: Queue; cron: string; process: () => Promise<unknown>; name: string }> = [
   { queue: presenceCleanupQueue, cron: '*/5 * * * *', process: cleanupPresenceKeys, name: PRESENCE_CLEANUP_QUEUE_NAME },
   { queue: sessionCleanupQueue, cron: '0 4 * * *', process: cleanupExpiredSessions, name: SESSION_CLEANUP_QUEUE_NAME },
   { queue: userSuggestionsQueue, cron: '0 3 * * *', process: () => generateDailySuggestions(), name: USER_SUGGESTIONS_QUEUE_NAME },
+  { queue: temporalMessageRevealQueue, cron: '* * * * *', process: revealTemporalMessages, name: TEMPORAL_MESSAGE_REVEAL_QUEUE_NAME },
 ];
 
 const workers: Worker[] = [];
