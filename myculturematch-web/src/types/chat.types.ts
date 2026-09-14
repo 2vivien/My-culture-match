@@ -18,22 +18,15 @@ export interface Conversation {
   sharedMedia: string[];
 }
 
-export interface ChatReaction {
-  userId: string;
-  reaction: string;
-}
-
-export interface ChatReplyPreview {
-  id: string;
-  text: string | null;
-  senderId: string;
-}
+export interface ChatReaction { userId: string; reaction: string; }
+export interface ChatReplyPreview { id: string; text: string | null; senderId: string; }
 
 export interface ChatMessage {
   id: string;
   conversationId?: string;
   senderId: string;
   senderName: string;
+  type?: string;
   text?: string;
   img?: string;
   audioDur?: string | number;
