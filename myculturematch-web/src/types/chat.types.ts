@@ -18,15 +18,34 @@ export interface Conversation {
   sharedMedia: string[];
 }
 
+export interface ChatReaction {
+  userId: string;
+  reaction: string;
+}
+
+export interface ChatReplyPreview {
+  id: string;
+  text: string | null;
+  senderId: string;
+}
+
 export interface ChatMessage {
   id: string;
+  conversationId?: string;
   senderId: string;
   senderName: string;
   text?: string;
   img?: string;
-  audioDur?: string;
-  file?: { name: string; size: string };
+  audioDur?: string | number;
+  file?: { name: string; size: string | number };
   sticker?: string;
   time: string;
+  createdAt?: string;
   isRead?: boolean;
+  editedAt?: string | null;
+  deleted?: boolean;
+  replyToId?: string | null;
+  reply?: ChatReplyPreview | null;
+  reactions?: ChatReaction[];
+  pinned?: boolean;
 }
