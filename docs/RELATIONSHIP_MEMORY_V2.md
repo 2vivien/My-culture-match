@@ -58,6 +58,40 @@ CRUD API:
 
 Authorization is conversation-participant based. A participant cannot access another conversation's memory box.
 
+## Direct chat-to-memory workflow
+
+The chat is directly connected to the box. From any message action menu, the participant can choose **Ajouter à la boîte à souvenirs**.
+
+The composer then allows the participant to:
+
+1. keep the selected message as evidence;
+2. select several messages from the conversation;
+3. keep media already attached to those messages;
+4. upload additional photos, videos or audio files from the device;
+5. choose a memory type;
+6. write a title and free-form note;
+7. save everything as one shared memory entry.
+
+The selected message IDs are stored with the memory. This preserves the link between the human-authored souvenir and the original conversation without copying or modifying the original message.
+
+Uploaded device media goes through the existing upload pipeline and is stored as media references in the shared memory entry. The chat itself remains the source conversation; the box is the durable shared notebook.
+
+Workflow:
+
+```text
+MESSAGE / MEDIA
+      ↓
+Ajouter à la boîte à souvenirs
+      ↓
+Sélection messages + médias
+      ↓
+Note / titre / type / nouveaux médias
+      ↓
+Shared Memory Box
+      ↓
+Notre histoire
+```
+
 ## Relationship Intelligence V2
 
 V2 is the analytical layer between chat data and future narration.
@@ -136,11 +170,11 @@ The LLM is forbidden from inventing dates, facts, feelings, responsibility, cons
 
 ## UI
 
-The relationship panel is now explicitly presented as **Boîte à souvenirs**. It contains:
+The relationship panel is explicitly presented as **Boîte à souvenirs**. It contains:
 
 - **Boîte à souvenirs**: the shared notebook with all user-created entries.
 - **Notre histoire**: algorithmic timeline and period recaps.
 - Add entry flow with type, date, title, note and multiple media URLs.
 - Delete entry from the shared notebook.
 
-The box and the timeline intentionally remain connected: the box is the human-authored layer, while the timeline is the analytical layer.
+The chat also exposes a direct **Ajouter à la boîte à souvenirs** action on messages, with support for selected messages and new device media. The box and timeline remain connected: the box is the human-authored layer, while the timeline is the analytical layer.
