@@ -1,47 +1,19 @@
 import { api } from './api';
 
 export type RelationshipType = 'love' | 'friendship';
+export type RecapPeriod = '1m' | '3m' | '6m' | '1y';
 
 export interface RelationshipMemory {
-  id: string;
-  relationship_type: RelationshipType;
-  kind: string;
-  title: string;
-  summary: string;
-  occurred_at: string;
-  actor_user_id: string | null;
-  evidence_message_ids: string[];
-  metadata: Record<string, unknown>;
-  confidence: number;
-  importance: number;
-  source: string;
+  id: string; relationship_type: RelationshipType; kind: string; title: string; summary: string; occurred_at: string; actor_user_id: string | null; evidence_message_ids: string[]; metadata: Record<string, unknown>; confidence: number; importance: number; source: string; phase_key?: string; semantic_score?: number;
 }
-
-export interface RelationshipCapsule {
-  id: string;
-  relationship_type: RelationshipType;
-  author_user_id: string;
-  title: string | null;
-  body: string | null;
-  media_urls: string[];
-  event_date: string;
-  created_at: string;
-}
-
-export interface RelationshipTimelineResponse {
-  relationshipType: RelationshipType;
-  memories: RelationshipMemory[];
-  capsules: RelationshipCapsule[];
-}
+export interface RelationshipCapsule { id: string; relationship_type: RelationshipType; author_user_id: string; title: string | null; body: string | null; media_urls: string[]; event_date: string; created_at: string; }
+export interface RelationshipRecap { id: string; relationship_type: RelationshipType; period_key: RecapPeriod; period_start: string; period_end: string; title: string; narrative: string; evidence_memory_ids: string[]; model: string | null; generated_at: string; }
+export interface RelationshipTimelineResponse { relationshipType: RelationshipType; memories: RelationshipMemory[]; capsules: RelationshipCapsule[]; }
 
 export const relationshipMemoryService = {
-  getTimeline(conversationId: string) {
-    return api.get<RelationshipTimelineResponse>(`/api/conversations/${conversationId}/relationship-timeline`);
-  },
-  rebuild(conversationId: string) {
-    return api.post<{ relationshipType: RelationshipType; memories: RelationshipMemory[]; messageCount: number }>(`/api/conversations/${conversationId}/relationship-memory/rebuild`);
-  },
-  createCapsule(conversationId: string, input: { title?: string; body?: string; mediaUrls?: string[]; eventDate?: string }) {
-    return api.post<{ id: string; relationshipType: RelationshipType }>(`/api/conversations/${conversationId}/relationship-capsules`, input);
-  },
+  getTimeline(conversationId: string) { return api.get<RelationshipTimelineResponse>(`/api/conversations/${conversationId}/relationship-timeline`); },
+  rebuild(conversationId: string) { return api.post<{ relationshipType: RelationshipType; memories: RelationshipMemory[]; phases: unknown[]; messageCount: number; embeddingModel: string }>(`/api/conversations/${conversationId}/relationship-memory/rebuild`); },
+  getRecaps(conversationId: string) { return api.get<{ recaps: RelationshipRecap[] }>(`/api/conversations/${conversationId}/relationship-recaps`); },
+  generateRecap(conversationId: string, period: RecapPeriod) { return api.post<RelationshipRecap>(`/api/conversations/${conversationId}/relationship-recaps`, { period }); },
+  createCapsule(conversationId: string, input: { title?: string; body?: string; mediaUrls?: string[]; eventDate?: string }) { return api.post<{ id: string; relationshipType: RelationshipType }>(`/api/conversations/${conversationId}/relationship-capsules`, input); },
 };
