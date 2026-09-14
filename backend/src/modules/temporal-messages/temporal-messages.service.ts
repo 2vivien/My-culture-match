@@ -1,6 +1,5 @@
-import { and, desc, eq, inArray } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 import { db, schema } from '../../infrastructure/database';
-import { sql } from 'drizzle-orm';
 import { AppError } from '../../shared/utils/AppError';
 import { emitToUser } from '../../infrastructure/websocket';
 import { createNotification } from '../notifications/notifications.service';
@@ -102,7 +101,7 @@ export async function scheduleTemporalMessage(input: ScheduleTemporalMessageInpu
     actorId: input.senderId,
     type: 'system',
     action: 'temporal_pending',
-    target: null,
+    target: id,
     metadata: { kind: 'temporal_message', temporalMessageId: id, conversationId: input.conversationId, revealAt: input.revealAt.toISOString(), locked: true },
   });
 
@@ -117,7 +116,7 @@ export async function scheduleTemporalMessage(input: ScheduleTemporalMessageInpu
 }
 
 export async function listTemporalMessages(conversationId: string, userId: string): Promise<{ sent: TemporalMessageDto[]; lockedCount: number }> {
-  const recipientId = await assertTwoPersonConversation(conversationId, userId);
+  await assertTwoPersonConversation(conversationId, userId);
   const sentRows = await db.execute(sql`
     SELECT * FROM temporal_messages
     WHERE conversation_id = ${conversationId} AND sender_id = ${userId}
@@ -132,7 +131,6 @@ export async function listTemporalMessages(conversationId: string, userId: strin
       AND cancelled_at IS NULL
       AND reveal_at > NOW()
   `);
-  void recipientId;
   return {
     sent: (sentRows as unknown as Array<Record<string, unknown>>).map(serialize),
     lockedCount: Number((lockedRows[0] as { count?: number } | undefined)?.count ?? 0),
@@ -202,10 +200,6 @@ export async function revealDueTemporalMessages(limit = 50): Promise<number> {
         WHERE id = ${id}
       `);
 
-      const participants = await db
-        .select({ userId: schema.conversationParticipants.userId })
-        .from(schema.conversationParticipants)
-        .where(eq(schema.conversationParticipants.conversationId, String(row.conversation_id)));
       const recipientId = String(row.recipient_id);
       await db.update(schema.conversationParticipants)
         .set({ unreadCount: sql`${schema.conversationParticipants.unreadCount} + 1` })
@@ -229,7 +223,6 @@ export async function revealDueTemporalMessages(limit = 50): Promise<number> {
       });
       emitToUser(String(row.sender_id), 'temporal-message:revealed', { conversationId: String(row.conversation_id), temporalMessageId: id, messageId: message.id });
       revealed += 1;
-      void participants;
     } catch (error) {
       await db.execute(sql`UPDATE temporal_messages SET processing_at = NULL WHERE id = ${id} AND revealed_at IS NULL`);
       throw error;
