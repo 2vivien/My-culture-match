@@ -22,6 +22,12 @@ function addMonths(date: Date, months: number): Date {
   return next;
 }
 
+function addDays(date: Date, days: number): Date {
+  const next = new Date(date);
+  next.setDate(next.getDate() + days);
+  return next;
+}
+
 export const TemporalMessageComposer: React.FC<Props> = ({ open, conversationId, partnerName, initialText = '', onClose, onScheduled }) => {
   const defaultReveal = useMemo(() => addMonths(new Date(), 6), [open]);
   const [text, setText] = useState(initialText);
@@ -39,7 +45,21 @@ export const TemporalMessageComposer: React.FC<Props> = ({ open, conversationId,
 
   if (!open) return null;
 
-  const setPreset = (months: number) => setRevealAt(localInputValue(addMonths(new Date(), months)));
+  const setPreset = (kind: 'later-today' | 'tomorrow' | '3m' | '6m' | '1y') => {
+    const now = new Date();
+    if (kind === 'later-today') {
+      const next = new Date(now);
+      next.setHours(Math.min(now.getHours() + 2, 23), 0, 0, 0);
+      if (next <= now) next.setDate(next.getDate() + 1);
+      setRevealAt(localInputValue(next));
+      return;
+    }
+    if (kind === 'tomorrow') { setRevealAt(localInputValue(addDays(now, 1))); return; }
+    if (kind === '3m') { setRevealAt(localInputValue(addMonths(now, 3))); return; }
+    if (kind === '6m') { setRevealAt(localInputValue(addMonths(now, 6))); return; }
+    setRevealAt(localInputValue(addMonths(now, 12)));
+  };
+
   const dateLabel = new Date(revealAt).toLocaleString('fr-FR', { dateStyle: 'full', timeStyle: 'short' });
 
   const schedule = async () => {
@@ -80,11 +100,11 @@ export const TemporalMessageComposer: React.FC<Props> = ({ open, conversationId,
         <div>
           <p className="text-xs font-bold mb-2">Quand doit-il apparaître ?</p>
           <div className="flex flex-wrap gap-2 mb-3">
-            <button type="button" onClick={() => setPreset(0)} className="rounded-full border border-app-border dark:border-zinc-800 px-3 py-1.5 text-xs">Plus tard aujourd'hui</button>
-            <button type="button" onClick={() => setPreset(0.01)} className="rounded-full border border-app-border dark:border-zinc-800 px-3 py-1.5 text-xs">Demain</button>
-            <button type="button" onClick={() => setPreset(3)} className="rounded-full border border-app-border dark:border-zinc-800 px-3 py-1.5 text-xs">3 mois</button>
-            <button type="button" onClick={() => setPreset(6)} className="rounded-full border border-app-border dark:border-zinc-800 px-3 py-1.5 text-xs">6 mois</button>
-            <button type="button" onClick={() => setPreset(12)} className="rounded-full border border-app-border dark:border-zinc-800 px-3 py-1.5 text-xs">1 an</button>
+            <button type="button" onClick={() => setPreset('later-today')} className="rounded-full border border-app-border dark:border-zinc-800 px-3 py-1.5 text-xs">Plus tard aujourd'hui</button>
+            <button type="button" onClick={() => setPreset('tomorrow')} className="rounded-full border border-app-border dark:border-zinc-800 px-3 py-1.5 text-xs">Demain</button>
+            <button type="button" onClick={() => setPreset('3m')} className="rounded-full border border-app-border dark:border-zinc-800 px-3 py-1.5 text-xs">3 mois</button>
+            <button type="button" onClick={() => setPreset('6m')} className="rounded-full border border-app-border dark:border-zinc-800 px-3 py-1.5 text-xs">6 mois</button>
+            <button type="button" onClick={() => setPreset('1y')} className="rounded-full border border-app-border dark:border-zinc-800 px-3 py-1.5 text-xs">1 an</button>
           </div>
           <input type="datetime-local" value={revealAt} onChange={(e) => setRevealAt(e.target.value)} className="w-full rounded-2xl border border-app-border dark:border-zinc-800 bg-white dark:bg-zinc-950 px-4 py-3 text-sm" />
           <p className="text-[11px] text-app-gray mt-2">Il sera révélé le {dateLabel}.</p>
