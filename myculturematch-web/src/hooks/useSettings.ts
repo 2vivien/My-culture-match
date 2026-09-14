@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { settingsService } from '@/src/services/settingsService';
 
-type SettingsTab = 'Account' | 'Profile' | 'Privacy' | 'Trust & Safety' | 'Preferences' | 'Notifications' | 'Email';
+export type SettingsTab = 'Account' | 'Profile' | 'Privacy' | 'Trust & Safety' | 'Preferences' | 'Notifications' | 'Email';
 
 export function useSettings() {
   const [activeTab, setActiveTab] = useState<SettingsTab>('Account');

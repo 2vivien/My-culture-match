@@ -4,7 +4,7 @@ import { resolveCountryFlag } from '@/src/components/ui/TotemAvatar';
 import { fallbackAvatar } from '@/src/lib/media';
 import type { UserProfile } from '@/src/lib/compatibility/types';
 
-function mapResult(c: Record<string, unknown>): LoveSearchResult {
+function mapResult(c: any): LoveSearchResult {
   const country = (c.country as string) ?? '';
   return { id: c.id as string, name: (c.name as string) ?? 'Profil', age: (c.age as number) ?? 0, gender: (c.gender as LoveMatch['gender']) ?? 'female', country, flag: resolveCountryFlag(country) ?? '🌍', avatar: (c.avatar as string) || fallbackAvatar(c.name as string) || '', matchScore: (c.matchScore as number) ?? 0, online: Boolean(c.online ?? c.connected), interest: ((c.sharedValues as string[]) ?? []).join(', '), about: (c.bio as string) ?? '', tribes: (c.sharedValues as string[]) ?? [], languages: (c.languages as string[]) ?? [], rank: (c.rank as number) ?? 0, reasons: (c.reasons as string[]) ?? [], breakdown: (c.breakdown as LoveSearchResult['breakdown']) ?? { values: 0, goals: 0, language: 0, culture: 0, interests: 0 } };
 }

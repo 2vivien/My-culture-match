@@ -16,7 +16,7 @@ const QUICK_PROMPTS = [
   'Une personne proche de ma région qui aime voyager',
 ];
 
-function MatchCard({ match, onLike, onPass, onChat }: { match: LoveSearchResult; onLike: () => void; onPass: () => void; onChat: () => void }) {
+const MatchCard: React.FC<{ match: LoveSearchResult; onLike: () => void; onPass: () => void; onChat: () => void }> = ({ match, onLike, onPass, onChat }) => {
   return (
     <motion.article layout initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} className="overflow-hidden rounded-[28px] border border-app-border bg-app-card shadow-sm">
       <div className="relative aspect-[4/4.8] overflow-hidden bg-app-muted">
@@ -27,7 +27,7 @@ function MatchCard({ match, onLike, onPass, onChat }: { match: LoveSearchResult;
       <div className="space-y-4 p-4"><p className="line-clamp-2 text-sm leading-6 text-app-gray">{match.about || 'Profil culturellement ouvert et disponible pour faire connaissance.'}</p><div className="space-y-2">{match.reasons.slice(0, 3).map((reason) => <div key={reason} className="flex items-start gap-2 text-xs text-app-text"><Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-600" />{reason}</div>)}</div><div className="grid grid-cols-3 gap-1.5">{[['Valeurs', match.breakdown.values], ['Culture', match.breakdown.culture], ['Intérêts', match.breakdown.interests]].map(([label, value]) => <div key={label as string} className="rounded-xl bg-app-muted p-2 text-center"><p className="text-sm font-semibold">{value}%</p><p className="text-[10px] text-app-gray">{label}</p></div>)}</div><div className="flex items-center gap-2"><button onClick={onPass} aria-label="Passer" className="flex h-10 w-10 items-center justify-center rounded-full border border-app-border text-app-gray hover:bg-app-muted"><X className="h-4 w-4" /></button><button onClick={onLike} className="flex h-10 flex-1 items-center justify-center gap-2 rounded-full bg-[#E27D60] text-sm font-semibold text-white hover:opacity-90"><Heart className="h-4 w-4 fill-current" />J’aime</button><button onClick={onChat} aria-label="Ouvrir la conversation" className="flex h-10 w-10 items-center justify-center rounded-full border border-app-border text-app-text hover:bg-app-muted"><MessageCircle className="h-4 w-4" /></button></div></div>
     </motion.article>
   );
-}
+};
 
 const chipLabels = (criteria: Record<string, unknown>) => {
   const chips: string[] = [];
