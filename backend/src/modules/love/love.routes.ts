@@ -4,6 +4,7 @@ import { requireAuth } from '../auth/require-auth';
 import { swipeSchema, loveSearchSchema } from './love.schemas';
 import { withIdempotency, idempotencyKeyFrom } from '../../shared/utils/idempotency';
 import { getLoveCandidates, getLoveCandidate, getActiveLoveMatches, swipe, searchLove, getLoveSearchQuota } from './love.service';
+import { handleLoveConversation, loveConversationSchema } from './love.conversation';
 
 const loveRoutes = new Hono();
 loveRoutes.use('*', requireAuth);
@@ -12,12 +13,16 @@ loveRoutes.get('/love/matches', async (c) => { const { userId } = c.get('auth');
 loveRoutes.get('/love/active', async (c) => { const { userId } = c.get('auth'); const { candidates } = await getActiveLoveMatches(userId); return c.json(candidates, 200); });
 loveRoutes.get('/love/matches/:id', async (c) => { const { userId } = c.get('auth'); const { candidate } = await getLoveCandidate(userId, c.req.param('id')); return c.json(candidate, 200); });
 
-/** Conversational Love: une demande naturelle -> maximum 4 profils classés et expliqués. */
 loveRoutes.post('/love/search', zValidator('json', loveSearchSchema), async (c) => {
   const { userId } = c.get('auth');
   const { query } = c.req.valid('json');
-  const result = await searchLove(userId, query);
-  return c.json(result, 200);
+  return c.json(await searchLove(userId, query), 200);
+});
+
+loveRoutes.post('/love/conversation', zValidator('json', loveConversationSchema), async (c) => {
+  const { userId } = c.get('auth');
+  const { messages } = c.req.valid('json');
+  return c.json(await handleLoveConversation(userId, messages), 200);
 });
 
 loveRoutes.get('/love/search/quota', async (c) => {
