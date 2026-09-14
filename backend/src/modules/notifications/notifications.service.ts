@@ -34,6 +34,11 @@ const ACTION_LABEL: Record<NotificationType, string> = {
   system: 'système',
 };
 
+const SYSTEM_ACTION_LABEL: Record<string, string> = {
+  temporal_pending: 'vous a écrit un message temporel à découvrir plus tard',
+  temporal_revealed: 'un message temporel vient d’être révélé dans votre conversation',
+};
+
 export interface NotificationDto {
   id: string;
   type: NotificationType;
@@ -102,7 +107,9 @@ async function toDto(row: schema.Notification): Promise<NotificationDto | null> 
   const [actor] = actorId
     ? await db.select({ id: schema.users.id, name: schema.users.name, username: schema.users.username, avatar: schema.users.avatar }).from(schema.users).where(eq(schema.users.id, actorId)).limit(1)
     : [];
-  const label = actor ? ACTION_LABEL[row.type] ?? row.action ?? '' : '';
+  const label = row.type === 'system'
+    ? SYSTEM_ACTION_LABEL[row.action ?? ''] ?? row.action ?? ACTION_LABEL.system
+    : actor ? ACTION_LABEL[row.type] ?? row.action ?? '' : '';
 
   return {
     id: row.id,
@@ -205,7 +212,6 @@ export async function handleNotificationAction(
   let effect: string | undefined;
 
   if (row.type === 'request' && row.actorId) {
-    // Demande de connexion : accept/decline la relation sous-jacente
     if (action === 'accept') {
       await acceptRequest(userId, row.actorId);
       effect = 'companion';
@@ -214,7 +220,6 @@ export async function handleNotificationAction(
       effect = 'declined';
     }
   } else if (row.type === 'invite' && row.target) {
-    // Invitation tribu
     if (action === 'accept') {
       await joinTribe(row.target, userId);
       effect = 'joined';
