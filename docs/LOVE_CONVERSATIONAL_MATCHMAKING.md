@@ -6,6 +6,20 @@ Love n'est plus un catalogue de profils à swiper. L'utilisateur décrit naturel
 
 > **Nous ne cherchons pas beaucoup de personnes. Nous cherchons les bonnes.**
 
+Cette première spécification est maintenant complétée par un dossier d'architecture algorithmique :
+
+- `docs/love-algorithm/00-README.md` — architecture globale ;
+- `01-onboarding-and-features.md` — 6 questions et feature store ;
+- `02-mathematical-scoring.md` — formules de compatibilité ;
+- `03-conversation-intelligence.md` — compréhension des conversations ;
+- `04-reciprocal-graph.md` — graphe, embeddings et matching réciproque ;
+- `05-learning-and-bandits.md` — apprentissage continu et exploration ;
+- `06-distance-culture-and-values.md` — distance, culture, langues et valeurs ;
+- `07-astrology-optional.md` — couche astrologique optionnelle, séparée du score scientifique ;
+- `08-safety-fairness-and-privacy.md` — sécurité, équité et confidentialité ;
+- `09-evaluation-and-experiments.md` — métriques et expérimentation ;
+- `10-implementation-roadmap.md` — feuille de route production.
+
 ## Expérience utilisateur
 
 1. L'utilisateur ouvre **Love**.
@@ -16,7 +30,7 @@ Love n'est plus un catalogue de profils à swiper. L'utilisateur décrit naturel
 5. Le moteur classe les profils éligibles.
 6. L'interface affiche au maximum **4 cartes actives**.
 7. Chaque carte affiche :
-   - score de compatibilité (ex. `97%` maximum dans cette première version) ;
+   - score de compatibilité ;
    - âge, pays et statut en ligne ;
    - raisons principales du rapprochement ;
    - sous-scores valeurs / culture / intérêts ;
@@ -46,47 +60,79 @@ Le quota est volontaire : Love privilégie la qualité des rencontres plutôt qu
 - `GET /api/love/active`
   - retourne les connexions Love réciproques.
 
-### Moteur de matching
+### Moteur
 
-Le modèle conversationnel ne choisit jamais directement les personnes. La séparation de responsabilité est volontaire :
+La responsabilité est séparée :
 
-`texte utilisateur → critères structurés → filtres déterministes → consentement/sécurité → scoring → Top 4`
+```text
+texte utilisateur
+  → critères structurés
+  → filtres déterministes
+  → consentement / sécurité
+  → génération de candidats
+  → compatibilité bilatérale
+  → ranking
+  → diversité
+  → Top 4
+```
 
-Le moteur applique d'abord les contraintes dures :
+Le modèle conversationnel ne choisit jamais directement les personnes. Il extrait l'intention, les critères et les signaux sémantiques. Le backend reste responsable du filtrage, du ranking et de la sécurité.
 
-- propre utilisateur exclu ;
-- âge minimum 18 ans ;
-- Love activé ;
-- consentement Love autorisant l'interaction ;
-- blocages exclus ;
-- profils complétés ;
-- profils déjà traités/matchés exclus lorsque pertinent.
+## Compatibilité réciproque
 
-Puis il classe les candidats sur plusieurs dimensions :
+Le moteur cible un vrai **Reciprocal Recommender System** : la qualité de A→B et de B→A doit être prise en compte. Une recommandation excellente pour A mais très mauvaise pour B ne doit pas être présentée comme un excellent match.
 
+Le score réciproque peut utiliser une moyenne géométrique :
+
+```text
+R(A,B) = sqrt(P_A(B) × P_B(A))
+```
+
+Cette approche pénalise les relations très asymétriques.
+
+## Sources de signal
+
+Le moteur peut progressivement combiner :
+
+- préférences explicites ;
 - valeurs ;
-- objectif relationnel ;
-- langues ;
-- culture / pays ;
+- objectifs relationnels ;
 - intérêts ;
-- score de compatibilité culturelle existant.
+- langues ;
+- culture ;
+- distance ;
+- communication ;
+- conversations autorisées ;
+- interactions Love ;
+- graphe relationnel ;
+- embeddings ;
+- exploration contrôlée.
 
-Chaque résultat contient aussi des raisons lisibles afin que le score soit explicable.
+Les données issues des conversations doivent être traitées avec minimisation, confiance et durée de vie. Une préférence explicitement déclarée doit avoir plus de poids qu'une inférence incertaine.
 
 ## Score
 
-Le score est un indicateur de compatibilité et **pas une promesse de réussite sentimentale**.
+Le score global est multi-dimensionnel et évolutif. Une première base peut combiner :
 
-Le score global est plafonné à 97% dans la première UX afin d'éviter de présenter artificiellement un match comme une certitude absolue.
+```text
+reciprocity
+values
+goal
+communication
+interests
+culture
+distance
+novelty
+confidence
+```
 
-Exemple :
+Le dossier `02-mathematical-scoring.md` contient les formules, poids de départ et méthodes de calibration.
 
-- `97%` compatibilité globale ;
-- `92%` culture ;
-- `88%` valeurs ;
-- `80%` intérêts.
+Le score affiché est un indicateur de compatibilité et **pas une promesse de réussite sentimentale**.
 
-Les sous-scores doivent rester explicables et cohérents avec les données réellement disponibles.
+## Astrologie
+
+Une couche astrologique peut exister comme fonctionnalité culturelle/ludique opt-in, mais elle est séparée du moteur scientifique : elle ne doit jamais devenir un filtre de sécurité ou une vérité prédictive. Voir `07-astrology-optional.md`.
 
 ## Interface
 
@@ -105,52 +151,44 @@ La nouvelle page Love contient :
 - état quota épuisé ;
 - gestion des erreurs.
 
-## Sécurité et confidentialité
+## Confidentialité
 
-La recherche doit continuer à respecter les contrôles Trust & Safety déjà mis en place. Une personne qui ne permet pas une interaction Love ne doit jamais apparaître dans les résultats.
+Les requêtes Love et les conversations peuvent contenir des préférences intimes. L'utilisation conversationnelle doit être contrôlable, minimisée et documentée. Si un fournisseur LLM externe est utilisé, seuls les éléments nécessaires doivent être transmis.
 
-Le moteur ne doit pas exposer de données privées qui ne sont pas visibles selon les réglages de consentement du candidat.
+## KPI
 
-Les requêtes Love contiennent potentiellement des préférences relationnelles personnelles. Une prochaine étape devra donc ajouter une politique de rétention/suppression de l'historique de recherche et, lors de l'ajout d'un LLM externe, minimiser les données envoyées au fournisseur.
+Les KPI prioritaires sont :
 
-## Prochaine évolution IA
+- mutual match rate ;
+- meaningful conversation rate ;
+- réponse après premier message ;
+- satisfaction ;
+- report/block rate ;
+- diversity ;
+- coverage ;
+- calibration ;
+- latence ;
+- qualité du Top 4.
 
-La version actuelle possède un interpréteur déterministe pour les requêtes courantes. La prochaine couche peut utiliser un LLM uniquement pour transformer le texte libre en JSON strict :
+Le moteur ne doit pas être optimisé uniquement pour les clics ou le temps passé.
 
-```json
-{
-  "ageMin": 24,
-  "ageMax": 30,
-  "genders": ["female"],
-  "relationshipGoal": "serious",
-  "keywords": ["voyage", "ouverture"]
-}
-```
+## État actuel
 
-Le LLM ne doit pas décider du Top 4. Le backend reste responsable du filtrage, du consentement, du ranking et de la sécurité.
+La première tranche du moteur conversationnel est déjà présente dans le repository :
 
-## KPI produit
+- parsing naturel ;
+- parser IA optionnel avec fallback déterministe ;
+- quota Redis ;
+- filtrage sécurité/consentement ;
+- ranking ;
+- Top 4 ;
+- score et raisons ;
+- actions Love ;
+- matchs Love actifs ;
+- séparation Love / Friendship.
 
-- recherches Love / semaine ;
-- taux de recherches donnant au moins un résultat ;
-- taux de clic profil ;
-- taux de like par profil proposé ;
-- taux de match réciproque ;
-- taux d'ouverture de conversation ;
-- taux de retour après une recherche ;
-- quota atteint ;
-- signalements issus des interactions Love.
+La nouvelle documentation définit maintenant l'architecture cible permettant de passer d'un moteur déterministe initial à un système réciproque, conversationnel, graph-based et apprenant.
 
-## État de l'implémentation
+## Important
 
-La première tranche est maintenant en place dans le repository :
-
-- backend : parsing, quota Redis, filtrage, ranking et Top 4 ;
-- API : recherche conversationnelle + quota ;
-- frontend : nouvelle expérience chat-like ;
-- cartes de profils avec score, raisons et actions ;
-- cartes des matchs Love actifs ;
-- séparation Love / Friendship conservée ;
-- consentement Love réutilisé côté serveur.
-
-Les validations CI restent nécessaires avant de considérer cette tranche comme prête pour production.
+Les validations CI, les benchmarks et les expériences A/B sont nécessaires avant de considérer les futurs modèles ML comme meilleurs que le baseline. Aucun chiffre de performance ne doit être inventé avant mesure réelle.
