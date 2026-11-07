@@ -81,6 +81,13 @@ export function AuthPage() {
     setAuthError(null);
 
     try {
+      const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID ?? '';
+      if (!clientId) {
+        setAuthError('Google Sign-In non configuré (VITE_GOOGLE_CLIENT_ID manquant). Modifiez le .env puis redémarrez Vite.');
+        setIsLoading(false);
+        return;
+      }
+
       // @ts-expect-error - Google Identity Services API
       const google = window.google;
       if (!google?.accounts?.id) {
@@ -89,26 +96,65 @@ export function AuthPage() {
         return;
       }
 
-      google.accounts.id.initialize({
-        client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID ?? '',
-        callback: async (response: { credential: string }) => {
-          setIsLoading(true);
-          try {
-            const result = await authService.loginWithGoogle(response.credential);
-            if ('twoFactorRequired' in result) {
-              setTicket(result.ticket);
-              setStep('2fa');
-            } else {
-              finishLogin(result.user, result.isNewUser);
-            }
-          } catch (err) {
-            setAuthError(err instanceof Error ? err.message : 'Erreur connexion Google.');
-          } finally {
-            setIsLoading(false);
+      const handleCredential = async (response: { credential: string }) => {
+        setIsLoading(true);
+        try {
+          const result = await authService.loginWithGoogle(response.credential);
+          if ('twoFactorRequired' in result) {
+            setTicket(result.ticket);
+            setStep('2fa');
+          } else {
+            finishLogin(result.user, result.isNewUser);
           }
+        } catch (err) {
+          setAuthError(err instanceof Error ? err.message : 'Erreur connexion Google.');
+        } finally {
+          setIsLoading(false);
+        }
+      };
+
+      google.accounts.id.initialize({
+        client_id: clientId,
+        context: 'signin',
+        auto_select: false,
+        callback: handleCredential,
+        error_callback: (error: { type?: string; message?: string }) => {
+          // Ex. type "popup_failed_to_open" / "popup_closed" / "idp_iframe_error".
+          // Le 403 FedCM "provider's accounts list fetch" = origine refusée par Google.
+          setAuthError(
+            `Connexion Google refusée par Google (${error?.type ?? 'erreur'}). ` +
+              `Vérifiez dans Google Cloud Console que “Authorized JavaScript origins” contient ${window.location.origin}, ` +
+              'autorisez les cookies tiers / désactivez l\'adblock, puis réessayez. ' +
+              (error?.message ? `Détail : ${error.message}` : ''),
+          );
+          setIsLoading(false);
         },
       });
-      google.accounts.id.prompt();
+      google.accounts.id.prompt((notification: {
+        isNotDisplayed?: () => boolean;
+        isSkipped?: () => boolean;
+        isDismissed?: () => boolean;
+        getMomentType?: () => string;
+        getErrorCode?: () => string;
+      }) => {
+        if (!notification) return;
+        // Prompt fermé par l'utilisateur : on débloque juste le bouton, sans erreur.
+        if (typeof notification.isSkipped === 'function' && notification.isSkipped()) {
+          setIsLoading(false);
+          return;
+        }
+        if (typeof notification.isNotDisplayed === 'function' && notification.isNotDisplayed()) {
+          const moment = typeof notification.getMomentType === 'function' ? notification.getMomentType() : '';
+          // "not_displayed" / "opt_out_or_no_session" : OneTap masqué (cookies tiers,
+          // adblock, navigation privée) ou origine non autorisée (403 côté FedCM).
+          setAuthError(
+            'La fenêtre Google ne s\'est pas affichée (moment : ' +
+              (moment || 'not_displayed') +
+              `). Autorisez les cookies tiers, désactivez l'adblock et vérifiez que ${window.location.origin} est dans les “Authorized JavaScript origins” Google.`,
+          );
+          setIsLoading(false);
+        }
+      });
     } catch {
       setAuthError('Impossible de démarrer Google Sign-In.');
       setIsLoading(false);
