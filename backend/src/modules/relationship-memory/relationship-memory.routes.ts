@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { z } from 'zod';
 import { zValidator } from '@hono/zod-validator';
-import { requireAuth } from '../../middleware/auth';
+import { requireAuth } from '../auth/require-auth';
 import { AppError } from '../../shared/utils/AppError';
 import { createRelationshipCapsule, getRelationshipTimeline } from './relationship-memory.service';
 import { generateRelationshipRecap, listRelationshipRecaps, rebuildRelationshipMemoryV2 } from './relationship-memory.v2';
