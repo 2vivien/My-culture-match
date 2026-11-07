@@ -120,37 +120,36 @@ export function AuthPage() {
         callback: handleCredential,
         error_callback: (error: { type?: string; message?: string }) => {
           // Ex. type "popup_failed_to_open" / "popup_closed" / "idp_iframe_error".
-          // Le 403 FedCM "provider's accounts list fetch" = origine refusée par Google.
+          // "Not signed in with the identity provider" / FedCM NetworkError = pas de session
+          // Google dans ce navigateur → One Tap ne peut pas émettre de token.
           setAuthError(
             `Connexion Google refusée par Google (${error?.type ?? 'erreur'}). ` +
-              `Vérifiez dans Google Cloud Console que “Authorized JavaScript origins” contient ${window.location.origin}, ` +
-              'autorisez les cookies tiers / désactivez l\'adblock, puis réessayez. ' +
+              'Si vous n\'êtes pas connecté à Google dans ce navigateur, connectez-vous d\'abord sur accounts.google.com puis réessayez. ' +
+              `Vérifiez aussi que ${window.location.origin} est dans les “Authorized JavaScript origins” Google et autorisez les cookies tiers. ` +
               (error?.message ? `Détail : ${error.message}` : ''),
           );
           setIsLoading(false);
         },
       });
+      // Migration FedCM : ne plus utiliser les moments "display" (isNotDisplayed /
+      // getNotDisplayedReason) ni getSkippedReason() — Google les retire quand FedCM
+      // devient obligatoire. Seuls isSkippedMoment / isDismissedMoment restent supportés.
       google.accounts.id.prompt((notification: {
-        isNotDisplayed?: () => boolean;
-        isSkipped?: () => boolean;
-        isDismissed?: () => boolean;
-        getMomentType?: () => string;
-        getErrorCode?: () => string;
+        isSkippedMoment?: () => boolean;
+        isDismissedMoment?: () => boolean;
       }) => {
         if (!notification) return;
-        // Prompt fermé par l'utilisateur : on débloque juste le bouton, sans erreur.
-        if (typeof notification.isSkipped === 'function' && notification.isSkipped()) {
+        // Prompt fermé / ignoré par l'utilisateur : on débloque juste le bouton.
+        if (typeof notification.isDismissedMoment === 'function' && notification.isDismissedMoment()) {
           setIsLoading(false);
           return;
         }
-        if (typeof notification.isNotDisplayed === 'function' && notification.isNotDisplayed()) {
-          const moment = typeof notification.getMomentType === 'function' ? notification.getMomentType() : '';
-          // "not_displayed" / "opt_out_or_no_session" : OneTap masqué (cookies tiers,
-          // adblock, navigation privée) ou origine non autorisée (403 côté FedCM).
+        // One Tap ignoré (ex. pas de session Google, FedCM /gsi/status 403) :
+        // message actionnable au lieu d'un simple silence console.
+        if (typeof notification.isSkippedMoment === 'function' && notification.isSkippedMoment()) {
           setAuthError(
-            'La fenêtre Google ne s\'est pas affichée (moment : ' +
-              (moment || 'not_displayed') +
-              `). Autorisez les cookies tiers, désactivez l'adblock et vérifiez que ${window.location.origin} est dans les “Authorized JavaScript origins” Google.`,
+            'Google n\'a pas pu démarrer la connexion — vous n\'êtes probablement pas connecté à Google dans ce navigateur. ' +
+              `Connectez-vous sur accounts.google.com, puis retentez. Si ça persiste, vérifiez que ${window.location.origin} est autorisé dans Google Cloud Console.`,
           );
           setIsLoading(false);
         }
