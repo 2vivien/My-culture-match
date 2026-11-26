@@ -20,12 +20,12 @@ test.describe('Application connectée', () => {
   test('navigation : Love, Explore, Connexion, Profile', async ({ page }) => {
     const nav = page.locator('nav');
     await nav.getByTitle('Love').click();
-    await expect(page.getByRole('heading', { name: 'Love Matchmaker' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'AI Love Chat', exact: true })).toBeVisible();
 
     await nav.getByTitle('Explore').click();
     await expect(page.getByRole('heading', { name: 'Explore Communities' })).toBeVisible();
 
-    await nav.getByTitle('Connexion').click();
+    await nav.getByTitle('Friends').click();
     await expect(page.locator('main, .flex-1').first()).toBeVisible();
 
     await nav.getByTitle('Profil').click();
@@ -93,9 +93,9 @@ test.describe('Application connectée', () => {
   });
 
   test('le chat popup s’ouvre depuis Messages et charge les conversations réelles', async ({ page }) => {
-    await page.locator('nav').getByTitle('Messages').click();
-    const popup = page.locator('div').filter({ hasText: /Conversations|Messages/ }).last();
-    await expect(popup).toBeVisible({ timeout: 10_000 });
+    await page.getByTitle('Messages').click();
+    await expect(page.getByRole('heading', { name: 'Messages', exact: true })).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByPlaceholder('Rechercher...')).toBeVisible({ timeout: 10_000 });
   });
 
   test('onglet Admin accessible pour un role admin — routes réelles', async ({ page }) => {

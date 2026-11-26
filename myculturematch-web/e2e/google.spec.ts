@@ -60,8 +60,9 @@ test.describe('Connexion sociale', () => {
     await expect(page.locator('nav').getByTitle('Home')).toBeVisible({ timeout: 15_000 });
     expect(payload).toEqual({ idToken: 'fake-google-id-token' });
 
-    const token = await page.evaluate(() => localStorage.getItem('mcm.auth.token'));
-    expect(token).toBe('e2e-google-token');
+    // Sécurité : le token n'est plus persisté dans localStorage (cookie HttpOnly + mémoire).
+    const stored = await page.evaluate(() => localStorage.getItem('mcm.auth.token'));
+    expect(stored).toBeNull();
   });
 
   test('bouton Google : fallback propre si Google Identity Services n’est pas chargé', async ({ page }) => {

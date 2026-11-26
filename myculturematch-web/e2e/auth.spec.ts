@@ -14,6 +14,6 @@ test.describe('Authentification (flux réel OTP)', () => {
     await loginByOtp(page, 'test.flow@example.com', true);
 
     await expect(page.getByText('Explore Communities')).not.toBeVisible();
-    await expect(page.locator('nav').getByTitle('Messages')).toBeVisible();
+    await expect(page.getByTitle('Messages')).toBeVisible();
   });
 });

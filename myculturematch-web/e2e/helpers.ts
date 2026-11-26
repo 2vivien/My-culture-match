@@ -87,18 +87,16 @@ export async function loginByOtp(page: Page, email: string, expectApp: boolean) 
   }
 }
 
-/** Force le rôle admin côté store local (pour exposer l'onglet Admin). */
+/**
+ * Force le rôle admin pour le test en interceptant /api/users/me.
+ * Le store n'est plus une source de vérité : la session est restaurée depuis
+ * le cookie HttpOnly, donc on simule la réponse API plutôt que localStorage.
+ */
 export async function forceAdminRole(page: Page): Promise<void> {
-  await page.evaluate(() => {
-    const raw = localStorage.getItem('app-store');
-    const store = raw ? JSON.parse(raw) : {};
-    store.state = {
-      ...(store.state ?? {}),
-      currentUser: { ...(store.state?.currentUser ?? {}), role: 'admin' },
-      isAuthenticated: true,
-      isOnboarded: true,
-    };
-    localStorage.setItem('app-store', JSON.stringify(store));
+  await page.route('**/api/users/me', async (route) => {
+    const response = await route.fetch();
+    const body = (await response.json()) as Record<string, unknown>;
+    await route.fulfill({ response, json: { ...body, role: 'admin' } });
   });
   await page.reload();
 }
