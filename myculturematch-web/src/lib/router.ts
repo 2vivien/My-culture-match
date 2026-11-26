@@ -23,6 +23,7 @@ const TAB_SEGMENTS: Record<string, string> = {
   Create: 'create',
   PostDetail: 'post',
   Settings: 'settings',
+  Notifications: 'notifications',
   Admin: 'admin',
 };
 

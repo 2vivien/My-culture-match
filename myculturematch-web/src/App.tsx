@@ -14,6 +14,7 @@ import { TribuSettingsView } from './components/explore/TribuSettingsView';
 import { CreatePostView } from './components/feed/CreatePostView';
 import { PostDetailPage } from './components/feed/PostDetailPage';
 import { SettingsPage } from './pages/SettingsPage';
+import { NotificationsPage } from './pages/NotificationsPage';
 import { LoveColumn } from './components/explore/LoveColumn';
 import { CreateTribeModal } from './components/explore/CreateTribeModal';
 import { useAppStore } from './stores/useAppStore';
@@ -104,6 +105,8 @@ export default function App() {
                   <CreatePostView />
                 ) : activeTab === 'PostDetail' ? (
                   <PostDetailPage />
+                ) : activeTab === 'Notifications' ? (
+                  <NotificationsPage />
                 ) : activeTab === 'Settings' ? (
                   <SettingsPage />
                 ) : activeTab === 'Friends' || activeTab === 'Connexion' || activeTab === 'Connections' ? (

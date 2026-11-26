@@ -5,7 +5,6 @@ import { SearchBar } from './parts/SearchBar';
 import { useUIStore } from '@/src/stores/useUIStore';
 import { useAppStore } from '@/src/stores/useAppStore';
 import { ProfileAvatar } from '@/src/components/ui/ProfileAvatar';
-import { NotificationDropdown } from './parts/NotificationDropdown';
 import { UserProfileDropdown } from './parts/UserProfileDropdown';
 import { useUnreadMessagesCount } from '@/src/hooks/useUnreadMessagesCount';
 
@@ -16,16 +15,12 @@ export const Header = () => {
   const { currentUser } = useAppStore();
   const { data: unreadMessages } = useUnreadMessagesCount();
 
-  const [showNotif, setShowNotif] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
 
-  
-  const notifRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const clickOutside = (e: MouseEvent) => {
-      if (notifRef.current && !notifRef.current.contains(e.target as Node)) setShowNotif(false);
       if (profileRef.current && !profileRef.current.contains(e.target as Node)) setShowProfile(false);
     };
     document.addEventListener('mousedown', clickOutside);
@@ -74,28 +69,30 @@ export const Header = () => {
           )}
         </button>
 
-        {/* Notification Icon and Trigger */}
-        <div ref={notifRef} className="relative shrink-0">
-          <button onClick={() => setShowNotif(!showNotif)} className="w-10 h-10 md:w-12 md:h-12 bg-white dark:bg-zinc-900 rounded-full shadow-sm border border-app-border dark:border-zinc-800 flex items-center justify-center text-app-gray hover:text-app-black dark:hover:text-white hover:shadow-md transition-all relative cursor-pointer">
-            <Bell className="w-4.5 h-4.5 md:w-5 md:h-5 text-app-black dark:text-zinc-300" />
-            {notificationsCount > 0 && (
-              <span className="absolute -top-1 -right-1.5 min-w-[16px] h-4 px-1 rounded-full flex items-center justify-center bg-[#E27D60] text-[9px] font-black text-white shadow-sm">
-                {String(notificationsCount)}
-              </span>
-            )}
-          </button>
-          <AnimatePresence>{showNotif && <NotificationDropdown />}</AnimatePresence>
-        </div>
+        {/* Notification Icon — ouvre sa propre page, plus de popup */}
+        <button
+          onClick={() => setActiveTab('Notifications')}
+          className="w-10 h-10 md:w-12 md:h-12 bg-white dark:bg-zinc-900 rounded-full shadow-sm border border-app-border dark:border-zinc-800 flex items-center justify-center text-app-gray hover:text-app-black dark:hover:text-white hover:shadow-md transition-all relative cursor-pointer"
+          title="Notifications"
+        >
+          <Bell className="w-4.5 h-4.5 md:w-5 md:h-5 text-app-black dark:text-zinc-300" />
+          {notificationsCount > 0 && (
+            <span className="absolute -top-1 -right-1.5 min-w-[16px] h-4 px-1 rounded-full flex items-center justify-center bg-[#E27D60] text-[9px] font-black text-white shadow-sm">
+              {String(notificationsCount)}
+            </span>
+          )}
+        </button>
 
-        {/* User Profile Avatar and Trigger (Desktop only) */}
+        {/* User trigger : avatar + nom sans pilule rectangulaire (Desktop only) */}
         <div ref={profileRef} className="hidden md:block relative shrink-0">
-          <div onClick={() => setShowProfile(!showProfile)} className="bg-white dark:bg-zinc-900 p-0.5 md:pl-2.5 md:pr-4 md:py-1.5 rounded-full shadow-sm border border-app-border dark:border-zinc-800 flex items-center gap-2 cursor-pointer hover:shadow-md transition-all">
+          <button
+            onClick={() => setShowProfile(!showProfile)}
+            className="group flex items-center gap-2 py-1 cursor-pointer"
+          >
             <ProfileAvatar size="xs" src={currentUser.avatar} alt={currentUser.name} countryFlag={currentUser.country} glow={currentUser.glow} />
-            <div className="hidden md:flex items-center gap-1.5">
-              <span className="text-xs font-black text-app-black dark:text-zinc-200">{currentUser.username}</span>
-              <ChevronDown className="w-3.5 h-3.5 text-app-gray transition-transform duration-250 group-hover:translate-y-0.5" />
-            </div>
-          </div>
+            <span className="text-xs font-bold text-app-black dark:text-zinc-200">{currentUser.username}</span>
+            <ChevronDown className="w-3.5 h-3.5 text-app-gray transition-transform duration-200 group-hover:translate-y-0.5" />
+          </button>
           <AnimatePresence>{showProfile && <UserProfileDropdown onClose={() => setShowProfile(false)} />}</AnimatePresence>
         </div>
       </div>
