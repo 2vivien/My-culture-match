@@ -54,7 +54,7 @@ function slugifyTribeTag(name: string): string {
   return base.length >= 3 ? base : `tribu-${Date.now().toString(36)}`;
 }
 
-/** Mappe un thème du formulaire vers un topic accepté par l'API (défaut : posts). */
+/** Mappe un thème du formulaire vers un topic accepté par l'API (défaut : traditions). */
 const TOPIC_MAP: Array<[RegExp, string]> = [
   [/gastronom|cuisine|boisson/i, 'cuisine'],
   [/langue/i, 'langues'],
@@ -77,9 +77,9 @@ const TOPIC_MAP: Array<[RegExp, string]> = [
 ];
 
 function mapTopic(theme?: string): string {
-  if (!theme) return 'posts';
+  if (!theme) return 'traditions';
   for (const [pattern, topic] of TOPIC_MAP) {
     if (pattern.test(theme)) return topic;
   }
-  return 'posts';
+  return 'traditions';
 }

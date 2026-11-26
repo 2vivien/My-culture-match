@@ -108,6 +108,22 @@ VALUES
   (md5('seed-post-8'), (SELECT id FROM _autre), NULL, 'Text', 'Le griot et la mémoire des villages', 'Chez nous, le griot n''est pas un artiste : c''est une bibliothèque vivante. Partagez comment la mémoire orale se transmet chez vous.', NULL, '["griot","histoire","oralite"]'::jsonb, 51, 1, 780, 8, 3, now() - interval '30 hours')
 ON CONFLICT DO NOTHING;
 
+-- Rafraîchit les dates des posts seed : Home utilise le filtre "for-you"
+-- qui ne garde que les 7 derniers jours (un seed rejoué plus tard resterait vide).
+UPDATE posts p
+SET created_at = v.created_at, updated_at = now()
+FROM (VALUES
+  (md5('seed-post-1'), now() - interval '3 days'),
+  (md5('seed-post-2'), now() - interval '2 days'),
+  (md5('seed-post-3'), now() - interval '1 day'),
+  (md5('seed-post-4'), now() - interval '4 hours'),
+  (md5('seed-post-5'), now() - interval '8 hours'),
+  (md5('seed-post-6'), now() - interval '20 hours'),
+  (md5('seed-post-7'), now() - interval '10 hours'),
+  (md5('seed-post-8'), now() - interval '30 hours')
+) AS v(id, created_at)
+WHERE p.id = v.id;
+
 -- ── 4) Comments (with replies) ───────────────────────────────
 INSERT INTO comments (id, post_id, user_id, text, likes, created_at)
 VALUES

@@ -4,7 +4,7 @@ export const launchThemes = [
   'Voyages Culturels & Immersion',
   'Cinéma & Séries Internationales',
   'Humour & Comédie Culturelle',
-  'Musique du Monde & Posts Musicaux',
+  'Musique du Monde & Traditions Musicales',
   'Festivals & Célébrations Culturelles',
   'Histoire & Patrimoine',
   'Communautés Expatriées & Diasporas',
@@ -15,10 +15,10 @@ export const launchThemes = [
   'Méditation & Bien-être Culturel',
   'Littérature & Contes du Monde',
   'Mythes & Légendes',
-  'Danses & Posts Contemporains',
-  'Artisanat & Posts Culturels',
+  'Danses Traditionnelles & Contemporaines',
+  'Artisanat & Arts Traditionnels',
   'Éducation & Pédagogie Culturelle',
-  'Boissons & Posts Alcoolisés/Non',
+  'Boissons & Traditions Alcoolisées/Non',
 ] as const;
 
 export const exploreCategories = ['All', ...launchThemes];
@@ -30,7 +30,7 @@ export const themeIcons: Record<string, string> = {
   'Voyages Culturels & Immersion': '✈️',
   'Cinéma & Séries Internationales': '🎬',
   'Humour & Comédie Culturelle': '🎭',
-  'Musique du Monde & Posts Musicaux': '🪕',
+  'Musique du Monde & Traditions Musicales': '🪕',
   'Festivals & Célébrations Culturelles': '🎉',
   'Histoire & Patrimoine': '🏛️',
   'Communautés Expatriées & Diasporas': '🤝',
@@ -41,9 +41,9 @@ export const themeIcons: Record<string, string> = {
   'Méditation & Bien-être Culturel': '🧘',
   'Littérature & Contes du Monde': '📚',
   'Mythes & Légendes': '🔮',
-  'Danses & Posts Contemporains': '💃',
-  'Artisanat & Posts Culturels': '🏺',
+  'Danses Traditionnelles & Contemporaines': '💃',
+  'Artisanat & Arts Traditionnels': '🏺',
   'Éducation & Pédagogie Culturelle': '🎓',
-  'Boissons & Posts Alcoolisés/Non': '🍵',
+  'Boissons & Traditions Alcoolisées/Non': '🍵',
 };
 
