@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Bell, Menu, Plus, SquarePen, Search } from 'lucide-react';
-import { SandboxIcon } from '@/src/components/ui/SandboxIcon';
+import { Bell, Menu, MessageCircle, SquarePlus, Search } from 'lucide-react';
 import { SearchBar } from './parts/SearchBar';
 import { useUIStore } from '@/src/stores/useUIStore';
 import { useAppStore } from '@/src/stores/useAppStore';
@@ -16,7 +15,6 @@ export const Header = () => {
   const { data: unreadMessages } = useUnreadMessagesCount();
 
   const [showProfile, setShowProfile] = useState(false);
-
   const profileRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -27,76 +25,68 @@ export const Header = () => {
     return () => document.removeEventListener('mousedown', clickOutside);
   }, []);
 
+  const iconButton =
+    'w-10 h-10 flex items-center justify-center text-app-black dark:text-zinc-100 hover:text-zinc-500 dark:hover:text-zinc-400 transition-colors cursor-pointer relative shrink-0';
+  const badge =
+    'absolute -top-0.5 -right-0.5 min-w-[15px] h-[15px] px-0.5 rounded-full flex items-center justify-center bg-[#E27D60] text-[9px] font-black text-white';
+
   return (
     <header className="h-20 md:h-24 px-4 sm:px-6 md:px-10 flex items-center justify-between gap-4 shrink-0 bg-[#FEFEFE]/85 dark:bg-[#0d1117]/80 backdrop-blur-md sticky top-0 z-40 w-full border-b border-app-border/40 dark:border-zinc-800/40">
-      <button onClick={toggleSidebar} className="md:hidden p-2 bg-white dark:bg-zinc-900 w-10 h-10 rounded-full border border-app-border dark:border-zinc-800 text-app-gray dark:text-zinc-300 cursor-pointer flex items-center justify-center shrink-0">
+      <button
+        onClick={toggleSidebar}
+        className="md:hidden p-2 w-10 h-10 flex items-center justify-center text-app-black dark:text-zinc-100 cursor-pointer shrink-0"
+        title="Menu"
+      >
         <Menu className="w-5 h-5" />
       </button>
 
       <SearchBar />
 
-      <div className="flex items-center gap-1.5 sm:gap-3 md:gap-5 select-none relative shrink-0">
-        {/* Mobile search icon button - placed side-by-side with others */}
+      <div className="flex items-center gap-2 sm:gap-4 md:gap-6 relative shrink-0">
+        {/* Recherche mobile */}
         <button
           onClick={() => setActiveTab('Explore')}
-          className="md:hidden w-10 h-10 bg-white dark:bg-zinc-900 rounded-full shadow-sm border border-app-border dark:border-zinc-800 flex items-center justify-center text-app-gray hover:text-app-black dark:hover:text-white cursor-pointer select-none shrink-0"
+          className={`${iconButton} md:hidden`}
           title="Search"
         >
-          <Search className="w-4.5 h-4.5 text-app-black dark:text-zinc-300" />
+          <Search className="w-5 h-5" />
         </button>
 
-        {/* Create Post Action Button */}
+        {/* Create — icône + texte, sans contour */}
         <button
           onClick={() => setActiveTab('Create')}
-          className="h-10 w-10 md:h-12 md:w-auto md:px-6 rounded-full bg-white dark:bg-zinc-900 text-app-black dark:text-zinc-100 border border-app-border dark:border-zinc-700 font-extrabold text-xs shadow-sm hover:shadow-md hover:scale-[1.02] tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer uppercase shrink-0"
+          className="h-10 flex items-center gap-2 px-1 text-app-black dark:text-zinc-100 font-bold text-sm hover:text-zinc-500 dark:hover:text-zinc-400 transition-colors cursor-pointer shrink-0"
           title="Create a post"
         >
-          <SquarePen className="w-5 h-5 md:w-4 md:h-4" />
+          <SquarePlus className="w-5 h-5" />
           <span className="hidden md:inline">Create</span>
         </button>
 
-        {/* Message Bubble Switcher Shortcut */}
-        <button 
-          onClick={openChat} 
-          className="w-10 h-10 md:w-12 md:h-12 bg-white dark:bg-zinc-900 rounded-full shadow-sm border border-app-border dark:border-zinc-800 flex items-center justify-center text-app-gray hover:text-app-black dark:hover:text-white hover:shadow-md transition-all relative cursor-pointer shrink-0"
-          title="Messages"
-        >
-          <SandboxIcon className="w-4.5 h-4.5 md:w-5 md:h-5 text-app-black dark:text-zinc-300" />
-          {(unreadMessages ?? 0) > 0 && (
-            <span className="absolute -top-1 -right-1.5 min-w-[16px] h-4 px-1 rounded-full flex items-center justify-center bg-[#E27D60] text-[9px] font-black text-white shadow-sm">
-              {String(unreadMessages ?? 0)}
-            </span>
-          )}
+        {/* Messages — icône seule, sans contour */}
+        <button onClick={openChat} className={iconButton} title="Messages">
+          <MessageCircle className="w-5 h-5" />
+          {(unreadMessages ?? 0) > 0 && <span className={badge}>{String(unreadMessages ?? 0)}</span>}
         </button>
 
-        {/* Notification Icon — ouvre sa propre page, plus de popup */}
-        <button
-          onClick={() => setActiveTab('Notifications')}
-          className="w-10 h-10 md:w-12 md:h-12 bg-white dark:bg-zinc-900 rounded-full shadow-sm border border-app-border dark:border-zinc-800 flex items-center justify-center text-app-gray hover:text-app-black dark:hover:text-white hover:shadow-md transition-all relative cursor-pointer"
-          title="Notifications"
-        >
-          <Bell className="w-4.5 h-4.5 md:w-5 md:h-5 text-app-black dark:text-zinc-300" />
-          {notificationsCount > 0 && (
-            <span className="absolute -top-1 -right-1.5 min-w-[16px] h-4 px-1 rounded-full flex items-center justify-center bg-[#E27D60] text-[9px] font-black text-white shadow-sm">
-              {String(notificationsCount)}
-            </span>
-          )}
+        {/* Notifications — icône seule, ouvre sa page */}
+        <button onClick={() => setActiveTab('Notifications')} className={iconButton} title="Notifications">
+          <Bell className="w-5 h-5" />
+          {notificationsCount > 0 && <span className={badge}>{String(notificationsCount)}</span>}
         </button>
 
-        {/* User trigger : avatar + nom sans pilule rectangulaire (Desktop only) */}
+        {/* Profil — avatar avec point en ligne, sans contour */}
         <div ref={profileRef} className="hidden md:block relative shrink-0">
           <button
             onClick={() => setShowProfile(!showProfile)}
             title="Profile menu"
-            className="cursor-pointer"
+            className="relative cursor-pointer"
           >
-            <ProfileAvatar size="xs" src={currentUser.avatar} alt={currentUser.name} countryFlag={currentUser.country} glow={currentUser.glow} />
+            <ProfileAvatar size="xs" src={currentUser.avatar} alt={currentUser.name} glow="none" />
+            <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white dark:border-zinc-950" />
           </button>
           <AnimatePresence>{showProfile && <UserProfileDropdown onClose={() => setShowProfile(false)} />}</AnimatePresence>
         </div>
       </div>
-
-
     </header>
   );
 };
