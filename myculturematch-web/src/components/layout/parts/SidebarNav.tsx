@@ -151,9 +151,9 @@ export const SidebarNav = () => {
                   <button
                     key={tribe.id}
                     onClick={() => { setSelectedTribeId(tribe.id); setActiveTab('Tribu'); if (window.innerWidth < 768 && isSidebarOpen) toggleSidebar(); }}
-                    className="flex items-center gap-1.5 hover:text-[#E27D60] cursor-pointer text-left py-1 text-app-black dark:text-zinc-300 bg-transparent border-none"
+                    className="flex items-center gap-1.5 hover:text-zinc-900 dark:hover:text-zinc-100 cursor-pointer text-left py-1 text-app-black dark:text-zinc-300 bg-transparent border-none"
                   >
-                    <span className="w-1 h-1 rounded-full bg-[#E27D60] shrink-0" />
+                    <span className="w-1 h-1 rounded-full bg-zinc-400 dark:bg-zinc-500 shrink-0" />
                     <span className="truncate">t/{tribe.name}</span>
                   </button>
                 ))}
@@ -162,17 +162,17 @@ export const SidebarNav = () => {
                   <div className="flex flex-col gap-1 mt-3 border-t border-app-border/40 dark:border-zinc-800 pt-2 w-full">
                     <span className="text-[11px] uppercase tracking-wider text-app-gray/60 dark:text-zinc-500 font-black mb-1 select-none">Your Own Tribes</span>
                     {myTribes.map((tribe) => (
-                      <div key={tribe.id} className="group/item flex items-center justify-between hover:text-[#E27D60] py-1 text-app-black dark:text-zinc-300 select-none">
-                        <button onClick={() => { setSelectedTribeId(tribe.id); setActiveTab('Tribu'); if (window.innerWidth < 768 && isSidebarOpen) toggleSidebar(); }} className="flex items-center gap-1.5 cursor-pointer text-left text-app-black dark:text-zinc-300 bg-transparent border-none hover:text-[#E27D60] flex-1 min-w-0 font-bold text-sm">
+                      <div key={tribe.id} className="group/item flex items-center justify-between hover:text-zinc-900 dark:hover:text-zinc-100 py-1 text-app-black dark:text-zinc-300 select-none">
+                        <button onClick={() => { setSelectedTribeId(tribe.id); setActiveTab('Tribu'); if (window.innerWidth < 768 && isSidebarOpen) toggleSidebar(); }} className="flex items-center gap-1.5 cursor-pointer text-left text-app-black dark:text-zinc-300 bg-transparent border-none hover:text-zinc-900 dark:hover:text-zinc-100 flex-1 min-w-0 font-bold text-sm">
                           <span className="w-1 h-1 rounded-full bg-zinc-400 dark:bg-zinc-600 shrink-0" />
                           <span className="truncate">t/{tribe.name}</span>
                         </button>
                         <button
                           onClick={(e) => { e.stopPropagation(); setActiveTab('TribuSettings'); }}
-                          className="opacity-0 group-hover/item:opacity-100 hover:text-[#E27D60] p-1 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-all cursor-pointer mr-1 flex items-center justify-center border-none bg-transparent"
+                          className="opacity-0 group-hover/item:opacity-100 hover:text-zinc-900 dark:hover:text-zinc-100 p-1 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-all cursor-pointer mr-1 flex items-center justify-center border-none bg-transparent"
                           title="Tribe Settings"
                         >
-                          <Settings className="w-4 h-4 text-app-gray hover:text-[#E27D60] dark:text-zinc-400" />
+                          <Settings className="w-4 h-4 text-app-gray hover:text-zinc-900 dark:hover:text-zinc-100 dark:text-zinc-400" />
                         </button>
                       </div>
                     ))}
