@@ -5,36 +5,29 @@ import { useUIStore } from '@/src/stores/useUIStore';
 export const SearchBar = () => {
   const { searchQuery, setSearchQuery, setActiveTab } = useUIStore();
 
-  const handleSearchClick = () => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
     setActiveTab('Explore');
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value);
-    setActiveTab('Explore'); // Search always redirects to explore
-  };
-
   return (
-    <div className="hidden md:block flex-1 max-w-xl relative group select-none">
-      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-        <Search className="w-4.5 h-4.5 text-app-gray group-focus-within:text-app-black dark:group-focus-within:text-white transition-colors" />
-      </div>
+    <div className="hidden md:flex flex-1 max-w-xl items-center h-10 rounded-full bg-zinc-100 dark:bg-zinc-800 px-4 gap-2 transition-colors focus-within:bg-zinc-200/70 dark:focus-within:bg-zinc-700/70">
       <input
         type="text"
         value={searchQuery}
-        onChange={handleInputChange}
+        onChange={handleChange}
         onFocus={() => setActiveTab('Explore')}
-        placeholder="Search..."
-        className="w-full bg-white dark:bg-zinc-900 text-app-black dark:text-white placeholder-app-gray border border-app-border dark:border-zinc-800 rounded-full py-1.5 pl-10 pr-20 shadow-sm focus:border-app-gray dark:focus:border-zinc-600 focus:ring-1 focus:ring-app-gray/40 dark:focus:ring-zinc-600 transition-all outline-none text-sm font-medium"
+        aria-label="Search"
+        className="flex-1 min-w-0 bg-transparent text-sm font-medium text-app-black dark:text-zinc-100 outline-none"
       />
-      <div className="absolute inset-y-1 right-1">
-        <button
-          onClick={handleSearchClick}
-          className="bg-white dark:bg-zinc-800 text-app-black dark:text-white border border-app-border dark:border-zinc-700 px-4 py-1 rounded-full text-xs font-black hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors cursor-pointer select-none"
-        >
-          Search
-        </button>
-      </div>
+      <button
+        type="button"
+        onClick={() => setActiveTab('Explore')}
+        title="Search"
+        className="w-7 h-7 flex items-center justify-center rounded-full text-zinc-600 dark:text-zinc-300 hover:text-app-black dark:hover:text-white cursor-pointer shrink-0"
+      >
+        <Search className="w-4.5 h-4.5" />
+      </button>
     </div>
   );
 };
