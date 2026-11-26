@@ -1,20 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import {
-  ArrowUp,
-  BookOpen,
-  Check,
-  Heart,
-  Lightbulb,
-  MapPin,
-  MessageCircle,
-  Mic,
-  Paperclip,
-  RotateCcw,
-  Search,
-  UserRound,
-  X,
-} from 'lucide-react';
+import { ArrowUp, Check, Heart, MapPin, MessageCircle, RotateCcw, X } from 'lucide-react';
 import { useUIStore } from '@/src/stores/useUIStore';
 import { chatService } from '@/src/services/chat.service';
 import { loveService } from '@/src/services/loveService';
@@ -23,19 +9,6 @@ import type { LoveMatch, LoveSearchQuota, LoveSearchResult } from '@/src/types/l
 
 type Role = 'user' | 'assistant';
 type ChatMessage = { id: string; role: Role; content: string; criteria?: string[]; results?: LoveSearchResult[] };
-
-const QUICK_PROMPTS = [
-  'Une femme entre 24 et 30 ans',
-  'Quelqu’un de sérieux et ouvert d’esprit',
-  'Une personne proche de ma région qui aime voyager',
-];
-
-const ACTIONS = [
-  { label: 'Find a profile', icon: Search, prompt: QUICK_PROMPTS[0]! },
-  { label: 'Generate an idea', icon: Lightbulb, prompt: QUICK_PROMPTS[1]! },
-  { label: 'Create an avatar', icon: UserRound, prompt: QUICK_PROMPTS[2]! },
-  { label: 'Write a message', icon: MessageCircle, prompt: 'Aide-moi à écrire un premier message culturel' },
-];
 
 const MatchCard: React.FC<{ match: LoveSearchResult; onLike: () => void; onPass: () => void; onChat: () => void }> = ({ match, onLike, onPass, onChat }) => {
   return (
@@ -80,7 +53,7 @@ const chipLabels = (criteria: Record<string, unknown>) => {
 };
 
 export const LoveColumn: React.FC = () => {
-  const { openChat, setActiveTab } = useUIStore();
+  const { openChat } = useUIStore();
   const [messages, setMessages] = useState<ChatMessage[]>([{ id: 'welcome', role: 'assistant', content: 'Salut. Je vais t’aider à trouver des personnes qui correspondent vraiment à ce que tu recherches. Dis-moi simplement le type de personne que tu aimerais rencontrer.' }]);
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<LoveSearchResult[]>([]);
@@ -117,125 +90,56 @@ export const LoveColumn: React.FC = () => {
   const pass = (id: string) => setPassed((v) => ({ ...v, [id]: true }));
   const openChatWith = async (id: string) => { try { await chatService.ensureConversationWith(id); } catch { /* chat can still open */ } openChat(); };
   const visibleResults = useMemo(() => results.filter((r) => !passed[r.id]), [results, passed]);
-  const isWelcome = messages.length === 1;
 
   return (
-    <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col overflow-hidden px-4 pb-8 pt-4 lg:px-6">
-      <section className="flex min-h-0 flex-1 overflow-hidden rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 shadow-sm">
-        {/* Rail gauche */}
-        <aside className="hidden w-48 shrink-0 flex-col border-r border-zinc-200 dark:border-zinc-800 bg-zinc-50/70 dark:bg-zinc-900/40 p-3 md:flex">
-          <div className="flex items-center gap-2 px-2 py-3 text-sm font-bold text-zinc-800 dark:text-zinc-100">
-            <Heart className="h-4 w-4" /> AI Love Chat
-          </div>
-          <nav className="flex flex-col gap-1">
-            <button onClick={() => setActiveTab('Love')} className="flex items-center gap-2 rounded-md bg-zinc-200/70 dark:bg-zinc-800 px-3 py-2 text-left text-xs font-bold text-zinc-900 dark:text-zinc-100 cursor-pointer">
-              <MessageCircle className="h-4 w-4" /> AI Love Chat
-            </button>
-            <button onClick={() => setActiveTab('Explore')} className="flex items-center gap-2 rounded-md px-3 py-2 text-left text-xs font-semibold text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer">
-              <Search className="h-4 w-4" /> Discover
-            </button>
-            <button onClick={() => setActiveTab('Friends')} className="flex items-center gap-2 rounded-md px-3 py-2 text-left text-xs font-semibold text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer">
-              <UserRound className="h-4 w-4" /> Community
-            </button>
-          </nav>
-          <p className="mt-auto px-2 text-[11px] text-zinc-400">Soft grey mode</p>
-        </aside>
+    <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col overflow-hidden px-4 pb-8 pt-4">
+      <section className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 shadow-sm">
+        <header className="shrink-0 border-b border-zinc-200 dark:border-zinc-800 px-5 py-4">
+          <h1 className="text-base font-bold text-zinc-900 dark:text-zinc-100">AI Love Chat</h1>
+        </header>
 
-        {/* Colonne centrale */}
-        <div className="flex min-w-0 flex-1 flex-col">
-          <header className="shrink-0 border-b border-zinc-200 dark:border-zinc-800 px-5 py-4">
-            <h1 className="text-base font-bold text-zinc-900 dark:text-zinc-100">AI Love Chat</h1>
-          </header>
-
-          <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-7">
-            <div className="mx-auto max-w-3xl">
-              {isWelcome && (
-                <div className="py-10 text-center">
-                  <h2 className="text-3xl font-black tracking-tight text-zinc-900 dark:text-zinc-100">Welcome to AI Love Chat</h2>
-                  <p className="mt-2 text-sm text-zinc-500">Get started with a task and chat can do the rest. Not sure where to start?</p>
-                  <div className="mx-auto mt-8 grid max-w-2xl grid-cols-1 gap-3 sm:grid-cols-2">
-                    {ACTIONS.map(({ label, icon: Icon, prompt }) => (
-                      <button key={label} onClick={() => send(prompt)} disabled={loading || quota.remaining <= 0} className="flex items-center gap-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 px-4 py-3 text-left hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer disabled:opacity-40">
-                        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-200/70 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 shrink-0">
-                          <Icon className="h-4 w-4" />
-                        </span>
-                        <span className="flex-1 text-sm font-bold text-zinc-800 dark:text-zinc-100">{label}</span>
-                        <span className="flex h-6 w-6 items-center justify-center rounded-md border border-zinc-300 dark:border-zinc-700 text-zinc-500">+</span>
-                      </button>
-                    ))}
-                  </div>
+        <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-6">
+          <div className="mx-auto max-w-2xl space-y-4">
+            {messages.map((message) => (
+              <motion.div key={message.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                <div className={`max-w-[88%] rounded-2xl px-4 py-3 text-sm leading-6 ${message.role === 'user' ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-100'}`}>
+                  <p>{message.content}</p>
+                  {message.criteria && message.criteria.length > 0 && <div className="mt-3 flex flex-wrap gap-1.5">{message.criteria.map((c) => <span key={c} className="rounded-full bg-white/70 dark:bg-black/20 px-2.5 py-1 text-[11px] font-semibold">{c}</span>)}</div>}
                 </div>
-              )}
-
-              <div className="space-y-4">
-                {messages.map((message) => (
-                  <motion.div key={message.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-[88%] rounded-2xl px-4 py-3 text-sm leading-6 ${message.role === 'user' ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-100'}`}>
-                      <p>{message.content}</p>
-                      {message.criteria && message.criteria.length > 0 && <div className="mt-3 flex flex-wrap gap-1.5">{message.criteria.map((c) => <span key={c} className="rounded-full bg-white/70 dark:bg-black/20 px-2.5 py-1 text-[11px] font-semibold">{c}</span>)}</div>}
-                    </div>
-                  </motion.div>
-                ))}
-                {typing && <div className="flex justify-start"><div className="rounded-2xl bg-zinc-100 dark:bg-zinc-800 px-4 py-3"><span className="inline-flex gap-1"><i className="h-1.5 w-1.5 animate-bounce rounded-full bg-zinc-400" /><i className="h-1.5 w-1.5 animate-bounce rounded-full bg-zinc-400 [animation-delay:120ms]" /><i className="h-1.5 w-1.5 animate-bounce rounded-full bg-zinc-400 [animation-delay:240ms]" /></span></div></div>}
-                {criteriaChips.length > 0 && <div className="flex flex-wrap gap-2 pl-2">{criteriaChips.map((c) => <span key={c} className="rounded-full border border-zinc-200 dark:border-zinc-700 px-3 py-1.5 text-xs text-zinc-500">{c}</span>)}</div>}
-                {visibleResults.length > 0 && (
-                  <div className="pt-3">
-                    <div className="mb-4 flex items-end justify-between">
-                      <div>
-                        <p className="text-xs font-bold uppercase tracking-wider text-zinc-500">Sélection personnalisée</p>
-                        <h2 className="mt-1 text-xl font-semibold text-zinc-900 dark:text-zinc-100">Les profils les plus pertinents</h2>
-                      </div>
-                      <button onClick={() => send('Propose-moi 4 autres personnes avec les mêmes critères')} disabled={loading || quota.remaining <= 0} className="flex items-center gap-1.5 rounded-full border border-zinc-200 dark:border-zinc-700 px-3 py-2 text-xs font-semibold text-zinc-600 hover:bg-zinc-100 dark:hover:bg-zinc-800 disabled:opacity-40 cursor-pointer">
-                        <RotateCcw className="h-3.5 w-3.5" /> Autres profils
-                      </button>
-                    </div>
-                    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
-                      {visibleResults.map((match) => <MatchCard key={match.id} match={match} onLike={() => like(match.id)} onPass={() => pass(match.id)} onChat={() => openChatWith(match.id)} />)}
-                    </div>
+              </motion.div>
+            ))}
+            {typing && <div className="flex justify-start"><div className="rounded-2xl bg-zinc-100 dark:bg-zinc-800 px-4 py-3"><span className="inline-flex gap-1"><i className="h-1.5 w-1.5 animate-bounce rounded-full bg-zinc-400" /><i className="h-1.5 w-1.5 animate-bounce rounded-full bg-zinc-400 [animation-delay:120ms]" /><i className="h-1.5 w-1.5 animate-bounce rounded-full bg-zinc-400 [animation-delay:240ms]" /></span></div></div>}
+            {criteriaChips.length > 0 && <div className="flex flex-wrap gap-2 pl-2">{criteriaChips.map((c) => <span key={c} className="rounded-full border border-zinc-200 dark:border-zinc-700 px-3 py-1.5 text-xs text-zinc-500">{c}</span>)}</div>}
+            {visibleResults.length > 0 && (
+              <div className="pt-3">
+                <div className="mb-4 flex items-end justify-between">
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-wider text-zinc-500">Sélection personnalisée</p>
+                    <h2 className="mt-1 text-xl font-semibold text-zinc-900 dark:text-zinc-100">Les profils les plus pertinents</h2>
                   </div>
-                )}
-                <div ref={endRef} />
-              </div>
-            </div>
-          </div>
-
-          <div className="shrink-0 border-t border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 px-4 pb-4 pt-3 sm:px-7">
-            <div className="mx-auto max-w-3xl">
-              <div className="mb-2 flex gap-2 overflow-x-auto pb-1">
-                {QUICK_PROMPTS.map((prompt) => (
-                  <button key={prompt} onClick={() => send(prompt)} disabled={loading || quota.remaining <= 0} className="shrink-0 rounded-full border border-zinc-200 dark:border-zinc-700 px-3 py-1.5 text-xs text-zinc-600 hover:bg-zinc-100 dark:hover:bg-zinc-800 disabled:opacity-40 cursor-pointer">
-                    {prompt}
-                  </button>
-                ))}
-              </div>
-              <div className="rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 p-2">
-                <div className="flex items-end gap-2">
-                  <textarea value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }} rows={2} placeholder="Dis-moi ce que tu recherches…" className="min-h-[52px] flex-1 resize-none bg-transparent px-3 py-2 text-sm text-zinc-800 dark:text-zinc-100 outline-none placeholder:text-zinc-400" />
-                  <button onClick={() => send()} disabled={!query.trim() || loading || quota.remaining <= 0} className="mb-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-zinc-900 text-white disabled:opacity-40 cursor-pointer">
-                    <ArrowUp className="h-5 w-5" />
+                  <button onClick={() => send('Propose-moi 4 autres personnes avec les mêmes critères')} disabled={loading || quota.remaining <= 0} className="flex items-center gap-1.5 rounded-full border border-zinc-200 dark:border-zinc-700 px-3 py-2 text-xs font-semibold text-zinc-600 hover:bg-zinc-100 dark:hover:bg-zinc-800 disabled:opacity-40 cursor-pointer">
+                    <RotateCcw className="h-3.5 w-3.5" /> Autres profils
                   </button>
                 </div>
-                <div className="flex items-center gap-3 px-3 pb-1 text-[11px] text-zinc-500">
-                  <Paperclip className="h-3.5 w-3.5" /> Attach
-                  <Mic className="h-3.5 w-3.5" /> Voice
-                  <BookOpen className="h-3.5 w-3.5" /> Browse prompts
+                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                  {visibleResults.map((match) => <MatchCard key={match.id} match={match} onLike={() => like(match.id)} onPass={() => pass(match.id)} onChat={() => openChatWith(match.id)} />)}
                 </div>
               </div>
-            </div>
+            )}
+            <div ref={endRef} />
           </div>
         </div>
 
-        {/* Rail droit */}
-        <aside className="hidden w-56 shrink-0 border-l border-zinc-200 dark:border-zinc-800 p-4 xl:block">
-          <p className="text-xs font-bold uppercase tracking-wider text-zinc-500">Recent prompts</p>
-          <div className="mt-3 flex flex-col gap-2">
-            {QUICK_PROMPTS.map((prompt) => (
-              <button key={prompt} onClick={() => send(prompt)} disabled={loading || quota.remaining <= 0} className="rounded-lg border border-zinc-200 dark:border-zinc-800 px-3 py-2 text-left text-[11px] text-zinc-600 hover:bg-zinc-50 dark:hover:bg-zinc-900 disabled:opacity-40 cursor-pointer">
-                {prompt}
+        <div className="shrink-0 border-t border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 px-4 pb-4 pt-3">
+          <div className="mx-auto max-w-2xl">
+            <div className="flex items-end gap-2 rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 p-2">
+              <textarea value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }} rows={2} placeholder="Écris à propos de l’amour…" className="min-h-[52px] flex-1 resize-none bg-transparent px-3 py-2 text-sm text-zinc-800 dark:text-zinc-100 outline-none placeholder:text-zinc-400" />
+              <button onClick={() => send()} disabled={!query.trim() || loading || quota.remaining <= 0} className="mb-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-zinc-900 text-white disabled:opacity-40 cursor-pointer">
+                <ArrowUp className="h-5 w-5" />
               </button>
-            ))}
+            </div>
           </div>
-        </aside>
+        </div>
       </section>
 
       {activeMatches.length > 0 && (
