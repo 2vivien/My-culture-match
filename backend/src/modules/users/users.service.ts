@@ -40,7 +40,7 @@ export interface PublicUser {
   situation: string | null;
   criteria: string[] | null;
   bio: string | null;
-  traditionsCount: number;
+  postsCount: number;
   culturesCount: number;
   tribesCount: number;
   interestedCount: number;
@@ -82,7 +82,7 @@ function serializePublic(row: schema.User, tribeNames: string[], extra?: Partial
     situation: row.situation,
     criteria: row.criteria ?? null,
     bio: row.bio,
-    traditionsCount: row.traditionsCount,
+    postsCount: row.postsCount,
     culturesCount: row.culturesCount,
     tribesCount: row.tribesCount,
     interestedCount: row.interestedCount,
