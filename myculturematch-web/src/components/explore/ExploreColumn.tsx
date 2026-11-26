@@ -3,7 +3,6 @@ import { AnimatePresence } from 'framer-motion';
 import { useUIStore } from '@/src/stores/useUIStore';
 import { useExplore } from '@/src/hooks/useExplore';
 import { ExploreHeader } from './ExploreHeader';
-import { ExploreTabs } from './ExploreTabs';
 import { ExploreCategories } from './ExploreCategories';
 import { ExploreTribesTab } from './ExploreTribesTab';
 import { ExplorePostsTab } from './ExplorePostsTab';
@@ -17,7 +16,6 @@ export const ExploreColumn: React.FC = () => {
   const { posts } = useFeed();
   const {
     activeSubTab,
-    setActiveSubTab,
     activeCategory,
     setActiveCategory,
     searchQuery,
@@ -38,13 +36,6 @@ export const ExploreColumn: React.FC = () => {
 
       {!showSearchResults ? (
         <>
-          {/* Sub-tabs switchers */}
-          <ExploreTabs
-            activeSubTab={activeSubTab}
-            setActiveSubTab={setActiveSubTab}
-            setActiveCategory={setActiveCategory}
-          />
-
           {/* Category Pills list */}
           <ExploreCategories
             activeSubTab={activeSubTab}
