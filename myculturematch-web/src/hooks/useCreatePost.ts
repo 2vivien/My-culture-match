@@ -49,7 +49,7 @@ export function useCreatePost() {
     setFormats((prev) => ({ ...prev, [format]: !prev[format] }));
   };
 
-  const selectTribe = (tribe: TribeOption) => {
+  const selectTribe = (tribe: TribeOption | null) => {
     setSelectedTribe(tribe);
     setTribuDropdownOpen(false);
   };

@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { ChevronDown, X, Check } from 'lucide-react';
+import { ChevronDown, X, Check, Globe2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { TribeOption } from '@/src/types/createPost';
 
@@ -8,7 +8,8 @@ interface TribuSelectorProps {
   selectedTribe: TribeOption | null;
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
-  onSelect: (tribe: TribeOption) => void;
+  /** null = publication sans communauté (optionnelle). */
+  onSelect: (tribe: TribeOption | null) => void;
 }
 
 export const TribuSelector: React.FC<TribuSelectorProps> = ({
@@ -45,9 +46,24 @@ export const TribuSelector: React.FC<TribuSelectorProps> = ({
               className="w-5 h-5 rounded-full object-cover"
             />
             <span className="truncate max-w-[150px]">{selectedTribe.name}</span>
+            <span
+              role="button"
+              tabIndex={0}
+              onClick={(e) => {
+                e.stopPropagation();
+                onSelect(null);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') onSelect(null);
+              }}
+              className="ml-1 p-0.5 rounded-full hover:bg-zinc-200 dark:hover:bg-zinc-700 cursor-pointer"
+              title="Retirer la communauté"
+            >
+              <X className="w-3.5 h-3.5 text-app-gray" />
+            </span>
           </div>
         ) : (
-          <span>Select Tribu</span>
+          <span className="text-zinc-600 dark:text-zinc-300">No community (optional)</span>
         )}
         <ChevronDown className="w-4 h-4 text-app-gray" />
       </button>
@@ -86,6 +102,25 @@ export const TribuSelector: React.FC<TribuSelectorProps> = ({
 
               {/* Tribes List */}
               <div className="flex-1 overflow-y-auto pr-1 space-y-2.5 hide-scrollbar">
+                <button
+                  type="button"
+                  onClick={() => {
+                    onSelect(null);
+                    setIsOpen(false);
+                  }}
+                  className={`w-full flex items-center gap-3.5 p-3.5 rounded-2xl text-left border transition-all cursor-pointer ${
+                    !selectedTribe
+                      ? 'bg-zinc-100 dark:bg-zinc-800 border-zinc-300 dark:border-zinc-600'
+                      : 'bg-zinc-50/50 dark:bg-zinc-900/60 border-app-border/40 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                  }`}
+                >
+                  <span className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center shrink-0">
+                    <Globe2 className="w-4 h-4 text-zinc-600 dark:text-zinc-300" />
+                  </span>
+                  <span className="font-bold text-sm text-app-black dark:text-zinc-200">No community</span>
+                  {!selectedTribe && <Check className="w-5 h-5 text-zinc-600 dark:text-zinc-300 stroke-[3] ml-auto" />}
+                </button>
+
                 {tribes.map((tribe) => {
                   const isSelected = selectedTribe?.id === tribe.id;
                   return (
@@ -98,7 +133,7 @@ export const TribuSelector: React.FC<TribuSelectorProps> = ({
                       }}
                       className={`w-full flex items-center justify-between p-3.5 rounded-2xl text-left transition-all border cursor-pointer ${
                         isSelected
-                          ? 'bg-[#E27D60]/10 border-[#E27D60] dark:bg-[#c66b50]/15 dark:border-[#c66b50]'
+                          ? 'bg-zinc-100 dark:bg-zinc-800 border-zinc-300 dark:border-zinc-600'
                           : 'bg-zinc-50/50 dark:bg-zinc-900/60 border-app-border/40 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:scale-[1.01] active:scale-[0.99]'
                       }`}
                     >
@@ -109,15 +144,15 @@ export const TribuSelector: React.FC<TribuSelectorProps> = ({
                           className="w-10 h-10 rounded-full object-cover shrink-0 border border-white dark:border-zinc-900 shadow-sm"
                         />
                         <span className={`font-bold text-sm truncate ${
-                          isSelected 
-                            ? 'text-[#E27D60] dark:text-[#c66b50]' 
+                          isSelected
+                            ? 'text-app-black dark:text-zinc-100'
                             : 'text-app-black dark:text-zinc-300'
                         }`}>
                           {tribe.name}
                         </span>
                       </div>
                       {isSelected && (
-                        <Check className="w-5 h-5 text-[#E27D60] dark:text-[#c66b50] stroke-[3]" />
+                        <Check className="w-5 h-5 text-zinc-600 dark:text-zinc-300 stroke-[3]" />
                       )}
                     </button>
                   );
