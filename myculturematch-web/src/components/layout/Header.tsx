@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Bell, Menu, ChevronDown, Plus, SquarePen, Search } from 'lucide-react';
+import { Bell, Menu, Plus, SquarePen, Search } from 'lucide-react';
 import { SandboxIcon } from '@/src/components/ui/SandboxIcon';
 import { SearchBar } from './parts/SearchBar';
 import { useUIStore } from '@/src/stores/useUIStore';
@@ -87,11 +87,10 @@ export const Header = () => {
         <div ref={profileRef} className="hidden md:block relative shrink-0">
           <button
             onClick={() => setShowProfile(!showProfile)}
-            className="group flex items-center gap-2 py-1 cursor-pointer"
+            title="Profile menu"
+            className="cursor-pointer"
           >
             <ProfileAvatar size="xs" src={currentUser.avatar} alt={currentUser.name} countryFlag={currentUser.country} glow={currentUser.glow} />
-            <span className="text-xs font-bold text-app-black dark:text-zinc-200">{currentUser.username}</span>
-            <ChevronDown className="w-3.5 h-3.5 text-app-gray transition-transform duration-200 group-hover:translate-y-0.5" />
           </button>
           <AnimatePresence>{showProfile && <UserProfileDropdown onClose={() => setShowProfile(false)} />}</AnimatePresence>
         </div>
