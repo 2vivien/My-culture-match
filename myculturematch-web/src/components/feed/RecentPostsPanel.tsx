@@ -35,7 +35,7 @@ export const RecentPostsPanel = () => {
     .slice(0, 6);
 
   return (
-    <aside className="w-80 hidden xl:flex flex-col shrink-0 h-full overflow-y-auto hide-scrollbar pb-6 pt-2 select-none">
+    <aside className="w-80 hidden xl:flex flex-col shrink-0 h-full overflow-y-auto hide-scrollbar pb-6 pt-2">
       <div className="bg-zinc-50 dark:bg-zinc-900/50 rounded-xl border border-zinc-200 dark:border-zinc-800 px-4 py-4">
         <div className="flex items-center justify-between mb-2">
           <h2 className="text-[11px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400">

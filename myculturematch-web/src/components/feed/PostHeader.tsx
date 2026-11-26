@@ -13,6 +13,19 @@ interface PostHeaderProps {
   tribe?: { id: string; name: string };
 }
 
+function formatDate(value: string): string {
+  const then = new Date(value).getTime();
+  if (Number.isNaN(then)) return value;
+  const minutes = Math.floor((Date.now() - then) / 60000);
+  if (minutes < 1) return 'now';
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days}d ago`;
+  return new Date(value).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+}
+
 export const PostHeader = ({ author, date, tribe }: PostHeaderProps) => {
   const { setSelectedProfileUserId, currentUser, joinTribe } = useAppStore();
   const { setActiveTab } = useUIStore();
@@ -72,7 +85,7 @@ export const PostHeader = ({ author, date, tribe }: PostHeaderProps) => {
   };
 
   return (
-    <div className="flex items-center justify-between mb-4 select-none relative">
+    <div className="flex items-center justify-between mb-4 relative">
       <div className="flex items-center gap-3">
         <ProfileAvatar
           src={author.avatar}
@@ -88,28 +101,13 @@ export const PostHeader = ({ author, date, tribe }: PostHeaderProps) => {
           <p className="text-xs text-app-gray">{author.location}</p>
         </div>
       </div>
-      <div className="flex items-center gap-3 text-xs text-app-gray relative" ref={menuRef}>
+      <div className="flex items-center gap-3 text-xs text-zinc-500 relative pr-20" ref={menuRef}>
         {tribe && (
-          <div className="flex items-center gap-2 border-r border-app-border dark:border-zinc-800 pr-2">
-            <span className="font-extrabold text-[9px] uppercase text-[#E27D60] tracking-wide select-none">
-              t/{tribe.name}
-            </span>
-            {!isMember ? (
-              <button
-                type="button"
-                onClick={handleJoin}
-                className="px-2.5 py-0.5 rounded-full bg-[#E27D60] text-white text-[9px] font-black hover:scale-105 active:scale-95 transition-all cursor-pointer border-none outline-none"
-              >
-                Join
-              </button>
-            ) : (
-              <span className="flex items-center text-green-600 dark:text-green-400 font-extrabold text-[9px] gap-0.5 select-none bg-green-50 dark:bg-green-950/30 px-2 py-0.5 rounded-full">
-                <Check className="w-2.5 h-2.5 stroke-[3px]" /> Joined
-              </span>
-            )}
-          </div>
+          <span className="font-extrabold text-[10px] uppercase text-zinc-500 tracking-wide truncate max-w-[140px]">
+            t/{tribe.name}
+          </span>
         )}
-        <span>{date}</span>
+        <span className="whitespace-nowrap">{formatDate(date)}</span>
         
         {/* Toggle standard menu */}
         <Button 
@@ -150,7 +148,7 @@ export const PostHeader = ({ author, date, tribe }: PostHeaderProps) => {
                   <Share2 className="w-4 h-4 text-app-gray" />
                   {copied ? 'Copied Link!' : 'Copy Link'}
                 </span>
-                {copied && <Check className="w-3.5 h-3.5 text-[#E27D60]" />}
+                {copied && <Check className="w-3.5 h-3.5 text-zinc-500 dark:text-zinc-400" />}
               </button>
 
               <button
@@ -158,10 +156,10 @@ export const PostHeader = ({ author, date, tribe }: PostHeaderProps) => {
                 className="w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold text-app-black dark:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-900 flex items-center justify-between cursor-pointer transition-colors"
               >
                 <span className="flex items-center gap-2">
-                  <BellOff className={`w-4 h-4 ${muted ? 'text-[#E27D60]' : 'text-app-gray'}`} />
+                  <BellOff className={`w-4 h-4 ${muted ? 'text-zinc-500 dark:text-zinc-400' : 'text-app-gray'}`} />
                   {muted ? 'Muted Author' : 'Mute Notifications'}
                 </span>
-                {muted && <Check className="w-3.5 h-3.5 text-[#E27D60]" />}
+                {muted && <Check className="w-3.5 h-3.5 text-zinc-500 dark:text-zinc-400" />}
               </button>
 
               <div className="border-t border-app-border/60 dark:border-zinc-800/60 my-1" />
@@ -171,7 +169,7 @@ export const PostHeader = ({ author, date, tribe }: PostHeaderProps) => {
                   alert('Thank you for making this community safe. The cultural guardians team will review this post.');
                   setIsOpen(false);
                 }}
-                className="w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold text-[#E27D60] dark:text-[#E27D60] hover:bg-[#E27D60]/10 dark:hover:bg-[#E27D60]/20 flex items-center gap-2 cursor-pointer transition-colors"
+                className="w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold text-[#E27D60] hover:bg-[#E27D60]/10 dark:hover:bg-[#E27D60]/20 flex items-center gap-2 cursor-pointer transition-colors"
               >
                 <AlertTriangle className="w-4 h-4" />
                 <span>Report Content</span>
@@ -180,6 +178,20 @@ export const PostHeader = ({ author, date, tribe }: PostHeaderProps) => {
           )}
         </AnimatePresence>
       </div>
+
+      {tribe && (
+        <button
+          type="button"
+          onClick={handleJoin}
+          className={`absolute right-0 top-0 px-4 py-1.5 rounded-full text-[11px] font-black border transition-[transform,background-color,color] duration-150 active:scale-[0.97] cursor-pointer ${
+            isMember
+              ? 'bg-zinc-50 dark:bg-zinc-800/40 text-zinc-500 dark:text-zinc-400 border-zinc-200/70 dark:border-zinc-700/60 hover:bg-zinc-100 dark:hover:bg-zinc-800/70'
+              : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 border-zinc-200 dark:border-zinc-700 hover:bg-zinc-200/80 dark:hover:bg-zinc-700'
+          }`}
+        >
+          {isMember ? 'Joined' : 'Join'}
+        </button>
+      )}
     </div>
   );
 };
