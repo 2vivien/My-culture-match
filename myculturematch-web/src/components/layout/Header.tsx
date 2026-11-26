@@ -42,7 +42,7 @@ export const Header = () => {
 
       <SearchBar />
 
-      <div className="flex items-center gap-2 sm:gap-4 md:gap-6 relative shrink-0">
+      <div className="flex items-center gap-1 sm:gap-2 md:gap-3 relative shrink-0">
         {/* Recherche mobile */}
         <button
           onClick={() => setActiveTab('Explore')}
@@ -55,7 +55,7 @@ export const Header = () => {
         {/* Create — icône + texte, sans contour */}
         <button
           onClick={() => setActiveTab('Create')}
-          className="h-10 flex items-center gap-2 px-1 text-app-black dark:text-zinc-100 font-bold text-sm hover:text-zinc-500 dark:hover:text-zinc-400 transition-colors cursor-pointer shrink-0"
+          className="h-10 flex items-center gap-2 px-3 rounded-md bg-zinc-100 dark:bg-zinc-800 text-app-black dark:text-zinc-100 font-bold text-sm hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors cursor-pointer shrink-0"
           title="Create a post"
         >
           <SquarePlus className="w-5 h-5" />
