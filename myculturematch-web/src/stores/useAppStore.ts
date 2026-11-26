@@ -16,7 +16,7 @@ interface AppState {
   selectedTribeId: string | null;
   /** Publication ouverte dans la page détail (#/post/:id). */
   selectedPostId: string | null;
-  profileActiveTab: 'Posts' | 'Photos' | 'Videos' | 'Posts' | 'About' | 'Saves';
+  profileActiveTab: 'Posts' | 'Comments' | 'Saved';
   isAuthenticated: boolean;
   isOnboarded: boolean;
   email: string;
@@ -28,7 +28,7 @@ interface AppState {
   setSelectedProfileUserId: (id: string) => void;
   setSelectedTribeId: (id: string | null) => void;
   setSelectedPostId: (id: string | null) => void;
-  setProfileActiveTab: (tab: 'Posts' | 'Photos' | 'Videos' | 'Posts' | 'About' | 'Saves') => void;
+  setProfileActiveTab: (tab: 'Posts' | 'Comments' | 'Saved') => void;
   setAuthenticated: (auth: boolean) => void;
   setOnboarded: (onboarded: boolean) => void;
   setEmail: (email: string) => void;

@@ -18,6 +18,8 @@ export interface CurrentUser {
   age?: number | null;
   interestedCount?: number;
   companionsCount?: number;
+  followersCount?: number;
+  followingCount?: number;
   role?: string;
 }
 

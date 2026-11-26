@@ -3,50 +3,44 @@ import { motion } from 'framer-motion';
 
 interface ProfileTabItem {
   id: string;
-  icon: any;
   label: string;
+  icon?: unknown;
 }
+
+type ProfileTabId = 'Posts' | 'Comments' | 'Saved';
 
 interface ProfileTabsProps {
-  tabs: ProfileTabItem[];
-  activeTab: string;
-  setActiveTab: (tabId: string) => void;
+  tabs: Array<ProfileTabItem & { id: ProfileTabId }>;
+  activeTab: ProfileTabId;
+  setActiveTab: (tabId: ProfileTabId) => void;
 }
 
-export const ProfileTabs: React.FC<ProfileTabsProps> = ({
-  tabs,
-  activeTab,
-  setActiveTab,
-}) => {
+export const ProfileTabs: React.FC<ProfileTabsProps> = ({ tabs, activeTab, setActiveTab }) => {
   return (
-    <div className="bg-white dark:bg-[#161b22] rounded-[20px] shadow-sm px-6 flex items-stretch h-[100px] w-full mb-6 border border-gray-100 dark:border-zinc-800/50">
-      <div className="flex h-full items-stretch flex-1 justify-start md:justify-center gap-1 sm:gap-2 overflow-x-auto hide-scrollbar">
-        {tabs.map((tab, idx) => {
-          const IconComponent = tab.icon;
-          const isActive = activeTab === tab.id;
-          return (
-            <div key={tab.id} className="flex h-full items-stretch shrink-0">
-              {idx > 0 && <div className="w-[1px] bg-gray-200 dark:bg-zinc-800 self-center h-10 mx-1 sm:mx-2" />}
-              <button
-                type="button"
-                onClick={() => setActiveTab(tab.id)}
-                className={`relative h-full px-4 sm:px-6 flex items-center justify-center transition-colors group cursor-pointer ${
-                  isActive ? 'text-[#2dd9d9] dark:text-[#2dd9d9] font-black' : 'text-[#9aa3b8] hover:text-[#2e3552] dark:hover:text-white'
-                }`}
-                title={tab.label}
-              >
-                <IconComponent className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                {isActive && (
-                  <motion.div 
-                    layoutId="activeTabUnderline"
-                    className="absolute bottom-0 left-0 right-0 h-[4px] bg-[#2dd9d9] rounded-t-full shadow-[0_-2px_10px_rgba(45,217,217,0.4)]" 
-                  />
-                )}
-              </button>
-            </div>
-          );
-        })}
-      </div>
+    <div className="flex items-stretch gap-6 border-b border-zinc-200 dark:border-zinc-800 w-full mb-4 select-none">
+      {tabs.map((tab) => {
+        const isActive = activeTab === tab.id;
+        return (
+          <button
+            key={tab.id}
+            type="button"
+            onClick={() => setActiveTab(tab.id)}
+            className={`relative pb-3 text-sm font-bold cursor-pointer transition-colors ${
+              isActive
+                ? 'text-app-black dark:text-zinc-100'
+                : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200'
+            }`}
+          >
+            {tab.label}
+            {isActive && (
+              <motion.div
+                layoutId="profile-tab-underline"
+                className="absolute bottom-[-1px] left-0 right-0 h-[2px] bg-zinc-900 dark:bg-zinc-100"
+              />
+            )}
+          </button>
+        );
+      })}
     </div>
   );
 };

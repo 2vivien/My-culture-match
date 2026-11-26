@@ -12,7 +12,7 @@ interface ProfileEditModalProps {
 }
 
 const inputClass =
-  'w-full px-4 py-3 rounded-xl border border-app-border dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 text-app-black dark:text-white text-sm font-semibold focus:outline-none focus:border-[#6c63fc] transition-colors';
+  'w-full px-4 py-3 rounded-xl border border-app-border dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 text-app-black dark:text-white text-sm font-semibold focus:outline-none focus:border-zinc-400 transition-colors';
 
 const labelClass = 'text-xs font-black uppercase tracking-wider text-app-gray';
 
@@ -299,7 +299,7 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({ user, onClos
               type="button"
               onClick={handleSave}
               disabled={saving}
-              className="px-6 py-3 text-sm font-black bg-[#6c63fc] hover:bg-[#5a52e0] disabled:opacity-60 text-white rounded-xl cursor-pointer flex items-center justify-center gap-2"
+              className="px-6 py-3 text-sm font-black bg-zinc-800 dark:bg-zinc-700 hover:bg-zinc-700 disabled:opacity-60 text-white rounded-xl cursor-pointer flex items-center justify-center gap-2"
             >
               {saving ? (
                 <Loader2 className="w-4 h-4 animate-spin" />

@@ -72,6 +72,8 @@ function hydrateCurrentUser(id: string, apiUser: Partial<CurrentUser> | undefine
     age: (apiUser as { age?: number | null })?.age ?? fallback.age ?? null,
     interestedCount: apiUser?.interestedCount ?? fallback.interestedCount ?? 0,
     companionsCount: apiUser?.companionsCount ?? fallback.companionsCount ?? 0,
+    followersCount: apiUser?.followersCount ?? fallback.followersCount ?? 0,
+    followingCount: apiUser?.followingCount ?? fallback.followingCount ?? 0,
     role: apiUser?.role ?? fallback.role ?? 'user',
   };
 }
