@@ -23,7 +23,7 @@ export const CreateTribeDetailsStep: React.FC<CreateTribeDetailsStepProps> = ({
         {/* Name input */}
         <div className="flex flex-col gap-2">
           <label className="text-[10px] font-bold text-app-gray dark:text-zinc-400 uppercase tracking-widest">
-            Tribu name <span className="text-rose-500">*</span>
+            Community name <span className="text-rose-500">*</span>
           </label>
           <input
             type="text"
@@ -49,7 +49,7 @@ export const CreateTribeDetailsStep: React.FC<CreateTribeDetailsStepProps> = ({
             Description <span className="text-rose-500">*</span>
           </label>
           <textarea
-            placeholder="Tell members what your tribu is all about..."
+            placeholder="Tell members what your community is all about..."
             value={tribeDescription}
             onChange={(e) => setTribeDescription(e.target.value)}
             rows={4}
@@ -82,7 +82,7 @@ export const CreateTribeDetailsStep: React.FC<CreateTribeDetailsStepProps> = ({
               </div>
             </div>
             <p className="text-xs text-app-gray dark:text-zinc-400 leading-relaxed line-clamp-3">
-              {tribeDescription || 'Your tribu description will appear here. Talk about heritage posts, arts, writing, or festivals.'}
+              {tribeDescription || 'Your community description will appear here. Talk about heritage posts, arts, writing, or festivals.'}
             </p>
           </div>
           <div className="text-[9px] font-bold text-[#E27D60] uppercase tracking-wider">

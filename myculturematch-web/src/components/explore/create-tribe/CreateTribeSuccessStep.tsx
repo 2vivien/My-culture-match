@@ -14,10 +14,10 @@ export const CreateTribeSuccessStep: React.FC<CreateTribeSuccessStepProps> = ({
         <Check className="w-8 h-8 stroke-[3.5]" />
       </div>
       <h4 className="text-lg font-extrabold text-app-black dark:text-white">
-        Tribu Initialization Complete!
+        Community Setup Complete!
       </h4>
       <p className="text-xs text-app-gray dark:text-zinc-400 max-w-sm leading-relaxed">
-        The tribu <span className="font-extrabold text-app-black dark:text-white">t/{tribeName}</span> has been successfully registered. You are now the official moderator of this guild!
+        The community <span className="font-extrabold text-app-black dark:text-white">t/{tribeName}</span> has been successfully registered. You are now the official moderator of this guild!
       </p>
     </div>
   );

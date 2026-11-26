@@ -18,10 +18,10 @@ export const TribuRules: React.FC<TribuRulesProps> = ({
   return (
     <div className="bg-white dark:bg-zinc-900/60 border border-app-border dark:border-zinc-800 rounded-[20px] p-5 shadow-xs">
       <h3 className="font-extrabold text-sm text-app-black dark:text-zinc-200 mb-3 border-b border-app-border/40 dark:border-zinc-800 pb-2">
-        t/{tribeName ?? 'Tribu'} Rules
+        t/{tribeName ?? 'Communauté'} Rules
       </h3>
       {rules.length === 0 && (
-        <p className="text-[11px] text-app-gray dark:text-zinc-500 py-2 select-none">Aucune règle définie pour cette tribu.</p>
+        <p className="text-[11px] text-app-gray dark:text-zinc-500 py-2 select-none">Aucune règle définie pour cette communauté.</p>
       )}
       <div className="flex flex-col gap-3">
         {rules.map((rule) => {

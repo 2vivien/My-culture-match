@@ -11,16 +11,16 @@ export const CreateTribeHeader: React.FC<CreateTribeHeaderProps> = ({ step, onCl
     <div className="flex justify-between items-center pb-2 border-b border-app-border/40 dark:border-zinc-800/40">
       <div>
         <h3 className="text-xl font-black text-app-black dark:text-white">
-          {step === 1 && "What will your tribu be about?"}
-          {step === 2 && "What kind of tribu is this?"}
-          {step === 3 && "Tell us about your tribu"}
-          {step === 4 && "Tribu Created!"}
+          {step === 1 && "What will your community be about?"}
+          {step === 2 && "What kind of community is this?"}
+          {step === 3 && "Tell us about your community"}
+          {step === 4 && "Community Created!"}
         </h3>
         <p className="text-xs text-app-gray mt-1">
-          {step === 1 && "Choose a topic to help members discover your tribu"}
-          {step === 2 && "Decide who can view and contribute in your tribu."}
-          {step === 3 && "A name and description help people understand what your tribu is all about."}
-          {step === 4 && "Your new Tribu is now ready for its members!"}
+          {step === 1 && "Choose a topic to help members discover your community"}
+          {step === 2 && "Decide who can view and contribute in your community."}
+          {step === 3 && "A name and description help people understand what your community is all about."}
+          {step === 4 && "Your new community is now ready for its members!"}
         </p>
       </div>
       <button

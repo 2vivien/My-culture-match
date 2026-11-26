@@ -142,7 +142,7 @@ export const AdminCharts: React.FC = () => {
       {/* Row 2: Monthly Growth (Bar) + Match Score Distribution */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Monthly Growth Bar Chart */}
-        <ChartCard title="Croissance mensuelle" subtitle="Nouveaux utilisateurs et tribus">
+        <ChartCard title="Croissance mensuelle" subtitle="Nouveaux utilisateurs et communautés">
           <ResponsiveContainer width="100%" height={280}>
             <BarChart data={growthData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" className="dark:opacity-20" />

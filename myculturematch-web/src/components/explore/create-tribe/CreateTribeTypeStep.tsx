@@ -30,7 +30,7 @@ export const CreateTribeTypeStep: React.FC<CreateTribeTypeStepProps> = ({
             <div>
               <span className="font-extrabold text-xs text-app-black dark:text-white block">Public</span>
               <span className="text-[10px] text-app-gray dark:text-zinc-400 font-medium block mt-0.5">
-                Anyone can view, post, and comment to this tribu
+                Anyone can view, post, and comment to this community
               </span>
             </div>
           </div>
@@ -98,7 +98,7 @@ export const CreateTribeTypeStep: React.FC<CreateTribeTypeStepProps> = ({
       </div>
 
       <p className="text-[9px] text-app-gray dark:text-zinc-500 leading-normal font-semibold">
-        By continuing, you agree to our <span className="text-[#E27D60] underline cursor-pointer">Tribu Code of Conduct</span> and acknowledge that you understand the <span className="text-[#E27D60] underline cursor-pointer">My Culture Match Rules</span>.
+        By continuing, you agree to our <span className="text-[#E27D60] underline cursor-pointer">Community Code of Conduct</span> and acknowledge that you understand the <span className="text-[#E27D60] underline cursor-pointer">My Culture Match Rules</span>.
       </p>
     </div>
   );

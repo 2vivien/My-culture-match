@@ -90,7 +90,7 @@ export const TribuSelector: React.FC<TribuSelectorProps> = ({
             >
               {/* Header */}
               <div className="flex items-center justify-between mb-5">
-                <h3 className="font-extrabold text-lg text-app-black dark:text-zinc-100">Select Tribu</h3>
+                <h3 className="font-extrabold text-lg text-app-black dark:text-zinc-100">Select Community</h3>
                 <button
                   type="button"
                   onClick={() => setIsOpen(false)}

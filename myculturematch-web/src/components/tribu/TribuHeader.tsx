@@ -19,7 +19,7 @@ export const TribuHeader: React.FC<TribuHeaderProps> = ({
   setNotificationsOn,
   tribeInfo,
 }) => {
-  const displayName = tribeInfo?.name ?? 'Tribu';
+  const displayName = tribeInfo?.name ?? 'Communauté';
   const memberCount = tribeInfo?.membersCount ?? 0;
 
   return (

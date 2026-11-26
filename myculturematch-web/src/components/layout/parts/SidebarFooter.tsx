@@ -15,7 +15,7 @@ export const SidebarFooter = () => {
 
       <Button
         variant="ghost"
-        title="Créer un tribu"
+        title="Créer une communauté"
         onClick={() => setShowCreateTribeModal(true)}
         className={cn(
           "w-full text-app-gray hover:text-app-black dark:text-zinc-400 dark:hover:text-white font-medium py-3 px-4 rounded-2xl",
@@ -23,7 +23,7 @@ export const SidebarFooter = () => {
         )}
       >
         <DiamondPlus className="w-5 h-5 shrink-0" />
-        {!isCollapsed && <span>Créer un tribu</span>}
+        {!isCollapsed && <span>Créer une communauté</span>}
       </Button>
 
       <Button

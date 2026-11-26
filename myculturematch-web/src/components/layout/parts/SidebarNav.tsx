@@ -43,14 +43,14 @@ const iconMap: Record<string, any> = {
 };
 
 const navItems = [
-  { name: 'Home', icon: 'Home' },
-  { name: 'Popular', icon: 'Popular' },
-  { name: 'New', icon: 'New' },
-  { name: 'Explore', icon: 'Explore' },
-  { name: 'Friends', icon: 'Friends' },
-  { name: 'Love', icon: 'Love' },
-  { name: 'Tribu', icon: 'Tribu' },
-  { name: 'Profil', icon: 'Profil' },
+  { name: 'Home', label: 'Home', icon: 'Home' },
+  { name: 'Popular', label: 'Popular', icon: 'Popular' },
+  { name: 'New', label: 'New', icon: 'New' },
+  { name: 'Explore', label: 'Explore', icon: 'Explore' },
+  { name: 'Friends', label: 'Friends', icon: 'Friends' },
+  { name: 'Love', label: 'Love', icon: 'Love' },
+  { name: 'Tribu', label: 'Communauté', icon: 'Tribu' },
+  { name: 'Profil', label: 'Profil', icon: 'Profil' },
 ];
 
 const adminItem = { name: 'Admin', icon: 'Admin' };
@@ -113,7 +113,7 @@ export const SidebarNav = () => {
           <div key={item.name} className="flex flex-col w-full gap-1">
             <button
               onClick={() => handleNav(item.name)}
-              title={item.name}
+              title={item.label}
               className={cn(
                 'relative flex items-center rounded-2xl transition-all cursor-pointer group w-full',
                 isCollapsed ? 'justify-center p-3 w-12 mx-auto' : 'gap-4 px-4 py-3 text-left font-medium text-sm',
@@ -130,13 +130,13 @@ export const SidebarNav = () => {
               <div className="relative">
                 <IconComponent className={cn('w-6 h-6 transition-transform shrink-0', isActive ? 'scale-100' : 'group-hover:scale-110')} />
               </div>
-              {!isCollapsed && <span className="text-base font-semibold">{item.name}</span>}
+              {!isCollapsed && <span className="text-base font-semibold">{item.label}</span>}
             </button>
 
             {item.name === 'Tribu' && !isCollapsed && (
               <div className="flex flex-col gap-1 text-sm font-bold text-app-gray dark:text-zinc-400 pl-9 mt-1">
                 {suggestedTribes.length === 0 && (
-                  <p className="text-xs text-app-gray/70 dark:text-zinc-500 py-1 select-none">Aucune tribu pour l'instant</p>
+                  <p className="text-xs text-app-gray/70 dark:text-zinc-500 py-1 select-none">Aucune communauté pour l'instant</p>
                 )}
                 {suggestedTribes.map((tribe) => (
                   <button
@@ -151,7 +151,7 @@ export const SidebarNav = () => {
 
                 {myTribes.length > 0 && (
                   <div className="flex flex-col gap-1 mt-3 border-t border-app-border/40 dark:border-zinc-800 pt-2 w-full">
-                    <span className="text-[11px] uppercase tracking-wider text-app-gray/60 dark:text-zinc-500 font-black mb-1 select-none">Your Own Tribes</span>
+                    <span className="text-[11px] uppercase tracking-wider text-app-gray/60 dark:text-zinc-500 font-black mb-1 select-none">Your Communities</span>
                     {myTribes.map((tribe) => (
                       <div key={tribe.id} className="group/item flex items-center justify-between hover:text-zinc-900 dark:hover:text-zinc-100 py-1 text-app-black dark:text-zinc-300 select-none">
                         <button onClick={() => { setSelectedTribeId(tribe.id); setActiveTab('Tribu'); if (window.innerWidth < 768 && isSidebarOpen) toggleSidebar(); }} className="flex items-center gap-1.5 cursor-pointer text-left text-app-black dark:text-zinc-300 bg-transparent border-none hover:text-zinc-900 dark:hover:text-zinc-100 flex-1 min-w-0 font-bold text-sm">
@@ -161,7 +161,7 @@ export const SidebarNav = () => {
                         <button
                           onClick={(e) => { e.stopPropagation(); setActiveTab('TribuSettings'); }}
                           className="opacity-0 group-hover/item:opacity-100 hover:text-zinc-900 dark:hover:text-zinc-100 p-1 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-all cursor-pointer mr-1 flex items-center justify-center border-none bg-transparent"
-                          title="Tribe Settings"
+                          title="Community settings"
                         >
                           <Settings className="w-4 h-4 text-app-gray hover:text-zinc-900 dark:hover:text-zinc-100 dark:text-zinc-400" />
                         </button>
