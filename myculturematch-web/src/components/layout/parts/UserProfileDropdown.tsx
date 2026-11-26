@@ -44,19 +44,20 @@ export const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ onClos
       <AnimatePresence mode="wait">
         {!showLogoutConfirm ? (
           <motion.div key="menu" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <button onClick={() => go('Profil')} className={`${row} px-4 py-3`}>
-              <div className="relative shrink-0">
+            <button onClick={() => go('Profil')} className="w-full flex items-center justify-between gap-3 px-4 py-3 bg-zinc-50 dark:bg-zinc-800/70 text-left cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">
+              <div className="min-w-0">
+                <p className="text-sm font-bold text-zinc-700 dark:text-zinc-200 truncate">
+                  {currentUser.username || currentUser.name}
+                </p>
+                <p className="text-[11px] text-zinc-500 truncate"> Celebrity Profile</p>
+              </div>
+              <div className="p-[2px] rounded-full ring-2 ring-pink-300 dark:ring-pink-400/70 shrink-0">
                 <ProfileAvatar
                   src={currentUser.avatar}
                   alt={currentUser.name}
                   size="sm"
                   glow="none"
                 />
-                <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white dark:border-zinc-900" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-sm font-bold text-app-black dark:text-zinc-100 truncate">View Profile</p>
-                <p className="text-[11px] text-zinc-500 truncate">{currentUser.username || currentUser.name}</p>
               </div>
             </button>
 
