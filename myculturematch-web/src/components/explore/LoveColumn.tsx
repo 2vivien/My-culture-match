@@ -4,13 +4,12 @@ import {
   ArrowUp,
   BookOpen,
   Check,
+  Compass,
   Heart,
-  Lightbulb,
   MapPin,
   MessageCircle,
   RotateCcw,
-  Search,
-  UserRound,
+  Users,
   X,
 } from 'lucide-react';
 import { useUIStore } from '@/src/stores/useUIStore';
@@ -31,11 +30,13 @@ const LOVE_PROMPTS = [
   'Une personne proche de ma région avec qui voyager',
 ];
 
-const ACTIONS = [
-  { label: 'Find a profile', icon: Search, prompt: LOVE_PROMPTS[0]! },
-  { label: 'Generate an idea', icon: Lightbulb, prompt: LOVE_PROMPTS[1]! },
-  { label: 'Create an avatar', icon: UserRound, prompt: LOVE_PROMPTS[2]! },
-  { label: 'Write a message', icon: MessageCircle, prompt: 'Aide-moi à écrire un premier message romantique' },
+/** Accès rapides Love — une plateforme de rencontre, pas des outils créatifs. */
+const LOVE_SHORTCUTS = [
+  { label: 'Discover', icon: Compass, prompt: LOVE_PROMPTS[0]! },
+  { label: 'Nearby', icon: MapPin, prompt: LOVE_PROMPTS[2]! },
+  { label: 'Likes', icon: Heart, prompt: 'Qui m’a aimé sur la plateforme ?' },
+  { label: 'Matches', icon: Users, prompt: 'Montre-moi mes matchs amoureux' },
+  { label: 'Messages', icon: MessageCircle, prompt: 'Aide-moi à écrire un premier message romantique' },
 ];
 
 const MatchCard: React.FC<{ match: LoveSearchResult; onLike: () => void; onPass: () => void; onChat: () => void }> = ({ match, onLike, onPass, onChat }) => {
@@ -145,14 +146,11 @@ export const LoveColumn: React.FC = () => {
                 <div className="py-10 text-center">
                   <h2 className="text-3xl font-black tracking-tight text-zinc-900 dark:text-zinc-100">Welcome to AI Love Chat</h2>
                   <p className="mt-2 text-sm text-zinc-500">Get started with a task and chat can do the rest. Not sure where to start?</p>
-                  <div className="mx-auto mt-8 grid max-w-2xl grid-cols-1 gap-3 sm:grid-cols-2">
-                    {ACTIONS.map(({ label, icon: Icon, prompt }) => (
-                      <button key={label} onClick={() => send(prompt)} disabled={loading || quota.remaining <= 0} className="flex items-center gap-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 px-4 py-3 text-left hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer disabled:opacity-40">
-                        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-200/70 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 shrink-0">
-                          <Icon className="h-4 w-4" />
-                        </span>
-                        <span className="flex-1 text-sm font-bold text-zinc-800 dark:text-zinc-100">{label}</span>
-                        <span className="flex h-6 w-6 items-center justify-center rounded-md border border-zinc-300 dark:border-zinc-700 text-zinc-500">+</span>
+                  <div className="mx-auto mt-8 flex max-w-2xl flex-wrap justify-center gap-2">
+                    {LOVE_SHORTCUTS.map(({ label, icon: Icon, prompt }) => (
+                      <button key={label} onClick={() => send(prompt)} disabled={loading || quota.remaining <= 0} className="flex items-center gap-2 rounded-full border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 px-3.5 py-2 text-xs font-bold text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer disabled:opacity-40">
+                        <Icon className="h-4 w-4 text-zinc-500" />
+                        {label}
                       </button>
                     ))}
                   </div>
