@@ -159,7 +159,7 @@ export const PostActions = ({ postId, commentsCount, likes, liked, authorId, onL
 
       <div className="flex items-center w-full gap-3 relative mt-1">
         <Avatar src={currentUser?.avatar} alt={currentUser?.name} size="sm" />
-        <div className="flex-1 bg-[#FCFCFC] dark:bg-zinc-900 rounded-full px-4 py-1.5 flex items-center border border-app-border focus-within:ring-1 focus-within:ring-zinc-300 dark:focus-within:ring-zinc-600 transition-all relative">
+        <div className="flex-1 bg-[#FCFCFC] dark:bg-zinc-900 rounded-full px-4 py-1 flex items-center border border-app-border focus-within:ring-1 focus-within:ring-zinc-300 dark:focus-within:ring-zinc-600 transition-all relative">
           <input
             type="text"
             value={comment}

@@ -130,6 +130,11 @@ export const PostCard = ({ post, flat = false }: PostCardProps) => {
         className="text-sm mb-4 font-semibold text-app-black dark:text-zinc-300 leading-relaxed cursor-pointer select-text"
       >
         {post.text}
+        {post.tags && post.tags.length > 0 && (
+          <span className="ml-1.5 text-zinc-500 dark:text-zinc-400 font-bold">
+            {post.tags.slice(0, 3).map((tag) => `#${tag}`).join(' ')}
+          </span>
+        )}
       </p>
       <PostImage
         image={post.image}
@@ -139,16 +144,6 @@ export const PostCard = ({ post, flat = false }: PostCardProps) => {
         onLike={() => likePost(post.id)}
       />
       
-      {post.tags && post.tags.length > 0 && (
-        <div className="flex flex-wrap gap-2 mt-3 mb-1 px-1">
-          {post.tags.slice(0, 3).map((tag) => (
-            <span key={tag} className="text-xs font-black text-zinc-500 dark:text-zinc-400 hover:underline cursor-pointer">
-              {tag}
-            </span>
-          ))}
-        </div>
-      )}
-
       <PostActions
         postId={post.id}
         commentsCount={post.comments ?? 0}

@@ -101,11 +101,24 @@ export const PostHeader = ({ author, date, tribe }: PostHeaderProps) => {
           <p className="text-xs text-app-gray">{author.location}</p>
         </div>
       </div>
-      <div className="flex items-center gap-3 text-xs text-zinc-500 relative pr-20" ref={menuRef}>
+      <div className="flex items-center gap-3 text-xs text-zinc-500 relative" ref={menuRef}>
         {tribe && (
           <span className="font-extrabold text-[10px] uppercase text-zinc-500 tracking-wide truncate max-w-[140px]">
             t/{tribe.name}
           </span>
+        )}
+        {tribe && (
+          <button
+            type="button"
+            onClick={handleJoin}
+            className={`px-3 py-1 rounded-full text-[10px] font-black border transition-[transform,background-color,color] duration-150 active:scale-[0.97] cursor-pointer ${
+              isMember
+                ? 'bg-zinc-50 dark:bg-zinc-800/40 text-zinc-500 dark:text-zinc-400 border-zinc-200/70 dark:border-zinc-700/60 hover:bg-zinc-100 dark:hover:bg-zinc-800/70'
+                : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 border-zinc-200 dark:border-zinc-700 hover:bg-zinc-200/80 dark:hover:bg-zinc-700'
+            }`}
+          >
+            {isMember ? 'Joined' : 'Join'}
+          </button>
         )}
         <span className="whitespace-nowrap">{formatDate(date)}</span>
         
@@ -178,20 +191,6 @@ export const PostHeader = ({ author, date, tribe }: PostHeaderProps) => {
           )}
         </AnimatePresence>
       </div>
-
-      {tribe && (
-        <button
-          type="button"
-          onClick={handleJoin}
-          className={`absolute right-0 top-0 px-4 py-1.5 rounded-full text-[11px] font-black border transition-[transform,background-color,color] duration-150 active:scale-[0.97] cursor-pointer ${
-            isMember
-              ? 'bg-zinc-50 dark:bg-zinc-800/40 text-zinc-500 dark:text-zinc-400 border-zinc-200/70 dark:border-zinc-700/60 hover:bg-zinc-100 dark:hover:bg-zinc-800/70'
-              : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 border-zinc-200 dark:border-zinc-700 hover:bg-zinc-200/80 dark:hover:bg-zinc-700'
-          }`}
-        >
-          {isMember ? 'Joined' : 'Join'}
-        </button>
-      )}
     </div>
   );
 };
