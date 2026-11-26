@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
-import { Bell, Menu, MessageCircle, SquarePlus, Search } from 'lucide-react';
+import { Menu, Search } from 'lucide-react';
+import { IconBellFilled, IconBrandSignalFilled, IconLibraryPlusFilled } from '@tabler/icons-react';
 import { SearchBar } from './parts/SearchBar';
 import { useUIStore } from '@/src/stores/useUIStore';
 import { useAppStore } from '@/src/stores/useAppStore';
@@ -52,25 +53,25 @@ export const Header = () => {
           <Search className="w-5 h-5" />
         </button>
 
-        {/* Create — icône + texte, sans contour */}
+        {/* Create — icône Tabler library-plus remplie + texte, sans contour */}
         <button
           onClick={() => setActiveTab('Create')}
           className="h-10 flex items-center gap-2 px-3 rounded-md bg-zinc-100 dark:bg-zinc-800 text-app-black dark:text-zinc-100 font-bold text-sm hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors cursor-pointer shrink-0"
           title="Create a post"
         >
-          <SquarePlus className="w-5 h-5" />
+          <IconLibraryPlusFilled className="w-5 h-5" />
           <span className="hidden md:inline">Create</span>
         </button>
 
-        {/* Messages — icône seule, sans contour */}
+        {/* Messages — icône Tabler brand-signal remplie, seule */}
         <button onClick={openChat} className={iconButton} title="Messages">
-          <MessageCircle className="w-5 h-5" />
+          <IconBrandSignalFilled className="w-5 h-5" />
           {(unreadMessages ?? 0) > 0 && <span className={badge}>{String(unreadMessages ?? 0)}</span>}
         </button>
 
-        {/* Notifications — icône seule, ouvre sa page */}
+        {/* Notifications — icône Tabler bell remplie, ouvre sa page */}
         <button onClick={() => setActiveTab('Notifications')} className={iconButton} title="Notifications">
-          <Bell className="w-5 h-5" />
+          <IconBellFilled className="w-5 h-5" />
           {notificationsCount > 0 && <span className={badge}>{String(notificationsCount)}</span>}
         </button>
 
