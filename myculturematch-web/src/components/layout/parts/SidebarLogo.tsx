@@ -6,7 +6,7 @@ export const SidebarLogo = () => {
   const isCollapsed = isSidebarCollapsed;
 
   return (
-    <div className={`flex select-none mb-8 items-center px-4 ${isCollapsed ? 'justify-center' : 'justify-start gap-3'}`}>
+    <div className={`flex h-20 md:h-24 shrink-0 select-none items-center px-4 ${isCollapsed ? 'justify-center' : 'justify-start gap-3'}`}>
       <img
         src={logoMyCultureMatch}
         alt="MyCultureMatch Logo"
