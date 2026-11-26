@@ -34,11 +34,7 @@ export const Sidebar = () => {
         )}>
           <SidebarLogo />
 
-          {!isCollapsed && (
-            <p className="text-xs text-app-gray font-semibold uppercase tracking-wider px-4 mb-4 select-none mt-2">
-              Menu
-            </p>
-          )}
+          <hr className="border-app-border dark:border-zinc-800 mx-4 mt-5 mb-3" />
           <SidebarNav />
           <div className="mt-8">
             <SidebarFooter />
