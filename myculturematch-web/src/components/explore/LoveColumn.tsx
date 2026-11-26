@@ -8,8 +8,6 @@ import {
   Lightbulb,
   MapPin,
   MessageCircle,
-  Mic,
-  Paperclip,
   RotateCcw,
   Search,
   UserRound,
@@ -27,17 +25,17 @@ type ChatMessage = { id: string; role: Role; content: string; criteria?: string[
 const WELCOME =
   'Salut. Je vais t’aider à trouver des personnes qui correspondent vraiment à ce que tu recherches. Dis-moi simplement le type de personne que tu aimerais rencontrer.';
 
-const QUICK_PROMPTS = [
+const LOVE_PROMPTS = [
   'Une femme entre 24 et 30 ans',
-  'Quelqu’un de sérieux et ouvert d’esprit',
-  'Une personne proche de ma région qui aime voyager',
+  'Quelqu’un qui partage mes valeurs et mes traditions',
+  'Une personne proche de ma région avec qui voyager',
 ];
 
 const ACTIONS = [
-  { label: 'Find a profile', icon: Search, prompt: QUICK_PROMPTS[0]! },
-  { label: 'Generate an idea', icon: Lightbulb, prompt: QUICK_PROMPTS[1]! },
-  { label: 'Create an avatar', icon: UserRound, prompt: QUICK_PROMPTS[2]! },
-  { label: 'Write a message', icon: MessageCircle, prompt: 'Aide-moi à écrire un premier message culturel' },
+  { label: 'Find a profile', icon: Search, prompt: LOVE_PROMPTS[0]! },
+  { label: 'Generate an idea', icon: Lightbulb, prompt: LOVE_PROMPTS[1]! },
+  { label: 'Create an avatar', icon: UserRound, prompt: LOVE_PROMPTS[2]! },
+  { label: 'Write a message', icon: MessageCircle, prompt: 'Aide-moi à écrire un premier message romantique' },
 ];
 
 const MatchCard: React.FC<{ match: LoveSearchResult; onLike: () => void; onPass: () => void; onChat: () => void }> = ({ match, onLike, onPass, onChat }) => {
@@ -83,7 +81,7 @@ const chipLabels = (criteria: Record<string, unknown>) => {
 };
 
 export const LoveColumn: React.FC = () => {
-  const { openChat, setActiveTab } = useUIStore();
+  const { openChat } = useUIStore();
   const [messages, setMessages] = useState<ChatMessage[]>([{ id: 'welcome', role: 'assistant', content: WELCOME }]);
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<LoveSearchResult[]>([]);
@@ -94,6 +92,7 @@ export const LoveColumn: React.FC = () => {
   const [criteriaChips, setCriteriaChips] = useState<string[]>([]);
   const [liked, setLiked] = useState<Record<string, boolean>>({});
   const [passed, setPassed] = useState<Record<string, boolean>>({});
+  const [historyOpen, setHistoryOpen] = useState(true);
   const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { Promise.all([loveService.getSearchQuota(), loveService.fetchActiveMatches()]).then(([q, matches]) => { setQuota(q); setActiveMatches(matches); }).catch(() => undefined); }, []);
@@ -134,25 +133,6 @@ export const LoveColumn: React.FC = () => {
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col overflow-hidden px-4 pb-8 pt-4 lg:px-6">
       <section className="flex min-h-0 flex-1 overflow-hidden rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 shadow-sm">
-        {/* Rail gauche */}
-        <aside className="hidden w-48 shrink-0 flex-col border-r border-zinc-200 dark:border-zinc-800 bg-zinc-50/70 dark:bg-zinc-900/40 p-3 md:flex">
-          <div className="flex items-center gap-2 px-2 py-3 text-sm font-bold text-zinc-800 dark:text-zinc-100">
-            <Heart className="h-4 w-4" /> AI Love Chat
-          </div>
-          <nav className="flex flex-col gap-1">
-            <button onClick={() => setActiveTab('Love')} className="flex items-center gap-2 rounded-md bg-zinc-200/70 dark:bg-zinc-800 px-3 py-2 text-left text-xs font-bold text-zinc-900 dark:text-zinc-100 cursor-pointer">
-              <MessageCircle className="h-4 w-4" /> AI Love Chat
-            </button>
-            <button onClick={() => setActiveTab('Explore')} className="flex items-center gap-2 rounded-md px-3 py-2 text-left text-xs font-semibold text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer">
-              <Search className="h-4 w-4" /> Discover
-            </button>
-            <button onClick={() => setActiveTab('Friends')} className="flex items-center gap-2 rounded-md px-3 py-2 text-left text-xs font-semibold text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer">
-              <UserRound className="h-4 w-4" /> Community
-            </button>
-          </nav>
-          <p className="mt-auto px-2 text-[11px] text-zinc-400">Soft grey mode</p>
-        </aside>
-
         {/* Colonne centrale */}
         <div className="flex min-w-0 flex-1 flex-col">
           <header className="shrink-0 border-b border-zinc-200 dark:border-zinc-800 px-5 py-4">
@@ -213,69 +193,67 @@ export const LoveColumn: React.FC = () => {
 
           <div className="shrink-0 border-t border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 px-4 pb-4 pt-3 sm:px-7">
             <div className="mx-auto max-w-3xl">
-              <div className="mb-2 flex gap-2 overflow-x-auto pb-1">
-                {QUICK_PROMPTS.map((prompt) => (
-                  <button key={prompt} onClick={() => send(prompt)} disabled={loading || quota.remaining <= 0} className="shrink-0 rounded-full border border-zinc-200 dark:border-zinc-700 px-3 py-1.5 text-xs text-zinc-600 hover:bg-zinc-100 dark:hover:bg-zinc-800 disabled:opacity-40 cursor-pointer">
-                    {prompt}
-                  </button>
-                ))}
-              </div>
               <div className="rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 p-2">
                 <div className="flex items-end gap-2">
-                  <textarea value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }} rows={2} placeholder="Dis-moi ce que tu recherches…" className="min-h-[52px] flex-1 resize-none bg-transparent px-3 py-2 text-sm text-zinc-800 dark:text-zinc-100 outline-none placeholder:text-zinc-400" />
+                  <textarea value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }} rows={2} placeholder="Écris à propos de l’amour…" className="min-h-[52px] flex-1 resize-none bg-transparent px-3 py-2 text-sm text-zinc-800 dark:text-zinc-100 outline-none placeholder:text-zinc-400" />
                   <button onClick={() => send()} disabled={!query.trim() || loading || quota.remaining <= 0} className="mb-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-zinc-900 text-white disabled:opacity-40 cursor-pointer">
                     <ArrowUp className="h-5 w-5" />
                   </button>
-                </div>
-                <div className="flex items-center gap-3 px-3 pb-1 text-[11px] text-zinc-500">
-                  <Paperclip className="h-3.5 w-3.5" /> Attach
-                  <Mic className="h-3.5 w-3.5" /> Voice
-                  <BookOpen className="h-3.5 w-3.5" /> Browse prompts
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Rail droit — historique + suggestions */}
-        <aside className="hidden w-60 shrink-0 border-l border-zinc-200 dark:border-zinc-800 p-4 xl:block">
-          <div className="flex items-center justify-between gap-2">
-            <p className="text-xs font-bold uppercase tracking-wider text-zinc-500">History</p>
-            <button
-              onClick={newChat}
-              className="rounded-md border border-zinc-200 dark:border-zinc-700 px-2 py-1 text-[11px] font-bold text-zinc-600 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer"
-            >
-              + New
-            </button>
-          </div>
-          <div className="mt-3 flex flex-col gap-2">
-            {history.length === 0 ? (
-              <p className="text-[11px] text-zinc-400">No conversation yet.</p>
-            ) : (
-              history.map((item) => (
+        {/* Rail droit — uniquement l'historique, rétractable */}
+        {historyOpen ? (
+          <aside className="hidden w-72 shrink-0 flex-col border-l border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/30 p-4 xl:flex">
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-xs font-bold uppercase tracking-wider text-zinc-500">History</p>
+              <div className="flex items-center gap-1.5">
                 <button
-                  key={item.id}
-                  onClick={() => setQuery(item.content)}
-                  className="flex items-center justify-between gap-2 rounded-lg border border-zinc-200 dark:border-zinc-800 px-3 py-2 text-left text-[11px] text-zinc-600 hover:bg-zinc-50 dark:hover:bg-zinc-900 cursor-pointer"
+                  onClick={newChat}
+                  className="rounded-md border border-zinc-200 dark:border-zinc-700 px-2 py-1 text-[11px] font-bold text-zinc-600 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer"
                 >
-                  <span className="truncate">{item.content}</span>
-                  <MessageCircle className="h-3.5 w-3.5 shrink-0 text-zinc-400" />
+                  + New
                 </button>
-              ))
-            )}
-          </div>
-
-          <div className="mt-6">
-            <p className="text-xs font-bold uppercase tracking-wider text-zinc-500">Suggestions</p>
-            <div className="mt-3 flex flex-col gap-2">
-              {QUICK_PROMPTS.map((prompt) => (
-                <button key={prompt} onClick={() => send(prompt)} disabled={loading || quota.remaining <= 0} className="rounded-lg px-3 py-2 text-left text-[11px] text-zinc-600 hover:bg-zinc-50 dark:hover:bg-zinc-900 disabled:opacity-40 cursor-pointer">
-                  {prompt}
+                <button
+                  onClick={() => setHistoryOpen(false)}
+                  title="Hide history"
+                  className="w-6 h-6 rounded-md flex items-center justify-center text-zinc-500 hover:bg-zinc-200 dark:hover:bg-zinc-800 cursor-pointer"
+                >
+                  <X className="h-3.5 w-3.5" />
                 </button>
-              ))}
+              </div>
             </div>
-          </div>
-        </aside>
+            <div className="mt-3 flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto hide-scrollbar">
+              {history.length === 0 ? (
+                <p className="text-[11px] text-zinc-400">No conversation yet.</p>
+              ) : (
+                history.map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => setQuery(item.content)}
+                    className="flex w-full items-center justify-between gap-2 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 px-3 py-3 text-left text-xs text-zinc-600 hover:bg-zinc-100 dark:hover:bg-zinc-900 cursor-pointer"
+                  >
+                    <span className="line-clamp-2">{item.content}</span>
+                    <MessageCircle className="h-4 w-4 shrink-0 text-zinc-400" />
+                  </button>
+                ))
+              )}
+            </div>
+          </aside>
+        ) : (
+          <aside className="hidden w-12 shrink-0 flex-col items-center border-l border-zinc-200 dark:border-zinc-800 py-4 xl:flex">
+            <button
+              onClick={() => setHistoryOpen(true)}
+              title="Show history"
+              className="w-8 h-8 rounded-md flex items-center justify-center text-zinc-600 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer"
+            >
+              <BookOpen className="h-4 w-4" />
+            </button>
+          </aside>
+        )}
       </section>
 
       {activeMatches.length > 0 && (
