@@ -56,7 +56,7 @@ export const PrivacySection: React.FC = () => {
   const select = (label: string, value: Visibility, onChange: (value: Visibility) => void) => (
     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-4 border-b border-app-border/40 dark:border-zinc-800/40">
       <span className="text-sm font-extrabold text-app-black dark:text-zinc-200">{label}</span>
-      <select value={value} disabled={saving} onChange={(e) => onChange(e.target.value as Visibility)} className="min-w-52 px-3.5 py-2 text-sm rounded-xl border border-app-border bg-zinc-50 dark:bg-zinc-900 text-app-black dark:text-zinc-200 outline-none focus:ring-1 focus:ring-[#E27D60]">
+      <select value={value} disabled={saving} onChange={(e) => onChange(e.target.value as Visibility)} className="min-w-52 px-3.5 py-2 text-sm rounded-xl border border-app-border bg-zinc-50 dark:bg-zinc-900 text-app-black dark:text-zinc-200 outline-none focus:ring-1 focus:ring-zinc-400">
         {visibilityOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
       </select>
     </div>
@@ -68,7 +68,7 @@ export const PrivacySection: React.FC = () => {
     <div className="space-y-9 animate-fade-in">
       <div className="rounded-2xl border border-app-border/50 dark:border-zinc-800 p-5 bg-zinc-50/70 dark:bg-zinc-900/40">
         <div className="flex gap-3 items-start">
-          <ShieldCheck className="w-5 h-5 text-[#E27D60] mt-0.5" />
+          <ShieldCheck className="w-5 h-5 text-zinc-700 dark:text-zinc-200 mt-0.5" />
           <div><h2 className="font-black text-app-black dark:text-zinc-100">Consentement et contrôle</h2><p className="text-sm text-app-gray mt-1">Chaque interaction sociale et Love possède maintenant sa propre autorisation. Un blocage ou une préférence restrictive est toujours prioritaire.</p></div>
         </div>
       </div>
@@ -81,8 +81,8 @@ export const PrivacySection: React.FC = () => {
       </section>
 
       <section>
-        <div className="flex items-center gap-2 mb-3"><Heart className="w-4 h-4 text-[#E27D60]" /><h2 className="text-sm uppercase font-extrabold tracking-wider text-app-gray">Love</h2></div>
-        <div className="mb-3 rounded-xl border border-[#E27D60]/20 bg-[#E27D60]/5 p-4 text-sm text-app-gray"><strong className="text-app-black dark:text-zinc-100">Love ≠ Friendship.</strong> Les likes, propositions et matchs amoureux sont isolés du système Friendship. Activer Love ne change pas vos demandes d’amitié.</div>
+        <div className="flex items-center gap-2 mb-3"><Heart className="w-4 h-4 text-zinc-700 dark:text-zinc-200" /><h2 className="text-sm uppercase font-extrabold tracking-wider text-app-gray">Love</h2></div>
+        <div className="mb-3 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800/60 p-4 text-sm text-app-gray"><strong className="text-app-black dark:text-zinc-100">Love ≠ Friendship.</strong> Les likes, propositions et matchs amoureux sont isolés du système Friendship. Activer Love ne change pas vos demandes d’amitié.</div>
         <ToggleRow title="Activer Love" description="Je souhaite participer au matching amoureux" isActive={settings.loveEnabled} onToggle={() => update({ loveEnabled: !settings.loveEnabled, loveProposalEnabled: !settings.loveEnabled })} />
         <ToggleRow title="Accepter les propositions Love" description="Autoriser les autres utilisateurs Love à me proposer une relation" isActive={settings.loveProposalEnabled} onToggle={() => update({ loveProposalEnabled: !settings.loveProposalEnabled })} />
         {select('Qui peut me liker pour Love ?', settings.loveLikeVisibility, (value) => update({ loveLikeVisibility: value }))}

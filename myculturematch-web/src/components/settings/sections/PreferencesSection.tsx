@@ -38,7 +38,7 @@ export const PreferencesSection: React.FC = () => {
           </div>
           <div className="py-4.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
             <span className="text-sm font-extrabold text-app-black dark:text-zinc-400">Content Filter</span>
-            <select className="px-3.5 py-2 text-sm rounded-xl border border-app-border bg-zinc-50 dark:bg-zinc-900 text-app-black dark:text-zinc-200 outline-none focus:ring-1 focus:ring-[#E27D60]">
+            <select className="px-3.5 py-2 text-sm rounded-xl border border-app-border bg-zinc-50 dark:bg-zinc-900 text-app-black dark:text-zinc-200 outline-none focus:ring-1 focus:ring-zinc-400">
               <option>Standard (Recommended)</option>
               <option>Strict</option>
               <option>Off</option>

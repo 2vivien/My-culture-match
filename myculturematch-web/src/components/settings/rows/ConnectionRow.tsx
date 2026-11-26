@@ -38,7 +38,7 @@ export const ConnectionRow: React.FC<ConnectionRowProps> = ({
           "px-5 py-2 rounded-full text-sm font-black transition-all cursor-pointer",
           isConnected 
             ? "border border-app-border hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900 text-app-black dark:text-zinc-200" 
-            : "bg-[#E27D60] hover:bg-[#c66b50] text-white"
+            : "bg-zinc-800 dark:bg-zinc-700 hover:bg-zinc-700 text-white"
         )}
       >
         {isConnected ? 'Disconnect' : 'Connect'}

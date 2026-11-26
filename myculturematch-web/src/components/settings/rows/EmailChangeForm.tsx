@@ -4,9 +4,9 @@ import type { useEmailChange } from '@/src/hooks/useEmailChange';
 type Flow = ReturnType<typeof useEmailChange>;
 
 const inputCls =
-  'px-3 py-1.5 text-xs rounded-xl border border-app-border bg-zinc-50 dark:bg-zinc-900 text-app-black dark:text-zinc-200 focus:outline-none focus:border-[#E27D60]';
+  'px-3 py-1.5 text-xs rounded-xl border border-app-border bg-zinc-50 dark:bg-zinc-900 text-app-black dark:text-zinc-200 focus:outline-none focus:border-zinc-400';
 const btnCls =
-  'px-2.5 py-1.5 text-xs font-bold text-white rounded-lg bg-[#E27D60] cursor-pointer disabled:opacity-50';
+  'px-2.5 py-1.5 text-xs font-bold text-white rounded-lg bg-zinc-800 dark:bg-zinc-700 cursor-pointer disabled:opacity-50';
 const cancelCls = 'px-2 py-1.5 text-xs font-semibold text-app-gray cursor-pointer';
 const errorCls = 'text-[10px] text-red-500';
 

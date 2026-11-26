@@ -4,7 +4,7 @@ import { Settings } from 'lucide-react';
 export const SettingsHeader: React.FC = () => {
   return (
     <h1 className="text-2xl md:text-3xl font-black tracking-tight text-app-black dark:text-white mt-6 mb-4 flex items-center gap-2">
-      <Settings className="w-7 h-7 text-[#E27D60] animate-spin-slow" />
+      <Settings className="w-7 h-7 text-zinc-700 dark:text-zinc-200 animate-spin-slow" />
       Settings
     </h1>
   );
