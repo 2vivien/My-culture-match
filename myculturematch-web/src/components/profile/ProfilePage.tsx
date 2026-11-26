@@ -36,7 +36,7 @@ export const ProfilePage: React.FC = () => {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -12 }}
       transition={{ duration: 0.3 }}
-      className="flex-1 flex flex-col h-full overflow-y-auto hide-scrollbar max-w-[1000px] mx-auto w-full gap-5 pb-20"
+      className="flex-1 flex flex-col h-full overflow-y-auto hide-scrollbar max-w-[1000px] mx-auto w-full gap-4 pb-20"
     >
       <ProfileHeader
         user={user}

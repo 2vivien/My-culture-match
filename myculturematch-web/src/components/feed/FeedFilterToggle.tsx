@@ -29,7 +29,7 @@ export const FeedFilterToggle = () => {
   }, []);
 
   return (
-    <div className="flex flex-wrap justify-start mb-6 select-none gap-3 px-1 relative z-30">
+    <div className="flex flex-wrap justify-start mb-4 select-none gap-2 px-1 relative z-30">
       {/* Sort Custom Select */}
       <div className="relative" ref={sortRef}>
         <button

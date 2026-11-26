@@ -84,7 +84,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
       </div>
 
       {/* Avatar + statistiques */}
-      <div className="flex items-center gap-6 md:gap-12">
+      <div className="flex items-center gap-4 md:gap-6">
         <ProfileAvatar
           size="xl"
           shape="circle"
@@ -93,7 +93,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
           glow="none"
           countryFlag={user.country || user.location}
         />
-        <div className="flex-1 grid grid-cols-3 gap-3 text-center md:text-left">
+        <div className="flex flex-wrap items-center gap-6 text-center md:text-left">
           {stats.map((stat) => (
             <div key={stat.label}>
               <p className="text-lg font-black text-app-black dark:text-zinc-100">{stat.value}</p>

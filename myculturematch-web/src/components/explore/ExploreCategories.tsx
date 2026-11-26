@@ -23,7 +23,7 @@ export const ExploreCategories: React.FC<ExploreCategoriesProps> = ({
   const categories = CATEGORIES_MAP[activeSubTab];
 
   return (
-    <div className="flex items-center gap-2 overflow-x-auto pr-2 pb-3 mb-6 shrink-0 hide-scrollbar select-none">
+    <div className="flex items-center gap-2 overflow-x-auto pr-2 pb-2 mb-4 shrink-0 hide-scrollbar select-none">
       {categories.map((cat) => {
         const isCatActive = activeCategory === cat;
         return (

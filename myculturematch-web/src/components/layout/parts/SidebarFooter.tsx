@@ -40,7 +40,7 @@ export const SidebarFooter = () => {
       </Button>
 
       {!isCollapsed && (
-        <div className="px-4 py-3 flex flex-col gap-3 text-xs text-app-gray mt-2 font-medium">
+        <div className="px-4 py-2 flex flex-col gap-2 text-xs text-app-gray mt-1 font-medium">
           <a href="#" className="flex items-center gap-2 hover:text-app-black dark:hover:text-white transition-colors">
             <Info className="w-4 h-4 shrink-0" /> About MyCultureMatch
           </a>

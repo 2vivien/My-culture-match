@@ -120,18 +120,18 @@ export const LoveColumn: React.FC = () => {
   };
 
   return (
-    <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col overflow-hidden px-4 pb-8 pt-4 lg:px-6">
+    <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col overflow-hidden px-4 pb-6 pt-4 lg:px-6">
       <section className="flex min-h-0 flex-1 overflow-hidden rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 shadow-sm">
         {/* Colonne centrale */}
         <div className="flex min-w-0 flex-1 flex-col">
-          <header className="shrink-0 border-b border-zinc-200 dark:border-zinc-800 px-5 py-4">
+          <header className="shrink-0 border-b border-zinc-200 dark:border-zinc-800 px-5 py-3">
             <h1 className="text-base font-bold text-zinc-900 dark:text-zinc-100">AI Love Chat</h1>
           </header>
 
           <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-7">
             <div className="mx-auto max-w-3xl">
               {isWelcome && (
-                <div className="py-10 text-center">
+                <div className="py-8 text-center">
                   <h2 className="text-3xl font-black tracking-tight text-zinc-900 dark:text-zinc-100">Welcome to AI Love Chat</h2>
                   <p className="mt-2 text-sm text-zinc-500">Get started with a task and chat can do the rest. Not sure where to start?</p>
                   <div className="mx-auto mt-8 flex max-w-3xl flex-wrap justify-center gap-2">
