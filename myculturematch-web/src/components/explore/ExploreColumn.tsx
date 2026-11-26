@@ -19,7 +19,6 @@ export const ExploreColumn: React.FC = () => {
     activeCategory,
     setActiveCategory,
     searchQuery,
-    setSearchQuery,
     filteredTribes,
     moreTribes,
     filteredPosts,
@@ -32,7 +31,7 @@ export const ExploreColumn: React.FC = () => {
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden select-none px-1">
       {/* Header with Title & Search bar */}
-      <ExploreHeader searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+      <ExploreHeader />
 
       {!showSearchResults ? (
         <>

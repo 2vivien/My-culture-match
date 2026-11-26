@@ -35,7 +35,7 @@ export const TribeCard: React.FC<TribeCardProps> = ({ item, onJoin, onSelect, de
             glow="none"
           />
           <div className="min-w-0">
-            <h4 className="font-extrabold text-sm text-app-black dark:text-zinc-100 truncate leading-tight group-hover:text-[#E27D60] transition-colors">
+            <h4 className="font-extrabold text-sm text-app-black dark:text-zinc-100 truncate leading-tight group-hover:text-zinc-600 dark:group-hover:text-zinc-300 transition-colors">
               {item.name}
             </h4>
             <p className="text-[10px] text-app-gray dark:text-zinc-400 font-bold uppercase tracking-wider mt-0.5">
