@@ -5,7 +5,7 @@
 | Critère | État | Action requise |
 |---|---|---|
 | Build | ✅ `npm run build` | — |
-| Typecheck | ⚠️ 2 erreurs préexistantes | corriger `ChatMessageBubble.tsx` |
+| Typecheck | ✅ 0 erreur | — |
 | Lint backend | ✅ 0 erreur (4 warnings préexistants) | — |
 | Secrets | ❌ clé Gemini embarquée | proxy backend (P0) |
 | Session | ⚠️ token localStorage | cookie HttpOnly / rotation (P1) |
@@ -13,7 +13,7 @@
 | Deep links | ⚠️ rewrite SPA requis | config Nginx/Vercel/Cloudflare (P1) |
 | Error Boundary | ❌ | ajouter un boundary global (P2) |
 | Tests unitaires web | ❌ aucun Vitest | ajouter sur router + mappers (P2) |
-| Tests E2E | ⚠️ partiels | 1 test obsolète sur Love (P2) |
+| Tests E2E | ✅ 13/13 verts | — |
 | i18n | ❌ textes FR/EN mélangés | choisir une langue ou i18n (P2) |
 | Accessibilité | ⚠️ non auditée | focus, contrastes, `prefers-reduced-motion` (P2) |
 
@@ -38,7 +38,7 @@
 - `as any` restant dans quelques composants (props d'icônes, styles) — dette de typage.
 - Stores persistés (Zustand) avec état UI mélangé à de l'état utilisateur.
 - Aucun Error Boundary, aucune journalisation frontend structurée.
-- 2 erreurs TypeScript préexistantes dans `ChatMessageBubble.tsx`.
+- Les erreurs TypeScript héritées de `ChatMessageBubble.tsx` sont corrigées (`ChatReaction[]` typé).
 
 ### P2 — UX Cohérence
 
@@ -63,9 +63,8 @@
 
 **Lot 3 — Qualité (P2)**
 9. Supprimer le code mort et les imports orphelins (découpage par commit).
-10. Corriger `ChatMessageBubble.tsx` (baseline rouge).
-11. Ajouter Error Boundary, Vitest unitaire (router, postMapper), E2E Love réel.
-12. Audit accessibilité + choix i18n.
+10. Gadget d'erreurs : l'Error Boundary est en place ; ajouter Vitest unitaire (router, postMapper).
+11. Audit accessibilité + choix i18n.
 
 ## Ce qui est volontairement figé (demande utilisateur)
 

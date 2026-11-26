@@ -9,7 +9,7 @@ Le backend (`backend/`) n'est pas modifié ici ; les endpoints consommés sont d
 - Lecture ciblée des fichiers critiques : routeur, client API, auth, stores, query client, config Vite, pages et hooks métier.
 - Relevé de tous les appels `/api/...` par analyse des services.
 - Vérification réelle : `tsc --noEmit`, `vite build`, seeds SQL + migration, `npm run seed:feed`, appels API authentifiés, scenarios Playwright (login, feed, création de post, navigation, Love, profil, notifications).
-- Comparaison des erreurs TypeScript avec le tag `baseline/post-profil` : **0 nouvelle erreur** (2 erreurs préexistantes dans `ChatMessageBubble.tsx`).
+- Comparaison des erreurs TypeScript avec le tag `baseline/post-profil` : **0 erreur** (les 2 erreurs héritées de `ChatMessageBubble.tsx` ont été corrigées).
 
 Légende : ✅ implémenté et vérifié · ⚠️ partiel / contourné · ❌ absent ou cassé.
 
@@ -18,10 +18,10 @@ Légende : ✅ implémenté et vérifié · ⚠️ partiel / contourné · ❌ a
 | Domaine | État |
 |---|---|
 | Build production Vite | ✅ |
-| TypeScript | ⚠️ 2 erreurs préexistantes, aucune nouvelle |
+| TypeScript | ✅ 0 erreur |
 | Routage sans `#` (History API) | ✅ `/love`, `/post/:id`, `/profil/:id`… |
 | Seeds (users + 8 posts + feed Redis) | ✅ feed API = 8 posts |
-| E2E Playwright | ⚠️ une partie verte, un test préexistant obsolète sur Love (`Love Matchmaker`) |
+| E2E Playwright | ✅ 13/13 tests verts |
 | Sécurité production | ❌ voir `03-AUTH-SECURITE.md` (P0 : clé Gemini exposée) |
 
 ## Sommaire

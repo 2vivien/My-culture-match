@@ -24,8 +24,8 @@ Le script `backend/scripts/verify-feed.ts` utilisé pendant l'audit était tempo
 
 | Commande | Résultat |
 |---|---|
-| `npx tsc --noEmit` (web) | 2 erreurs **préexistantes** dans `src/components/chat/ChatMessageBubble.tsx` (lignes 13 et 27) |
-| Diff des erreurs vs `baseline/post-profil` | 0 nouvelle erreur |
+| `npx tsc --noEmit` (web) | ✅ 0 erreur |
+| Diff des erreurs vs `baseline/post-profil` | ✅ 2 erreurs héritées corrigées dans `ChatMessageBubble.tsx` |
 | `npm run build` | ✅ build OK (~2,6 Mo JS, warning de taille de chunk uniquement) |
 | `npx eslint src --ext .ts` (backend) | 0 erreur, 4 warnings préexistants |
 | `npm run migrate` | ✅ migrations `0020_posts_count` + `0021_posts_vocabulary` appliquées |
@@ -47,7 +47,7 @@ Tous avec `loginByOtp(page, 'test.flow@example.com', true)` :
 7. **Love** : welcome, phrases rapides, envoi d'un message, historique à droite, masquage/réaffichage.
 8. **URL propres** : `/`, `/love`, `/post/<id>` — aucune occurrence de `#`.
 
-Un test préexistant (`navigation : Love, Explore, Connexion, Profile`) échoue sur la baseline car il attend le titre « Love Matchmaker », remplacé par l'UI actuelle « Matchmaking conversationnel » → **non lié aux changements de cette branche**.
+Suite complète : **13 tests / 13 verts**. Les tests hérités ont été alignés sur l'UI actuelle (titre `AI Love Chat`, onglet `Friends`, bouton `Messages` dans le header, absence de token localStorage) ; `forceAdminRole()` intercepte désormais `/api/users/me` au lieu de modifier le store persisté.
 
 ## Comment reproduire un audit équivalent
 
