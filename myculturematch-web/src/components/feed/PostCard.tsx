@@ -3,8 +3,7 @@ import { PostHeader } from './PostHeader';
 import { PostImage } from './PostImage';
 import { PostActions } from './PostActions';
 import { useFeed } from '@/src/hooks/useFeed';
-import { useAppStore } from '@/src/stores/useAppStore';
-import { useUIStore } from '@/src/stores/useUIStore';
+import { navigate } from '@/src/lib/router';
 import { ProfileAvatar } from '@/src/components/ui/ProfileAvatar';
 import { Repeat2 } from 'lucide-react';
 
@@ -17,14 +16,8 @@ interface PostCardProps {
 export const PostCard = ({ post, flat = false }: PostCardProps) => {
   const { likePost, isPostLiked } = useFeed();
   const liked = isPostLiked(post.id);
-  const setSelectedPostId = useAppStore((s) => s.setSelectedPostId);
-  const setActiveTab = useUIStore((s) => s.setActiveTab);
 
-  const openPostDetail = (id: string) => {
-    setSelectedPostId(id);
-    window.location.hash = `#/post/${id}`;
-    setActiveTab('PostDetail');
-  };
+  const openPostDetail = (id: string) => navigate('PostDetail', id);
 
   const cardClass = flat
     ? 'px-5 py-5 hover:bg-zinc-50/60 dark:hover:bg-zinc-900/40 transition-colors'

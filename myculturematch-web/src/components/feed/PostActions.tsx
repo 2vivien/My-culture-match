@@ -11,7 +11,7 @@ import { Button } from '@/src/components/ui/button';
 import { EmojiPicker } from '@/src/components/ui/EmojiPicker';
 import { ShareModal } from './ShareModal';
 import { useComments } from '@/src/hooks/useComments';
-import { useUIStore } from '@/src/stores/useUIStore';
+import { navigate } from '@/src/lib/router';
 import { cn } from '@/src/lib/utils';
 
 interface PostActionsProps {
@@ -33,12 +33,10 @@ interface MyTribe {
 /**
  * Actions d'un post : like, commentaire (envoi réel à l'API), emoji picker
  * complet, Repost (popup avec sélecteur de communauté) + Share (popup Partager
- * à la Instagram), et ouverture de la page détail (#/post/:id).
+ * à la Instagram), et ouverture de la page détail (/post/:id).
  */
 export const PostActions = ({ postId, commentsCount, likes, liked, authorId, onLike }: PostActionsProps) => {
   const { currentUser } = useAppStore();
-  const setActiveTab = useUIStore((s) => s.setActiveTab);
-  const setSelectedPostId = useAppStore((s) => s.setSelectedPostId);
   const queryClient = useQueryClient();
   const { addComment } = useComments(postId);
   const [comment, setComment] = useState('');
@@ -98,17 +96,13 @@ export const PostActions = ({ postId, commentsCount, likes, liked, authorId, onL
     setShowEmoji(false);
   };
 
-  const openPostDetail = () => {
-    setSelectedPostId(postId);
-    window.location.hash = `#/post/${postId}`;
-    setActiveTab('PostDetail');
-  };
+  const openPostDetail = () => navigate('PostDetail', postId);
 
   const appendEmoji = (emoji: string) => {
     setComment((prev) => prev + emoji);
   };
 
-  const shareUrl = `${window.location.origin}${window.location.pathname}#/post/${postId}`;
+  const shareUrl = `${window.location.origin}/post/${postId}`;
   const formatLikes = (num: number) => {
     if (num >= 10000) return `${(num / 1000).toFixed(0)}k`;
     if (num >= 1000) return `${(num / 1000).toFixed(1)}k`.replace('.0', '');

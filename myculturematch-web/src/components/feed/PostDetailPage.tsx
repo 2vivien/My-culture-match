@@ -10,13 +10,13 @@ import { ProfileAvatar } from '@/src/components/ui/ProfileAvatar';
 import { EmojiPicker } from '@/src/components/ui/EmojiPicker';
 import { useComments, type CommentNode } from '@/src/hooks/useComments';
 import { useAppStore } from '@/src/stores/useAppStore';
-import { useUIStore } from '@/src/stores/useUIStore';
+import { navigate } from '@/src/lib/router';
 import { fallbackAvatar } from '@/src/lib/media';
 import { cn } from '@/src/lib/utils';
 import type { Post } from '@/src/types/post';
 
 /**
- * Page détail d'une publication (#/post/:id) : post complet (titre, image,
+ * Page détail d'une publication (/post/:id) : post complet (titre, image,
  * tags, like réel) + TOUS les commentaires (arbre avec réponses), réponse par
  * commentaire, emoji picker complet.
  */
@@ -86,7 +86,6 @@ const CommentItem: React.FC<{
 export const PostDetailPage: React.FC = () => {
   const postId = useAppStore((s) => s.selectedPostId);
   const currentUser = useAppStore((s) => s.currentUser);
-  const setActiveTab = useUIStore((s) => s.setActiveTab);
   const queryClient = useQueryClient();
   const { comments, isLoading: loadingComments, addComment } = useComments(postId);
   const [replyTo, setReplyTo] = useState<CommentNode | null>(null);
@@ -174,10 +173,7 @@ export const PostDetailPage: React.FC = () => {
   const tags = (p.tags as string[]) ?? [];
   const images = (p.mediaUrls as string[]) ?? [];
   const totalComments = countAll(comments);
-  const goBack = () => {
-    window.location.hash = '#/';
-    setActiveTab('Home');
-  };
+  const goBack = () => navigate('Home');
 
   const handleSend = () => {
     const t = text.trim();
@@ -405,7 +401,7 @@ export const PostDetailPage: React.FC = () => {
       {/* Popup Partager : identique à PostActions */}
       <ShareModal
         open={showShare}
-        shareUrl={`${window.location.origin}${window.location.pathname}#/post/${postId}`}
+        shareUrl={`${window.location.origin}/post/${postId}`}
         shareText="À voir sur My Culture Match :"
         onClose={() => setShowShare(false)}
       />

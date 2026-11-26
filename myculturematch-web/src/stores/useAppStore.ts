@@ -14,7 +14,7 @@ interface AppState {
   currentUser: CurrentUser;
   selectedProfileUserId: string;
   selectedTribeId: string | null;
-  /** Publication ouverte dans la page détail (#/post/:id). */
+  /** Publication ouverte dans la page détail (/post/:id). */
   selectedPostId: string | null;
   profileActiveTab: 'Posts' | 'Comments' | 'Saved';
   isAuthenticated: boolean;

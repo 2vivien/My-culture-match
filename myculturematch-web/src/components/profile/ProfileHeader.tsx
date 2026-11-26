@@ -34,7 +34,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   const isOwn = user.id === currentUser.id;
 
   const shareProfile = async () => {
-    const url = `${window.location.origin}/#/profil/${user.id}`;
+    const url = `${window.location.origin}/profil/${user.id}`;
     try {
       await navigator.clipboard.writeText(url);
       setCopied(true);

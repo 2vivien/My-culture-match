@@ -33,7 +33,7 @@ export default function App() {
 
   useEffect(() => {
     authService.restoreSession();
-    // Routeur par hash : deep-links (#/profil/:id, #/tribu/:id, ...) + back/forward navigateur.
+    // Routeur History API : deep-links (/profil/:id, /tribu/:id, ...) + back/forward navigateur.
     // Les stores sont abonnés au routeur : l'URL se met à jour à chaque navigation.
     startRouter();
   }, []);
