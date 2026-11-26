@@ -1,17 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import {
-  ArrowUp,
-  BookOpen,
-  Check,
-  Compass,
-  Heart,
-  MapPin,
-  MessageCircle,
-  RotateCcw,
-  Users,
-  X,
-} from 'lucide-react';
+import { ArrowUp, BookOpen, Check, Heart, MapPin, MessageCircle, RotateCcw, X } from 'lucide-react';
 import { useUIStore } from '@/src/stores/useUIStore';
 import { chatService } from '@/src/services/chat.service';
 import { loveService } from '@/src/services/loveService';
@@ -30,13 +19,12 @@ const LOVE_PROMPTS = [
   'Une personne proche de ma région avec qui voyager',
 ];
 
-/** Accès rapides Love — une plateforme de rencontre, pas des outils créatifs. */
-const LOVE_SHORTCUTS = [
-  { label: 'Discover', icon: Compass, prompt: LOVE_PROMPTS[0]! },
-  { label: 'Nearby', icon: MapPin, prompt: LOVE_PROMPTS[2]! },
-  { label: 'Likes', icon: Heart, prompt: 'Qui m’a aimé sur la plateforme ?' },
-  { label: 'Matches', icon: Users, prompt: 'Montre-moi mes matchs amoureux' },
-  { label: 'Messages', icon: MessageCircle, prompt: 'Aide-moi à écrire un premier message romantique' },
+/** Phrases de recherche prêtes à dire à l'IA Love. */
+const LOVE_SEARCH_PHRASES = [
+  ...LOVE_PROMPTS,
+  'Qui m’a aimé sur la plateforme ?',
+  'Montre-moi mes matchs amoureux',
+  'Aide-moi à écrire un premier message romantique',
 ];
 
 const MatchCard: React.FC<{ match: LoveSearchResult; onLike: () => void; onPass: () => void; onChat: () => void }> = ({ match, onLike, onPass, onChat }) => {
@@ -146,11 +134,10 @@ export const LoveColumn: React.FC = () => {
                 <div className="py-10 text-center">
                   <h2 className="text-3xl font-black tracking-tight text-zinc-900 dark:text-zinc-100">Welcome to AI Love Chat</h2>
                   <p className="mt-2 text-sm text-zinc-500">Get started with a task and chat can do the rest. Not sure where to start?</p>
-                  <div className="mx-auto mt-8 flex max-w-2xl flex-wrap justify-center gap-2">
-                    {LOVE_SHORTCUTS.map(({ label, icon: Icon, prompt }) => (
-                      <button key={label} onClick={() => send(prompt)} disabled={loading || quota.remaining <= 0} className="flex items-center gap-2 rounded-full border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 px-3.5 py-2 text-xs font-bold text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer disabled:opacity-40">
-                        <Icon className="h-4 w-4 text-zinc-500" />
-                        {label}
+                  <div className="mx-auto mt-8 flex max-w-3xl flex-wrap justify-center gap-2">
+                    {LOVE_SEARCH_PHRASES.map((phrase) => (
+                      <button key={phrase} onClick={() => send(phrase)} disabled={loading || quota.remaining <= 0} className="rounded-full border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 px-4 py-2 text-xs font-semibold text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer disabled:opacity-40">
+                        {phrase}
                       </button>
                     ))}
                   </div>
