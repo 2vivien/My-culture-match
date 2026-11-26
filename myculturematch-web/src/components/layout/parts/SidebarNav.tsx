@@ -1,5 +1,5 @@
 import { Home, LandPlot, Layers, FerrisWheel, Landmark, LucideIcon, Settings, ShieldCheck } from 'lucide-react';
-import { IconFriends } from '@tabler/icons-react';
+import { IconFriends, IconId } from '@tabler/icons-react';
 import { useUIStore } from '@/src/stores/useUIStore';
 import { useAppStore } from '@/src/stores/useAppStore';
 import { useExplore } from '@/src/hooks/useExplore';
@@ -17,17 +17,8 @@ const CloudHeartIcon = (props: any) => (
   </svg>
 );
 
-/** Icône Profil (idem sidebar) — exportée pour le menu profil. */
-export const ProfileIcon = (props: any) => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-    <path d="M12 2v20" />
-    <path d="M8 6h8" />
-    <path d="M7 10h10" />
-    <path d="M6 14h12" />
-    <path d="M10 18h4" />
-    <circle cx="12" cy="10" r="2" />
-  </svg>
-);
+/** Icône Profil Tabler "id" (ti-id) — exportée pour le menu profil. */
+export const ProfileIcon = (props: any) => <IconId {...props} />;
 
 const LayersPlusIcon = (props: any) => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
