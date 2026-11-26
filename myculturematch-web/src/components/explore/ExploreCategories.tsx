@@ -33,7 +33,7 @@ export const ExploreCategories: React.FC<ExploreCategoriesProps> = ({
             className={`text-xs font-bold tracking-tight px-4 py-1.5 rounded-md border cursor-pointer whitespace-nowrap transition-colors ${
               isCatActive
                 ? 'bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 border-zinc-300 dark:border-zinc-600'
-                : 'bg-transparent border-transparent text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-100/70 dark:hover:bg-zinc-800/50'
+                : 'bg-transparent border-black dark:border-zinc-200 text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-100/70 dark:hover:bg-zinc-800/50'
             }`}
           >
             {cat}
