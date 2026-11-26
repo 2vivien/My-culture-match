@@ -5,7 +5,7 @@ import {
 } from 'lucide-react';
 import { launchThemes, themeIcons } from '@/src/lib/themes';
 
-interface CreateTraditionTextFormProps {
+interface CreatePostTextFormProps {
   title: string;
   setTitle: (title: string) => void;
   body: string;
@@ -18,7 +18,7 @@ interface CreateTraditionTextFormProps {
   onToggleTag: (tag: string) => void;
 }
 
-export const CreateTraditionTextForm: React.FC<CreateTraditionTextFormProps> = ({
+export const CreatePostTextForm: React.FC<CreatePostTextFormProps> = ({
   title,
   setTitle,
   body,
@@ -49,7 +49,7 @@ export const CreateTraditionTextForm: React.FC<CreateTraditionTextFormProps> = (
         </div>
       </div>
 
-      {/* Custom Tags input for Post/Tradition */}
+      {/* Custom Tags input for Post/Post */}
       <div className="mt-2 flex flex-col gap-2 select-none">
         <label className="text-[10px] font-black uppercase tracking-wider text-app-gray dark:text-zinc-500">
           Add custom tags (optional)
@@ -152,7 +152,7 @@ export const CreateTraditionTextForm: React.FC<CreateTraditionTextFormProps> = (
               : 'bg-zinc-200 text-zinc-400 dark:bg-zinc-800 dark:text-zinc-600 cursor-not-allowed'
           }`}
         >
-          {isSubmitting ? 'Publishing...' : 'Publish Tradition'}
+          {isSubmitting ? 'Publishing...' : 'Publish Post'}
         </button>
       </div>
     </div>

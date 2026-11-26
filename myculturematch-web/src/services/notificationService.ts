@@ -13,8 +13,8 @@ interface BackendNotification {
 
 /** Textes d'action en anglais selon le type de notification. */
 const ACTION_LABEL_EN: Record<string, string> = {
-  comment: 'commented on your tradition',
-  like: 'liked your tradition',
+  comment: 'commented on your post',
+  like: 'liked your post',
   invite: 'sent you a friend request',
   request: 'sent you a friend request',
   match: 'is interested in you',

@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FileText, Images, SquarePlay, Info, Bookmark } from 'lucide-react';
-import { useTotemProfile } from '@/src/hooks/useTotemProfile';
+import { useProfile } from '@/src/hooks/useProfile';
 import { useUIStore } from '@/src/stores/useUIStore';
 import { useFeed } from '@/src/hooks/useFeed';
 import { ProfileHeader } from './ProfileHeader';
@@ -13,7 +13,7 @@ import { VideosTab } from './tabs/VideosTab';
 import { AboutTab } from './tabs/AboutTab';
 import { SavesTab } from './tabs/SavesTab';
 
-export const TotemProfile: React.FC = () => {
+export const ProfilePage: React.FC = () => {
   const { openChat } = useUIStore();
   const { posts } = useFeed();
   const {
@@ -25,14 +25,14 @@ export const TotemProfile: React.FC = () => {
     getCountryCode,
     getCityAndCountry,
     isOwnProfile,
-  } = useTotemProfile();
+  } = useProfile();
 
   const handleSendMessage = () => {
     openChat();
   };
 
   const profileTabs = [
-    { id: 'Posts', icon: FileText, label: 'Traditions' },
+    { id: 'Posts', icon: FileText, label: 'Posts' },
     { id: 'Photos', icon: Images, label: 'Photos' },
     { id: 'Videos', icon: SquarePlay, label: 'Vidéos' },
     { id: 'About', icon: Info, label: 'À propos' },

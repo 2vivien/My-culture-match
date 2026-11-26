@@ -22,7 +22,7 @@ export const ExploreHeader: React.FC<ExploreHeaderProps> = ({ searchQuery, setSe
         <Search className="w-4.5 h-4.5 text-app-gray absolute left-3.5 top-1/2 -translate-y-1/2" />
         <input
           type="text"
-          placeholder="Search matching traditions..."
+          placeholder="Search matching posts..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="w-full pl-10 pr-4 py-2 text-xs rounded-full border border-app-border dark:border-zinc-800 bg-white dark:bg-zinc-900/50 text-app-black dark:text-zinc-100 placeholder:text-app-gray/70 focus:outline-none focus:border-[#E27D60] focus:ring-1 focus:ring-[#E27D60]"

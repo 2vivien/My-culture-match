@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { Cable, RadioTower, Unplug, Pencil } from 'lucide-react';
 import { SandboxIcon } from '@/src/components/ui/SandboxIcon';
-import { TotemAvatar } from '@/src/components/ui/TotemAvatar';
+import { ProfileAvatar } from '@/src/components/ui/ProfileAvatar';
 import { useAppStore } from '@/src/stores/useAppStore';
 import { ProfileEditModal } from './ProfileEditModal';
 
@@ -14,7 +14,7 @@ interface ProfileHeaderProps {
 }
 
 /**
- * Header du profil Totem — sans bannière : avatar centré, stats à gauche,
+ * Header du profil — sans bannière : avatar centré, stats à gauche,
  * nom au centre, actions à droite. Le bouton "Modifier le profil" ouvre un
  * popup à la Instagram (une seule colonne gauche = identité, droite = détails).
  */
@@ -33,7 +33,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
     <div className="bg-white dark:bg-[#161b22] rounded-[24px] shadow-sm flex flex-col relative mt-2">
       {/* Avatar centré (plus de bannière, plus de changement de photo ici) */}
       <div className="pt-8 flex justify-center">
-        <TotemAvatar
+        <ProfileAvatar
           size="xl"
           src={user.avatar}
           alt={user.name}
@@ -50,8 +50,8 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
         {/* Ligne de statistiques à gauche (avec drapeau du pays) */}
         <div className="flex justify-center lg:justify-start items-center gap-6 order-2 lg:order-1">
           <div className="flex flex-col items-center">
-            <span className="text-2xl font-black text-[#2e3552] dark:text-white">{user.traditionsCount || 0}</span>
-            <span className="text-[11px] font-bold text-[#9aa3b8] uppercase tracking-wider">Traditions</span>
+            <span className="text-2xl font-black text-[#2e3552] dark:text-white">{user.postsCount || 0}</span>
+            <span className="text-[11px] font-bold text-[#9aa3b8] uppercase tracking-wider">Posts</span>
           </div>
           <div className="flex flex-col items-center">
             <span className="text-2xl font-black text-[#2e3552] dark:text-white">{user.interestedCount || 0}</span>

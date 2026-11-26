@@ -1,6 +1,6 @@
 import React from 'react';
 import { Conversation } from '@/src/types/chat.types';
-import { TotemAvatar } from '@/src/components/ui/TotemAvatar';
+import { ProfileAvatar } from '@/src/components/ui/ProfileAvatar';
 import { Globe, BookOpen, Star, HelpCircle, X } from 'lucide-react';
 
 interface ProfileColumnProps {
@@ -25,7 +25,7 @@ export const CulturalProfileColumn: React.FC<ProfileColumnProps> = ({ partner, o
       {/* Profile Info overlay */}
       <div className="flex-1 overflow-y-auto px-4 pb-6 mt-[-32px] relative hide-scrollbar space-y-5">
         <div className="flex flex-col items-center text-center">
-          <TotemAvatar
+          <ProfileAvatar
             src={partner.avatar}
             alt={partner.name}
             size="lg"
@@ -56,14 +56,14 @@ export const CulturalProfileColumn: React.FC<ProfileColumnProps> = ({ partner, o
           </p>
         </div>
 
-        {/* Ancestral Traditions */}
+        {/* Ancestral Posts */}
         <div className="space-y-2.5 border-t border-app-border dark:border-zinc-800 pt-4">
           <h4 className="font-bold text-xs text-app-black dark:text-zinc-200 flex items-center gap-1.5 uppercase tracking-wider">
             <BookOpen className="w-4 h-4 text-orange-500" />
-            Favorite Traditions
+            Favorite Posts
           </h4>
           <div className="space-y-1.5">
-            {partner.traditions.map((trad, idx) => (
+            {partner.posts.map((trad, idx) => (
               <div
                 key={idx}
                 className="text-xs bg-slate-50 dark:bg-zinc-900 border border-app-border dark:border-zinc-800 rounded-xl p-2 font-medium text-app-black dark:text-zinc-300"

@@ -4,7 +4,7 @@ import { SandboxIcon } from '@/src/components/ui/SandboxIcon';
 import { SearchBar } from './parts/SearchBar';
 import { useUIStore } from '@/src/stores/useUIStore';
 import { useAppStore } from '@/src/stores/useAppStore';
-import { TotemAvatar } from '@/src/components/ui/TotemAvatar';
+import { ProfileAvatar } from '@/src/components/ui/ProfileAvatar';
 import { NotificationDropdown } from './parts/NotificationDropdown';
 import { UserProfileDropdown } from './parts/UserProfileDropdown';
 import { useUnreadMessagesCount } from '@/src/hooks/useUnreadMessagesCount';
@@ -50,11 +50,11 @@ export const Header = () => {
           <Search className="w-4.5 h-4.5 text-app-black dark:text-zinc-300" />
         </button>
 
-        {/* Create Tradition Action Button */}
+        {/* Create Post Action Button */}
         <button
           onClick={() => setActiveTab('Create')}
           className="h-10 w-10 md:h-12 md:w-auto md:px-6 rounded-full bg-white dark:bg-zinc-900 text-app-black dark:text-zinc-100 border border-app-border dark:border-zinc-700 font-extrabold text-xs shadow-sm hover:shadow-md hover:scale-[1.02] tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer uppercase shrink-0"
-          title="Create a tradition"
+          title="Create a post"
         >
           <SquarePen className="w-5 h-5 md:w-4 md:h-4" />
           <span className="hidden md:inline">Create</span>
@@ -90,7 +90,7 @@ export const Header = () => {
         {/* User Profile Avatar and Trigger (Desktop only) */}
         <div ref={profileRef} className="hidden md:block relative shrink-0">
           <div onClick={() => setShowProfile(!showProfile)} className="bg-white dark:bg-zinc-900 p-0.5 md:pl-2.5 md:pr-4 md:py-1.5 rounded-full shadow-sm border border-app-border dark:border-zinc-800 flex items-center gap-2 cursor-pointer hover:shadow-md transition-all">
-            <TotemAvatar size="xs" src={currentUser.avatar} alt={currentUser.name} countryFlag={currentUser.country} glow={currentUser.glow} />
+            <ProfileAvatar size="xs" src={currentUser.avatar} alt={currentUser.name} countryFlag={currentUser.country} glow={currentUser.glow} />
             <div className="hidden md:flex items-center gap-1.5">
               <span className="text-xs font-black text-app-black dark:text-zinc-200">{currentUser.username}</span>
               <ChevronDown className="w-3.5 h-3.5 text-app-gray transition-transform duration-250 group-hover:translate-y-0.5" />

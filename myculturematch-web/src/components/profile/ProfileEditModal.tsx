@@ -4,7 +4,7 @@ import { X, Check, Loader2 } from 'lucide-react';
 import { userService } from '@/src/services/userService';
 import { DOMAINS } from '@/src/services/onboarding.service';
 import { useAppStore } from '@/src/stores/useAppStore';
-import { resolveCountryFlag } from '@/src/components/ui/TotemAvatar';
+import { resolveCountryFlag } from '@/src/components/ui/ProfileAvatar';
 
 interface ProfileEditModalProps {
   user: any;
@@ -140,15 +140,15 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({ user, onClos
                   value={bio}
                   onChange={(e) => setBio(e.target.value)}
                   className={`${inputClass} h-28 resize-none`}
-                  placeholder="Parlez de vos racines, vos traditions, ce que vous cherchez ici…"
+                  placeholder="Parlez de vos racines, vos posts, ce que vous cherchez ici…"
                 />
               </div>
 
               {/* Stats (lecture seule) */}
               <div className="flex gap-5 pt-2 mt-auto">
                 <div className="flex flex-col">
-                  <span className="text-base font-black text-[#2e3552] dark:text-white">{user.traditionsCount || 0}</span>
-                  <span className="text-xs font-bold text-app-gray">Traditions</span>
+                  <span className="text-base font-black text-[#2e3552] dark:text-white">{user.postsCount || 0}</span>
+                  <span className="text-xs font-bold text-app-gray">Posts</span>
                 </div>
                 <div className="flex flex-col">
                   <span className="text-base font-black text-[#2e3552] dark:text-white">{user.interestedCount || 0}</span>
@@ -167,7 +167,7 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({ user, onClos
               <div className="flex flex-col gap-3">
                 <p className="text-sm font-black text-app-black dark:text-white">Racines &amp; Héritage</p>
                 <p className="text-xs text-app-gray -mt-2">
-                  Vos origines et traditions culturelles, telles que partagées avec la communauté.
+                  Vos origines et posts culturelles, telles que partagées avec la communauté.
                 </p>
 
                 <div className="grid grid-cols-2 gap-3">
@@ -211,7 +211,7 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({ user, onClos
                     value={heritage}
                     onChange={(e) => setHeritage(e.target.value)}
                     className={inputClass}
-                    placeholder={user.heritage ? `Actuel : ${user.heritage}` : "Ex: Danses traditionnelles, cuisine ancestrale…"}
+                    placeholder={user.heritage ? `Actuel : ${user.heritage}` : "Ex: Danses posts, cuisine ancestrale…"}
                   />
                 </div>
 

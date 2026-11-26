@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { MoreHorizontal, Bookmark, Share2, BellOff, AlertTriangle, Check } from 'lucide-react';
-import { TotemAvatar } from '@/src/components/ui/TotemAvatar';
+import { ProfileAvatar } from '@/src/components/ui/ProfileAvatar';
 import { Button } from '@/src/components/ui/button';
 import { PostAuthor } from '@/src/types/post';
 import { useAppStore } from '@/src/stores/useAppStore';
@@ -14,7 +14,7 @@ interface PostHeaderProps {
 }
 
 export const PostHeader = ({ author, date, tribe }: PostHeaderProps) => {
-  const { setSelectedTotemUserId, currentUser, joinTribe } = useAppStore();
+  const { setSelectedProfileUserId, currentUser, joinTribe } = useAppStore();
   const { setActiveTab } = useUIStore();
   const isMember = tribe ? currentUser.tribes.includes(tribe.name) : false;
 
@@ -32,8 +32,8 @@ export const PostHeader = ({ author, date, tribe }: PostHeaderProps) => {
   const menuRef = useRef<HTMLDivElement>(null);
 
   const handleClick = () => {
-    setSelectedTotemUserId(author.id);
-    setActiveTab('Totem');
+    setSelectedProfileUserId(author.id);
+    setActiveTab('Profil');
   };
 
   useEffect(() => {
@@ -74,7 +74,7 @@ export const PostHeader = ({ author, date, tribe }: PostHeaderProps) => {
   return (
     <div className="flex items-center justify-between mb-4 select-none relative">
       <div className="flex items-center gap-3">
-        <TotemAvatar
+        <ProfileAvatar
           src={author.avatar}
           alt={author.name}
           size="md"
@@ -137,7 +137,7 @@ export const PostHeader = ({ author, date, tribe }: PostHeaderProps) => {
               >
                 <span className="flex items-center gap-2">
                   <Bookmark className={`w-4 h-4 ${saved ? 'text-amber-500 fill-amber-500' : 'text-app-gray'}`} />
-                  {saved ? 'Tradition Saved!' : 'Save this Tradition'}
+                  {saved ? 'Post Saved!' : 'Save this Post'}
                 </span>
                 {saved && <Check className="w-3.5 h-3.5 text-amber-500" />}
               </button>
@@ -168,7 +168,7 @@ export const PostHeader = ({ author, date, tribe }: PostHeaderProps) => {
 
               <button
                 onClick={() => {
-                  alert('Thank you for making this community safe. The cultural guardians team will review this traditional transmission.');
+                  alert('Thank you for making this community safe. The cultural guardians team will review this post.');
                   setIsOpen(false);
                 }}
                 className="w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold text-[#E27D60] dark:text-[#E27D60] hover:bg-[#E27D60]/10 dark:hover:bg-[#E27D60]/20 flex items-center gap-2 cursor-pointer transition-colors"

@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { ChevronDown, X, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import type { TribeOption } from '@/src/types/createTradition';
+import type { TribeOption } from '@/src/types/createPost';
 
 interface TribuSelectorProps {
   tribes: TribeOption[];

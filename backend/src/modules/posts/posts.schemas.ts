@@ -14,7 +14,7 @@ const basePostFields = {
   tags: z.array(z.string().regex(TAG_REGEX, 'Tag : lettres minuscules, chiffres ou tirets uniquement')).max(5, '5 tags maximum').optional(),
 };
 
-/** POST /api/posts — création d'une tradition (ou d'un repost). */
+/** POST /api/posts — création d'une post (ou d'un repost). */
 export const createPostSchema = z
   .object({
     type: z.enum(POST_TYPES),

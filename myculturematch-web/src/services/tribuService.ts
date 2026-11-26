@@ -37,12 +37,12 @@ const TAG_COLORS = [
 ];
 
 function mapPost(p: BackendHydratedPost): PostItem {
-  const tag = (p.tags ?? [])[0] ?? 'Tradition';
+  const tag = (p.tags ?? [])[0] ?? 'Post';
   return {
     id: p.id,
     author: p.author?.name ?? 'Membre',
     timeAgo: p.createdAt ? relativeDays(p.createdAt) : '',
-    title: p.title ?? (p.body ?? '').slice(0, 60) ?? 'Tradition',
+    title: p.title ?? (p.body ?? '').slice(0, 60) ?? 'Post',
     tagText: `#${tag}`,
     tagColor: TAG_COLORS[(tag.length + tag.charCodeAt(0)) % TAG_COLORS.length],
     body: p.body ?? undefined,

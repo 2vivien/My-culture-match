@@ -1,13 +1,13 @@
 import React from 'react';
 
-interface CreateTraditionLinkFormProps {
+interface CreatePostLinkFormProps {
   linkUrl: string;
   setLinkUrl: (url: string) => void;
   isSubmitting: boolean;
   onSubmit: () => void;
 }
 
-export const CreateTraditionLinkForm: React.FC<CreateTraditionLinkFormProps> = ({
+export const CreatePostLinkForm: React.FC<CreatePostLinkFormProps> = ({
   linkUrl,
   setLinkUrl,
   isSubmitting,
@@ -32,7 +32,7 @@ export const CreateTraditionLinkForm: React.FC<CreateTraditionLinkFormProps> = (
               : 'bg-zinc-200 text-zinc-400 dark:bg-zinc-800 dark:text-zinc-600 cursor-not-allowed'
           }`}
         >
-          {isSubmitting ? 'Publishing...' : 'Publish Tradition'}
+          {isSubmitting ? 'Publishing...' : 'Publish Post'}
         </button>
       </div>
     </div>

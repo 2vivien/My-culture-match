@@ -5,7 +5,7 @@ import { PostActions } from './PostActions';
 import { useFeed } from '@/src/hooks/useFeed';
 import { useAppStore } from '@/src/stores/useAppStore';
 import { useUIStore } from '@/src/stores/useUIStore';
-import { TotemAvatar } from '@/src/components/ui/TotemAvatar';
+import { ProfileAvatar } from '@/src/components/ui/ProfileAvatar';
 import { Repeat2 } from 'lucide-react';
 
 interface PostCardProps {
@@ -61,7 +61,7 @@ export const PostCard = ({ post }: PostCardProps) => {
           className="rounded-2xl border border-app-border dark:border-zinc-800 p-4 mb-3 cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-900/50 transition-colors"
         >
           <div className="flex items-center gap-2.5 mb-2">
-            <TotemAvatar
+            <ProfileAvatar
               src={original.author.avatar}
               alt={original.author.name}
               size="xs"

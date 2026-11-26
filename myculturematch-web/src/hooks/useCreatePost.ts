@@ -1,18 +1,18 @@
 import { useState, type ChangeEvent } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { traditionService } from '@/src/services/traditionService';
+import { postService } from '@/src/services/postService';
 import { uploadService } from '@/src/services/uploadService';
 import { mediaUrl } from '@/src/lib/media';
-import type { TribeOption, TraditionSubmission } from '@/src/types/createTradition';
+import type { TribeOption, PostSubmission } from '@/src/types/createPost';
 import { useUIStore } from '@/src/stores/useUIStore';
 
-export function useCreateTradition() {
+export function useCreatePost() {
   const { setActiveTab } = useUIStore();
   const queryClient = useQueryClient();
 
   const { data: tribes = [] } = useQuery<TribeOption[]>({
     queryKey: ['tribe-options'],
-    queryFn: traditionService.getTribes,
+    queryFn: postService.getTribes,
     staleTime: 1000 * 60 * 10,
   });
 
@@ -86,16 +86,16 @@ export function useCreateTradition() {
     }
     // Le backend exige un titre de 3 caractères minimum pour TOUS les types de posts.
     if (title.trim().length < 3 && activeSubTab !== 'Text') {
-      setTitle(body.trim().slice(0, 60) || 'Ma tradition');
+      setTitle(body.trim().slice(0, 60) || 'Ma post');
     }
 
-    const submission: TraditionSubmission = {
+    const submission: PostSubmission = {
       title:
         title.trim().length >= 3
           ? title
           : activeSubTab === 'Link'
             ? 'Partage de lien'
-            : body.trim().slice(0, 60) || 'Ma tradition',
+            : body.trim().slice(0, 60) || 'Ma post',
       body: activeSubTab === 'Text' ? body : undefined,
       mediaUrl: activeSubTab === 'Images' ? resolvedMediaUrl : undefined,
       linkUrl: activeSubTab === 'Link' ? linkUrl : undefined,
@@ -105,13 +105,13 @@ export function useCreateTradition() {
     };
 
     try {
-      await traditionService.submitTradition(submission);
+      await postService.submitPost(submission);
       // Le feed et les posts de tribu doivent montrer la nouvelle publication.
       await queryClient.invalidateQueries({ queryKey: ['feed'] });
       await queryClient.invalidateQueries({ queryKey: ['tribu-posts'] });
       setActiveTab('Home');
     } catch (err) {
-      console.error('Error submitting tradition:', err);
+      console.error('Error submitting post:', err);
     } finally {
       setIsSubmitting(false);
     }

@@ -1,4 +1,4 @@
-import type { TribeOption, TraditionSubmission } from '@/src/types/createTradition';
+import type { TribeOption, PostSubmission } from '@/src/types/createPost';
 import { api } from './api';
 import { fallbackAvatar } from '@/src/lib/media';
 import { slugifyTag } from '@/src/lib/slug';
@@ -8,7 +8,7 @@ interface BackendTribeList {
   tribes?: Array<{ id: string; name: string; avatar?: string | null }>;
 }
 
-export const traditionService = {
+export const postService = {
   /** GET /api/tribes/mine — tribus de l'utilisateur (owner d'abord) pour la sidebar. */
   async getMyTribes(): Promise<TribeOption[]> {
     const data = await api.get<{ tribes?: Array<{ id: string; name: string; avatar?: string | null }> }>(
@@ -37,7 +37,7 @@ export const traditionService = {
    * { type, title (3..200), body?, mediaUrls?, linkUrl?, tribeId?, tags? }.
    * Tags convertis au format slug (^[a-z0-9-]+$), sinon ils sont rejetés.
    */
-  async submitTradition(data: TraditionSubmission): Promise<{ success: boolean }> {
+  async submitPost(data: PostSubmission): Promise<{ success: boolean }> {
     const payload: Record<string, unknown> = {
       type: data.type,
       title: data.title.trim().slice(0, 200),

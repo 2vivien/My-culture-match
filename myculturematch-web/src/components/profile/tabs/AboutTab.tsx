@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { MapPin, Globe, Calendar, Pencil, Languages, Sparkles } from 'lucide-react';
 import { ProfileEditModal } from '../ProfileEditModal';
 import { useAppStore } from '@/src/stores/useAppStore';
-import { resolveCountryFlag } from '@/src/components/ui/TotemAvatar';
+import { resolveCountryFlag } from '@/src/components/ui/ProfileAvatar';
 
 interface AboutTabProps {
   user: any;
@@ -48,12 +48,12 @@ export const AboutTab: React.FC<AboutTabProps> = ({ user, getCityAndCountry }) =
           )}
         </div>
         <p className="text-sm text-[#9aa3b8] leading-relaxed">
-          {user.bio || "Cet utilisateur n'a pas encore rédigé sa bio. Les traditions, racines et intentions apparaîtront ici."}
+          {user.bio || "Cet utilisateur n'a pas encore rédigé sa bio. Les posts, racines et intentions apparaîtront ici."}
         </p>
         <div className="border-t border-gray-100 dark:border-zinc-800 pt-4 flex gap-4 text-xs font-bold text-[#9aa3b8] mt-2">
           <div className="flex flex-col">
-            <span className="text-[#2e3552] dark:text-white text-sm font-black">{user.traditionsCount || 0}</span>
-            <span>Traditions</span>
+            <span className="text-[#2e3552] dark:text-white text-sm font-black">{user.postsCount || 0}</span>
+            <span>Posts</span>
           </div>
           <div className="h-8 w-[1px] bg-gray-100 dark:bg-zinc-800" />
           <div className="flex flex-col">
@@ -82,7 +82,7 @@ export const AboutTab: React.FC<AboutTabProps> = ({ user, getCityAndCountry }) =
           )}
         </div>
         <p className="text-[11px] text-app-gray -mt-2">
-          Vos origines et traditions culturelles, telles que partagées avec la communauté.
+          Vos origines et posts culturelles, telles que partagées avec la communauté.
         </p>
         <div className="flex flex-col gap-4 mt-1">
           <div className="flex justify-between items-center text-sm font-semibold border-b border-gray-100 dark:border-zinc-800 pb-2">

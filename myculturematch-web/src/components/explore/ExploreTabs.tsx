@@ -11,7 +11,7 @@ interface ExploreTabsProps {
 
 const TABS: { id: ExploreTab; icon: React.ComponentType<any> }[] = [
   { id: 'Tribu', icon: Landmark },
-  { id: 'Traditions', icon: FileText },
+  { id: 'Posts', icon: FileText },
   { id: 'Reels', icon: IconBrandParsinta },
   { id: 'Vidéo', icon: SquarePlay },
 ];

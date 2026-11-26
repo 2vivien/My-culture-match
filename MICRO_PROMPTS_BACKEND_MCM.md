@@ -278,9 +278,9 @@ ZREVRANGE feed:following:{userId} cursor cursor+limit
 
 ---
 
-## MICRO-PROMPT 6 : POSTS / TRADITIONS (CRUD + INTERACTIONS)
+## MICRO-PROMPT 6 : POSTS (CRUD + INTERACTIONS)
 
-**Objectif** : Création et interaction sur les traditions (posts culturels).
+**Objectif** : Création et interaction sur les posts (posts culturels).
 
 **Endpoints** :
 ```

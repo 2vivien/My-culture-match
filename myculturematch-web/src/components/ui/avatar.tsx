@@ -1,4 +1,4 @@
-import { TotemAvatar } from './TotemAvatar';
+import { ProfileAvatar } from './ProfileAvatar';
 
 export interface AvatarProps {
   src?: string;
@@ -16,7 +16,7 @@ export const Avatar = ({
   className,
 }: AvatarProps) => {
   return (
-    <TotemAvatar
+    <ProfileAvatar
       src={src}
       alt={alt || fallback}
       size={size}

@@ -2,7 +2,7 @@ import { useUIStore } from '@/src/stores/useUIStore';
 import { useAppStore } from '@/src/stores/useAppStore';
 
 /**
- * Mini-routeur par hash : chaque vue de l'app a une vraie URL (#/totem/:id,
+ * Mini-routeur par hash : chaque vue de l'app a une vraie URL (#/profil/:id,
  * #/tribu/:id, #/explore, ...). Synchronisé dans les deux sens avec les stores
  * (deep-link au chargement + URL mise à jour à chaque navigation).
  */
@@ -18,7 +18,7 @@ const TAB_SEGMENTS: Record<string, string> = {
   Love: 'love',
   Tribu: 'tribu',
   TribuSettings: 'tribu/settings',
-  Totem: 'totem',
+  Profil: 'profil',
   Messages: 'messages',
   Create: 'create',
   PostDetail: 'post',
@@ -30,10 +30,10 @@ const SEGMENT_TO_TAB: Record<string, string> = Object.fromEntries(
   Object.entries(TAB_SEGMENTS).map(([tab, seg]) => [seg, tab]),
 );
 
-/** Construit le hash pour un onglet (+ id optionnel : totem/tribu/post). */
+/** Construit le hash pour un onglet (+ id optionnel : profil/tribu/post). */
 export function buildHash(tab: string, id?: string | null): string {
   const seg = TAB_SEGMENTS[tab] ?? tab.toLowerCase();
-  if (tab === 'Totem' && id && id !== 'user-current') return `#/totem/${id}`;
+  if (tab === 'Profil' && id && id !== 'user-current') return `#/profil/${id}`;
   if (tab === 'Tribu' && id) return `#/tribu/${id}`;
   if (tab === 'PostDetail' && id) return `#/post/${id}`;
   return `#/${seg}`;
@@ -42,9 +42,9 @@ export function buildHash(tab: string, id?: string | null): string {
 /** Applique l'état courant des stores à l'URL (sans boucle). */
 function syncFromStores() {
   const { activeTab } = useUIStore.getState();
-  const { selectedTotemUserId, selectedTribeId, selectedPostId } = useAppStore.getState();
+  const { selectedProfileUserId, selectedTribeId, selectedPostId } = useAppStore.getState();
   let id: string | null | undefined;
-  if (activeTab === 'Totem') id = selectedTotemUserId;
+  if (activeTab === 'Profil') id = selectedProfileUserId;
   else if (activeTab === 'Tribu') id = selectedTribeId;
   else if (activeTab === 'PostDetail') id = selectedPostId;
   const target = buildHash(activeTab, id);
@@ -59,9 +59,9 @@ export function applyHash() {
   const [seg, id] = raw.split('/');
   const tab = SEGMENT_TO_TAB[seg] ?? (seg === '' ? 'Home' : null);
 
-  if (tab === 'Totem' && id) {
-    useAppStore.getState().setSelectedTotemUserId(id);
-    useUIStore.getState().setActiveTab('Totem');
+  if (tab === 'Profil' && id) {
+    useAppStore.getState().setSelectedProfileUserId(id);
+    useUIStore.getState().setActiveTab('Profil');
     return;
   }
   if (tab === 'Tribu' && id) {
@@ -80,7 +80,7 @@ export function applyHash() {
   }
   if (tab) {
     useUIStore.getState().setActiveTab(tab);
-    if (tab === 'Totem') useAppStore.getState().setSelectedTotemUserId('user-current');
+    if (tab === 'Profil') useAppStore.getState().setSelectedProfileUserId('user-current');
   }
 }
 
@@ -96,7 +96,7 @@ export function startRouter() {
   });
   useAppStore.subscribe((state, prev) => {
     if (
-      state.selectedTotemUserId !== prev.selectedTotemUserId ||
+      state.selectedProfileUserId !== prev.selectedProfileUserId ||
       state.selectedTribeId !== prev.selectedTribeId ||
       state.selectedPostId !== prev.selectedPostId
     ) {

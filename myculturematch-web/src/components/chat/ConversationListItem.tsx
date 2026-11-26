@@ -1,6 +1,6 @@
 import React from 'react';
 import { Conversation } from '@/src/types/chat.types';
-import { TotemAvatar } from '@/src/components/ui/TotemAvatar';
+import { ProfileAvatar } from '@/src/components/ui/ProfileAvatar';
 import { cn } from '@/src/lib/utils';
 
 interface ListItemProps {
@@ -25,7 +25,7 @@ export const ConversationListItem: React.FC<ListItemProps> = ({
       )}
     >
       <div className="relative shrink-0">
-        <TotemAvatar
+        <ProfileAvatar
           src={conversation.avatar}
           alt={conversation.name}
           size="md"

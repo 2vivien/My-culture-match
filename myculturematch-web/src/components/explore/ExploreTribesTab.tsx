@@ -52,7 +52,7 @@ export const ExploreTribesTab: React.FC<ExploreTribesTabProps> = ({
 
       <div>
         <h3 className="text-xs font-black text-app-gray dark:text-zinc-400 uppercase tracking-widest mb-4">
-          More like your Totem Match
+          More like your Profile Match
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {moreTribes.map((item) => (

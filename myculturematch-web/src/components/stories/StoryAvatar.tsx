@@ -1,7 +1,7 @@
 import React from 'react';
 import { Plus } from 'lucide-react';
 import { Story } from '@/src/types/story';
-import { TotemAvatar } from '../ui/TotemAvatar';
+import { ProfileAvatar } from '../ui/ProfileAvatar';
 import { useUIStore } from '@/src/stores/useUIStore';
 import { useAppStore } from '@/src/stores/useAppStore';
 
@@ -12,7 +12,7 @@ interface StoryAvatarProps {
 
 export const StoryAvatar: React.FC<StoryAvatarProps> = ({ story, onAddClick }) => {
   const { setActiveTab } = useUIStore();
-  const { setSelectedTotemUserId } = useAppStore();
+  const { setSelectedProfileUserId } = useAppStore();
 
   if (story.isAdd) {
     return (
@@ -26,13 +26,13 @@ export const StoryAvatar: React.FC<StoryAvatarProps> = ({ story, onAddClick }) =
   }
 
   const handleClick = () => {
-    setSelectedTotemUserId(story.id);
-    setActiveTab('Totem');
+    setSelectedProfileUserId(story.id);
+    setActiveTab('Profil');
   };
 
   return (
     <div className="flex flex-col items-center gap-1.5 shrink-0 select-none">
-      <TotemAvatar
+      <ProfileAvatar
         size="md"
         src={story.img}
         alt={story.name}

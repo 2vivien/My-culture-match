@@ -1,6 +1,6 @@
 import React from 'react';
 import { Shield } from 'lucide-react';
-import { TotemAvatar } from '@/src/components/ui/TotemAvatar';
+import { ProfileAvatar } from '@/src/components/ui/ProfileAvatar';
 import type { TribeModerator } from '@/src/types/tribu';
 
 interface TribuModsProps {
@@ -21,7 +21,7 @@ export const TribuMods: React.FC<TribuModsProps> = ({ moderators }) => {
         {moderators.map((mod) => (
           <div key={mod.name} className="flex items-center justify-between text-xs">
             <div className="flex items-center gap-2">
-              <TotemAvatar src={mod.avatar} alt={mod.name} size="xs" glow="none" />
+              <ProfileAvatar src={mod.avatar} alt={mod.name} size="xs" glow="none" />
               <span className="font-extrabold text-app-black dark:text-zinc-200">
                 {mod.name}
               </span>

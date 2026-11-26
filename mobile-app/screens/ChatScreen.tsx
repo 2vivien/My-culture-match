@@ -33,7 +33,7 @@ export const ChatScreen = ({ partner, onBack }: ChatScreenProps) => {
   const messages = [
     { id: '1', text: `Hey ${chatUser.name}, how are you?`, time: '16:12', isSender: false },
     { id: '2', text: 'I\'m great! Thanks for asking.', time: '16:12', isSender: true },
-    { id: '3', text: 'Would you like to share some cultural traditions?', time: '16:13', isSender: false },
+    { id: '3', text: 'Would you like to share some cultural posts?', time: '16:13', isSender: false },
     { id: '4', text: 'I\'d love to! Let me tell you about my heritage.', time: '16:14', isSender: true },
   ];
 

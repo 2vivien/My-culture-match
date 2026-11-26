@@ -10,7 +10,7 @@ export interface Post {
   id: string;
   author: PostAuthor;
   text: string;
-  /** Titre renvoyé par le backend (traditions). */
+  /** Titre renvoyé par le backend (posts). */
   title?: string;
   image?: string;
   likes: number;

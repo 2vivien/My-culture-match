@@ -4,7 +4,7 @@ export interface TribeOption {
   avatar: string;
 }
 
-export interface TraditionSubmission {
+export interface PostSubmission {
   title: string;
   body?: string;
   mediaUrl?: string;

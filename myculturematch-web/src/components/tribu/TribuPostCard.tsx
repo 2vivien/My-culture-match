@@ -91,7 +91,7 @@ export const TribuPostCard: React.FC<TribuPostCardProps> = ({
                 >
                   <span className="flex items-center gap-2">
                     <Bookmark className="w-4 h-4 text-app-gray" />
-                    {isSaved ? 'Tradition Saved!' : 'Save this Tradition'}
+                    {isSaved ? 'Post Saved!' : 'Save this Post'}
                   </span>
                   {isSaved && <Check className="w-3.5 h-3.5 text-[#E27D60]" />}
                 </button>

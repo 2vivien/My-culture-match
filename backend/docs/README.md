@@ -5,7 +5,7 @@
 
 ## Vue d'ensemble
 
-**My Culture Match** est un réseau social interculturel : traditions, tribus culturelles,
+**My Culture Match** est un réseau social interculturel : posts, tribus culturelles,
 connexions d'amitié, matching amoureux et messagerie. Le backend est une API **REST + WebSocket**
 en TypeScript strict, pensée pour scaler vers des millions d'utilisateurs dès le départ.
 

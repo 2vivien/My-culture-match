@@ -63,7 +63,7 @@ function hydrateCurrentUser(id: string, apiUser: Partial<CurrentUser> | undefine
     level: apiUser?.level ?? fallback.level ?? 1,
     glow: (apiUser?.glow ?? fallback.glow ?? 'none') as CurrentUser['glow'],
     tribes: apiUser?.tribes ?? fallback.tribes ?? [],
-    traditionsCount: apiUser?.traditionsCount ?? fallback.traditionsCount ?? 0,
+    postsCount: apiUser?.postsCount ?? fallback.postsCount ?? 0,
     culturesCount: apiUser?.culturesCount ?? fallback.culturesCount ?? 0,
     tribesCount: apiUser?.tribesCount ?? fallback.tribesCount ?? 0,
     location: apiUser?.location ?? fallback.location ?? '',
@@ -103,9 +103,9 @@ function useConnectionState(targetId: string, isOwn: boolean) {
   };
 }
 
-export function useTotemProfile() {
+export function useProfile() {
   const {
-    selectedTotemUserId,
+    selectedProfileUserId,
     profileActiveTab: activeTab,
     setProfileActiveTab: setActiveTab,
     currentUser,
@@ -113,8 +113,8 @@ export function useTotemProfile() {
 
   // 'user-current' est le placeholder du store persisté : on le remplace par le
   // vrai id courant pour que l'API renvoie les VRAIES stats (jamais des mocks).
-  const fallbackId = currentUser.id === 'user-current' ? selectedTotemUserId : currentUser.id;
-  const targetId = selectedTotemUserId && selectedTotemUserId !== 'user-current' ? selectedTotemUserId : (fallbackId ?? 'user-current');
+  const fallbackId = currentUser.id === 'user-current' ? selectedProfileUserId : currentUser.id;
+  const targetId = selectedProfileUserId && selectedProfileUserId !== 'user-current' ? selectedProfileUserId : (fallbackId ?? 'user-current');
 
   const { data: apiUser, refetch: refetchUser } = useQuery<Partial<CurrentUser>>({
     queryKey: ['user', targetId],

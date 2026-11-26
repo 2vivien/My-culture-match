@@ -5,7 +5,7 @@ import { ChatMessageBubble } from './ChatMessageBubble';
 import { AssistantPanel } from './AssistantPanel';
 import { RelationshipTimeline } from './RelationshipTimeline';
 import { TemporalMessageComposer } from './TemporalMessageComposer';
-import { TotemAvatar } from '@/src/components/ui/TotemAvatar';
+import { ProfileAvatar } from '@/src/components/ui/ProfileAvatar';
 import { chatService } from '@/src/services/chat.service';
 import { relationshipMemoryService, type SharedMemoryKind } from '@/src/services/relationshipMemoryService';
 import { uploadService } from '@/src/services/uploadService';
@@ -93,7 +93,7 @@ export const ActiveChatColumn: React.FC<ActiveChatProps> = ({ partner, messages,
     <div className="p-4 border-b border-app-border dark:border-zinc-800 flex items-center justify-between bg-white dark:bg-zinc-950 shrink-0">
       <div className="flex items-center gap-2 sm:gap-3">
         {onBack && <button onClick={onBack} className="w-8 h-8 rounded-full border border-app-border dark:border-zinc-800/80 flex items-center justify-center text-app-gray hover:text-app-black dark:hover:text-white transition-colors"><ArrowLeft className="w-4 h-4" /></button>}
-        <div className="relative"><TotemAvatar src={partner.avatar} alt={partner.name} size="md" glow={partner.glow as any} level={partner.level} />{partner.online && <span className="absolute top-0 right-0 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white dark:border-zinc-950" />}</div>
+        <div className="relative"><ProfileAvatar src={partner.avatar} alt={partner.name} size="md" glow={partner.glow as any} level={partner.level} />{partner.online && <span className="absolute top-0 right-0 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white dark:border-zinc-950" />}</div>
         <div><h3 className="font-bold text-sm text-app-black dark:text-zinc-100">{partner.name}</h3><p className="text-xs text-app-gray truncate max-w-[240px]">{partner.culture || partner.lang}{typing && <span className="ml-2 text-[#E27D60]">écrit…</span>}</p></div>
       </div>
       <div className="flex items-center gap-1.5"><button type="button" onClick={() => setTimelineOpen(true)} title="Boîte à souvenirs" className="w-9 h-9 border border-app-border dark:border-zinc-800 rounded-full flex items-center justify-center text-app-gray"><BookHeart className="w-4 h-4" /></button><button type="button" onClick={openTemporalComposer} title="Écrire un message temporel" className="w-9 h-9 border border-app-border dark:border-zinc-800 rounded-full flex items-center justify-center text-app-gray hover:text-[#E27D60]"><Clock3 className="w-4 h-4" /></button><button type="button" title="Appel audio" className="w-9 h-9 border border-app-border dark:border-zinc-800 rounded-full flex items-center justify-center text-app-gray"><Phone className="w-4 h-4" /></button><button type="button" title="Appel vidéo" className="w-9 h-9 border border-app-border dark:border-zinc-800 rounded-full flex items-center justify-center text-app-gray"><Video className="w-4 h-4" /></button></div>

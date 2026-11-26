@@ -52,7 +52,7 @@
 | POST | `/api/uploads/complete` | Confirme l'upload → traitement média |
 | GET | `/api/uploads/:uploadId/status` | Statut du traitement |
 
-## Posts / Traditions
+## Posts
 
 | Méthode | Path | Description |
 |---|---|---|

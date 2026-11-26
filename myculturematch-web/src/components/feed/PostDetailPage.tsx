@@ -6,7 +6,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/src/services/api';
 import { PostHeader } from '@/src/components/feed/PostHeader';
 import { ShareModal } from '@/src/components/feed/ShareModal';
-import { TotemAvatar } from '@/src/components/ui/TotemAvatar';
+import { ProfileAvatar } from '@/src/components/ui/ProfileAvatar';
 import { EmojiPicker } from '@/src/components/ui/EmojiPicker';
 import { useComments, type CommentNode } from '@/src/hooks/useComments';
 import { useAppStore } from '@/src/stores/useAppStore';
@@ -46,7 +46,7 @@ const CommentItem: React.FC<{
   <div className={cn('flex flex-col', depth > 0 && 'ml-14')}>
     <div className="flex items-start gap-3">
       {/* Style Instagram : avatar · username en gras · texte · date dessous · Répondre */}
-      <TotemAvatar
+      <ProfileAvatar
         src={node.author.avatar ?? fallbackAvatar(node.author.name)}
         alt={node.author.name}
         size="md"
@@ -447,7 +447,7 @@ export const PostDetailPage: React.FC = () => {
 
       {/* Composer un commentaire */}
       <div className="mt-3 flex items-center gap-2.5">
-        <TotemAvatar src={currentUser.avatar} alt={currentUser.name} size="md" glow="none" />
+        <ProfileAvatar src={currentUser.avatar} alt={currentUser.name} size="md" glow="none" />
         <div className="flex-1 bg-[#FCFCFC] dark:bg-zinc-900 rounded-full px-4 py-2.5 flex items-center gap-1 border border-app-border focus-within:ring-1 focus-within:ring-[#E27D60]/30 transition-all relative">
           <input
             type="text"

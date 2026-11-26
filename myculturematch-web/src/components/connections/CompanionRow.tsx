@@ -1,6 +1,6 @@
 import React from 'react';
 import { ConnectionUser } from '@/src/stores/useConnectionsStore';
-import { TotemAvatar } from '@/src/components/ui/TotemAvatar';
+import { ProfileAvatar } from '@/src/components/ui/ProfileAvatar';
 import { User, MessageCircle, MousePointerClick, Unplug } from 'lucide-react';
 
 interface CompanionRowProps {
@@ -14,7 +14,7 @@ export const CompanionRow: React.FC<CompanionRowProps> = ({ user, onMessage, onP
     <div className="bg-zinc-50/50 dark:bg-zinc-900/60 p-4.5 rounded-[22px] border border-app-border dark:border-zinc-800 flex items-center justify-between hover:shadow-md transition-shadow relative w-full">
       <div className="flex items-center gap-4 flex-1 min-w-0">
         <div className="relative shrink-0 select-none">
-          <TotemAvatar src={user.avatar} alt={user.name} size="md" glow="none" statusDot={user.online ? 'online' : 'offline'} />
+          <ProfileAvatar src={user.avatar} alt={user.name} size="md" glow="none" statusDot={user.online ? 'online' : 'offline'} />
           <div className="absolute -bottom-1 -right-1 bg-white dark:bg-zinc-800 text-app-black dark:text-white text-[8px] font-black w-5.5 h-5.5 rounded-full flex items-center justify-center border border-white dark:border-zinc-900 uppercase shadow-sm">
             {user.countryCode}
           </div>

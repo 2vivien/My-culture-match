@@ -13,7 +13,7 @@ export const VALUES = [
   { id: 'faith', label: 'Foi & Spiritualité' },
   { id: 'family', label: 'Famille d\'abord' },
   { id: 'ambition', label: 'Ambition & Réussite' },
-  { id: 'tradition', label: 'Tradition & Coutumes' },
+  { id: 'post', label: 'Post & Coutumes' },
   { id: 'solidarity', label: 'Solidarité' },
   { id: 'comm', label: 'Communication' },
   { id: 'peace', label: 'Paix & Équilibre' },

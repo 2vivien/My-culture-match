@@ -4,7 +4,7 @@ import { z } from 'zod';
 export const TRIBE_TOPICS = [
   'musique', 'danse', 'cuisine', 'mode', 'art', 'spiritualite', 'religion', 'langues',
   'histoire', 'cinema', 'litterature', 'sport', 'famille', 'mariage', 'education', 'sante',
-  'travail', 'entreprise', 'technologie', 'traditions', 'fetes', 'voyage', 'diaspora',
+  'travail', 'entreprise', 'technologie', 'posts', 'fetes', 'voyage', 'diaspora',
   'politique', 'environnement', 'jeunesse',
 ] as const;
 export type TribeTopic = (typeof TRIBE_TOPICS)[number];

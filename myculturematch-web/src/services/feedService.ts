@@ -24,7 +24,7 @@ export const feedService = {
     const isRealUrl = image.startsWith('http') || image.startsWith('/');
     const payload: Record<string, unknown> = {
       type: isRealUrl ? 'Images' : 'Text',
-      title: text.slice(0, 60) || 'Tradition',
+      title: text.slice(0, 60) || 'Post',
       body: text || '📷',
       ...(isRealUrl ? { mediaUrls: [image] } : {}),
       ...(data.tags && data.tags.length > 0 ? { tags: data.tags.map(slugifyTag).filter(Boolean).slice(0, 5) } : {}),

@@ -1,6 +1,6 @@
 import React from 'react';
 
-interface CreateTraditionMediaFormProps {
+interface CreatePostMediaFormProps {
   mediaPreview: string | null;
   onMediaChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onClearMedia: () => void;
@@ -8,7 +8,7 @@ interface CreateTraditionMediaFormProps {
   onSubmit: () => void;
 }
 
-export const CreateTraditionMediaForm: React.FC<CreateTraditionMediaFormProps> = ({
+export const CreatePostMediaForm: React.FC<CreatePostMediaFormProps> = ({
   mediaPreview,
   onMediaChange,
   onClearMedia,
@@ -56,7 +56,7 @@ export const CreateTraditionMediaForm: React.FC<CreateTraditionMediaFormProps> =
               : 'bg-zinc-200 text-zinc-400 dark:bg-zinc-800 dark:text-zinc-600 cursor-not-allowed'
           }`}
         >
-          {isSubmitting ? 'Publishing...' : 'Publish Tradition'}
+          {isSubmitting ? 'Publishing...' : 'Publish Post'}
         </button>
       </div>
     </div>

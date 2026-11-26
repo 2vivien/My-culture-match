@@ -24,8 +24,8 @@ const UNREAD_CACHE_TTL = 60;
 const DEDUP_WINDOW_MS = 60 * 60 * 1000;
 
 const ACTION_LABEL: Record<NotificationType, string> = {
-  comment: 'a commenté votre tradition',
-  like: 'a aimé votre tradition',
+  comment: 'a commenté votre post',
+  like: 'a aimé votre post',
   invite: 'vous a envoyé une invitation',
   request: 'vous a envoyé une demande',
   match: 'c’est un match !',

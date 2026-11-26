@@ -48,7 +48,7 @@ export interface HydratedPost {
   updatedAt: string;
 }
 
-/** Crée une tradition ou un repost. Fanout + indexation + embedding en arrière-plan. */
+/** Crée une post ou un repost. Fanout + indexation + embedding en arrière-plan. */
 export async function createPost(userId: string, input: CreatePostInput): Promise<HydratedPost> {
   if (input.type === 'Images' && (!input.mediaUrls || input.mediaUrls.length === 0)) {
     throw AppError.badRequest('Un post Images nécessite au moins un média', 'MEDIA_REQUIRED');

@@ -53,7 +53,7 @@ export const VideosTab: React.FC<VideosTabProps> = ({ posts = [] }) => {
               </div>
             </div>
             <div className="p-3">
-              <h4 className="font-bold text-xs text-[#2e3552] dark:text-white line-clamp-2">{post.text?.slice(0, 80) || 'Tradition'}</h4>
+              <h4 className="font-bold text-xs text-[#2e3552] dark:text-white line-clamp-2">{post.text?.slice(0, 80) || 'Post'}</h4>
               <span className="text-[10px] text-[#9aa3b8]">{post.likes} likes · {post.comments} commentaires</span>
             </div>
           </div>

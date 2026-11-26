@@ -30,7 +30,7 @@ languages
 cultural_interests
 food
 music
-traditions
+posts
 travel_experience
 media
 festivals

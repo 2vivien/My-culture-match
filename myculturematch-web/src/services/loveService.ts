@@ -1,6 +1,6 @@
 import type { LoveMatch, LoveSearchQuota, LoveSearchResponse, LoveSearchResult } from '@/src/types/love';
 import { api } from './api';
-import { resolveCountryFlag } from '@/src/components/ui/TotemAvatar';
+import { resolveCountryFlag } from '@/src/components/ui/ProfileAvatar';
 import { fallbackAvatar } from '@/src/lib/media';
 import type { UserProfile } from '@/src/lib/compatibility/types';
 

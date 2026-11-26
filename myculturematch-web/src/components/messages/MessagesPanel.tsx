@@ -4,7 +4,7 @@ import { useMessages } from '@/src/hooks/useMessages';
 import { useUnreadMessagesCount } from '@/src/hooks/useUnreadMessagesCount';
 import { MessageItem } from './MessageItem';
 import { Button } from '@/src/components/ui/button';
-import { TotemAvatar } from '@/src/components/ui/TotemAvatar';
+import { ProfileAvatar } from '@/src/components/ui/ProfileAvatar';
 import { useUIStore } from '@/src/stores/useUIStore';
 import { useAppStore } from '@/src/stores/useAppStore';
 
@@ -24,7 +24,7 @@ export const MessagesPanel = () => {
         <div onClick={handleActiveClick} className="flex items-center gap-2 border border-app-black dark:border-zinc-700 rounded-full px-4 py-1.5 cursor-pointer hover:bg-[#FCFCFC] dark:hover:bg-zinc-800 transition-colors">
           <SandboxIcon className="w-4 h-4 text-app-black dark:text-zinc-200" />
           <span className="font-bold text-sm text-app-black dark:text-zinc-200">Messages</span>
-          <TotemAvatar
+          <ProfileAvatar
             src={currentUser.avatar}
             alt={currentUser.name}
             countryFlag={currentUser.country}

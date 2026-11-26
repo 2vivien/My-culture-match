@@ -1,7 +1,7 @@
 import { cn } from '@/src/lib/utils';
 import { fallbackAvatar } from '@/src/lib/media';
 
-export interface TotemAvatarProps {
+export interface ProfileAvatarProps {
   src?: string;
   alt?: string;
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
@@ -99,7 +99,7 @@ export function resolveCountryFlag(country?: string | null): string | undefined 
   return countryFlagMap[country.trim().toLowerCase()];
 }
 
-export const TotemAvatar = ({
+export const ProfileAvatar = ({
   src,
   alt = '',
   size = 'md',
@@ -111,7 +111,7 @@ export const TotemAvatar = ({
   statusDot = 'none',
   shape = 'cloud',
   countryFlag,
-}: TotemAvatarProps) => {
+}: ProfileAvatarProps) => {
   const sizePx = sizeValues[size] || 48;
   const glowKey = hasStory ? 'orange' : (glow || 'turquoise');
   const stops = glowStops[glowKey] || glowStops['turquoise'];

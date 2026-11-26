@@ -6,7 +6,7 @@ import { ExploreHeader } from './ExploreHeader';
 import { ExploreTabs } from './ExploreTabs';
 import { ExploreCategories } from './ExploreCategories';
 import { ExploreTribesTab } from './ExploreTribesTab';
-import { ExploreTraditionsTab } from './ExploreTraditionsTab';
+import { ExplorePostsTab } from './ExplorePostsTab';
 import { ExploreReelsTab } from './ExploreReelsTab';
 import { ExploreVideosTab } from './ExploreVideosTab';
 import { ExploreSearchResults } from './ExploreSearchResults';
@@ -24,7 +24,7 @@ export const ExploreColumn: React.FC = () => {
     setSearchQuery,
     filteredTribes,
     moreTribes,
-    filteredTraditions,
+    filteredPosts,
     filteredVideos,
     toggleJoinTribe,
   } = useExplore(posts);
@@ -64,8 +64,8 @@ export const ExploreColumn: React.FC = () => {
                 />
               )}
 
-              {activeSubTab === 'Traditions' && (
-                <ExploreTraditionsTab posts={posts} />
+              {activeSubTab === 'Posts' && (
+                <ExplorePostsTab posts={posts} />
               )}
 
               {activeSubTab === 'Reels' && (

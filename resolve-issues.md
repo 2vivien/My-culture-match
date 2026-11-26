@@ -129,23 +129,23 @@ Ce fichier liste l'état de conformité de chaque page du projet par rapport aux
 
 ---
 
-## 8. TotemProfile.tsx (Profil Totem)
-- **Fichier initial** : `myculturematch-web/src/components/totem/TotemProfile.tsx` (479 lignes - NON CONFORME)
+## 8. ProfilePage.tsx (Profil Profile)
+- **Fichier initial** : `myculturematch-web/src/components/profile/ProfilePage.tsx` (479 lignes - NON CONFORME)
 - **Actions réalisées** :
-  - Ajout des statistiques dynamiques des compagnons, intéressés et traditions de l'utilisateur à partir du mock [users.json](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/mocks/users.json).
-  - Correction de l'affichage de l'avatar [TotemAvatar.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/ui/TotemAvatar.tsx) en mode `glow="none"` pour remplir la forme sans bordure ni contour.
-  - Création du hook personnalisé [useTotemProfile.ts](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/hooks/useTotemProfile.ts).
-  - Découpage en composants modulaires de présentation sous `src/components/totem/` :
-    - [ProfileHeader.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/totem/ProfileHeader.tsx) (90 lignes)
-    - [ProfileTabs.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/totem/ProfileTabs.tsx) (41 lignes)
-    - Sous-onglets de profil sous `src/components/totem/tabs/` :
-      - [AboutTab.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/totem/tabs/AboutTab.tsx) (60 lignes)
-      - [TraditionsTab.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/totem/tabs/TraditionsTab.tsx) (60 lignes)
-      - [PhotosTab.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/totem/tabs/PhotosTab.tsx) (41 lignes)
-      - [VideosTab.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/totem/tabs/VideosTab.tsx) (35 lignes)
-      - [SavesTab.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/totem/tabs/SavesTab.tsx) (29 lignes)
-      - [PostsTab.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/totem/tabs/PostsTab.tsx) (35 lignes)
-  - Refactorisation de [TotemProfile.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/totem/TotemProfile.tsx) à 90 lignes (CONFORME).
+  - Ajout des statistiques dynamiques des compagnons, intéressés et posts de l'utilisateur à partir du mock [users.json](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/mocks/users.json).
+  - Correction de l'affichage de l'avatar [ProfileAvatar.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/ui/ProfileAvatar.tsx) en mode `glow="none"` pour remplir la forme sans bordure ni contour.
+  - Création du hook personnalisé [useProfile.ts](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/hooks/useProfile.ts).
+  - Découpage en composants modulaires de présentation sous `src/components/profile/` :
+    - [ProfileHeader.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/profile/ProfileHeader.tsx) (90 lignes)
+    - [ProfileTabs.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/profile/ProfileTabs.tsx) (41 lignes)
+    - Sous-onglets de profil sous `src/components/profile/tabs/` :
+      - [AboutTab.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/profile/tabs/AboutTab.tsx) (60 lignes)
+      - [PostsTab.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/profile/tabs/PostsTab.tsx) (60 lignes)
+      - [PhotosTab.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/profile/tabs/PhotosTab.tsx) (41 lignes)
+      - [VideosTab.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/profile/tabs/VideosTab.tsx) (35 lignes)
+      - [SavesTab.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/profile/tabs/SavesTab.tsx) (29 lignes)
+      - [PostsTab.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/profile/tabs/PostsTab.tsx) (35 lignes)
+  - Refactorisation de [ProfilePage.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/profile/ProfilePage.tsx) à 90 lignes (CONFORME).
 - **Statut final** : **CONFORME**.
 
 
@@ -168,20 +168,20 @@ Ce fichier liste l'état de conformité de chaque page du projet par rapport aux
 
 ---
 
-## 10. CreateTraditionView.tsx (Création de Tradition)
-- **Fichier initial** : `myculturematch-web/src/components/feed/CreateTraditionView.tsx` (228 lignes - NON CONFORME)
+## 10. CreatePostView.tsx (Création de Post)
+- **Fichier initial** : `myculturematch-web/src/components/feed/CreatePostView.tsx` (228 lignes - NON CONFORME)
 - **Actions réalisées** :
-  - Délocalisation des données et options des tribus dans [createTradition.json](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/mocks/createTradition.json).
-  - Création du type [createTradition.ts](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/types/createTradition.ts) et du service [traditionService.ts](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/services/traditionService.ts).
-  - Création du hook [useCreateTradition.ts](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/hooks/useCreateTradition.ts).
-  - Création de composants modulaires de présentation sous `src/components/create-tradition/` :
-    - [CreateTraditionHeader.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/create-tradition/CreateTraditionHeader.tsx) (14 lignes)
-    - [TribuSelector.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/create-tradition/TribuSelector.tsx) (63 lignes)
-    - [CreateTraditionTabs.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/create-tradition/CreateTraditionTabs.tsx) (41 lignes)
-    - [CreateTraditionTextForm.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/create-tradition/CreateTraditionTextForm.tsx) (85 lignes)
-    - [CreateTraditionMediaForm.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/create-tradition/CreateTraditionMediaForm.tsx) (53 lignes)
-    - [CreateTraditionLinkForm.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/create-tradition/CreateTraditionLinkForm.tsx) (35 lignes)
-  - Refactorisation de [CreateTraditionView.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/feed/CreateTraditionView.tsx) à 75 lignes (CONFORME).
+  - Délocalisation des données et options des tribus dans [createPost.json](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/mocks/createPost.json).
+  - Création du type [createPost.ts](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/types/createPost.ts) et du service [postService.ts](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/services/postService.ts).
+  - Création du hook [useCreatePost.ts](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/hooks/useCreatePost.ts).
+  - Création de composants modulaires de présentation sous `src/components/create-post/` :
+    - [CreatePostHeader.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/create-post/CreatePostHeader.tsx) (14 lignes)
+    - [TribuSelector.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/create-post/TribuSelector.tsx) (63 lignes)
+    - [CreatePostTabs.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/create-post/CreatePostTabs.tsx) (41 lignes)
+    - [CreatePostTextForm.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/create-post/CreatePostTextForm.tsx) (85 lignes)
+    - [CreatePostMediaForm.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/create-post/CreatePostMediaForm.tsx) (53 lignes)
+    - [CreatePostLinkForm.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/create-post/CreatePostLinkForm.tsx) (35 lignes)
+  - Refactorisation de [CreatePostView.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/feed/CreatePostView.tsx) à 75 lignes (CONFORME).
 - **Statut final** : **CONFORME**.
 
 ---
@@ -242,7 +242,7 @@ Ce fichier liste l'état de conformité de chaque page du projet par rapport aux
   - [UserRow.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/connections/UserRow.tsx)
   - [CompanionCard.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/connections/CompanionCard.tsx)
 - **Actions réalisées** :
-  - Masquage de la barre de catégories (`ExploreCategories` avec les options *All*, *90%+ Matches*, *Shared Totems*, *Active Level*) dans l'onglet Explore quand le sous-onglet actif est `'Connexion'`.
+  - Masquage de la barre de catégories (`ExploreCategories` avec les options *All*, *90%+ Matches*, *Shared Profiles*, *Active Level*) dans l'onglet Explore quand le sous-onglet actif est `'Connexion'`.
   - Désactivation complète des glow modes et masquage du badge de niveau sur toutes les cartes de tribu (`TribeCard`) en forçant `glow="none"`.
   - Suppression de l'affichage du score de match (`matchScore`) et des styles/drapeaux associés sur toutes les fiches compagnon (comme les cartes et lignes de demandes `RequestCard` / `RequestRow`).
   - Suppression de l'affichage des badges/tags d'intérêts de l'utilisateur (contenant des groupes de mots comme *Runes & Sagas* ou *Woodcarving*) placés juste avant le(s) bouton(s) d'action sur les cartes compagnon (`UserCard` et `RequestCard`).
@@ -254,11 +254,11 @@ Ce fichier liste l'état de conformité de chaque page du projet par rapport aux
 
 ## 15. Modal de Sélection de Tribu et Suppression du Troisième Side (Profil) dans Thunderbird
 - **Fichiers concernés** :
-  - [TribuSelector.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/create-tradition/TribuSelector.tsx)
+  - [TribuSelector.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/create-post/TribuSelector.tsx)
   - [index.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/pages/ChatPage/index.tsx)
   - [ActiveChatColumn.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/chat/ActiveChatColumn.tsx)
 - **Actions réalisées** :
-  - Remplacement du sélecteur sous forme de menu déroulant (dropdown) dans la création de tradition par une fenêtre modale popup moderne, centrée, avec un arrière-plan flouté semi-transparent.
+  - Remplacement du sélecteur sous forme de menu déroulant (dropdown) dans la création de post par une fenêtre modale popup moderne, centrée, avec un arrière-plan flouté semi-transparent.
   - La modale de sélection de tribu affiche désormais de manière lisible les avatars circulaires, les noms de tribu et une coche de sélection avec des animations fluides via `framer-motion`.
   - Suppression complète du troisième panneau ("third side" / colonne de profil culturel dépliable de droite) sur la page des messages Thunderbird.
   - Retrait du bouton de basculement du profil dans l'en-tête de la discussion (`ActiveChatColumn.tsx`) et nettoyage des imports associés (`SidebarOpen`, `SidebarClose`).
@@ -271,7 +271,7 @@ Ce fichier liste l'état de conformité de chaque page du projet par rapport aux
 - **Fichiers concernés** :
   - [MessageItem.tsx](file:///home/vivien/Workspace/My-culture-match/myculturematch-web/src/components/messages/MessageItem.tsx)
 - **Actions réalisées** :
-  - Correction de l'action au clic sur un message de la boîte de réception du fil d'actualité (MessagesPanel) pour rediriger l'utilisateur vers l'onglet `'Thunderbird'` (inbox/messages) au lieu d'ouvrir le profil totem de l'utilisateur.
+  - Correction de l'action au clic sur un message de la boîte de réception du fil d'actualité (MessagesPanel) pour rediriger l'utilisateur vers l'onglet `'Thunderbird'` (inbox/messages) au lieu d'ouvrir le profil profil de l'utilisateur.
   - Nettoyage des imports de stores inutilisés (`useAppStore`).
 - **Statut final** : **CONFORME**.
 

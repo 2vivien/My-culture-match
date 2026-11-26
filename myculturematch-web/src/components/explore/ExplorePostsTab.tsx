@@ -4,19 +4,19 @@ import { FileText } from 'lucide-react';
 import { PostCard } from '@/src/components/feed/PostCard';
 import type { Post } from '@/src/types/post';
 
-interface ExploreTraditionsTabProps {
+interface ExplorePostsTabProps {
   posts: Post[];
 }
 
 /**
- * Onglet "Traditions" de la page Explorer : tous les posts du feed
- * (traditions partagées par la communauté), style identique au feed.
+ * Onglet "Posts" de la page Explorer : tous les posts du feed
+ * (posts partagées par la communauté), style identique au feed.
  */
-export const ExploreTraditionsTab: React.FC<ExploreTraditionsTabProps> = ({ posts }) => {
+export const ExplorePostsTab: React.FC<ExplorePostsTabProps> = ({ posts }) => {
   if (posts.length === 0) {
     return (
       <motion.div
-        key="traditions-tab"
+        key="posts-tab"
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -10 }}
@@ -26,9 +26,9 @@ export const ExploreTraditionsTab: React.FC<ExploreTraditionsTabProps> = ({ post
         <div className="w-14 h-14 rounded-2xl bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center mb-4">
           <FileText className="w-7 h-7 text-app-gray" />
         </div>
-        <h3 className="font-extrabold text-app-black dark:text-white">No traditions yet</h3>
+        <h3 className="font-extrabold text-app-black dark:text-white">No posts yet</h3>
         <p className="text-sm text-app-gray mt-1 max-w-sm">
-          Shared traditions from the community will appear here.
+          Shared posts from the community will appear here.
         </p>
       </motion.div>
     );
@@ -36,7 +36,7 @@ export const ExploreTraditionsTab: React.FC<ExploreTraditionsTabProps> = ({ post
 
   return (
     <motion.div
-      key="traditions-tab"
+      key="posts-tab"
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}

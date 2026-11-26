@@ -1,6 +1,6 @@
 import React from 'react';
 import { Check, Plus } from 'lucide-react';
-import { TotemAvatar } from '@/src/components/ui/TotemAvatar';
+import { ProfileAvatar } from '@/src/components/ui/ProfileAvatar';
 import { TribeItem } from '@/src/types/explore';
 
 interface TribeCardProps {
@@ -18,7 +18,7 @@ export const TribeCard: React.FC<TribeCardProps> = ({ item, onJoin, onSelect, de
           onClick={onSelect}
           className="flex items-center gap-3.5 mb-3.5 cursor-pointer hover:opacity-90 transition-opacity"
         >
-          <TotemAvatar
+          <ProfileAvatar
             src={item.avatar}
             alt={item.name}
             size="md"

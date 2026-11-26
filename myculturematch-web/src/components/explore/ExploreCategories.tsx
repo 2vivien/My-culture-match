@@ -10,7 +10,7 @@ interface ExploreCategoriesProps {
 
 const CATEGORIES_MAP = {
   Tribu: ['All', ...launchThemes],
-  Traditions: ['All', ...launchThemes],
+  Posts: ['All', ...launchThemes],
   Reels: ['All'],
   Vidéo: ['All', ...launchThemes],
 };

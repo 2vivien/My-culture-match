@@ -18,11 +18,11 @@ Tu es **Staff Engineer / Principal Backend Architect** de My Culture Match. Tu n
 
 My Culture Match est un réseau social interculturel avec :
 - **Feed** social (Following / For You / Popular / New) avec fanout
-- **Traditions** (posts culturels texte/image/lien)
+- **Posts** (posts culturels texte/image/lien)
 - **Tribus** (communautés culturelles type subreddit avec règles, modérateurs)
 - **Connexions** (suggestions → intérêts → demandes → compagnons)
 - **Love** (matching amoureux avec score de compatibilité calculé)
-- **Totem** (profil complet avec niveau/XP)
+- **Profile** (profil complet avec niveau/XP)
 - **Stories** éphémères 24h
 - **Messagerie temps réel** (texte, notes vocales, fichiers)
 - **Notifications** in-app + email
@@ -69,9 +69,9 @@ backend/
 ├── src/
 │   ├── modules/                    # Un dossier par domaine métier
 │   │   ├── auth/                   # Better Auth + OTP + OAuth + sessions
-│   │   ├── users/                  # Profils, onboarding, settings, totem
+│   │   ├── users/                  # Profils, onboarding, settings, profil
 │   │   ├── feed/                   # Feed engine + fanout + Culture Engine scoring
-│   │   ├── posts/                  # Traditions, likes, comments, shares, saves
+│   │   ├── posts/                  # Posts, likes, comments, shares, saves
 │   │   ├── tribes/                 # Tribus, règles, modérateurs, membership
 │   │   ├── connections/            # Suggestions, demandes, compagnons, blocage
 │   │   ├── love/                   # Matching amoureux, swipe, score compatibilité
@@ -171,7 +171,7 @@ user_blocks
 user_follows
 ├── followerId, followingId, createdAt
 
-posts / traditions
+posts
 ├── id (uuid v7), authorId, type (TEXT|IMAGES|LINK)
 ├── title, body, mediaUrl[], linkUrl
 ├── tribeId, tags[]
@@ -464,9 +464,9 @@ POST /api/posts/:id/save         (toggle)
 DELETE /api/posts/:id/save
 ```
 
-### Traditions & Uploads
+### Posts & Uploads
 ```
-POST /api/traditions             { TraditionSubmission }
+POST /api/posts             { PostSubmission }
 GET  /api/tribes                 (sélecteur TribeOption[])
 POST /api/uploads/request        { filename, contentType, size }
   → { presignedUrl, fileUrl }
@@ -818,7 +818,7 @@ Phase 1 — Utilisateurs & Onboarding
 
 Phase 2 — Feed & Posts (CŒUR)
   ├─ Tables posts, likes, comments, saves, shares
-  ├─ POST /api/posts (création tradition)
+  ├─ POST /api/posts (création post)
   ├─ GET /api/feed?filter=... (fanout Redis ZSET)
   ├─ Like/Comment/Share/Save endpoints
   ├─ BullMQ : feed.fanout, counters.flush

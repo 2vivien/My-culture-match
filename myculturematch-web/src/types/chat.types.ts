@@ -13,7 +13,7 @@ export interface Conversation {
   level: number;
   bio: string;
   country: string;
-  traditions: string[];
+  posts: string[];
   tribes: string[];
   sharedMedia: string[];
 }

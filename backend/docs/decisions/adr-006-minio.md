@@ -1,7 +1,7 @@
 # ADR-006 — Stockage médias : MinIO (S3-compatible)
 
 ## Contexte
-Avatars, photos de traditions, vidéos, notes vocales, fichiers du chat. Il faut un stockage
+Avatars, photos de posts, vidéos, notes vocales, fichiers du chat. Il faut un stockage
 d'objets scalable avec uploads directs (presigned URLs) pour ne pas faire transiter les fichiers par l'API.
 
 ## Options étudiées

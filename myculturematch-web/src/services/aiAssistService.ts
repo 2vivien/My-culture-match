@@ -15,7 +15,7 @@ Ton rôle : aider deux personnes de cultures différentes à démarrer ou relanc
 Règles :
 - Tu proposes des MESSAGES PRÊTS À ENVOYER, à la première personne, courts (1-2 phrases max).
 - Ton chaleureux, curieux, jamais niais. En français sauf si l'autre personne parle anglais.
-- Ancré dans la culture de l'interlocuteur (traditions, cuisine, musique, fêtes, langue) et des points communs.
+- Ancré dans la culture de l'interlocuteur (posts, cuisine, musique, fêtes, langue) et des points communs.
 - Aucune liste, aucun titre, aucun guillemets : uniquement le texte du message.`;
 
 function getApiKey(): string | undefined {
@@ -30,13 +30,13 @@ const LOCAL_HOOKS: Record<string, string[]> = {
   jp: ['Hey ! Un festival Matsuri que tu rêves de montrer à quelqu\'un d\'ici ?', 'Salut ! Okonomiyaki maison ou ramen de quartier, ton équipe ? 🍜'],
   bj: ['Salut ! Tu connais une légende que ta grand-mère racontait et que peu de gens connaissent ?', 'Coucou ! Pâte rouge ou igname pilée, le vrai débat 😄'],
   ci: ['Hey ! Maquis d\'Abidjan : attiéké-poisson ou aloco, tu tranches comment ?', 'Salut ! C\'est quoi le coupé-décalé qui te fait bouger à chaque fois ?'],
-  '': ['Salut ! C\'est quoi une tradition de chez toi que tu aimerais faire découvrir ?', 'Coucou ! Si on s\'échangeait une recette et une chanson de nos cultures pour commencer ? 😊'],
+  '': ['Salut ! C\'est quoi une post de chez toi que tu aimerais faire découvrir ?', 'Coucou ! Si on s\'échangeait une recette et une chanson de nos cultures pour commencer ? 😊'],
 };
 
 function localSuggestions(partner: Conversation): string[] {
   const code = (partner.country || '').toLowerCase().slice(0, 2);
   const hooks = LOCAL_HOOKS[code] ?? LOCAL_HOOKS[''];
-  return [...hooks, `Et toi, ${partner.name.split(' ')[0]}, c'est quoi ton plus beau souvenir de fête traditionnelle ?`];
+  return [...hooks, `Et toi, ${partner.name.split(' ')[0]}, c'est quoi ton plus beau souvenir de fête partagée en post ?`];
 }
 
 function parseSuggestions(raw: string): string[] {

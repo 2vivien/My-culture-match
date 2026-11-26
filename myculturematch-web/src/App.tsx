@@ -6,12 +6,12 @@ import { Sidebar } from './components/layout/Sidebar';
 import { Header } from './components/layout/Header';
 import { MainFeedColumn } from './components/feed/MainFeedColumn';
 import { RightPanel } from './components/RightPanel';
-import { TotemProfile } from './components/totem/TotemProfile';
+import { ProfilePage } from './components/profile/ProfilePage';
 import { ChatPopup } from './components/chat/ChatPopup';
 import { ExploreColumn } from './components/explore/ExploreColumn';
 import { TribuDetailView } from './components/explore/TribuDetailView';
 import { TribuSettingsView } from './components/explore/TribuSettingsView';
-import { CreateTraditionView } from './components/feed/CreateTraditionView';
+import { CreatePostView } from './components/feed/CreatePostView';
 import { PostDetailPage } from './components/feed/PostDetailPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { LoveColumn } from './components/explore/LoveColumn';
@@ -32,7 +32,7 @@ export default function App() {
 
   useEffect(() => {
     authService.restoreSession();
-    // Routeur par hash : deep-links (#/totem/:id, #/tribu/:id, ...) + back/forward navigateur.
+    // Routeur par hash : deep-links (#/profil/:id, #/tribu/:id, ...) + back/forward navigateur.
     // Les stores sont abonnés au routeur : l'URL se met à jour à chaque navigation.
     startRouter();
   }, []);
@@ -92,8 +92,8 @@ export default function App() {
                   <MainFeedColumn />
                 ) : activeTab === 'Love' ? (
                   <LoveColumn />
-                ) : activeTab === 'Totem' ? (
-                  <TotemProfile />
+                ) : activeTab === 'Profil' ? (
+                  <ProfilePage />
                 ) : activeTab === 'Explore' ? (
                   <ExploreColumn />
                 ) : activeTab === 'Tribu' ? (
@@ -101,7 +101,7 @@ export default function App() {
                 ) : activeTab === 'TribuSettings' ? (
                   <TribuSettingsView />
                 ) : activeTab === 'Create' ? (
-                  <CreateTraditionView />
+                  <CreatePostView />
                 ) : activeTab === 'PostDetail' ? (
                   <PostDetailPage />
                 ) : activeTab === 'Settings' ? (

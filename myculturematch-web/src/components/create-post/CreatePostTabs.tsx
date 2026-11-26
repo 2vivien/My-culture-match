@@ -1,12 +1,12 @@
 import React from 'react';
 import { Type, Image as ImageIcon, Link as LinkIcon } from 'lucide-react';
 
-interface CreateTraditionTabsProps {
+interface CreatePostTabsProps {
   activeTab: 'Text' | 'Images' | 'Link';
   setActiveTab: (tab: 'Text' | 'Images' | 'Link') => void;
 }
 
-export const CreateTraditionTabs: React.FC<CreateTraditionTabsProps> = ({
+export const CreatePostTabs: React.FC<CreatePostTabsProps> = ({
   activeTab,
   setActiveTab,
 }) => {

@@ -51,7 +51,7 @@ export const PostActions = ({ postId, commentsCount, likes, liked, authorId, onL
 
   const isMyPost = authorId !== undefined && authorId === currentUser?.id;
 
-  // Communautés rejointes : même source que le créateur de tradition (tribes/mine).
+  // Communautés rejointes : même source que le créateur de post (tribes/mine).
   const { data: myTribes = [] } = useQuery<MyTribe[]>({
     queryKey: ['my-tribes'],
     queryFn: async () => {

@@ -82,7 +82,7 @@ export const CreateTribeDetailsStep: React.FC<CreateTribeDetailsStepProps> = ({
               </div>
             </div>
             <p className="text-xs text-app-gray dark:text-zinc-400 leading-relaxed line-clamp-3">
-              {tribeDescription || 'Your tribu description will appear here. Talk about heritage traditions, arts, writing, or festivals.'}
+              {tribeDescription || 'Your tribu description will appear here. Talk about heritage posts, arts, writing, or festivals.'}
             </p>
           </div>
           <div className="text-[9px] font-bold text-[#E27D60] uppercase tracking-wider">

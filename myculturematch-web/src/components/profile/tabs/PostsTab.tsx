@@ -20,9 +20,9 @@ export const PostsTab: React.FC<PostsTabProps> = ({ user, posts }) => {
         transition={{ duration: 0.3 }}
         className="flex flex-col items-center justify-center py-16 text-center max-w-2xl mx-auto w-full"
       >
-        <p className="text-sm font-bold text-app-black dark:text-zinc-200">Aucune tradition publiée pour le moment</p>
+        <p className="text-sm font-bold text-app-black dark:text-zinc-200">Aucune post publiée pour le moment</p>
         <p className="text-xs text-app-gray mt-1.5 max-w-sm">
-          Les traditions que vous partagerez apparaîtront ici. Lancez-vous avec le bouton « Create » !
+          Les posts que vous partagerez apparaîtront ici. Lancez-vous avec le bouton « Create » !
         </p>
       </motion.div>
     );

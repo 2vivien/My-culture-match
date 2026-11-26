@@ -18,7 +18,7 @@ export const TribuAbout: React.FC<TribuAboutProps> = ({ tribeInfo }) => {
       </h3>
       <p className="text-xs text-app-gray dark:text-zinc-400 leading-relaxed mt-2.5">
         {tribeInfo?.description ||
-          `Discussion hub de la tribu ${displayName} : découvrez les traditions, langues et célébrations transmises de génération en génération.`}
+          `Discussion hub de la tribu ${displayName} : découvrez les posts, langues et célébrations transmises de génération en génération.`}
       </p>
 
       {/* Created info */}

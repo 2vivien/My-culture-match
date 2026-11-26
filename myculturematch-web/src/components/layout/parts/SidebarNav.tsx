@@ -4,7 +4,7 @@ import { useUIStore } from '@/src/stores/useUIStore';
 import { useAppStore } from '@/src/stores/useAppStore';
 import { useExplore } from '@/src/hooks/useExplore';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { traditionService } from '@/src/services/traditionService';
+import { postService } from '@/src/services/postService';
 import { cn } from '@/src/lib/utils';
 import { motion } from 'framer-motion';
 import { SandboxIcon } from '@/src/components/ui/SandboxIcon';
@@ -17,8 +17,8 @@ const CloudHeartIcon = (props: any) => (
   </svg>
 );
 
-/** Icône Totem (idem sidebar) — exportée pour le menu profil. */
-export const GrimTotemIcon = (props: any) => (
+/** Icône Profil (idem sidebar) — exportée pour le menu profil. */
+export const ProfileIcon = (props: any) => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
     <path d="M12 2v20" />
     <path d="M8 6h8" />
@@ -47,7 +47,7 @@ interface OwnedTribe {
 }
 
 const iconMap: Record<string, any> = {
-  Home, Popular: LandPlot, Love: CloudHeartIcon, New: LayersPlusIcon, Explore: FerrisWheel, Tribu: Landmark, Totem: GrimTotemIcon, Sandbox: SandboxIcon,
+  Home, Popular: LandPlot, Love: CloudHeartIcon, New: LayersPlusIcon, Explore: FerrisWheel, Tribu: Landmark, Profil: ProfileIcon, Sandbox: SandboxIcon,
   Friends: IconFriends, Admin: ShieldCheck,
 };
 
@@ -59,7 +59,7 @@ const navItems = [
   { name: 'Friends', icon: 'Friends' },
   { name: 'Love', icon: 'Love' },
   { name: 'Tribu', icon: 'Tribu' },
-  { name: 'Totem', icon: 'Totem' },
+  { name: 'Profil', icon: 'Profil' },
 ];
 
 const adminItem = { name: 'Admin', icon: 'Admin' };
@@ -68,7 +68,7 @@ const isAdminRole = (role?: string) => role === 'admin' || role === 'superadmin'
 
 export const SidebarNav = () => {
   const { activeTab, setActiveTab, isSidebarOpen, toggleSidebar, isSidebarCollapsed, openChat } = useUIStore();
-  const { setSelectedTotemUserId, setFeedSort, currentUser, setSelectedTribeId } = useAppStore();
+  const { setSelectedProfileUserId, setFeedSort, currentUser, setSelectedTribeId } = useAppStore();
   const { tribes } = useExplore();
   const queryClient = useQueryClient();
   const isCollapsed = isSidebarCollapsed;
@@ -80,7 +80,7 @@ export const SidebarNav = () => {
   // (useCreateTribe invalide ['my-tribes'] et ['tribe-options'] à la soumission).
   const { data: myTribesData = [] } = useQuery<OwnedTribe[]>({
     queryKey: ['my-tribes'],
-    queryFn: traditionService.getMyTribes,
+    queryFn: postService.getMyTribes,
     staleTime: 1000 * 30,
   });
   const myTribes = myTribesData.slice(0, 4);
@@ -102,10 +102,10 @@ export const SidebarNav = () => {
       setFeedSort('Best');
     }
 
-    if (name === 'Totem') {
-      // "My Totem Profile" : l'icône Totem de la sidebar ouvre toujours
+    if (name === 'Profil') {
+      // "My Profile" : l'icône Profile de la sidebar ouvre toujours
       // SON propre profil (jamais le profil d'un autre utilisateur).
-      setSelectedTotemUserId('user-current');
+      setSelectedProfileUserId('user-current');
     }
     if (window.innerWidth < 768 && isSidebarOpen) {
       toggleSidebar();

@@ -24,7 +24,7 @@ export const PhotosTab: React.FC<PhotosTabProps> = ({ posts = [] }) => {
         <ImageOff className="w-8 h-8 text-app-gray" />
         <p className="text-sm font-bold text-app-black dark:text-zinc-200">Aucune photo pour le moment</p>
         <p className="text-xs text-app-gray max-w-sm">
-          Les photos que vous partagez dans vos traditions apparaîtront ici.
+          Les photos que vous partagez dans vos posts apparaîtront ici.
         </p>
       </motion.div>
     );

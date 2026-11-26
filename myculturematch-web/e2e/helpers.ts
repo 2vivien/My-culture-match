@@ -62,7 +62,7 @@ export async function createRemoteUserAndPost(email: string, body: string): Prom
   const res = await fetch(`${API_URL}/api/posts`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ type: 'Text', title: 'Tradition partagée e2e', body }),
+    body: JSON.stringify({ type: 'Text', title: 'Post partagée e2e', body }),
   });
   if (!res.ok) throw new Error(`create post ${res.status}: ${await res.text()}`);
   const post = (await res.json()) as { id: string };

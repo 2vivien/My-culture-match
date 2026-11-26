@@ -3,8 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Settings, LogOut, ChevronRight, Moon, Sun, ShieldAlert } from 'lucide-react';
 import { useAppStore } from '@/src/stores/useAppStore';
 import { useUIStore } from '@/src/stores/useUIStore';
-import { TotemAvatar } from '@/src/components/ui/TotemAvatar';
-import { GrimTotemIcon } from './SidebarNav';
+import { ProfileAvatar } from '@/src/components/ui/ProfileAvatar';
+import { ProfileIcon } from './SidebarNav';
 
 interface UserProfileDropdownProps {
   onClose?: () => void;
@@ -21,7 +21,7 @@ export const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ onClos
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   const handleProfileClick = () => {
-    setActiveTab('Totem');
+    setActiveTab('Profil');
     if (onClose) onClose();
   };
 
@@ -66,7 +66,7 @@ export const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ onClos
           >
             {/* User Details */}
             <div className="flex items-center gap-3.5 border-b border-app-border dark:border-zinc-800 pb-4 select-none">
-              <TotemAvatar
+              <ProfileAvatar
                 src={currentUser.avatar}
                 alt={currentUser.name}
                 countryFlag={currentUser.country}
@@ -92,10 +92,10 @@ export const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ onClos
               >
                 <div className="flex items-center gap-3.5">
                   <div className={iconTile}>
-                    <GrimTotemIcon className="w-6 h-6" />
+                    <ProfileIcon className="w-6 h-6" />
                   </div>
                   <span className="text-[15px] font-bold text-app-black dark:text-zinc-100">
-                    My Totem Profile
+                    My Profile
                   </span>
                 </div>
                 <ChevronRight className="w-5 h-5 text-app-gray group-hover:translate-x-0.5 transition-transform" />
@@ -162,7 +162,7 @@ export const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ onClos
               Log out of MyCultureMatch?
             </h4>
             <p className="text-sm text-app-gray dark:text-zinc-400 mt-2 px-3">
-              You can log back in anytime to see your saved traditions and messages.
+              You can log back in anytime to see your saved posts and messages.
             </p>
             <div className="flex gap-3 mt-6">
               <button

@@ -30,8 +30,8 @@ export const SavesTab: React.FC = () => {
     >
       <div className="bg-white dark:bg-[#161b22] rounded-2xl p-6 border border-gray-100 dark:border-zinc-800 shadow-sm flex flex-col gap-2 mb-2 text-center">
         <Bookmark className="w-8 h-8 text-[#E27D60] mx-auto mb-2" />
-        <h3 className="font-black text-[#2e3552] dark:text-white text-lg">Your Saved Traditions</h3>
-        <p className="text-sm text-[#9aa3b8]">Only you can see what you've saved. Rediscover these traditions anytime.</p>
+        <h3 className="font-black text-[#2e3552] dark:text-white text-lg">Your Saved Posts</h3>
+        <p className="text-sm text-[#9aa3b8]">Only you can see what you've saved. Rediscover these posts anytime.</p>
       </div>
 
       {isLoading && (
@@ -42,7 +42,7 @@ export const SavesTab: React.FC = () => {
 
       {!isLoading && savedPosts.length === 0 && (
         <div className="text-center py-8 text-sm text-app-gray">
-          Aucune tradition enregistrée. Utilisez « Save this Tradition » sur un post pour le retrouver ici.
+          Aucune post enregistrée. Utilisez « Save this Post » sur un post pour le retrouver ici.
         </div>
       )}
 

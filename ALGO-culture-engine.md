@@ -80,8 +80,8 @@ Le Culture Engine modélise **5 dimensions** pour **chaque utilisateur et chaque
 |---|---|
 | **Hofstede** (6) | Distance au pouvoir, Individualisme/Collectivisme, Masculinité/Féminité, Évitement de l'incertitude, Orientation long terme, Indulgence/Retenue |
 | **Hall** (2) | Contexte haut (implicite) / bas (explicite) ; temps polychrone/monochrone |
-| **Schwartz** (10) | Autonomie, Stimulation, Hédonisme, Réussite, Pouvoir, Sécurité, Conformité, Tradition, Bienveillance, Universalisme |
-| **Inglehart** (2 axes) | Survie vs Expression de soi ; Traditionnel vs Séculier-rationnel |
+| **Schwartz** (10) | Autonomie, Stimulation, Hédonisme, Réussite, Pouvoir, Sécurité, Conformité, Post, Bienveillance, Universalisme |
+| **Inglehart** (2 axes) | Survie vs Expression de soi ; Post vs Séculier-rationnel |
 | **Trompenaars** (7) | Universalisme/Particularisme, individualisme/communautarisme, etc. |
 | **Racines de l'app** | `roots { country, region, ethnicity, village }`, tribus, langues, diaspora |
 
@@ -182,7 +182,7 @@ score(post, user) =
 | **EngagementPred** | TikTok | Modèle ML (gradient boosting / factorisation) entraîné sur : temps de vue, like, comment, share, follow, durée de session. Ré-entraîné en batch (BullMQ, quotidien). |
 | **SocialAffinity** | Facebook | Chemin de graphe : partage de tribus, connexions communes, "amis des amis", mêmes villages/régions, mêmes valeurs Schwartz. `social_score = Σ w(distance)`. |
 | **InterestMatch** | Instagram | Overlap entre tags/catégories du post et le profil d'intérêts (vecteur d'embedding). Aussi : similarité visuelle (thumbnails). |
-| **CultureResonance** | Culture Engine | Alignement des vecteurs culturels (§3) : Hofstede, Hall, Schwartz, racines, langues. Une tradition maorie "résonne" avec quelqu'un de racines polynésiennes OU de valeurs de tradition. |
+| **CultureResonance** | Culture Engine | Alignement des vecteurs culturels (§3) : Hofstede, Hall, Schwartz, racines, langues. Une post maorie "résonne" avec quelqu'un de racines polynésiennes OU de valeurs de post. |
 | **Freshness** | Tous | `1 / (1 + α·age)` avec α adapté (post 1er jour boosté). |
 | **DiversityBoost** | Culture Engine | Bonus aux contenus hors du profil habituel pour garantir L01 (min 30 % de diversité). |
 | **QualityEthics** | Stoïcisme + authenticité | Vertus du contenu (courage, justice, tempérance, sagesse), originalité, absence de clickbait. |
@@ -222,7 +222,7 @@ compat(A, B) =
 + 0.15 · EmotionalMatch     # Plutchik : façon de vivre/exprimer les émotions
 + 0.10 · CulturalRoots      # racines, tribus, langues, diaspora (même monde culturel ou complémentaire)
 + 0.10 · Proximity          # distance, fuseaux, mobilité, "longue distance"
-+ 0.10 · InterestOverlap    # traditions, activités, thématiques
++ 0.10 · InterestOverlap    # posts, activités, thématiques
 + 0.05 · Chemistry          # APPRIS par feedback (swipes, messages, durée de conversation)
 ```
 
@@ -277,7 +277,7 @@ Demande        demande de connexion envoyée/reçue
   ↓
 Compagnon      connexion établie
   ↓
-Lien profond   interactions régulières, valeurs partagées → "Totem" (ami proche)
+Lien profond   interactions régulières, valeurs partagées → "Profil" (ami proche)
   ↓
 Réactivation   l'algo propose de raviver les liens dormants (L08 : réciprocité)
 ```
@@ -361,14 +361,14 @@ Health = {
 P-ANT-001 Distance au pouvoir : préférences de hiérarchie vs égalité
 P-ANT-002 Individualisme / collectivisme : soi vs groupe
 P-ANT-003 Évitement de l'incertitude : besoin de prévisibilité
-P-ANT-004 Orientation long terme : tradition vs pragmatisme
+P-ANT-004 Orientation long terme : post vs pragmatisme
 P-ANT-005 Indulgence / retenue : hédonisme vs discipline
 P-ANT-006 Contexte haut (implicite) vs bas (explicite)
 P-ANT-007 Temps monochrone vs polychrone
 P-ANT-008 Universel vs particulier (règles vs relations)
 P-ANT-009 Réussite (statut) vs qualité de vie
 P-ANT-010 Survie vs expression de soi (Inglehart)
-P-ANT-011 Tradition vs séculier-rationnel
+P-ANT-011 Post vs séculier-rationnel
 P-ANT-012 Proximité des racines (pays/région/ethnie/village)
 P-ANT-013 Appartenance tribale (tribus partagées)
 P-ANT-014 Diaspora : lien avec la communauté d'origine
@@ -557,7 +557,7 @@ P-ALG-015 Coût : cache & batch (limiter les calculs par requête)
 | Compagnons | Cycle de vie relationnel (§7.1) |
 | Notifications | Déclenchées par l'algo (match, follow, invite) |
 | Recherche | `Meilisearch` boosté par `CultureResonance` |
-| Totem (profil) | `matchScore`, stats, "génome culturel" affiché |
+| Profile (profil) | `matchScore`, stats, "génome culturel" affiché |
 
 ### 10.4 Coûts & performance
 
@@ -594,7 +594,7 @@ V4 — La conscience (évolution continue)
   - Auto-alertes de santé (L11) → Grafana + actions automatiques
   - Audits RGPD / explicabilité (droit à l'explication)
   - Extension du registre à 200+ principes sans refonte
-  - Personnalisation fine du "génome culturel" (Totem)
+  - Personnalisation fine du "génome culturel" (Profile)
 ```
 
 > **Règle d'or :** l'algo n'est **jamais** une boîte noire. Chaque décision majeure est **explicable** (liste des principes gagnants), **réversible**, et **conforme aux 12 lois**. C'est ça, sa "conscience".

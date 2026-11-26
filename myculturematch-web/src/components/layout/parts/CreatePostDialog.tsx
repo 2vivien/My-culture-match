@@ -4,11 +4,11 @@ import { X, Sparkles, Send, Globe, Award, Shield } from 'lucide-react';
 import { useFeed } from '@/src/hooks/useFeed';
 import { useAppStore } from '@/src/stores/useAppStore';
 
-interface CreateTraditionDialogProps {
+interface CreatePostDialogProps {
   onClose: () => void;
 }
 
-export const CreateTraditionDialog: React.FC<CreateTraditionDialogProps> = ({ onClose }) => {
+export const CreatePostDialog: React.FC<CreatePostDialogProps> = ({ onClose }) => {
   const { createPost, isCreating } = useFeed();
   const { currentUser } = useAppStore();
 
@@ -30,9 +30,9 @@ export const CreateTraditionDialog: React.FC<CreateTraditionDialogProps> = ({ on
         avatar: currentUser.avatar,
         location: currentUser.location,
       },
-      text: `🏺 Shared a new Tradition: *${title.trim()}* (${culture.trim() || 'Global'})\n\n${description.trim()}`,
+      text: `🏺 Shared a new Post: *${title.trim()}* (${culture.trim() || 'Global'})\n\n${description.trim()}`,
       date: 'Just now',
-      tags: [culture.toLowerCase().replace(/\s+/g, ''), 'tradition', 'culture'],
+      tags: [culture.toLowerCase().replace(/\s+/g, ''), 'post', 'culture'],
     } as any);
 
     onClose();
@@ -54,7 +54,7 @@ export const CreateTraditionDialog: React.FC<CreateTraditionDialogProps> = ({ on
             </div>
             <div>
               <h3 className="font-extrabold text-base text-app-black dark:text-zinc-100">
-                Transmit a New Tradition
+                Transmit a New Post
               </h3>
               <p className="text-[10px] text-app-gray dark:text-zinc-500 font-bold uppercase tracking-wider">
                 Publish ancestral rituals & global secrets
@@ -73,7 +73,7 @@ export const CreateTraditionDialog: React.FC<CreateTraditionDialogProps> = ({ on
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div>
             <label className="block text-[10px] font-black uppercase tracking-wider text-app-gray dark:text-zinc-500 mb-1.5">
-              Tradition Emblem / Icon
+              Post Emblem / Icon
             </label>
             <div className="flex gap-2">
               {symbols.map((sym) => (
@@ -95,7 +95,7 @@ export const CreateTraditionDialog: React.FC<CreateTraditionDialogProps> = ({ on
 
           <div>
             <label className="block text-[10px] font-black uppercase tracking-wider text-app-gray dark:text-zinc-500 mb-1.5">
-              Tradition Nom / Ceremony Name
+              Post Nom / Ceremony Name
             </label>
             <div className="relative">
               <span className="absolute left-3.5 top-3.5 text-lg select-none">{symbol}</span>
@@ -146,7 +146,7 @@ export const CreateTraditionDialog: React.FC<CreateTraditionDialogProps> = ({ on
               <Award className="w-4 h-4" />
             </div>
             <p className="text-[10px] text-app-gray dark:text-zinc-400 leading-normal font-medium">
-              Transmitting a tradition increases your <span className="font-bold text-app-black dark:text-zinc-200">Cultural Synergy Level</span> in the global matchmaking index.
+              Transmitting a post increases your <span className="font-bold text-app-black dark:text-zinc-200">Cultural Synergy Level</span> in the global matchmaking index.
             </p>
           </div>
 

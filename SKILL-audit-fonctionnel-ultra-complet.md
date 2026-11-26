@@ -9,15 +9,15 @@
 ## 1. VUE D'ENSEMBLE
 
 ### 1.1 Nature du produit
-Réseau social **interculturel** : connecter les personnes à travers leurs **traditions, tribus, cultures et affinités** (matching culturel). Concepts fondateurs :
+Réseau social **interculturel** : connecter les personnes à travers leurs **posts, tribus, cultures et affinités** (matching culturel). Concepts fondateurs :
 
 | Concept | Définition |
 |---|---|
-| **Tradition** | Contenu culturel publié (texte, image, lien) rattaché à une tribu et à des tags |
+| **Post** | Contenu culturel publié (texte, image, lien) rattaché à une tribu et à des tags |
 | **Tribu** | Communauté culturelle (type subreddit) : posts, règles, modérateurs, membres |
 | **Connexion** | Relations : suggestions, intérêts mutuels, demandes, compagnons |
 | **Love** | Matching amoureux avec score de compatibilité, swipe-like, célébration |
-| **Totem** | Profil personnel détaillé : niveau, statistiques, onglets de contenu |
+| **Profile** | Profil personnel détaillé : niveau, statistiques, onglets de contenu |
 | **Story** | Stories éphémères type réseaux sociaux |
 | **Chat / Messages** | Messagerie : conversations, médias partagés, notes vocales, fichiers, réponses auto |
 | **Notification** | Commentaires, likes, invitations, demandes de connexion |
@@ -49,12 +49,12 @@ Pas de routeur : l'application bascule sur l'état `activeTab` (Zustand) et sur 
 sinon            → App shell (Sidebar + Header + colonne selon activeTab)
 ```
 
-`activeTab` gère : `Home | Popular | New | Explore | Connexion | Love | Tribu | Totem | Create | Settings | TribuSettings` + `Messages` (ouvre le ChatPopup flottant). Le `RightPanel` (suggestions/annonces) n'apparaît que sur les onglets Feed.
+`activeTab` gère : `Home | Popular | New | Explore | Connexion | Love | Tribu | Profile | Create | Settings | TribuSettings` + `Messages` (ouvre le ChatPopup flottant). Le `RightPanel` (suggestions/annonces) n'apparaît que sur les onglets Feed.
 
 ### 1.5 Stores (état global)
 | Store | Rôle | Données clés |
 |---|---|---|
-| `useAppStore` | Session, profil courant, préférences | `theme`, `locale`, `feedSort`, `feedCulture`, `currentUser`, `selectedTotemUserId`, `profileActiveTab`, `isAuthenticated`, `isOnboarded`, `email`, `profileDetails` + actions (`loginUser`, `logout`, `joinTribe`, `toggleTheme`…) — persiste en localStorage |
+| `useAppStore` | Session, profil courant, préférences | `theme`, `locale`, `feedSort`, `feedCulture`, `currentUser`, `selectedProfileUserId`, `profileActiveTab`, `isAuthenticated`, `isOnboarded`, `email`, `profileDetails` + actions (`loginUser`, `logout`, `joinTribe`, `toggleTheme`…) — persiste en localStorage |
 | `useUIStore` | UI navigation | `activeTab`, `sidebarOpen/Collapsed`, `searchQuery`, `notificationsCount` (9 par défaut), `showCreateTribeModal`, `isChatOpen` + actions |
 | `useConnectionsStore` | État des connexions | `activeSubTab`, listes `suggestions`, `interested`, `demandes`, `compagnons` + `sendRequest`, `acceptRequest`, `declineRequest` |
 
@@ -72,9 +72,9 @@ sinon            → App shell (Sidebar + Header + colonne selon activeTab)
    - Connexion        → Suggestions / Interested / Demandes / Compagnons
    - Love             → Cartes de match + détails + célébration
    - Tribu            → Détail d'une tribu (posts, règles, modérateurs, à propos)
-   - Totem            → Profil complet (Posts/Photos/Videos/Traditions/About/Saves)
+   - Profile            → Profil complet (Posts/Photos/Videos/Posts/About/Saves)
    - Messages         → Panneau messages + ChatPopup flottant (chat)
-   - Create (+)       → Créer une tradition (texte / images / lien)
+   - Create (+)       → Créer une post (texte / images / lien)
    - Settings         → Paramètres du compte
 5. Création de tribu : via Explore → bouton "Create Tribe" → modal
 ```
@@ -120,7 +120,7 @@ sinon            → App shell (Sidebar + Header + colonne selon activeTab)
 
 **Référentiels embarqués** (`services/onboarding.service.ts`) :
 - `DOMAINS` (domaine pro) : tech, business, creative, medical, other.
-- `VALUES` (12) : foi, famille, ambition, tradition, solidarité, communication, paix, indépendance, loyauté, liberté, éducation, santé.
+- `VALUES` (12) : foi, famille, ambition, post, solidarité, communication, paix, indépendance, loyauté, liberté, éducation, santé.
 - `LANGUAGES` : `intl` (5), `africa` (14), `diaspora` (2).
 - `CRITERIA` (13 critères de compatibilité) : Communication, Respect mutuel, Foi partagée, Ambition commune, Humour, Stabilité financière, Tendresse, Honnêteté, Passion, Autonomie, Projet familial, Culture, Proximité.
 
@@ -154,7 +154,7 @@ sinon            → App shell (Sidebar + Header + colonne selon activeTab)
 | Connexion | Connexion | — |
 | Love | Love | — |
 | Tribu | Tribu | clic neutre (menu dédié ailleurs) |
-| Totem | Totem | `setSelectedTotemUserId('user-current')` |
+| Profile | Profile | `setSelectedProfileUserId('user-current')` |
 | Messages | — | **ouvre le ChatPopup** (`openChat()`) — badge `+09` |
 
 **Parties** : `SidebarLogo`, `SidebarMiniNav` (mode replié), `SidebarNav`, `SidebarFooter` (avatar/nom + lien réglages).
@@ -166,8 +166,8 @@ sinon            → App shell (Sidebar + Header + colonne selon activeTab)
 |---|---|
 | `SearchBar` | Recherche globale → état `searchQuery` (useUIStore) — **non branchée à l'API actuellement** |
 | `NotificationDropdown` | Liste des notifications + "mark all read" + "view all" (voir §9) |
-| `UserProfileDropdown` | Menu profil : accès Totem, Settings, logout |
-| `CreateTraditionDialog` | Bouton "+" → ouvre `CreateTraditionView` |
+| `UserProfileDropdown` | Menu profil : accès Profile, Settings, logout |
+| `CreatePostDialog` | Bouton "+" → ouvre `CreatePostView` |
 | Toggle thème | Clair/sombre (`toggleTheme`, persiste localStorage) |
 | Sélecteur locale | `setLocale` (store app) |
 
@@ -211,8 +211,8 @@ sinon            → App shell (Sidebar + Header + colonne selon activeTab)
 - `POST /api/posts/:id/like` (+ unlike), `POST /api/posts/:id/comments`, `POST /api/posts/:id/share`, `POST /api/posts/:id/save` / `DELETE /api/posts/:id/save`.
 - Notifications générées par ces actions (comment, like → §9).
 
-### 5.4 CreateTraditionView (`components/feed/CreateTraditionView.tsx` + `components/create-tradition/`)
-**Rôle** : création d'une **tradition** (le contenu culturel principal de l'app). 3 onglets (type `TraditionSubmission`, `types/createTradition.ts`) :
+### 5.4 CreatePostView (`components/feed/CreatePostView.tsx` + `components/create-post/`)
+**Rôle** : création d'une **post** (le contenu culturel principal de l'app). 3 onglets (type `PostSubmission`, `types/createPost.ts`) :
 
 | Onglet | `type` | Champs |
 |---|---|---|
@@ -220,13 +220,13 @@ sinon            → App shell (Sidebar + Header + colonne selon activeTab)
 | Images | `'Images'` | `title`, `mediaUrl?`, `tribeId?` |
 | Link | `'Link'` | `title`, `linkUrl?`, `tribeId?` |
 
-Composants : `CreateTraditionHeader`, `CreateTraditionTabs`, `CreateTraditionTextForm`, `CreateTraditionMediaForm`, `CreateTraditionLinkForm`, `TribuSelector` (liste `TribeOption { id, name, avatar }`).
+Composants : `CreatePostHeader`, `CreatePostTabs`, `CreatePostTextForm`, `CreatePostMediaForm`, `CreatePostLinkForm`, `TribuSelector` (liste `TribeOption { id, name, avatar }`).
 
 **⚠️ Backend à prévoir** :
-- `POST /api/traditions` (body `TraditionSubmission`).
+- `POST /api/posts` (body `PostSubmission`).
 - `GET /api/tribes` (tribus du sélecteur).
 - Upload média : `POST /api/uploads` (image) → URL.
-- La soumission alimente le feed (la tradition devient un `Post` avec `tribe` + `tags`).
+- La soumission alimente le feed (la post devient un `Post` avec `tribe` + `tags`).
 
 ---
 
@@ -375,24 +375,24 @@ Actions : **Okay** (accepter) / **Block** (bloquer) → `POST /api/requests/:id/
 
 ---
 
-## 10. TOTEM (PROFIL)
+## 10. PROFIL (PROFIL)
 
-### 10.1 TotemProfile (`components/totem/TotemProfile.tsx` + `hooks/useTotemProfile.ts`)
-**Rôle** : profil complet d'un utilisateur (le sien ou celui d'un autre via `selectedTotemUserId`).
+### 10.1 ProfilePage (`components/profile/ProfilePage.tsx` + `hooks/useProfile.ts`)
+**Rôle** : profil complet d'un utilisateur (le sien ou celui d'un autre via `selectedProfileUserId`).
 
 ### 10.2 ProfileHeader
 - Avatar (avec `glow` : orange, turquoise, violet, red, blue…), nom, `@username`, localisation, locale/langues, **niveau** (level).
-- Statistiques : `traditionsCount`, `culturesCount`, `tribesCount`, `interestedCount`, `companionsCount`.
+- Statistiques : `postsCount`, `culturesCount`, `tribesCount`, `interestedCount`, `companionsCount`.
 - Boutons : **Follow**, **Message**, **Match** (selon contexte).
-- `useAppStore.currentUser` : `{ id, name, avatar, locale, level, glow, location, tribes[], traditionsCount, culturesCount, tribesCount, interestedCount, companionsCount }` (`types/user.ts`).
+- `useAppStore.currentUser` : `{ id, name, avatar, locale, level, glow, location, tribes[], postsCount, culturesCount, tribesCount, interestedCount, companionsCount }` (`types/user.ts`).
 
-### 10.3 ProfileTabs (`components/totem/tabs/`)
+### 10.3 ProfileTabs (`components/profile/tabs/`)
 | Onglet | Contenu |
 |---|---|
-| Posts | Posts/traditions publiés par l'utilisateur |
+| Posts | Posts publiés par l'utilisateur |
 | Photos | Galerie photos |
 | Videos | Vidéos |
-| Traditions | Traditions partagées (compteur) |
+| Posts | Posts partagées (compteur) |
 | About | Profil détaillé (`ProfileDetails` : occupation, valeurs, langues, critères, bio…) |
 | Saves | Contenus enregistrés (signets) |
 
@@ -404,7 +404,7 @@ Actions : **Okay** (accepter) / **Block** (bloquer) → `POST /api/requests/:id/
 **⚠️ Backend à prévoir** :
 - `GET /api/users/:id` — profil public (stats + tribus + contenu).
 - `GET /api/users/me` — profil privé courant (session).
-- `GET /api/users/:id/posts`, `photos`, `videos`, `traditions` (onglets).
+- `GET /api/users/:id/posts`, `photos`, `videos`, `posts` (onglets).
 - `GET /api/users/:id/saved` (signets).
 - `GET /api/users/:id/about` (ProfileDetails).
 - `POST /api/users/:id/follow` / `DELETE` (suivre) ; `POST /api/users/:id/match`.
@@ -429,14 +429,14 @@ Actions : **Okay** (accepter) / **Block** (bloquer) → `POST /api/requests/:id/
 | `ConversationListItem` | Une conversation (avatar, nom, dernier message, heure, badge non-lus) |
 | `ActiveChatColumn` | Fil de discussion active |
 | `ChatMessageBubble` | Message entrant/sortant (texte, note vocale `audioDur`, fichier `file {name,size}`) |
-| `CulturalProfileColumn` | Profil culturel de l'interlocuteur (bio, pays, langues, traditions, tribus, médias partagés) |
+| `CulturalProfileColumn` | Profil culturel de l'interlocuteur (bio, pays, langues, posts, tribus, médias partagés) |
 
 **Données `mocks/chat.json`** :
 ```
-Conversation: { id, name, avatar, culture ("Traditional Shintoism × Cyber-Neon"),
+Conversation: { id, name, avatar, culture ("Posts shintoïstes × Cyber-Neon"),
                 lang ("Japanese (Native), English (Fluent)"), online, lastSeen?,
                 lastMsg, timeAgo, unreadCount, glow, level, bio, country ("Japan 🇯🇵"),
-                traditions[], tribes[], sharedMedia[] }
+                posts[], tribes[], sharedMedia[] }
 ChatMessage:  { id, senderId, senderName, text?, time, audioDur?, file? { name, size } }
 ```
 `chatService` :
@@ -476,8 +476,8 @@ type: 'comment' | 'like' | 'invite' | ...
 - `handleInviteAction(id, action)` → **`POST /api/notifications/:id/accept` | `/decline`**
 
 ### 12.2 Règles de génération des notifications (à implémenter backend)
-- **comment** : quelqu'un commente une de mes traditions.
-- **like** : quelqu'un aime ma tradition ou mon image dans une tribu.
+- **comment** : quelqu'un commente une de mes posts.
+- **like** : quelqu'un aime ma post ou mon image dans une tribu.
 - **invite** : invitation à collaborer (ex. matchmaking culturel).
 - **demande de connexion** reçue.
 - **match Love** réussi.
@@ -531,7 +531,7 @@ UserSettings: { email, gender, locationType,
 | Composant (`components/ui/`) | Rôle |
 |---|---|
 | `avatar.tsx`, `badge.tsx`, `button.tsx`, `input.tsx` | Primitives shadcn/ui |
-| `TotemAvatar.tsx` | Avatar avec halo `glow` + niveau |
+| `ProfileAvatar.tsx` | Avatar avec halo `glow` + niveau |
 | `SearchableSelect.tsx` (+ `Trigger`, `Dropdown`, `.types.ts`) | Selecteur recherche (pays/villes/langues…) |
 | `FiltersButton.tsx` / `FiltersModal.tsx` (+ `filters/`) | Modale de filtres du feed |
 | `SandboxIcon.tsx` | Icône custom |
@@ -571,10 +571,10 @@ Autres transverses :
 | POST | `/api/posts/:id/save` | signet |
 | DELETE | `/api/posts/:id/save` | retrait signet |
 
-### 15.3 Traditions & Upload
+### 15.3 Posts & Upload
 | Méthode | Endpoint | Notes |
 |---|---|---|
-| POST | `/api/traditions` | `TraditionSubmission` |
+| POST | `/api/posts` | `PostSubmission` |
 | GET | `/api/tribes` | sélecteur `TribeOption[]` |
 | POST | `/api/uploads` | upload image/média → URL |
 
@@ -650,7 +650,7 @@ User ──────────┬── Auth (email, google/apple ids, pass
                │            intention, diaspora)
                ├── ProfileDetails (occupation{domain,title}, values[], preference,
                │            familyQuiz, situation, criteria[], bio)
-               ├── Stats (traditionsCount, culturesCount, tribesCount,
+               ├── Stats (postsCount, culturesCount, tribesCount,
                │          interestedCount, companionsCount)
                ├── Settings (email, gender, locationType, googleConnected,
                │            appleConnected, twoFactor)
@@ -661,7 +661,7 @@ Tribe ──┬── meta (name, tag, topic, visitors, desc, avatar, glow, join
         ├── rules[] (number, title, desc)
         └── moderators[] (user, role)
 
-Post/Tradition ── author{id,name,avatar,location}, text, image?, mediaUrl?,
+Post/Post ── author{id,name,avatar,location}, text, image?, mediaUrl?,
                   linkUrl?, type (Text|Images|Link), tribe{id,name}, tags[],
                   likes, comments, views, saves, date, createdAt
 
@@ -669,7 +669,7 @@ Story ── user, img, createdAt (expiration 24h)
 
 Conversation ── participants[], name, avatar, culture, lang, online,
                 lastMsg, timeAgo, unreadCount, glow, level, bio, country,
-                traditions[], tribes[], sharedMedia[]
+                posts[], tribes[], sharedMedia[]
 Message ── conversationId, senderId, text?, audioDur?, file{name,size}, time, read
 
 Connection ── from, to, status (suggestion|interested|request|companion|blocked), createdAt
@@ -723,7 +723,7 @@ Comment / Like / Save / Share ── postId, userId, createdAt
 
 ## 19. CONCLUSION
 
-Ce document couvre **toutes les fonctionnalités visibles du site web** : de la connexion (`AuthPage`) jusqu'aux réglages (`SettingsPage`), en passant par l'onboarding, le feed (cartes de post, actions like/comment/share/save), les stories, l'exploration (tribus, connexions, images, vidéos, création de tribu), le matching amoureux (Love), la gestion des connexions (suggestions/intérêts/demandes/compagnons), le profil Totem, la messagerie (panneau + chat flottant avec médias), les notifications et les paramètres.
+Ce document couvre **toutes les fonctionnalités visibles du site web** : de la connexion (`AuthPage`) jusqu'aux réglages (`SettingsPage`), en passant par l'onboarding, le feed (cartes de post, actions like/comment/share/save), les stories, l'exploration (tribus, connexions, images, vidéos, création de tribu), le matching amoureux (Love), la gestion des connexions (suggestions/intérêts/demandes/compagnons), le profil, la messagerie (panneau + chat flottant avec médias), les notifications et les paramètres.
 
-Le **backend doit reproduire** : (1) les **13 fichiers de mock** comme contrat de réponse API, (2) les **chemins d'endpoints** déjà présents dans les services (`/api/feed`, `/api/posts/:id/like`, `/api/conversations/:id/messages`, `/api/notifications/read-all`, `/api/settings`, `/api/traditions`, `/api/tribes`, `/api/requests/:id/okay`, `/api/connections/*`, `/api/love/matches`, `/api/users/me`, `/api/onboarding`, `/api/stories`…), et (3) les **règles métier** transverses (§17). Les endpoints **suggérés** (recherche, auth, upload, unread-count, mise à jour profil) complètent le périmètre à valider avec le produit.
+Le **backend doit reproduire** : (1) les **13 fichiers de mock** comme contrat de réponse API, (2) les **chemins d'endpoints** déjà présents dans les services (`/api/feed`, `/api/posts/:id/like`, `/api/conversations/:id/messages`, `/api/notifications/read-all`, `/api/settings`, `/api/posts`, `/api/tribes`, `/api/requests/:id/okay`, `/api/connections/*`, `/api/love/matches`, `/api/users/me`, `/api/onboarding`, `/api/stories`…), et (3) les **règles métier** transverses (§17). Les endpoints **suggérés** (recherche, auth, upload, unread-count, mise à jour profil) complètent le périmètre à valider avec le produit.
 
