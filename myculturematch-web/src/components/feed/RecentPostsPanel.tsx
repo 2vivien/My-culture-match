@@ -90,7 +90,7 @@ export const RecentPostsPanel = () => {
                     {post.title || post.text}
                   </p>
                   <p className="text-[10px] text-zinc-500 mt-1">
-                    {post.likes} upvotes · {post.comments} comments
+                    {post.likes} flag · {post.comments} comments
                   </p>
                 </div>
                 {post.image && (
