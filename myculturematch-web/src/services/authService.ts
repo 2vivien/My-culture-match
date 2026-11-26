@@ -1,5 +1,5 @@
 import { api } from './api';
-import { getAuthToken, setAuthToken, clearAuthToken } from './auth.token';
+import { setAuthToken, clearAuthToken } from './auth.token';
 import { userService } from './userService';
 import { useAppStore } from '@/src/stores/useAppStore';
 
@@ -35,11 +35,10 @@ export interface SessionResponse {
 
 export const authService = {
   restoreSession(): boolean {
-    const token = getAuthToken();
-    if (!token) return false;
-
+    // Le cookie HttpOnly authentifie la requête : aucun token persistant requis.
     this.getSession()
       .then((session) => {
+        setAuthToken(session.token);
         const store = useAppStore.getState();
         store.loginUser({
           id: session.user.id,
@@ -68,6 +67,7 @@ export const authService = {
       })
       .catch(() => {
         clearAuthToken();
+        useAppStore.getState().setAuthenticated(false);
       });
 
     return true;
