@@ -449,6 +449,16 @@ export const loveMatches = pgTable(
   ],
 );
 
+/** Réponses au questionnaire Love (première utilisation) — une ligne par utilisateur. */
+export const loveProfiles = pgTable('love_profiles', {
+  userId: text('user_id')
+    .primaryKey()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  answers: jsonb('answers').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
 // ── Chat / Messagerie ──────────────────────────────────────
 export const conversations = pgTable('conversations', {
   id: text('id').primaryKey().$defaultFn(generateId),
