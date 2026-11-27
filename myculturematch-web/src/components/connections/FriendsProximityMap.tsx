@@ -4,6 +4,7 @@ import type { Map as MapLibreMap, Marker } from 'maplibre-gl';
 import supercluster from 'supercluster';
 import { Search, Crosshair, Users, LocateFixed, X } from 'lucide-react';
 import { api } from '@/src/services/api';
+import { getMapStyle } from '@/src/lib/mapStyle';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
@@ -16,24 +17,7 @@ import 'maplibre-gl/dist/maplibre-gl.css';
  *  - recherche de lieux via le géocodage Nominatim (OpenStreetMap).
  */
 
-const OSM_RASTER_STYLE = {
-  version: 8 as const,
-  sources: {
-    osm: {
-      type: 'raster' as const,
-      tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
-      tileSize: 256,
-      attribution: '© OpenStreetMap contributors',
-    },
-  },
-  layers: [
-    {
-      id: 'osm-tiles',
-      type: 'raster' as const,
-      source: 'osm',
-    },
-  ],
-};
+const OSM_RASTER_STYLE = getMapStyle();
 
 interface NearbyFriend {
   id: string;
