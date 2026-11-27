@@ -3,6 +3,7 @@ import { db, schema } from '../../infrastructure/database';
 import { emitToUser } from '../../infrastructure/websocket';
 import { userLocationSettings } from './location.schema';
 import { AppError } from '../../shared/utils/AppError';
+import { scheduleNearbyNotifications } from './location.nearby-notify.service';
 
 const RADIUS_KM = 50;
 
@@ -33,5 +34,7 @@ export async function updateLocationHeartbeat(userId: string, latitude: number, 
   )).limit(300);
 
   for (const recipient of recipients) if (recipient.id !== userId) emitToUser(recipient.id, 'location:nearby:update', { userId, action: 'refresh' });
+  // Notification discrète « près de toi » : asynchrone, non bloquante, jamais bloquante pour la réponse.
+  scheduleNearbyNotifications(userId, latitude, longitude);
   return { success: true, updatedAt: new Date().toISOString() };
 }
