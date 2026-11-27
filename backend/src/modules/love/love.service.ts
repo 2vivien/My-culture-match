@@ -119,3 +119,61 @@ export async function swipe(userId: string, candidateId: string, action: 'like' 
     return { matched: true, conversationId };
   });
 }
+
+/** Durée de vie d'une requête Love en attente (jours). */
+export const LOVE_REQUEST_TTL_DAYS = 30;
+
+export interface LoveRequestDto { userId: string; name: string; username: string; avatar: string | null; bio: string | null; country: string | null; location: string | null; age: number | null; matchScore: number; receivedAt: string; }
+
+/**
+ * Requêtes Love reçues et en attente : un like d'une personne vers moi, auquel je n'ai pas encore répondu.
+ * Un like réciproque = acceptation (cf. swipe) ; un pass = refus. Les blocages et consentements sont ré-appliqués à la lecture.
+ */
+export async function getIncomingLoveRequests(userId: string): Promise<{ requests: LoveRequestDto[] }> {
+  const since = new Date(Date.now() - LOVE_REQUEST_TTL_DAYS * 24 * 60 * 60 * 1000);
+  const incoming = await db.select({ fromId: schema.loveMatches.userId, matchScore: schema.loveMatches.matchScore, createdAt: schema.loveMatches.createdAt })
+    .from(schema.loveMatches)
+    .where(and(eq(schema.loveMatches.candidateId, userId), eq(schema.loveMatches.action, 'like'), eq(schema.loveMatches.isMutual, false), sql`${schema.loveMatches.createdAt} > ${since}`));
+  if (incoming.length === 0) return { requests: [] };
+
+  const answered = await db.select({ candidateId: schema.loveMatches.candidateId }).from(schema.loveMatches).where(eq(schema.loveMatches.userId, userId));
+  const answeredIds = new Set(answered.map((r) => r.candidateId));
+  const blocked = new Set(await blockedIds(userId));
+  const blockedMe = await db.select({ blockerId: schema.blocks.blockerId }).from(schema.blocks).where(eq(schema.blocks.blockedId, userId));
+  for (const b of blockedMe) blocked.add(b.blockerId);
+
+  const pending = incoming.filter((r) => !answeredIds.has(r.fromId) && !blocked.has(r.fromId));
+  if (pending.length === 0) return { requests: [] };
+  if (!(await import('../consent/consent.service').then((m) => m.getConsentSettings(userId))).loveEnabled) return { requests: [] };
+
+  const rows = await db.select({ id: schema.users.id, name: schema.users.name, username: schema.users.username, avatar: schema.users.avatar, bio: schema.users.bio, country: schema.users.country, location: schema.users.location, birthdate: schema.users.birthdate })
+    .from(schema.users).where(inArray(schema.users.id, pending.map((r) => r.fromId)));
+  const byId = new Map(rows.map((u) => [u.id, u]));
+  const requests = pending.flatMap((r): LoveRequestDto[] => {
+    const u = byId.get(r.fromId);
+    if (!u || (computeAge(u.birthdate) ?? 0) < 18) return [];
+    return [{ userId: u.id, name: u.name, username: u.username, avatar: u.avatar, bio: u.bio, country: u.country, location: u.location, age: computeAge(u.birthdate), matchScore: r.matchScore, receivedAt: r.createdAt.toISOString() }];
+  }).sort((a, b) => b.receivedAt.localeCompare(a.receivedAt));
+  return { requests };
+}
+
+/** Accepter = répondre par un like : le match mutuel et la conversation sont créés par swipe(). */
+export async function acceptLoveRequest(userId: string, fromUserId: string): Promise<{ matched: boolean; conversationId?: string }> {
+  await assertPendingLoveRequest(userId, fromUserId);
+  return swipe(userId, fromUserId, 'like');
+}
+
+/** Refuser = pass : la requête disparaît sans conversation ni notification à l'émetteur. */
+export async function declineLoveRequest(userId: string, fromUserId: string): Promise<{ matched: false }> {
+  await assertPendingLoveRequest(userId, fromUserId);
+  await swipe(userId, fromUserId, 'pass');
+  return { matched: false };
+}
+
+async function assertPendingLoveRequest(userId: string, fromUserId: string): Promise<void> {
+  if (userId === fromUserId) throw AppError.badRequest('Requête invalide', 'SELF_REQUEST');
+  const since = new Date(Date.now() - LOVE_REQUEST_TTL_DAYS * 24 * 60 * 60 * 1000);
+  const [row] = await db.select({ id: schema.loveMatches.id }).from(schema.loveMatches)
+    .where(and(eq(schema.loveMatches.userId, fromUserId), eq(schema.loveMatches.candidateId, userId), eq(schema.loveMatches.action, 'like'), eq(schema.loveMatches.isMutual, false), sql`${schema.loveMatches.createdAt} > ${since}`)).limit(1);
+  if (!row) throw AppError.notFound('Requête Love introuvable ou expirée', 'LOVE_REQUEST_NOT_FOUND');
+}
