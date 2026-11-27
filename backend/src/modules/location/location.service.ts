@@ -6,6 +6,7 @@ import { userLocationSettings, locationAudience, audienceModes, locationPrecisio
 import { canSeeLocation, shouldHideLocation, requiresConsent, computeReach, type Reach } from './location.policy';
 import { AppError } from '../../shared/utils/AppError';
 import { haversineKm } from '../users/users.service';
+import { computeMatchScore } from '../users/match-score';
 
 const cacheKey = (id: string) => `location:settings:${id}`;
 const NEARBY_RADIUS_KM = 50;
@@ -146,7 +147,7 @@ async function blockedBetween(userId: string): Promise<Set<string>> {
 }
 
 export async function getPeopleNearby(userId: string, viewerLocation?: { latitude: number; longitude: number }) {
-  const [viewer] = await db.select({ latitude: schema.users.latitude, longitude: schema.users.longitude, sharingEnabled: schema.users.locationSharingEnabled })
+  const [viewer] = await db.select({ latitude: schema.users.latitude, longitude: schema.users.longitude, sharingEnabled: schema.users.locationSharingEnabled, values: schema.users.values, languages: schema.users.languages, country: schema.users.country })
     .from(schema.users).where(eq(schema.users.id, userId)).limit(1);
   if (!viewer) throw AppError.notFound('Utilisateur introuvable', 'USER_NOT_FOUND');
   const origin = viewer.sharingEnabled && viewer.latitude !== null && viewer.longitude !== null ? { latitude: viewer.latitude, longitude: viewer.longitude } : viewerLocation;
@@ -187,7 +188,7 @@ export async function getPeopleNearby(userId: string, viewerLocation?: { latitud
     const position = fuzz(c.latitude, c.longitude, c.id, precision);
     people.push({
       id: c.id, name: c.name, username: c.username, avatar: c.avatar, bio: c.bio, country: c.country, location: c.location,
-      languages: c.languages, values: c.values, intention: c.intention, matchScore: 0, ...position, distanceKm,
+      languages: c.languages, values: c.values, intention: c.intention, matchScore: computeMatchScore(viewer, c), ...position, distanceKm,
       distanceLabel: distanceKm === null ? null : distanceKm < 1 ? 'Nearby' : `~${distanceKm} km away`,
       isCompanion: friends.has(c.id), isFriendOfFriend: fof.has(c.id),
       isActive: c.showActive ? !!c.updated && Date.now() - c.updated.getTime() < 120000 : false,
