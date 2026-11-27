@@ -111,6 +111,9 @@ export async function swipe(userId: string, candidateId: string, action: 'like' 
   if (action === 'pass') { await redis.sadd('love:passed:' + userId, candidateId); await redis.expire('love:passed:' + userId, PASS_TTL); await db.insert(schema.loveMatches).values({ userId, candidateId, action: 'pass', matchScore: score, isMutual: false }); return { matched: false }; }
   return db.transaction(async (tx) => {
     await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${pairLock(userId, candidateId)}))`);
+    // Re-vérifie sous verrou : deux clics simultanés (accepter / liker) ne créent ni deuxième conversation ni doublon.
+    const mine = await tx.select({ id: schema.loveMatches.id }).from(schema.loveMatches).where(and(eq(schema.loveMatches.userId, userId), eq(schema.loveMatches.candidateId, candidateId))).limit(1);
+    if (mine[0]) throw AppError.conflict('Déjà swipé', 'ALREADY_SWIPED');
     const reciprocal = await tx.select().from(schema.loveMatches).where(and(eq(schema.loveMatches.userId, candidateId), eq(schema.loveMatches.candidateId, userId), eq(schema.loveMatches.action, 'like'))).limit(1);
     if (!reciprocal[0]) { await tx.insert(schema.loveMatches).values({ userId, candidateId, action: 'like', matchScore: score, isMutual: false }); await createNotification({ userId: candidateId, actorId: userId, type: 'match', action: 'like', target: userId }); emitToUser(candidateId, 'love:like', { userId }); return { matched: false }; }
     const { id: conversationId } = await createConversationForUsers(userId, candidateId);
@@ -142,9 +145,14 @@ export async function getIncomingLoveRequests(userId: string): Promise<{ request
   const blockedMe = await db.select({ blockerId: schema.blocks.blockerId }).from(schema.blocks).where(eq(schema.blocks.blockedId, userId));
   for (const b of blockedMe) blocked.add(b.blockerId);
 
-  const pending = incoming.filter((r) => !answeredIds.has(r.fromId) && !blocked.has(r.fromId));
-  if (pending.length === 0) return { requests: [] };
+  const open = incoming.filter((r) => !answeredIds.has(r.fromId) && !blocked.has(r.fromId));
+  if (open.length === 0) return { requests: [] };
   if (!(await import('../consent/consent.service').then((m) => m.getConsentSettings(userId))).loveEnabled) return { requests: [] };
+  // Le consentement de l'émetteur est revalidé : s'il a désactivé Love depuis, la requête n'est plus proposée
+  // (même contrôle que l'acceptation, donc pas de requête affichée puis refusée).
+  const pending: typeof open = [];
+  for (const r of open) if (await canLikeForLove(userId, r.fromId)) pending.push(r);
+  if (pending.length === 0) return { requests: [] };
 
   const rows = await db.select({ id: schema.users.id, name: schema.users.name, username: schema.users.username, avatar: schema.users.avatar, bio: schema.users.bio, country: schema.users.country, location: schema.users.location, birthdate: schema.users.birthdate })
     .from(schema.users).where(inArray(schema.users.id, pending.map((r) => r.fromId)));
