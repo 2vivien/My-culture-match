@@ -374,9 +374,13 @@ export async function listComments(postId: string, cursor: string | undefined, l
 
 /** POST /api/posts/:id/comments/:commentId/vote — bascule +1 / -1 (même valeur = retrait). */
 export async function voteComment(userId: string, postId: string, commentId: string, value: 1 | -1): Promise<{ myVote: number; score: number; ups: number; downs: number }> {
+  // Mêmes garde-fous que la lecture et que addComment : post visible, commentaire publié, pas de sanction de tribu.
+  const [post] = await db.select({ status: schema.posts.status, tribeId: schema.posts.tribeId }).from(schema.posts).where(eq(schema.posts.id, postId)).limit(1);
+  if (!post || post.status === 'deleted') throw AppError.notFound('Post introuvable', 'POST_NOT_FOUND');
   const [comment] = await db.select({ id: schema.comments.id, status: schema.comments.status }).from(schema.comments)
     .where(and(eq(schema.comments.id, commentId), eq(schema.comments.postId, postId))).limit(1);
-  if (!comment || comment.status === 'deleted') throw AppError.notFound('Commentaire introuvable', 'COMMENT_NOT_FOUND');
+  if (!comment || comment.status !== 'published') throw AppError.notFound('Commentaire introuvable', 'COMMENT_NOT_FOUND');
+  if (post.tribeId) await assertCanWriteInTribe(post.tribeId, userId);
 
   const [existing] = await db.select().from(schema.commentVotes)
     .where(and(eq(schema.commentVotes.commentId, commentId), eq(schema.commentVotes.userId, userId))).limit(1);

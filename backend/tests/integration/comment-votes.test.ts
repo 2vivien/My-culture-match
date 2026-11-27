@@ -129,3 +129,16 @@ describe('C3 — Votes et tri des commentaires', () => {
     expect([400, 404]).toContain(bad.status);
   });
 });
+
+describe('C3 — Votes : garde-fous', () => {
+  it('un commentaire supprimé ou d’un post supprimé ne peut plus être voté (404)', async () => {
+    const author = await onboardUser('cmtg');
+    const voter = await onboardUser('cmtg');
+    const post = await app.request('/api/posts', authedJson(author.token, { type: 'Text', title: 'À supprimer', body: 'Contenu' }));
+    const { id: postId } = (await post.json()) as { id: string };
+    const { commentId } = (await (await app.request(`/api/posts/${postId}/comments`, authedJson(author.token, { text: 'Hello' }))).json()) as { commentId: string };
+    expect((await app.request(`/api/posts/${postId}`, authed(author.token, 'DELETE'))).status).toBeLessThan(300);
+    const res = await app.request(`/api/posts/${postId}/comments/${commentId}/vote`, authedJson(voter.token, { value: 1 }));
+    expect(res.status).toBe(404);
+  });
+});
