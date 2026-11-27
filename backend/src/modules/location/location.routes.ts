@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { requireAuth } from '../auth/require-auth';
 import { getLocationSettings, updateLocationSettings, getPeopleNearby } from './location.service';
 import { updateLocationHeartbeat } from './location.heartbeat';
+import { geocode } from './geocode.service';
 
 const locationRoutes = new Hono();
 locationRoutes.use('*', requireAuth);
@@ -15,6 +16,12 @@ locationRoutes.patch('/location/settings', async (c) => {
   const { userId } = c.get('auth');
   const body = await c.req.json();
   return c.json({ success: true, settings: await updateLocationSettings(userId, body) });
+});
+
+/** Recherche de lieu (proxy de géocodage, cache + limite de débit). */
+locationRoutes.get('/location/geocode', async (c) => {
+  const { userId } = c.get('auth');
+  return c.json({ results: await geocode(userId, c.req.query('q') ?? '') });
 });
 
 locationRoutes.post('/location/heartbeat', async (c) => {
