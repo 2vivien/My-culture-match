@@ -83,6 +83,8 @@ jobs:
           cache: npm
           cache-dependency-path: backend/package-lock.json
       - run: npm ci
+      - name: Cohérence des migrations Drizzle (journal / fichiers)
+        run: npm run check:migrations
       - run: npm run test:unit
 
   integration-tests:
