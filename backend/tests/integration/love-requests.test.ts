@@ -75,6 +75,14 @@ afterAll(async () => {
   await redis.quit();
 });
 
+/** Love est désactivé par défaut (consentement) : les fixtures s'y inscrivent explicitement. */
+async function loveUser(prefix: string): Promise<{ token: string; userId: string }> {
+  const user = await onboardUser(prefix);
+  const res = await app.request('/api/consent/settings', { method: 'PATCH', headers: { 'content-type': 'application/json', Authorization: `Bearer ${user.token}` }, body: JSON.stringify({ loveEnabled: true }) });
+  expect(res.status).toBe(200);
+  return user;
+}
+
 describe('L1/L7 — Requêtes Love (acceptation requise)', () => {
   type LoveRequest = { userId: string };
   const pending = async (token: string) => {
@@ -84,8 +92,8 @@ describe('L1/L7 — Requêtes Love (acceptation requise)', () => {
   };
 
   it('un like crée une requête visible uniquement chez le destinataire', async () => {
-    const a = await onboardUser('lreq');
-    const b = await onboardUser('lreq');
+    const a = await loveUser('lreq');
+    const b = await loveUser('lreq');
     await app.request('/api/love/swipe', authedJson(a.token, { userId: b.userId, action: 'like' }));
 
     expect((await pending(b.token)).some((r) => r.userId === a.userId)).toBe(true);
@@ -93,8 +101,8 @@ describe('L1/L7 — Requêtes Love (acceptation requise)', () => {
   });
 
   it('aucune conversation n’existe avant acceptation (contact refusé par défaut)', async () => {
-    const a = await onboardUser('lreq');
-    const b = await onboardUser('lreq');
+    const a = await loveUser('lreq');
+    const b = await loveUser('lreq');
     await app.request('/api/love/swipe', authedJson(a.token, { userId: b.userId, action: 'like' }));
 
     const direct = await app.request('/api/conversations', authedJson(a.token, { participantId: b.userId }));
@@ -102,8 +110,8 @@ describe('L1/L7 — Requêtes Love (acceptation requise)', () => {
   });
 
   it('accepter ouvre le match et la conversation, la requête disparaît', async () => {
-    const a = await onboardUser('lreq');
-    const b = await onboardUser('lreq');
+    const a = await loveUser('lreq');
+    const b = await loveUser('lreq');
     await app.request('/api/love/swipe', authedJson(a.token, { userId: b.userId, action: 'like' }));
 
     const accept = await app.request(`/api/love/requests/${a.userId}/accept`, authed(b.token, 'POST'));
@@ -118,8 +126,8 @@ describe('L1/L7 — Requêtes Love (acceptation requise)', () => {
   });
 
   it('refuser retire la requête sans créer de conversation', async () => {
-    const a = await onboardUser('lreq');
-    const b = await onboardUser('lreq');
+    const a = await loveUser('lreq');
+    const b = await loveUser('lreq');
     await app.request('/api/love/swipe', authedJson(a.token, { userId: b.userId, action: 'like' }));
 
     const decline = await app.request(`/api/love/requests/${a.userId}/decline`, authed(b.token, 'POST'));
@@ -131,8 +139,8 @@ describe('L1/L7 — Requêtes Love (acceptation requise)', () => {
   });
 
   it('une requête d’un utilisateur bloqué est masquée et inacceptable', async () => {
-    const a = await onboardUser('lreq');
-    const b = await onboardUser('lreq');
+    const a = await loveUser('lreq');
+    const b = await loveUser('lreq');
     await app.request('/api/love/swipe', authedJson(a.token, { userId: b.userId, action: 'like' }));
     const block = await app.request(`/api/safety/users/${a.userId}/block`, authed(b.token, 'POST'));
     expect(block.status).toBe(201);
@@ -143,9 +151,30 @@ describe('L1/L7 — Requêtes Love (acceptation requise)', () => {
   });
 
   it('accepter une requête inexistante renvoie 404', async () => {
-    const a = await onboardUser('lreq');
-    const b = await onboardUser('lreq');
+    const a = await loveUser('lreq');
+    const b = await loveUser('lreq');
     const accept = await app.request(`/api/love/requests/${a.userId}/accept`, authed(b.token, 'POST'));
     expect(accept.status).toBe(404);
+  });
+
+  it('un double clic sur Accepter ne crée qu’une conversation (409 sur le doublon)', async () => {
+    const a = await loveUser('lreq');
+    const b = await loveUser('lreq');
+    await app.request('/api/love/swipe', authedJson(a.token, { userId: b.userId, action: 'like' }));
+    const [r1, r2] = await Promise.all([
+      app.request(`/api/love/requests/${a.userId}/accept`, authed(b.token, 'POST')),
+      app.request(`/api/love/requests/${a.userId}/accept`, authed(b.token, 'POST')),
+    ]);
+    expect([r1.status, r2.status].sort()).toEqual([200, 409]);
+    const convs = (await (await app.request('/api/conversations', authed(a.token))).json()) as { id: string }[];
+    expect(convs).toHaveLength(1);
+  });
+
+  it('si l’émetteur désactive Love, sa requête n’est plus proposée', async () => {
+    const a = await loveUser('lreq');
+    const b = await loveUser('lreq');
+    await app.request('/api/love/swipe', authedJson(a.token, { userId: b.userId, action: 'like' }));
+    await app.request('/api/consent/settings', { method: 'PATCH', headers: { 'content-type': 'application/json', Authorization: `Bearer ${a.token}` }, body: JSON.stringify({ loveEnabled: false }) });
+    expect((await pending(b.token)).some((r) => r.userId === a.userId)).toBe(false);
   });
 });
