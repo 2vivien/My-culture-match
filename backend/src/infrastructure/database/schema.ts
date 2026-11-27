@@ -289,7 +289,7 @@ export const posts = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
     tribeId: text('tribe_id').references(() => tribes.id, { onDelete: 'set null' }),
-    flairId: text('flair_id'),
+    flairId: text('flair_id').references(() => tribeFlairs.id, { onDelete: 'set null' }),
     type: postTypeEnum('type').notNull().default('Text'),
     title: text('title'),
     text: text('text'),
