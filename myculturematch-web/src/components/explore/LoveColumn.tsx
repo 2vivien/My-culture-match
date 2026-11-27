@@ -52,7 +52,7 @@ export const LoveColumn: React.FC = () => {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<LoveSearchResult[]>([]);
   const [activeMatches, setActiveMatches] = useState<LoveMatch[]>([]);
-  const [quota, setQuota] = useState<LoveSearchQuota>({ limit: 3, used: 0, remaining: 3 });
+  const [quota, setQuota] = useState<LoveSearchQuota>({ limit: 20, used: 0, remaining: 20 });
   const [loading, setLoading] = useState(false);
   const [typing, setTyping] = useState(false);
   const [criteriaChips, setCriteriaChips] = useState<string[]>([]);
@@ -78,7 +78,7 @@ export const LoveColumn: React.FC = () => {
 
   const send = async (text = query) => {
     const clean = text.trim();
-    if (!clean || loading || quota.remaining <= 0) return;
+    if (!clean || loading || quota.remaining === 0) return;
     const history = [...messages.filter((m) => m.role === 'user').map((m) => m.content), clean];
     setQuery(''); setLoading(true); setTyping(true); setMessages((m) => [...m, { id: crypto.randomUUID(), role: 'user', content: clean }]);
     try {
@@ -86,7 +86,7 @@ export const LoveColumn: React.FC = () => {
       const chips = data.criteria ? chipLabels(data.criteria) : [];
       setCriteriaChips(chips);
       if (data.results?.length) setResults(data.results);
-      setQuota((q) => ({ ...q, used: q.limit - data.remainingSearches, remaining: data.remainingSearches }));
+      setQuota((q) => (data.remainingSearches < 0 ? { ...q, remaining: -1, unlimited: true } : { ...q, used: q.limit - data.remainingSearches, remaining: data.remainingSearches }));
       setMessages((m) => [...m, { id: crypto.randomUUID(), role: 'assistant', content: data.reply, criteria: chips, results: data.results }]);
     } catch (e) {
       setMessages((m) => [...m, { id: crypto.randomUUID(), role: 'assistant', content: e instanceof Error ? e.message : 'Je n’arrive pas à lancer cette recherche pour le moment.' }]);
@@ -113,7 +113,7 @@ export const LoveColumn: React.FC = () => {
           {cards.map((match) => <MatchCard key={match.id} match={match} liked={Boolean(liked[match.id])} onLike={() => like(match.id)} onPass={() => pass(match.id)} onProfile={() => openProfile(match.id)} />)}
         </div>
         {isLast && visibleResults.length > 0 && (
-          <button onClick={() => send('Propose-moi 4 autres personnes avec les mêmes critères')} disabled={loading || quota.remaining <= 0} className="mt-4 flex items-center gap-1.5 rounded-full border border-app-border px-3 py-2 text-xs font-semibold text-app-gray hover:text-app-text disabled:opacity-40"><RotateCcw className="h-3.5 w-3.5" />Autres profils</button>
+          <button onClick={() => send('Propose-moi 4 autres personnes avec les mêmes critères')} disabled={loading || quota.remaining === 0} className="mt-4 flex items-center gap-1.5 rounded-full border border-app-border px-3 py-2 text-xs font-semibold text-app-gray hover:text-app-text disabled:opacity-40"><RotateCcw className="h-3.5 w-3.5" />Autres profils</button>
         )}
       </div>
     );
@@ -127,7 +127,7 @@ export const LoveColumn: React.FC = () => {
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col overflow-hidden px-4 pb-8 pt-4 lg:px-6">
       <section className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-[32px] border border-app-border bg-app-card shadow-sm">
-        <header className="shrink-0 border-b border-app-border px-5 py-4 sm:px-7"><div className="flex items-center justify-between gap-4"><div className="flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#E27D60]/10 text-[#E27D60]"><Sparkles className="h-5 w-5" /></div><div><p className="text-xs font-bold uppercase tracking-[.16em] text-[#E27D60]">Love AI</p><h1 className="text-lg font-semibold text-app-text">Matchmaking conversationnel</h1></div></div><div className="flex items-center gap-3 text-xs text-app-gray"><span>{quota.remaining}/{quota.limit} recherches</span><button type="button" onClick={() => setEditingProfile(true)} className="flex items-center gap-1.5 rounded-full border border-app-border px-3 py-1.5 font-semibold text-app-text hover:bg-app-muted"><Settings2 className="h-3.5 w-3.5" />Modifier mes préférences Love</button><ShieldCheck className="h-4 w-4" /></div></div></header>
+        <header className="shrink-0 border-b border-app-border px-5 py-4 sm:px-7"><div className="flex items-center justify-between gap-4"><div className="flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#E27D60]/10 text-[#E27D60]"><Sparkles className="h-5 w-5" /></div><div><p className="text-xs font-bold uppercase tracking-[.16em] text-[#E27D60]">Love AI</p><h1 className="text-lg font-semibold text-app-text">Matchmaking conversationnel</h1></div></div><div className="flex items-center gap-3 text-xs text-app-gray"><span>{quota.remaining < 0 ? 'Recherches illimitées' : `${quota.remaining}/${quota.limit} recherches aujourd’hui`}</span><button type="button" onClick={() => setEditingProfile(true)} className="flex items-center gap-1.5 rounded-full border border-app-border px-3 py-1.5 font-semibold text-app-text hover:bg-app-muted"><Settings2 className="h-3.5 w-3.5" />Modifier mes préférences Love</button><ShieldCheck className="h-4 w-4" /></div></div></header>
         <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-7"><div className="mx-auto max-w-3xl space-y-4">
           {messages.map((message) => <React.Fragment key={message.id}><motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}><div className={`max-w-[88%] rounded-[24px] px-4 py-3 text-sm leading-6 ${message.role === 'user' ? 'rounded-br-md bg-[#E27D60] text-white' : 'rounded-bl-md bg-app-muted text-app-text'}`}><p>{message.content}</p>{message.criteria && message.criteria.length > 0 && <div className="mt-3 flex flex-wrap gap-1.5">{message.criteria.map((c) => <span key={c} className="rounded-full border border-current/10 bg-white/60 px-2.5 py-1 text-[11px] font-semibold text-app-text dark:bg-black/10">{c}</span>)}</div>}</div></motion.div>{renderCards(message)}</React.Fragment>)}
           {typing && <div className="flex justify-start"><div className="rounded-[24px] rounded-bl-md bg-app-muted px-4 py-3"><span className="inline-flex gap-1"><i className="h-1.5 w-1.5 animate-bounce rounded-full bg-app-gray" /><i className="h-1.5 w-1.5 animate-bounce rounded-full bg-app-gray [animation-delay:120ms]" /><i className="h-1.5 w-1.5 animate-bounce rounded-full bg-app-gray [animation-delay:240ms]" /></span></div></div>}
