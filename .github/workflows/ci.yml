@@ -9,6 +9,7 @@ on:
   pull_request:
     paths:
       - 'backend/**'
+      - '.github/workflows/ci.yml'
 
 concurrency:
   group: ci-backend-${{ github.ref }}
@@ -23,8 +24,7 @@ env:
   REDIS_POOL_SIZE: 5
   BETTER_AUTH_SECRET: ci-secret-ci-secret-ci-secret-32chars
   BETTER_AUTH_URL: http://localhost:3000
-  SMTP_HOST: localhost
-  SMTP_PORT: 1025
+  BREVO_API_KEY: ci-brevo-api-key
   MINIO_ENDPOINT: localhost
   MINIO_PORT: 9000
   MINIO_USE_SSL: 'false'
@@ -147,18 +147,20 @@ jobs:
           --health-interval 5s
           --health-timeout 3s
           --health-retries 10
-      minio:
-        image: minio/minio:latest
-        ports: ['9000:9000']
-        env:
-          MINIO_ROOT_USER: minioadmin
-          MINIO_ROOT_PASSWORD: minioadmin
-        options: >-
-          --health-cmd "curl -sf http://localhost:9000/minio/health/live"
-          --health-interval 5s
-          --health-timeout 3s
-          --health-retries 10
     steps:
+      - name: MinIO (image officielle quay.io)
+        working-directory: .
+        run: |
+          docker run -d --name minio -p 9000:9000 \
+            -e MINIO_ROOT_USER=minioadmin -e MINIO_ROOT_PASSWORD=minioadmin \
+            quay.io/minio/minio:latest server /data
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:9000/minio/health/live && exit 0
+            sleep 2
+          done
+          echo "MinIO ne répond pas" >&2
+          docker logs minio >&2
+          exit 1
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
@@ -202,13 +204,20 @@ jobs:
         ports: ['7700:7700']
         env:
           MEILI_MASTER_KEY: masterKey
-      minio:
-        image: minio/minio:latest
-        ports: ['9000:9000']
-        env:
-          MINIO_ROOT_USER: minioadmin
-          MINIO_ROOT_PASSWORD: minioadmin
     steps:
+      - name: MinIO (image officielle quay.io)
+        working-directory: .
+        run: |
+          docker run -d --name minio -p 9000:9000 \
+            -e MINIO_ROOT_USER=minioadmin -e MINIO_ROOT_PASSWORD=minioadmin \
+            quay.io/minio/minio:latest server /data
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:9000/minio/health/live && exit 0
+            sleep 2
+          done
+          echo "MinIO ne répond pas" >&2
+          docker logs minio >&2
+          exit 1
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
