@@ -2,8 +2,8 @@ import { and, eq, gte, inArray, lte, or } from 'drizzle-orm';
 import { db, schema } from '../../infrastructure/database';
 import { redis } from '../../infrastructure/redis';
 import { emitToUser } from '../../infrastructure/websocket';
-import { userLocationSettings, locationPrecision, locationVisibility, type LocationPrecision, type LocationVisibility } from './location.schema';
-import { canDiscoverUser, shouldHideLocation } from './location.policy';
+import { userLocationSettings, locationAudience, audienceModes, locationPrecision, locationVisibility, type AudienceMode, type LocationPrecision, type LocationVisibility } from './location.schema';
+import { canSeeLocation, shouldHideLocation } from './location.policy';
 import { AppError } from '../../shared/utils/AppError';
 import { haversineKm } from '../users/users.service';
 
@@ -16,12 +16,14 @@ export interface LocationSettingsDto {
   visibility: LocationVisibility;
   precision: LocationPrecision;
   ghostMode: boolean;
+  audienceMode: AudienceMode;
   showDistance: boolean;
   showActiveStatus: boolean;
   expiresAt: string | null;
 }
 
 const validVisibility = (v: unknown): v is LocationVisibility => typeof v === 'string' && (locationVisibility as readonly string[]).includes(v);
+const validAudience = (v: unknown): v is AudienceMode => typeof v === 'string' && (audienceModes as readonly string[]).includes(v);
 const validPrecision = (v: unknown): v is LocationPrecision => typeof v === 'string' && (locationPrecision as readonly string[]).includes(v);
 
 async function rowFor(userId: string) {
@@ -42,6 +44,7 @@ export async function getLocationSettings(userId: string): Promise<LocationSetti
     visibility: validVisibility(row.visibility) ? row.visibility : 'nearby',
     precision: validPrecision(row.precision) ? row.precision : 'approximate',
     ghostMode: row.ghostMode,
+    audienceMode: validAudience(row.audienceMode) ? row.audienceMode : 'default',
     showDistance: row.showDistance,
     showActiveStatus: row.showActiveStatus,
     expiresAt: row.expiresAt?.toISOString() ?? null,
@@ -54,13 +57,15 @@ export async function updateLocationSettings(userId: string, input: Partial<Loca
   const current = await rowFor(userId);
   const visibility = input.visibility ?? current.visibility;
   const precision = input.precision ?? current.precision;
+  const audienceMode = input.audienceMode ?? (validAudience(current.audienceMode) ? current.audienceMode : 'default');
+  if (!validAudience(audienceMode)) throw AppError.badRequest('Audience de localisation invalide', 'INVALID_LOCATION_AUDIENCE');
   if (!validVisibility(visibility)) throw AppError.badRequest('Visibilité de localisation invalide', 'INVALID_LOCATION_VISIBILITY');
   if (!validPrecision(precision)) throw AppError.badRequest('Précision de localisation invalide', 'INVALID_LOCATION_PRECISION');
   const expiresAt = input.expiresAt === null ? null : input.expiresAt ? new Date(input.expiresAt) : current.expiresAt;
   if (expiresAt && Number.isNaN(expiresAt.getTime())) throw AppError.badRequest('Expiration invalide', 'INVALID_LOCATION_EXPIRY');
 
   await db.insert(userLocationSettings).values({
-    userId, visibility, precision,
+    userId, visibility, precision, audienceMode,
     ghostMode: input.ghostMode ?? current.ghostMode,
     showDistance: input.showDistance ?? current.showDistance,
     showActiveStatus: input.showActiveStatus ?? current.showActiveStatus,
@@ -68,7 +73,7 @@ export async function updateLocationSettings(userId: string, input: Partial<Loca
   }).onConflictDoUpdate({
     target: userLocationSettings.userId,
     set: {
-      visibility, precision,
+      visibility, precision, audienceMode,
       ghostMode: input.ghostMode ?? current.ghostMode,
       showDistance: input.showDistance ?? current.showDistance,
       showActiveStatus: input.showActiveStatus ?? current.showActiveStatus,
@@ -150,18 +155,25 @@ export async function getPeopleNearby(userId: string, viewerLocation?: { latitud
     values: schema.users.values, intention: schema.users.intention, latitude: schema.users.latitude, longitude: schema.users.longitude,
     updated: schema.users.locationUpdatedAt, visibility: userLocationSettings.visibility, precision: userLocationSettings.precision,
     ghost: userLocationSettings.ghostMode, showDistance: userLocationSettings.showDistance, showActive: userLocationSettings.showActiveStatus,
-    expiresAt: userLocationSettings.expiresAt,
+    expiresAt: userLocationSettings.expiresAt, audienceMode: userLocationSettings.audienceMode,
   }).from(schema.users).leftJoin(userLocationSettings, eq(userLocationSettings.userId, schema.users.id)).where(and(
     eq(schema.users.profileCompleted, true), eq(schema.users.locationSharingEnabled, true),
     gte(schema.users.latitude, minLat), lte(schema.users.latitude, maxLat), gte(schema.users.longitude, minLon), lte(schema.users.longitude, maxLon),
   )).limit(1000);
+
+  // Propriétaires dont la liste d'audience contient le demandeur (une seule requête pour tous les candidats).
+  const listedRows = candidates.length > 0
+    ? await db.select({ ownerId: locationAudience.ownerId }).from(locationAudience).where(and(eq(locationAudience.memberId, userId), inArray(locationAudience.ownerId, candidates.map((c) => c.id))))
+    : [];
+  const listedBy = new Set(listedRows.map((r) => r.ownerId));
 
   const people: Array<Record<string, unknown>> = [];
   for (const c of candidates) {
     if (c.id === userId || blocked.has(c.id) || c.latitude === null || c.longitude === null) continue;
     const visibility = validVisibility(c.visibility) ? c.visibility : 'nearby';
     if (shouldHideLocation({ sharingEnabled: true, ghostMode: c.ghost ?? false, expiresAt: c.expiresAt })) continue;
-    if (!canDiscoverUser(visibility, friends.has(c.id), fof.has(c.id))) continue;
+    const mode: AudienceMode = validAudience(c.audienceMode) ? c.audienceMode : 'default';
+    if (!canSeeLocation({ visibility, mode, listed: listedBy.has(c.id), isFriend: friends.has(c.id), isFriendOfFriend: fof.has(c.id) })) continue;
     const distance = haversineKm(origin.latitude, origin.longitude, c.latitude, c.longitude);
     if (distance > NEARBY_RADIUS_KM) continue;
     const precision = validPrecision(c.precision) ? c.precision : 'approximate';
@@ -191,4 +203,27 @@ async function notifyLocationChange(userId: string, settings: LocationSettingsDt
     gte(schema.users.latitude, minLat), lte(schema.users.latitude, maxLat), gte(schema.users.longitude, minLon), lte(schema.users.longitude, maxLon),
   )).limit(300);
   for (const recipient of nearby) if (recipient.id !== userId && !friends.has(recipient.id)) emitToUser(recipient.id, LOCATION_EVENT, { userId, action: 'refresh' });
+}
+
+/** Liste d'audience : lecture (profils minimaux des compagnons choisis). */
+export async function getAudience(userId: string): Promise<{ members: Array<{ id: string; name: string; username: string; avatar: string | null }> }> {
+  const rows = await db.select({ id: schema.users.id, name: schema.users.name, username: schema.users.username, avatar: schema.users.avatar })
+    .from(locationAudience).innerJoin(schema.users, eq(schema.users.id, locationAudience.memberId))
+    .where(eq(locationAudience.ownerId, userId));
+  return { members: rows };
+}
+
+/** Liste d'audience : remplacement. Seuls des compagnons (connexions acceptées) peuvent y figurer. */
+export async function setAudience(userId: string, memberIds: string[]): Promise<{ members: number }> {
+  const unique = [...new Set(memberIds)].filter((id) => id !== userId);
+  if (unique.length > 200) throw AppError.badRequest('Audience limitée à 200 personnes', 'AUDIENCE_TOO_LARGE');
+  const friends = await companionIds(userId);
+  const stranger = unique.find((id) => !friends.has(id));
+  if (stranger) throw AppError.badRequest('Seuls tes compagnons peuvent figurer dans ton audience', 'AUDIENCE_NOT_COMPANION');
+  await db.transaction(async (tx) => {
+    await tx.delete(locationAudience).where(eq(locationAudience.ownerId, userId));
+    if (unique.length > 0) await tx.insert(locationAudience).values(unique.map((memberId) => ({ ownerId: userId, memberId })));
+  });
+  await redis.del(cacheKey(userId));
+  return { members: unique.length };
 }
