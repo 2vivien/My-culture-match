@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { MapPin, Loader2, X } from 'lucide-react';
+import { searchPlaces, type PlaceSearchResult } from '@/src/lib/placeSearch';
 
 export interface StoryPlace {
   latitude: number;
@@ -7,9 +8,7 @@ export interface StoryPlace {
   label: string;
 }
 
-interface PlaceResult extends StoryPlace {
-  key: string;
-}
+type PlaceResult = PlaceSearchResult;
 
 interface Props {
   /** Appelé avec le lieu choisi, ou null pour publier sans lieu. */
@@ -18,17 +17,6 @@ interface Props {
   busy?: boolean;
   /** Message d'erreur serveur à afficher (ex. partage de position désactivé). */
   error?: string | null;
-}
-
-async function searchPlaces(query: string): Promise<PlaceResult[]> {
-  const res = await fetch(`https://nominatim.openstreetmap.org/search?format=jsonv2&limit=5&q=${encodeURIComponent(query)}`, {
-    headers: { Accept: 'application/json', 'Accept-Language': 'fr' },
-  });
-  if (!res.ok) throw new Error('search failed');
-  const rows = (await res.json()) as Array<{ place_id: number; display_name: string; lat: string; lon: string }>;
-  return rows
-    .map((r) => ({ key: String(r.place_id), label: r.display_name.split(',').slice(0, 2).join(',').trim(), latitude: Number(r.lat), longitude: Number(r.lon) }))
-    .filter((r) => Number.isFinite(r.latitude) && Number.isFinite(r.longitude));
 }
 
 /**
