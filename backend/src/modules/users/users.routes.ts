@@ -19,7 +19,7 @@ usersModule.get('/:id', async (c) => {
   if (!(await canDiscover(viewerId, targetId))) throw AppError.forbidden('Ce profil n’est pas accessible avec ses préférences de confidentialité', 'PROFILE_DISCOVERY_RESTRICTED');
   const profile = await getPublicUser(targetId, viewerId);
   if (viewerId === targetId) return c.json(profile, 200);
-  const safe = { ...(profile as Record<string, unknown>) };
+  const safe = { ...(profile as unknown as Record<string, unknown>) };
   if (!(await canViewField(viewerId, targetId, 'country'))) { delete safe.country; delete safe.region; }
   if (!(await canViewField(viewerId, targetId, 'photos'))) { delete safe.photos; delete safe.media; delete safe.mediaUrls; delete safe.gallery; }
   return c.json(safe, 200);
