@@ -24,8 +24,7 @@ export const StoriesPanel = () => {
     try {
       const uploaded = await uploadService.uploadFile(file, 'story');
       if (uploaded?.objectKey) {
-        // In mock mode, use the local file URL; in real mode, use the media URL
-        const url = uploaded.objectKey.startsWith('mock/') ? URL.createObjectURL(file) : mediaUrl(uploaded.objectKey);
+        const url = mediaUrl(uploaded.objectKey);
         addStory(url);
       }
     } catch {
