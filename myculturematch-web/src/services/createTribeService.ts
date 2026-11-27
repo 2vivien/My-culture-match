@@ -23,6 +23,8 @@ export const createTribeService = {
       tag,
       topic: mapTopic(data.topics?.[0]),
       description: data.description?.trim() || undefined,
+      // Le backend ne connaît que 'public' et 'private' (défaut : public).
+      visibility: data.type === 'private' ? 'private' : 'public',
     };
     try {
       await api.post<unknown>('/api/tribes', payload);
