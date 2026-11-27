@@ -79,9 +79,9 @@ Aucune de ces PR n'est fusionnée à la date de rédaction : « en PR » ne veut
 
 | Issue du backlog | PR | Remarque |
 |---|---|---|
-| F1 (tuiles) + retrait du chat Love factice | #63 | base : `main` |
+| F1 (tuiles) + L0 côté UI (plus de chat Love vide si consentement requis) | #63 | base : `main` |
 | L1 / L2 / L7 (requêtes Love à accepter) | #64 | base : `main` |
-| C2 (tri Hot / Top / Controversial / New) | #66 | base : `main` ; inclut le vote de post `+1/-1` (C1 côté post) |
+| C2 (tri Hot / Top / Controversial / New) | #66 | base : `main` ; le vote de post `+1/-1` (table `post_votes`) existait déjà dans `main` |
 | F2 (cartes dupliquées, XSS marqueurs) | #67 | empilée sur #63 |
 | Typecheck backend (45 erreurs → 0) | #68 | base : `main` |
 | D2 / D5 (CI web, README) | #69 | base : `main` |
@@ -106,7 +106,7 @@ Aucune de ces PR n'est fusionnée à la date de rédaction : « en PR » ne veut
 | F11 (conception du contenu carte) | #88 | document de conception uniquement, pas de code |
 | Correctif : sanctions appliquées au vote de post de tribu | #89 | empilée sur #78 ; fermait un contournement du ban/mute (C5) |
 
-Non couvert par une PR à ce jour : F0 (recherche Snap/Instagram Map), F9 (notifications de position), F12 (e2e Friend), L0 isolé (traité via #64/#63 selon le cas, 🔎 à confirmer), L6, L8, D4, et la décision produit sur l'affichage du downvote.
+Non couvert par une PR à ce jour : F0 (recherche Snap/Instagram Map), F9 (notifications de position), F12 (e2e Friend), le correctif serveur de L0 (le contournement du consentement côté API est traité par les requêtes Love #64, 🔎 à confirmer), L6, L8, D4, et la décision produit sur l'affichage du downvote.
 
 ### 2.4 Transversal (rappel de l'audit 360)
 
