@@ -99,7 +99,32 @@ jobs:
           --health-interval 5s
           --health-timeout 3s
           --health-retries 10
+      meilisearch:
+        image: getmeili/meilisearch:v1.11
+        ports: ['7700:7700']
+        env:
+          MEILI_MASTER_KEY: masterKey
+        options: >-
+          --health-cmd "curl -sf http://localhost:7700/health"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
     steps:
+      - name: MinIO (binaire officiel)
+        working-directory: .
+        run: |
+          curl -fsSL -o /tmp/minio https://dl.min.io/server/minio/release/linux-amd64/minio
+          chmod +x /tmp/minio
+          mkdir -p /tmp/minio-data
+          MINIO_ROOT_USER=minioadmin MINIO_ROOT_PASSWORD=minioadmin \
+            nohup /tmp/minio server /tmp/minio-data --address ":9000" > /tmp/minio.log 2>&1 &
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:9000/minio/health/live && exit 0
+            sleep 2
+          done
+          echo "MinIO ne répond pas" >&2
+          cat /tmp/minio.log >&2
+          exit 1
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
@@ -107,6 +132,8 @@ jobs:
           cache: npm
           cache-dependency-path: backend/package-lock.json
       - run: npm ci
+      - name: Migrations DB
+        run: npm run migrate
       - run: npm run test:unit
 
   integration-tests:
@@ -148,18 +175,20 @@ jobs:
           --health-timeout 3s
           --health-retries 10
     steps:
-      - name: MinIO (image officielle quay.io)
+      - name: MinIO (binaire officiel)
         working-directory: .
         run: |
-          docker run -d --name minio -p 9000:9000 \
-            -e MINIO_ROOT_USER=minioadmin -e MINIO_ROOT_PASSWORD=minioadmin \
-            quay.io/minio/minio:latest server /data
+          curl -fsSL -o /tmp/minio https://dl.min.io/server/minio/release/linux-amd64/minio
+          chmod +x /tmp/minio
+          mkdir -p /tmp/minio-data
+          MINIO_ROOT_USER=minioadmin MINIO_ROOT_PASSWORD=minioadmin \
+            nohup /tmp/minio server /tmp/minio-data --address ":9000" > /tmp/minio.log 2>&1 &
           for i in $(seq 1 30); do
             curl -sf http://localhost:9000/minio/health/live && exit 0
             sleep 2
           done
           echo "MinIO ne répond pas" >&2
-          docker logs minio >&2
+          cat /tmp/minio.log >&2
           exit 1
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -205,18 +234,20 @@ jobs:
         env:
           MEILI_MASTER_KEY: masterKey
     steps:
-      - name: MinIO (image officielle quay.io)
+      - name: MinIO (binaire officiel)
         working-directory: .
         run: |
-          docker run -d --name minio -p 9000:9000 \
-            -e MINIO_ROOT_USER=minioadmin -e MINIO_ROOT_PASSWORD=minioadmin \
-            quay.io/minio/minio:latest server /data
+          curl -fsSL -o /tmp/minio https://dl.min.io/server/minio/release/linux-amd64/minio
+          chmod +x /tmp/minio
+          mkdir -p /tmp/minio-data
+          MINIO_ROOT_USER=minioadmin MINIO_ROOT_PASSWORD=minioadmin \
+            nohup /tmp/minio server /tmp/minio-data --address ":9000" > /tmp/minio.log 2>&1 &
           for i in $(seq 1 30); do
             curl -sf http://localhost:9000/minio/health/live && exit 0
             sleep 2
           done
           echo "MinIO ne répond pas" >&2
-          docker logs minio >&2
+          cat /tmp/minio.log >&2
           exit 1
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
