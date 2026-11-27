@@ -1,6 +1,6 @@
 # F11 — Contenu sur la carte : conception
 
-Statut : ordre de livraison **validé** (stories → lieux → événements, 2026-11-27). Restent à trancher : source des lieux, qui modère, géolocalisation des posts. Aucun code pour l'instant ; le lot 1 démarre après F10.
+Statut : ordre de livraison **validé** (stories → lieux → événements). Décisions confirmées : lieux saisis par la communauté seulement (pas d'import OpenStreetMap), modérés par les administrateurs de la plateforme ; posts non géolocalisés en v1. Lot 1 : PR #104. Lot 2 : PR #105. Lot 3 (événements) à faire.
 
 ## Ce qui existe aujourd'hui
 
