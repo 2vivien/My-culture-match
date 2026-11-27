@@ -86,6 +86,25 @@ describe('D1 — Export et suppression de compte', () => {
     expect(JSON.stringify(data).toLowerCase()).not.toMatch(/"(\w*)(token|secret|hash|password)(\w*)"\s*:/);
   });
 
+  it('exporte le profil Love de la personne, sans le contenu des autres', async () => {
+    const a = await onboardUser('acct');
+    const b = await onboardUser('acct');
+    const answers = { goals: ['serious'], relationship: 'slow', values: ['respect', 'honesty', 'family'], lifestyle: ['travel', 'music', 'art', 'cinema', 'nature'], distance: 'km50', understood: 'MARQUEUR-A' };
+    const put = (token: string, body: unknown) => app.request('/api/love/profile', { ...authed(token, 'PUT'), body: JSON.stringify(body) });
+    expect((await put(a.token, answers)).status).toBe(200);
+    expect((await put(b.token, { ...answers, understood: 'MARQUEUR-B-PRIVE' })).status).toBe(200);
+
+    const res = await app.request('/api/users/me/export', authed(a.token));
+    const data = (await res.json()) as { loveProfile: { answers: { understood: string; goals: string[] } } | null };
+    expect(data.loveProfile?.answers.understood).toBe('MARQUEUR-A');
+    expect(data.loveProfile?.answers.goals).toEqual(['serious']);
+    expect(JSON.stringify(data)).not.toContain('MARQUEUR-B-PRIVE');
+
+    const empty = await onboardUser('acct');
+    const none = (await (await app.request('/api/users/me/export', authed(empty.token))).json()) as { loveProfile: unknown };
+    expect(none.loveProfile).toBeNull();
+  });
+
   it('refuse la suppression sans phrase de confirmation (400)', async () => {
     const a = await onboardUser('acct');
     const res = await app.request('/api/users/me', { ...authed(a.token, 'DELETE'), body: JSON.stringify({ confirm: 'oui' }) });

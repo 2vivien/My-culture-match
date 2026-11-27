@@ -18,6 +18,23 @@ export function redactForExport<T>(value: T): T {
   return value;
 }
 
+export interface LoveProfileRow {
+  answers: unknown;
+  createdAt?: Date | string | null;
+  updatedAt?: Date | string | null;
+  [extra: string]: unknown;
+}
+
+/**
+ * Profil Love (réponses au questionnaire) tel qu'exporté : uniquement les réponses de la personne et les
+ * dates, par liste blanche (aucune autre colonne, aucun contenu d'un tiers). `null` si le questionnaire
+ * n'a jamais été rempli. Le résultat passe ensuite par redactForExport.
+ */
+export function shapeLoveProfileForExport(row: LoveProfileRow | null | undefined): { answers: unknown; createdAt: Date | string | null; updatedAt: Date | string | null } | null {
+  if (!row) return null;
+  return { answers: row.answers ?? null, createdAt: row.createdAt ?? null, updatedAt: row.updatedAt ?? null };
+}
+
 /** Phrase que l'utilisateur doit recopier pour supprimer son compte (action irréversible). */
 export const DELETE_CONFIRMATION = 'SUPPRIMER MON COMPTE';
 
@@ -28,5 +45,5 @@ export function isDeleteConfirmed(input: unknown): boolean {
 /** Les sections de l'export, dans l'ordre de présentation. */
 export const EXPORT_SECTIONS = [
   'profile', 'settings', 'consent', 'locationSettings', 'posts', 'comments',
-  'messagesSent', 'connections', 'loveMatches', 'blocks', 'notifications', 'stories', 'tribes',
+  'messagesSent', 'connections', 'loveMatches', 'loveProfile', 'blocks', 'notifications', 'stories', 'tribes',
 ] as const;

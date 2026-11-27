@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DELETE_CONFIRMATION, isDeleteConfirmed, redactForExport } from '../../../src/modules/users/account.export';
+import { DELETE_CONFIRMATION, EXPORT_SECTIONS, isDeleteConfirmed, redactForExport, shapeLoveProfileForExport } from '../../../src/modules/users/account.export';
 
 describe('redactForExport', () => {
   it('retire récursivement secrets, jetons et empreintes', () => {
@@ -37,5 +37,36 @@ describe('isDeleteConfirmed', () => {
     expect(isDeleteConfirmed('')).toBe(false);
     expect(isDeleteConfirmed(undefined)).toBe(false);
     expect(isDeleteConfirmed(true)).toBe(false);
+  });
+});
+
+describe('profil Love dans l’export', () => {
+  const answers = { goals: ['serious'], relationship: 'slow', values: ['respect', 'honesty', 'family'], lifestyle: ['travel', 'music', 'art', 'cinema', 'nature'], distance: 'km50', understood: 'Je cherche du sincère' };
+
+  it('est une section de l’export', () => {
+    expect(EXPORT_SECTIONS).toContain('loveProfile');
+  });
+
+  it('renvoie null si le questionnaire n’a jamais été rempli', () => {
+    expect(shapeLoveProfileForExport(undefined)).toBeNull();
+    expect(shapeLoveProfileForExport(null)).toBeNull();
+  });
+
+  it('ne garde que les réponses et les dates (liste blanche), sans autre colonne', () => {
+    const created = new Date(Date.UTC(2026, 0, 2));
+    const shaped = shapeLoveProfileForExport({ answers, createdAt: created, updatedAt: created, userId: 'u1', otherUserMessages: ['secret d’un tiers'] });
+    expect(shaped).toEqual({ answers, createdAt: created, updatedAt: created });
+    expect(JSON.stringify(shaped)).not.toContain('tiers');
+  });
+
+  it('survit à redactForExport : réponses intactes, dates en ISO', () => {
+    const d = new Date(Date.UTC(2026, 0, 2, 3, 4, 5));
+    const out = redactForExport({ loveProfile: shapeLoveProfileForExport({ answers, createdAt: d, updatedAt: d }) });
+    expect(out.loveProfile).toEqual({ answers, createdAt: '2026-01-02T03:04:05.000Z', updatedAt: '2026-01-02T03:04:05.000Z' });
+  });
+
+  it('redactForExport retire toujours un champ sensible qui s’y glisserait', () => {
+    const out = redactForExport({ loveProfile: shapeLoveProfileForExport({ answers: { ...answers, apiToken: 'x' } }) });
+    expect(JSON.stringify(out)).not.toContain('apiToken');
   });
 });

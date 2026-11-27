@@ -5,7 +5,7 @@ import { meilisearch } from '../../infrastructure/meilisearch';
 import { logger } from '../../middleware/logger';
 import { AppError } from '../../shared/utils/AppError';
 import { revokeAllUserSessions } from '../auth/session.service';
-import { redactForExport } from './account.export';
+import { redactForExport, shapeLoveProfileForExport } from './account.export';
 import { userLocationSettings } from '../location/location.schema';
 
 const POSTS_INDEX = 'posts';
@@ -19,7 +19,7 @@ export async function exportUserData(userId: string): Promise<Record<string, unk
   const [profile] = await db.select().from(schema.users).where(eq(schema.users.id, userId)).limit(1);
   if (!profile) throw AppError.notFound('Utilisateur introuvable', 'USER_NOT_FOUND');
 
-  const [settings, consent, locationSettings, posts, comments, messagesSent, connections, loveMatches, blocks, notifications, stories, tribes] = await Promise.all([
+  const [settings, consent, locationSettings, posts, comments, messagesSent, connections, loveMatches, loveProfile, blocks, notifications, stories, tribes] = await Promise.all([
     db.select().from(schema.userSettings).where(eq(schema.userSettings.userId, userId)).limit(1),
     db.select().from(schema.consentSettings).where(eq(schema.consentSettings.userId, userId)).limit(1),
     db.select().from(userLocationSettings).where(eq(userLocationSettings.userId, userId)).limit(1),
@@ -28,6 +28,7 @@ export async function exportUserData(userId: string): Promise<Record<string, unk
     db.select().from(schema.messages).where(eq(schema.messages.senderId, userId)).limit(ROW_LIMIT),
     db.select().from(schema.connections).where(or(eq(schema.connections.fromUserId, userId), eq(schema.connections.toUserId, userId))).limit(ROW_LIMIT),
     db.select().from(schema.loveMatches).where(eq(schema.loveMatches.userId, userId)).limit(ROW_LIMIT),
+    db.select().from(schema.loveProfiles).where(eq(schema.loveProfiles.userId, userId)).limit(1),
     db.select().from(schema.blocks).where(eq(schema.blocks.blockerId, userId)).limit(ROW_LIMIT),
     db.select().from(schema.notifications).where(eq(schema.notifications.userId, userId)).limit(ROW_LIMIT),
     db.select().from(schema.stories).where(eq(schema.stories.userId, userId)).limit(ROW_LIMIT),
@@ -41,7 +42,7 @@ export async function exportUserData(userId: string): Promise<Record<string, unk
     settings: settings[0] ?? null,
     consent: consent[0] ?? null,
     locationSettings: locationSettings[0] ?? null,
-    posts, comments, messagesSent, connections, loveMatches, blocks, notifications, stories, tribes,
+    posts, comments, messagesSent, connections, loveMatches, loveProfile: shapeLoveProfileForExport(loveProfile[0]), blocks, notifications, stories, tribes,
   });
 }
 
