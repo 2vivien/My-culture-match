@@ -6,7 +6,8 @@ const app = createApp();
 
 const unique = () => `${Date.now()}${Math.floor(Math.random() * 1000)}`;
 
-const MINOR_BIRTHDATE = '2010-01-01';
+// Âge minimal : 16 ans. Une date fixe finit par devenir majeure : on prend 10 ans avant aujourd'hui.
+const MINOR_BIRTHDATE = new Date(Date.now() - 10 * 365.25 * 24 * 3600 * 1000).toISOString().slice(0, 10);
 
 async function getOtpCode(email: string): Promise<string> {
   const raw = await redis.get(`otp:${email}`);
@@ -230,12 +231,13 @@ describe('GET /api/users/:id — profil public', () => {
     expect(email).not.toBe(body.email);
   });
 
-  it('retourne 404 pour un utilisateur inconnu', async () => {
+  it('refuse (403) un utilisateur inconnu, sans révéler s’il existe', async () => {
     const { token } = await onboardNewUser();
     const res = await app.request('/api/users/unknown-id-123', {
       headers: { Authorization: `Bearer ${token}` },
     });
-    expect(res.status).toBe(404);
+    // Même réponse qu'un profil masqué par ses préférences de confidentialité : pas d'oracle d'existence.
+    expect(res.status).toBe(403);
   });
 });
 
