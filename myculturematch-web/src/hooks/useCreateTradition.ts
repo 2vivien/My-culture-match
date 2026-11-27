@@ -2,6 +2,8 @@ import { useState, type ChangeEvent } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { traditionService } from '@/src/services/traditionService';
 import { uploadService } from '@/src/services/uploadService';
+import { tribuService } from '@/src/services/tribuService';
+import type { Flair } from '@/src/lib/tribeAccess';
 import { mediaUrl } from '@/src/lib/media';
 import type { TribeOption, TraditionSubmission } from '@/src/types/createTradition';
 import { useUIStore } from '@/src/stores/useUIStore';
@@ -49,8 +51,18 @@ export function useCreateTradition() {
     setFormats((prev) => ({ ...prev, [format]: !prev[format] }));
   };
 
+  // Flairs de la tribu choisie ; un 403 (tribu privée non rejointe) donne simplement « aucun flair ».
+  const { data: flairs = [], isLoading: flairsLoading } = useQuery<Flair[]>({
+    queryKey: ['tribu-flairs', selectedTribe?.id],
+    queryFn: () => tribuService.getFlairs(selectedTribe!.id).catch(() => []),
+    enabled: !!selectedTribe,
+    staleTime: 1000 * 60 * 5,
+  });
+  const [selectedFlairId, setSelectedFlairId] = useState<string | null>(null);
+
   const selectTribe = (tribe: TribeOption) => {
     setSelectedTribe(tribe);
+    setSelectedFlairId(null);
     setTribuDropdownOpen(false);
   };
 
@@ -100,6 +112,8 @@ export function useCreateTradition() {
       mediaUrl: activeSubTab === 'Images' ? resolvedMediaUrl : undefined,
       linkUrl: activeSubTab === 'Link' ? linkUrl : undefined,
       tribeId: selectedTribe?.id,
+      // Le flair n'a de sens que dans une tribu, et doit appartenir à cette tribu.
+      flairId: selectedTribe && flairs.some((f) => f.id === selectedFlairId) ? (selectedFlairId ?? undefined) : undefined,
       type: activeSubTab,
       tags: selectedTags.length > 0 ? selectedTags : undefined,
     };
@@ -140,5 +154,9 @@ export function useCreateTradition() {
     handleSubmit,
     selectedTags,
     toggleTag,
+    flairs,
+    flairsLoading,
+    selectedFlairId,
+    setSelectedFlairId,
   };
 }

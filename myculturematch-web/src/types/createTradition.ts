@@ -10,6 +10,7 @@ export interface TraditionSubmission {
   mediaUrl?: string;
   linkUrl?: string;
   tribeId?: string;
+  flairId?: string;
   type: 'Text' | 'Images' | 'Link';
   tags?: string[];
 }
