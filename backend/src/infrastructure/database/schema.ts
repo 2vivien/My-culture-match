@@ -213,6 +213,20 @@ export const tribes = pgTable(
   ],
 );
 
+export const tribeFlairs = pgTable(
+  'tribe_flairs',
+  {
+    id: text('id').primaryKey().$defaultFn(generateId),
+    tribeId: text('tribe_id')
+      .notNull()
+      .references(() => tribes.id, { onDelete: 'cascade' }),
+    name: text('name').notNull(),
+    color: text('color').notNull().default('#E27D60'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index('tribe_flairs_tribe_idx').on(t.tribeId)],
+);
+
 export const tribeJoinRequests = pgTable(
   'tribe_join_requests',
   {
@@ -275,6 +289,7 @@ export const posts = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
     tribeId: text('tribe_id').references(() => tribes.id, { onDelete: 'set null' }),
+    flairId: text('flair_id'),
     type: postTypeEnum('type').notNull().default('Text'),
     title: text('title'),
     text: text('text'),

@@ -50,6 +50,8 @@ export const listTribesQuerySchema = z.object({
   search: z.string().trim().max(100).optional(),
   cursor: z.string().trim().optional(),
   limit: z.coerce.number().int().min(1).max(50).default(20),
+  /** Filtre de posts par flair (GET /tribes/:id/posts). */
+  flairId: z.string().trim().min(1).optional(),
 });
 
 /** POST /api/tribu/posts/:id/upvote. */
@@ -94,3 +96,14 @@ export type PromoteModeratorInput = z.infer<typeof promoteModeratorSchema>;
 export type ReportInput = z.infer<typeof reportSchema>;
 export type CreateRuleInput = z.infer<typeof createRuleSchema>;
 export type PatchRuleInput = z.infer<typeof patchRuleSchema>;
+
+/** POST /api/tribes/:id/flairs. */
+export const createFlairSchema = z
+  .object({
+    name: z.string().trim().min(2, 'Flair : 2 caractères minimum').max(24, 'Flair : 24 caractères maximum'),
+    color: z.string().regex(/^#[0-9a-fA-F]{6}$/, 'Couleur : format #RRGGBB').default('#E27D60'),
+  })
+  .strict();
+
+/** PUT /api/tribes/:id/posts/:postId/flair — flairId null retire le flair. */
+export const setPostFlairSchema = z.object({ flairId: z.string().trim().min(1).nullable() }).strict();

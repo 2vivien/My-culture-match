@@ -10,6 +10,8 @@ import {
   reportSchema,
   createRuleSchema,
   patchRuleSchema,
+  createFlairSchema,
+  setPostFlairSchema,
 } from './tribes.schemas';
 import {
   listTribes,
@@ -24,6 +26,10 @@ import {
   listJoinRequests,
   resolveJoinRequest,
   tribePosts,
+  listFlairs,
+  createFlair,
+  deleteFlair,
+  setPostFlair,
   votePost,
   pinTribePost,
   promoteModerator,
@@ -135,9 +141,34 @@ tribesModule.delete('/:id/leave', async (c) => {
 // GET /api/tribes/:id/posts
 tribesModule.get('/:id/posts', zValidator('query', listTribesQuerySchema), async (c) => {
   const { userId } = c.get('auth');
-  const { cursor, limit } = c.req.valid('query');
-  const result = await tribePosts(c.req.param('id'), userId, cursor, limit);
+  const { cursor, limit, flairId } = c.req.valid('query');
+  const result = await tribePosts(c.req.param('id'), userId, cursor, limit, flairId);
   return c.json(result, 200);
+});
+
+// GET /api/tribes/:id/flairs
+tribesModule.get('/:id/flairs', async (c) => {
+  const { userId } = c.get('auth');
+  return c.json(await listFlairs(c.req.param('id'), userId), 200);
+});
+
+// POST /api/tribes/:id/flairs — modérateur+
+tribesModule.post('/:id/flairs', zValidator('json', createFlairSchema), async (c) => {
+  const { userId } = c.get('auth');
+  return c.json(await createFlair(c.req.param('id'), userId, c.req.valid('json')), 201);
+});
+
+// DELETE /api/tribes/:id/flairs/:flairId — modérateur+
+tribesModule.delete('/:id/flairs/:flairId', async (c) => {
+  const { userId } = c.get('auth');
+  return c.json(await deleteFlair(c.req.param('id'), userId, c.req.param('flairId')), 200);
+});
+
+// PUT /api/tribes/:id/posts/:postId/flair — auteur ou modérateur
+tribesModule.put('/:id/posts/:postId/flair', zValidator('json', setPostFlairSchema), async (c) => {
+  const { userId } = c.get('auth');
+  const { flairId } = c.req.valid('json');
+  return c.json(await setPostFlair(c.req.param('id'), c.req.param('postId'), userId, flairId), 200);
 });
 
 // GET /api/tribes/:id/rules

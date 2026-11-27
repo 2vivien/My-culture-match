@@ -26,6 +26,7 @@ export interface HydratedPost {
     glow: string;
   };
   tribe: { id: string; name: string; tag: string } | null;
+  flair: { id: string; name: string; color: string } | null;
   type: string;
   title: string | null;
   body: string | null;
@@ -87,6 +88,11 @@ export async function createPost(userId: string, input: CreatePostInput): Promis
       .limit(1);
     if (!member[0]) throw AppError.forbidden('Vous devez être membre de cette tribu pour y poster', 'TRIBE_MEMBERSHIP_REQUIRED');
   }
+  if (input.flairId) {
+    if (!input.tribeId) throw AppError.badRequest('Un flair nécessite une tribu', 'FLAIR_REQUIRES_TRIBE');
+    const [flair] = await db.select({ id: schema.tribeFlairs.id }).from(schema.tribeFlairs).where(and(eq(schema.tribeFlairs.id, input.flairId), eq(schema.tribeFlairs.tribeId, input.tribeId))).limit(1);
+    if (!flair) throw AppError.badRequest('Flair inconnu pour cette tribu', 'FLAIR_NOT_FOUND');
+  }
 
   const moderation = moderatePost(input.title ?? '', input.body);
   const status = moderation.flag ? 'flagged' : 'published';
@@ -101,6 +107,7 @@ export async function createPost(userId: string, input: CreatePostInput): Promis
     .values({
       authorId: userId,
       tribeId: input.tribeId ?? null,
+      flairId: input.flairId ?? null,
       type: input.type,
       title: input.title ?? null,
       body: input.body ?? null,
@@ -154,6 +161,9 @@ async function hydratePost(
   const tribe = post.tribeId
     ? (await db.select().from(schema.tribes).where(eq(schema.tribes.id, post.tribeId)).limit(1))[0] ?? null
     : null;
+  const flair = post.flairId
+    ? (await db.select({ id: schema.tribeFlairs.id, name: schema.tribeFlairs.name, color: schema.tribeFlairs.color }).from(schema.tribeFlairs).where(eq(schema.tribeFlairs.id, post.flairId)).limit(1))[0] ?? null
+    : null;
   const deltas = await getCounterDeltas(post.id);
 
   // Repost : hydrate le post original (auteur + contenu complet) pour l'affichage.
@@ -176,6 +186,7 @@ async function hydratePost(
       ? { id: author.id, name: author.name, username: author.username, avatar: author.avatar, level: author.level, glow: author.glow }
       : { id: post.authorId, name: 'Utilisateur', username: 'user', avatar: null, level: 1, glow: 'none' },
     tribe: tribe ? { id: tribe.id, name: tribe.name, tag: tribe.tag ?? '' } : null,
+    flair,
     type: post.type,
     title: post.title,
     body: post.body,

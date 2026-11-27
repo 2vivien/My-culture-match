@@ -292,12 +292,12 @@ async function memberCount(tribeId: string): Promise<number> {
 }
 
 /** GET /api/tribes/:id/posts — posts tribu (cursor), hydratés (auteur, likes, votes). */
-export async function tribePosts(tribeId: string, viewerId: string, cursor: string | undefined, limit: number): Promise<{ posts: Awaited<ReturnType<typeof getPostsByIds>>; nextCursor: string | null }> {
+export async function tribePosts(tribeId: string, viewerId: string, cursor: string | undefined, limit: number, flairId?: string): Promise<{ posts: Awaited<ReturnType<typeof getPostsByIds>>; nextCursor: string | null }> {
   await assertCanReadTribe(tribeId, viewerId);
   const query = db
     .select()
     .from(schema.posts)
-    .where(and(eq(schema.posts.tribeId, tribeId), eq(schema.posts.status, 'published'), cursor ? lt(schema.posts.createdAt, new Date(cursor)) : undefined))
+    .where(and(eq(schema.posts.tribeId, tribeId), eq(schema.posts.status, 'published'), flairId ? eq(schema.posts.flairId, flairId) : undefined, cursor ? lt(schema.posts.createdAt, new Date(cursor)) : undefined))
     .orderBy(desc(schema.posts.pinned), desc(schema.posts.createdAt))
     .limit(limit + 1);
   const rows = await query;
@@ -605,4 +605,63 @@ async function assertCanReadTribe(tribeId: string, viewerId: string): Promise<vo
   if (!canReadTribeContent(tribe.visibility, Boolean(membership))) {
     throw AppError.forbidden('Cette tribu est privée : demandez à la rejoindre', 'TRIBE_PRIVATE');
   }
+}
+
+
+// ── Flairs ─────────────────────────────────────────────────────
+
+const MAX_FLAIRS_PER_TRIBE = 20;
+
+/** GET /api/tribes/:id/flairs — lisible comme le reste du contenu de la tribu. */
+export async function listFlairs(tribeId: string, viewerId: string): Promise<{ flairs: Array<{ id: string; name: string; color: string }> }> {
+  await assertCanReadTribe(tribeId, viewerId);
+  const flairs = await db.select({ id: schema.tribeFlairs.id, name: schema.tribeFlairs.name, color: schema.tribeFlairs.color })
+    .from(schema.tribeFlairs).where(eq(schema.tribeFlairs.tribeId, tribeId)).orderBy(schema.tribeFlairs.createdAt);
+  return { flairs };
+}
+
+/** POST /api/tribes/:id/flairs — modérateur+. */
+export async function createFlair(tribeId: string, userId: string, input: { name: string; color: string }): Promise<{ id: string; name: string; color: string }> {
+  await requireModerator(tribeId, userId);
+  const [count] = await db.select({ n: sql<number>`count(*)::int` }).from(schema.tribeFlairs).where(eq(schema.tribeFlairs.tribeId, tribeId));
+  if ((count?.n ?? 0) >= MAX_FLAIRS_PER_TRIBE) throw AppError.badRequest(`Maximum ${MAX_FLAIRS_PER_TRIBE} flairs par tribu`, 'FLAIR_LIMIT_REACHED');
+  const [dup] = await db.select({ id: schema.tribeFlairs.id }).from(schema.tribeFlairs)
+    .where(and(eq(schema.tribeFlairs.tribeId, tribeId), sql`lower(${schema.tribeFlairs.name}) = lower(${input.name})`)).limit(1);
+  if (dup) throw AppError.conflict('Ce flair existe déjà', 'FLAIR_NAME_TAKEN');
+  const [flair] = await db.insert(schema.tribeFlairs).values({ tribeId, name: input.name, color: input.color }).returning();
+  if (!flair) throw AppError.badRequest('Échec de création du flair', 'FLAIR_CREATE_FAILED');
+  return { id: flair.id, name: flair.name, color: flair.color };
+}
+
+/** DELETE /api/tribes/:id/flairs/:flairId — modérateur+ ; les posts concernés perdent leur flair. */
+export async function deleteFlair(tribeId: string, userId: string, flairId: string): Promise<{ deleted: boolean }> {
+  await requireModerator(tribeId, userId);
+  const affected = await db.select({ id: schema.posts.id }).from(schema.posts).where(eq(schema.posts.flairId, flairId));
+  const removed = await db.delete(schema.tribeFlairs)
+    .where(and(eq(schema.tribeFlairs.id, flairId), eq(schema.tribeFlairs.tribeId, tribeId)))
+    .returning({ id: schema.tribeFlairs.id });
+  if (removed.length === 0) throw AppError.notFound('Flair introuvable', 'FLAIR_NOT_FOUND');
+  // La clé étrangère annule flair_id en base ; on purge le cache des posts qui le portaient.
+  if (affected.length > 0) await redis.del(...affected.map((a) => `post:${a.id}`));
+  return { deleted: true };
+}
+
+/** PUT /api/tribes/:id/posts/:postId/flair — l'auteur du post ou un modérateur ; flairId null le retire. */
+export async function setPostFlair(tribeId: string, postId: string, userId: string, flairId: string | null): Promise<{ flairId: string | null }> {
+  const membership = await isMember(tribeId, userId);
+  if (!membership) throw AppError.forbidden('Réservé aux membres de la tribu', 'TRIBE_MEMBERSHIP_REQUIRED');
+  const [post] = await db.select({ authorId: schema.posts.authorId, status: schema.posts.status }).from(schema.posts)
+    .where(and(eq(schema.posts.id, postId), eq(schema.posts.tribeId, tribeId))).limit(1);
+  if (!post || post.status === 'deleted') throw AppError.notFound('Post introuvable dans cette tribu', 'POST_NOT_FOUND');
+  if (post.authorId !== userId && !hasModRole(membership.role)) {
+    throw AppError.forbidden('Seul l’auteur ou un modérateur peut changer le flair', 'FLAIR_FORBIDDEN');
+  }
+  if (flairId) {
+    const [flair] = await db.select({ id: schema.tribeFlairs.id }).from(schema.tribeFlairs)
+      .where(and(eq(schema.tribeFlairs.id, flairId), eq(schema.tribeFlairs.tribeId, tribeId))).limit(1);
+    if (!flair) throw AppError.badRequest('Flair inconnu pour cette tribu', 'FLAIR_NOT_FOUND');
+  }
+  await db.update(schema.posts).set({ flairId, updatedAt: new Date() }).where(eq(schema.posts.id, postId));
+  await redis.del(`post:${postId}`);
+  return { flairId };
 }
