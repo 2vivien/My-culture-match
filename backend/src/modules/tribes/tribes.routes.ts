@@ -20,6 +20,9 @@ import {
   deleteTribe,
   joinTribe,
   leaveTribe,
+  cancelJoinRequest,
+  listJoinRequests,
+  resolveJoinRequest,
   tribePosts,
   votePost,
   pinTribePost,
@@ -47,7 +50,8 @@ tribesModule.use('*', requireAuth);
 // GET /api/tribes
 tribesModule.get('/', zValidator('query', listTribesQuerySchema), async (c) => {
   const { search, cursor, limit } = c.req.valid('query');
-  const result = await listTribes(search, cursor, limit);
+  const { userId } = c.get('auth');
+  const result = await listTribes(search, cursor, limit, userId);
   return c.json(result, 200);
 });
 
@@ -97,6 +101,28 @@ tribesModule.post('/:id/join', async (c) => {
   const { userId } = c.get('auth');
   const result = await joinTribe(c.req.param('id'), userId);
   return c.json(result, 200);
+});
+
+// DELETE /api/tribes/:id/join-request — retirer sa demande d'adhésion (tribu privée)
+tribesModule.delete('/:id/join-request', async (c) => {
+  const { userId } = c.get('auth');
+  return c.json(await cancelJoinRequest(c.req.param('id'), userId), 200);
+});
+
+// GET /api/tribes/:id/join-requests — demandes en attente (modérateur+)
+tribesModule.get('/:id/join-requests', async (c) => {
+  const { userId } = c.get('auth');
+  return c.json(await listJoinRequests(c.req.param('id'), userId), 200);
+});
+
+// POST /api/tribes/:id/join-requests/:userId/approve | decline (modérateur+)
+tribesModule.post('/:id/join-requests/:userId/approve', async (c) => {
+  const { userId } = c.get('auth');
+  return c.json(await resolveJoinRequest(c.req.param('id'), userId, c.req.param('userId'), true), 200);
+});
+tribesModule.post('/:id/join-requests/:userId/decline', async (c) => {
+  const { userId } = c.get('auth');
+  return c.json(await resolveJoinRequest(c.req.param('id'), userId, c.req.param('userId'), false), 200);
 });
 
 // DELETE /api/tribes/:id/leave

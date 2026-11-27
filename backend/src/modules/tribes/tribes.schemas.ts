@@ -24,6 +24,7 @@ export const createTribeSchema = z
     rules: z.array(ruleSchema).min(2, 'Au moins 2 règles requises').max(10).optional(),
     avatar: z.string().url().optional(),
     banner: z.string().url().optional(),
+    visibility: z.enum(['public', 'private']).default('public'),
   })
   .strict();
 
@@ -37,6 +38,7 @@ export const patchTribeSchema = z
     topic: z.enum(TRIBE_TOPICS).optional(),
     avatar: z.string().url().optional(),
     banner: z.string().url().optional(),
+    visibility: z.enum(['public', 'private']).optional(),
   })
   .strict()
   .refine((v) => Object.keys(v).length > 0, { message: 'Au moins un champ requis' });

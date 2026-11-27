@@ -9,6 +9,7 @@ import { createNotification } from '../notifications/notifications.service';
 import { enqueueFeedFanout, enqueueSearchIndex, enqueuePostEmbedding } from './posts.jobs';
 import { enqueueModerationScan } from '../moderation/moderation.queue';
 import { postsCreatedTotal } from '../../infrastructure/monitoring/metrics';
+import { assertCanReadTribePost, unreadableTribeIds } from '../tribes/tribes.access';
 import type { CreatePostInput, CreateCommentInput } from './posts.schemas';
 
 const POST_CACHE_TTL = 30 * 60; // 30 min
@@ -123,7 +124,9 @@ export async function createPost(userId: string, input: CreatePostInput): Promis
   // Jobs async : fanout followers, indexation search, embedding post, scan modération
   if (!post) throw AppError.badRequest('Échec de création du post', 'POST_CREATE_FAILED');
   await enqueueFeedFanout(post.id, userId);
-  if (status === 'published') {
+  // Les posts d'une tribu privée ne sont jamais indexés pour la recherche.
+  const [tribeRow] = input.tribeId ? await db.select({ visibility: schema.tribes.visibility }).from(schema.tribes).where(eq(schema.tribes.id, input.tribeId)).limit(1) : [];
+  if (status === 'published' && tribeRow?.visibility !== 'private') {
     await enqueueSearchIndex(post.id);
   }
   await enqueuePostEmbedding(post.id);
@@ -201,6 +204,7 @@ export async function getPostById(postId: string, viewerId: string): Promise<Hyd
   if (cached) {
     const post = JSON.parse(cached) as schema.Post;
     if (post.status !== 'deleted') {
+      await assertCanReadTribePost(post.tribeId, viewerId);
       const rel = await postRelations(postId, viewerId);
       return hydratePost(post, viewerId, rel);
     }
@@ -212,6 +216,7 @@ export async function getPostById(postId: string, viewerId: string): Promise<Hyd
   if (post.status === 'flagged' && post.authorId !== viewerId) {
     throw AppError.forbidden('Ce post est en attente de modération', 'POST_FLAGGED');
   }
+  await assertCanReadTribePost(post.tribeId, viewerId);
 
   await redis.set(postCacheKey(postId), JSON.stringify(post), 'EX', POST_CACHE_TTL);
   const rel = await postRelations(postId, viewerId);
@@ -223,7 +228,8 @@ export async function getPostsByIds(postIds: string[], viewerId: string): Promis
   if (postIds.length === 0) return [];
 
   const rows = await db.select().from(schema.posts).where(inArray(schema.posts.id, postIds));
-  const visible = rows.filter((p) => p.status !== 'deleted' && (p.status !== 'flagged' || p.authorId === viewerId));
+  const hiddenTribes = await unreadableTribeIds(rows.map((p) => p.tribeId).filter((id): id is string => Boolean(id)), viewerId);
+  const visible = rows.filter((p) => p.status !== 'deleted' && (p.status !== 'flagged' || p.authorId === viewerId) && !(p.tribeId && hiddenTribes.has(p.tribeId)));
   const rank = new Map(rows.map((p, i) => [p.id, i]));
   const posts = [...visible].sort((a, b) => (rank.get(a.id) ?? 0) - (rank.get(b.id) ?? 0));
 
@@ -241,8 +247,9 @@ export async function getPostsByIds(postIds: string[], viewerId: string): Promis
 
 /** POST /api/posts/:id/like — toggle. */
 export async function toggleLike(userId: string, postId: string): Promise<{ liked: boolean; likes: number }> {
-  const [post] = await db.select({ status: schema.posts.status, authorId: schema.posts.authorId }).from(schema.posts).where(eq(schema.posts.id, postId)).limit(1);
+  const [post] = await db.select({ status: schema.posts.status, authorId: schema.posts.authorId, tribeId: schema.posts.tribeId }).from(schema.posts).where(eq(schema.posts.id, postId)).limit(1);
   if (!post || post.status === 'deleted') throw AppError.notFound('Post introuvable', 'POST_NOT_FOUND');
+  await assertCanReadTribePost(post.tribeId, userId);
 
   const existing = await db.select().from(schema.postLikes).where(and(eq(schema.postLikes.postId, postId), eq(schema.postLikes.userId, userId))).limit(1);
   if (existing[0]) {
@@ -276,8 +283,9 @@ async function counterValue(postId: string, counter: 'likes' | 'saves' | 'shares
 
 /** POST /api/posts/:id/comments. */
 export async function addComment(userId: string, postId: string, input: CreateCommentInput): Promise<{ commentId: string }> {
-  const [post] = await db.select({ status: schema.posts.status, authorId: schema.posts.authorId }).from(schema.posts).where(eq(schema.posts.id, postId)).limit(1);
+  const [post] = await db.select({ status: schema.posts.status, authorId: schema.posts.authorId, tribeId: schema.posts.tribeId }).from(schema.posts).where(eq(schema.posts.id, postId)).limit(1);
   if (!post || post.status === 'deleted') throw AppError.notFound('Post introuvable', 'POST_NOT_FOUND');
+  await assertCanReadTribePost(post.tribeId, userId);
 
   if (input.parentId) {
     const [parent] = await db.select({ id: schema.comments.id }).from(schema.comments).where(and(eq(schema.comments.id, input.parentId), eq(schema.comments.postId, postId))).limit(1);
@@ -305,9 +313,10 @@ export async function addComment(userId: string, postId: string, input: CreateCo
 }
 
 /** GET /api/posts/:id/comments — pagination cursor. */
-export async function listComments(postId: string, cursor: string | undefined, limit: number): Promise<{ comments: Array<Record<string, unknown>>; nextCursor: string | null }> {
-  const [post] = await db.select({ status: schema.posts.status }).from(schema.posts).where(eq(schema.posts.id, postId)).limit(1);
+export async function listComments(postId: string, cursor: string | undefined, limit: number, viewerId: string): Promise<{ comments: Array<Record<string, unknown>>; nextCursor: string | null }> {
+  const [post] = await db.select({ status: schema.posts.status, tribeId: schema.posts.tribeId }).from(schema.posts).where(eq(schema.posts.id, postId)).limit(1);
   if (!post || post.status === 'deleted') throw AppError.notFound('Post introuvable', 'POST_NOT_FOUND');
+  await assertCanReadTribePost(post.tribeId, viewerId);
 
   const query = db
     .select({
@@ -340,8 +349,9 @@ export async function listComments(postId: string, cursor: string | undefined, l
 
 /** POST /api/posts/:id/share — une seule fois par utilisateur. */
 export async function sharePost(userId: string, postId: string): Promise<{ shared: boolean; shares: number }> {
-  const [post] = await db.select({ status: schema.posts.status }).from(schema.posts).where(eq(schema.posts.id, postId)).limit(1);
+  const [post] = await db.select({ status: schema.posts.status, tribeId: schema.posts.tribeId }).from(schema.posts).where(eq(schema.posts.id, postId)).limit(1);
   if (!post || post.status === 'deleted') throw AppError.notFound('Post introuvable', 'POST_NOT_FOUND');
+  await assertCanReadTribePost(post.tribeId, userId);
 
   try {
     await db.insert(schema.shares).values({ postId, userId });
@@ -354,8 +364,9 @@ export async function sharePost(userId: string, postId: string): Promise<{ share
 
 /** POST /api/posts/:id/save — toggle signet. */
 export async function toggleSave(userId: string, postId: string): Promise<{ saved: boolean; saves: number }> {
-  const [post] = await db.select({ status: schema.posts.status }).from(schema.posts).where(eq(schema.posts.id, postId)).limit(1);
+  const [post] = await db.select({ status: schema.posts.status, tribeId: schema.posts.tribeId }).from(schema.posts).where(eq(schema.posts.id, postId)).limit(1);
   if (!post || post.status === 'deleted') throw AppError.notFound('Post introuvable', 'POST_NOT_FOUND');
+  await assertCanReadTribePost(post.tribeId, userId);
 
   const existing = await db.select().from(schema.saves).where(and(eq(schema.saves.postId, postId), eq(schema.saves.userId, userId))).limit(1);
   if (existing[0]) {

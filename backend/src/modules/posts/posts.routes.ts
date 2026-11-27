@@ -69,7 +69,8 @@ postsModule.post('/:id/comments', zValidator('json', createCommentSchema), async
 // GET /api/posts/:id/comments — liste (cursor)
 postsModule.get('/:id/comments', zValidator('query', listCommentsQuerySchema), async (c) => {
   const { cursor, limit } = c.req.valid('query');
-  const result = await listComments(c.req.param('id'), cursor, limit);
+  const { userId } = c.get('auth');
+  const result = await listComments(c.req.param('id'), cursor, limit, userId);
   return c.json(result, 200);
 });
 
