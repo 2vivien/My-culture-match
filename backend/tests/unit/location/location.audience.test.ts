@@ -26,6 +26,10 @@ describe('canSeeLocation — sélection (« ces personnes seulement »)', () => 
     expect(canSeeLocation({ ...base, mode: 'selected', listed: false, isFriend: true })).toBe(false);
   });
 
+  it('une personne listée qui n’est plus compagnon (amitié supprimée) ne voit plus rien', () => {
+    expect(canSeeLocation({ ...base, mode: 'selected', listed: true, isFriend: false })).toBe(false);
+  });
+
   it('« personne » reste prioritaire sur la liste', () => {
     expect(canSeeLocation({ ...base, mode: 'selected', visibility: 'nobody', listed: true })).toBe(false);
   });
