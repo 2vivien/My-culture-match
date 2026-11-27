@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { visibilityAllows } from './consent.policy';
+import { visibilityAllows } from '../../../src/modules/consent/consent.policy';
 
 describe('consent visibility policy', () => {
   const friend = { friend: true, fof: true, nearby: false };
