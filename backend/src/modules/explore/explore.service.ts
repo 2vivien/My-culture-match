@@ -1,4 +1,5 @@
-import { desc, eq, and, isNull, inArray } from 'drizzle-orm';
+import { desc, eq, and, isNull, inArray, sql } from 'drizzle-orm';
+import { readablePostCondition } from '../tribes/tribes.access';
 import { db, schema } from '../../infrastructure/database';
 import { redis } from '../../infrastructure/redis';
 import { tribeVisitorsKey } from '../tribes/tribes.service';
@@ -16,6 +17,8 @@ export async function getExploreData(userId: string) {
   const tribesRaw = await db
     .select()
     .from(schema.tribes)
+    // Une tribu privée n'apparaît qu'à ses membres.
+    .where(sql`(${schema.tribes.visibility} = 'public' OR EXISTS (SELECT 1 FROM tribe_members m WHERE m.tribe_id = ${schema.tribes.id} AND m.user_id = ${userId}))`)
     .orderBy(desc(schema.tribes.memberCount))
     .limit(8);
 
@@ -118,7 +121,7 @@ export async function getExploreData(userId: string) {
       tags: schema.posts.tags,
     })
     .from(schema.posts)
-    .where(and(eq(schema.posts.type, 'Images'), isNull(schema.posts.deletedAt)))
+    .where(and(eq(schema.posts.type, 'Images'), isNull(schema.posts.deletedAt), readablePostCondition(userId)))
     .orderBy(desc(schema.posts.likes))
     .limit(6);
 
@@ -147,7 +150,7 @@ export async function getExploreData(userId: string) {
       tags: schema.posts.tags,
     })
     .from(schema.posts)
-    .where(and(eq(schema.posts.type, 'Images'), isNull(schema.posts.deletedAt)))
+    .where(and(eq(schema.posts.type, 'Images'), isNull(schema.posts.deletedAt), readablePostCondition(userId)))
     .orderBy(desc(schema.posts.views))
     .limit(4);
 

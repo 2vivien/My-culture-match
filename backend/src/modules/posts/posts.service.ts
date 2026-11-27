@@ -68,12 +68,19 @@ export async function createPost(userId: string, input: CreatePostInput): Promis
     if (!input.tribeId) throw AppError.badRequest('Choisissez une communauté pour reposter', 'TRIBE_REQUIRED');
     if (!input.originalPostId) throw AppError.badRequest('Post original manquant', 'ORIGINAL_POST_REQUIRED');
     const [original] = await db
-      .select({ id: schema.posts.id, status: schema.posts.status, authorId: schema.posts.authorId })
+      .select({ id: schema.posts.id, status: schema.posts.status, authorId: schema.posts.authorId, tribeId: schema.posts.tribeId })
       .from(schema.posts)
       .where(eq(schema.posts.id, input.originalPostId))
       .limit(1);
     if (!original || original.status === 'deleted') {
       throw AppError.notFound('Post original introuvable', 'POST_NOT_FOUND');
+    }
+    await assertCanReadTribePost(original.tribeId, userId);
+    if (original.tribeId) {
+      const [originTribe] = await db.select({ visibility: schema.tribes.visibility }).from(schema.tribes).where(eq(schema.tribes.id, original.tribeId)).limit(1);
+      if (originTribe?.visibility === 'private') {
+        throw AppError.forbidden('Un post d’une tribu privée ne peut pas être reposté', 'PRIVATE_REPOST_FORBIDDEN');
+      }
     }
     if (original.authorId === userId) {
       throw AppError.badRequest('Vous ne pouvez pas reposter votre propre publication', 'SELF_REPOST_NOT_ALLOWED');
@@ -174,7 +181,9 @@ async function hydratePost(
       .from(schema.posts)
       .where(and(eq(schema.posts.id, post.originalPostId), ne(schema.posts.status, 'deleted')))
       .limit(1);
-    if (original) {
+    // Reposts anciens d'un post devenu privé : l'original n'est exposé qu'à ceux qui peuvent le lire.
+    const originalHidden = original?.tribeId ? (await unreadableTribeIds([original.tribeId], viewerId)).has(original.tribeId) : false;
+    if (original && !originalHidden) {
       const origRel = await postRelations(original.id, viewerId);
       originalPost = await hydratePost(original, viewerId, origRel, true);
     }

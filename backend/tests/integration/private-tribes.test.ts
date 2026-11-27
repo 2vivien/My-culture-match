@@ -170,4 +170,42 @@ describe('tribus privées', () => {
     const res = await json<{ joined: boolean }>(await app.request(`/api/tribes/${id}/join`, { method: 'POST', headers: auth(visitor) }));
     expect(res.joined).toBe(true);
   });
+
+  it('l’Explorer ne divulgue ni la tribu privée ni ses médias à un non-membre', async () => {
+    const owner = await login();
+    const outsider = await login();
+    const name = `Secrete ${unique()}`;
+    const res = await createTribe(owner, { visibility: 'private', name });
+    const id = (await json<{ id: string }>(res)).id;
+    await app.request('/api/posts', { method: 'POST', headers: auth(owner), body: JSON.stringify({ type: 'Images', title: 'Image privée', mediaUrls: ['https://example.com/prive.jpg'], tribeId: id }) });
+
+    const asOutsider = JSON.stringify(await json<unknown>(await app.request('/api/explore', { headers: auth(outsider) })));
+    expect(asOutsider).not.toContain(name);
+    expect(asOutsider).not.toContain('prive.jpg');
+  });
+
+  it('un post d’une tribu privée ne peut pas être reposté vers une tribu publique', async () => {
+    const owner = await login();
+    const member = await login();
+    const id = await privateTribe(owner);
+    const postId = await postIn(owner, id, 'À ne pas diffuser');
+    await app.request(`/api/tribes/${id}/join`, { method: 'POST', headers: auth(member) });
+    await app.request(`/api/tribes/${id}/join-requests/${await meId(member)}/approve`, { method: 'POST', headers: auth(owner) });
+
+    const publicTribe = (await json<{ id: string }>(await createTribe(member))).id;
+    const repost = await app.request('/api/posts', { method: 'POST', headers: auth(member), body: JSON.stringify({ type: 'Repost', title: 'Repost', tribeId: publicTribe, originalPostId: postId }) });
+    expect(repost.status).toBe(403);
+  });
+
+  it('supprimer une tribu privée ne rend pas ses posts publics', async () => {
+    const owner = await login();
+    const outsider = await login();
+    const id = await privateTribe(owner);
+    const postId = await postIn(owner, id, 'Contenu privé');
+
+    expect((await app.request(`/api/tribes/${id}`, { method: 'DELETE', headers: auth(owner) })).status).toBe(200);
+    expect((await app.request(`/api/posts/${postId}`, { headers: auth(outsider) })).status).toBe(404);
+    const feed = await json<{ posts: Array<{ id: string }> }>(await app.request('/api/feed?filter=for-you', { headers: auth(outsider) }));
+    expect(feed.posts.map((p) => p.id)).not.toContain(postId);
+  });
 });
