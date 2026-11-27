@@ -397,6 +397,10 @@ export const stories = pgTable(
     type: storyTypeEnum('type').notNull().default('image'),
     url: text('url').notNull(),
     caption: text('caption'),
+    /** Lieu choisi (centre de cellule de grille), jamais le GPS brut. */
+    placeLat: doublePrecision('place_lat'),
+    placeLon: doublePrecision('place_lon'),
+    placeLabel: text('place_label'),
     viewers: integer('viewers').notNull().default(0),
     expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
