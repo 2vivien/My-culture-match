@@ -1,10 +1,10 @@
-import { and, desc, eq, gte, lte, sql } from 'drizzle-orm';
+import { and, desc, eq, gte, inArray, lte, sql } from 'drizzle-orm';
 import { db, schema } from '../../infrastructure/database';
 import { AppError } from '../../shared/utils/AppError';
 import { rateLimitHit } from '../../shared/utils/rate-limit';
 import { recordAudit } from '../audit/audit.service';
 import { boundingBox } from '../location/location.service';
-import { distanceMeters, isDuplicatePlace, isValidRejectionReason, nextPlaceStatus, PLACE_LIMITS, type PlaceStatus } from './places.policy';
+import { distanceMeters, isDuplicatePlace, isValidRejectionReason, nextPlaceStatus, PLACE_LIMITS, shouldAutoHidePlace, type PlaceStatus } from './places.policy';
 import type { ProposePlaceInput } from './places.schemas';
 
 export interface PublicPlaceDto {
@@ -28,6 +28,17 @@ type PlaceRow = typeof schema.culturalPlaces.$inferSelect;
 const toPublic = (r: PlaceRow): PublicPlaceDto => ({
   id: r.id, name: r.name, category: r.category, description: r.description, country: r.country, latitude: r.latitude, longitude: r.longitude,
 });
+
+/** Lieux masqués automatiquement : assez de signalements ouverts de personnes distinctes (voir PLACE_AUTO_HIDE_REPORTS). */
+export async function autoHiddenPlaceIds(placeIds: string[]): Promise<Set<string>> {
+  if (placeIds.length === 0) return new Set();
+  const rows = await db
+    .select({ targetId: schema.reports.targetId, n: sql<number>`count(distinct ${schema.reports.reporterId})::int` })
+    .from(schema.reports)
+    .where(and(eq(schema.reports.targetType, 'place'), eq(schema.reports.status, 'open'), inArray(schema.reports.targetId, placeIds)))
+    .groupBy(schema.reports.targetId);
+  return new Set(rows.filter((r) => shouldAutoHidePlace(r.n)).map((r) => r.targetId));
+}
 
 /** POST /api/places — proposition. Toujours « en attente » : seule une modération publie. */
 export async function proposePlace(userId: string, input: ProposePlaceInput): Promise<MyPlaceDto> {
@@ -78,7 +89,9 @@ export async function listPlaces(params: { lat: number; lon: number; radiusKm: n
     gte(schema.culturalPlaces.latitude, minLat), lte(schema.culturalPlaces.latitude, maxLat),
     gte(schema.culturalPlaces.longitude, minLon), lte(schema.culturalPlaces.longitude, maxLon),
   )).limit(500);
+  const hidden = await autoHiddenPlaceIds(rows.map((r) => r.id));
   const places = rows
+    .filter((r) => !hidden.has(r.id))
     .filter((r) => distanceMeters({ latitude: params.lat, longitude: params.lon }, r) <= params.radiusKm * 1000)
     .sort((a, b) => distanceMeters({ latitude: params.lat, longitude: params.lon }, a) - distanceMeters({ latitude: params.lat, longitude: params.lon }, b))
     .slice(0, 200)
@@ -147,5 +160,11 @@ export async function moderatePlace(adminId: string, placeId: string, action: 'a
     reviewedAt: new Date(),
   }).where(eq(schema.culturalPlaces.id, placeId));
   await recordAudit(adminId, action === 'approve' ? 'place.approved' : 'place.rejected', { placeId, from: place.status });
+  if (action === 'reject') {
+    // Le lieu est retiré : les signalements ouverts à son sujet sont traités (la raison est celle du retrait).
+    await db.update(schema.reports)
+      .set({ status: 'actioned', moderatorId: adminId, resolution: `Lieu retiré : ${(reason ?? '').trim()}`, resolvedAt: new Date() })
+      .where(and(eq(schema.reports.targetType, 'place'), eq(schema.reports.targetId, placeId), eq(schema.reports.status, 'open')));
+  }
   return { id: placeId, status: next };
 }

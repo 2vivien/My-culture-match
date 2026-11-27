@@ -5,6 +5,7 @@ import { rateLimitHit } from '../../shared/utils/rate-limit';
 import { recordAudit } from '../audit/audit.service';
 import { boundingBox, blockedBetween, companionIds } from '../location/location.service';
 import { distanceMeters } from '../places/places.policy';
+import { autoHiddenPlaceIds } from '../places/places.service';
 import {
   canViewEvent,
   checkCreateEvent,
@@ -98,7 +99,8 @@ async function hiddenByPlaceTakedown(rows: EventRow[]): Promise<Set<string>> {
   const placeIds = [...new Set(withPlace.map((r) => r.placeId as string))];
   const published = await db.select({ id: schema.culturalPlaces.id }).from(schema.culturalPlaces)
     .where(and(inArray(schema.culturalPlaces.id, placeIds), eq(schema.culturalPlaces.status, 'published')));
-  const ok = new Set(published.map((p) => p.id));
+  const flagged = await autoHiddenPlaceIds(published.map((p) => p.id));
+  const ok = new Set(published.map((p) => p.id).filter((id) => !flagged.has(id)));
   return new Set(withPlace.filter((r) => !ok.has(r.placeId as string)).map((r) => r.id));
 }
 

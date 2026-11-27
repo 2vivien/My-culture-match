@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { distanceMeters, isDuplicatePlace, isValidRejectionReason, nextPlaceStatus, normalizePlaceName, PLACE_CATEGORIES } from '../../../src/modules/places/places.policy';
+import { distanceMeters, isDuplicatePlace, isValidRejectionReason, nextPlaceStatus, normalizePlaceName, PLACE_AUTO_HIDE_REPORTS, PLACE_CATEGORIES, shouldAutoHidePlace } from '../../../src/modules/places/places.policy';
 import { listPlacesQuerySchema, proposePlaceSchema } from '../../../src/modules/places/places.schemas';
 
 describe('normalizePlaceName', () => {
@@ -87,5 +87,15 @@ describe('schémas', () => {
   it('borne le rayon de lecture à 50 km', () => {
     expect(listPlacesQuerySchema.parse({ lat: '6.3', lon: '2.4' }).radiusKm).toBe(25);
     expect(listPlacesQuerySchema.safeParse({ lat: 6.3, lon: 2.4, radiusKm: 500 }).success).toBe(false);
+  });
+});
+
+describe('shouldAutoHidePlace', () => {
+  it('masque un lieu à partir du seuil de signalements ouverts, pas avant', () => {
+    expect(PLACE_AUTO_HIDE_REPORTS).toBe(3);
+    expect(shouldAutoHidePlace(0)).toBe(false);
+    expect(shouldAutoHidePlace(PLACE_AUTO_HIDE_REPORTS - 1)).toBe(false);
+    expect(shouldAutoHidePlace(PLACE_AUTO_HIDE_REPORTS)).toBe(true);
+    expect(shouldAutoHidePlace(50)).toBe(true);
   });
 });
