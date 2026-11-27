@@ -3,6 +3,7 @@ import { zValidator } from '@hono/zod-validator';
 import { requireAuth } from '../auth/require-auth';
 import { profilePatchSchema, locationUpdateSchema } from './users.schemas';
 import { getCurrentUser, getPublicUser, updateProfile, updateLocation, followUser, unfollowUser } from './users.service';
+import { getKarma } from './users.karma';
 import { canDiscover, canViewField } from '../consent/consent.service';
 import { AppError } from '../../shared/utils/AppError';
 
@@ -12,6 +13,16 @@ usersModule.use('*', requireAuth);
 usersModule.get('/me', async (c) => { const { userId } = c.get('auth'); return c.json(await getCurrentUser(userId), 200); });
 usersModule.patch('/me', zValidator('json', profilePatchSchema), async (c) => { const { userId } = c.get('auth'); return c.json(await updateProfile(userId, c.req.valid('json')), 200); });
 usersModule.patch('/me/location', zValidator('json', locationUpdateSchema), async (c) => { const { userId } = c.get('auth'); return c.json(await updateLocation(userId, c.req.valid('json')), 200); });
+
+usersModule.get('/me/karma', async (c) => { const { userId } = c.get('auth'); return c.json(await getKarma(userId), 200); });
+
+// Karma public d'un profil : même contrôle d'accès que le profil lui-même.
+usersModule.get('/:id/karma', async (c) => {
+  const targetId = c.req.param('id');
+  const viewerId = c.get('auth').userId;
+  if (viewerId !== targetId && !(await canDiscover(viewerId, targetId))) throw AppError.forbidden('Ce profil n’est pas accessible avec ses préférences de confidentialité', 'PROFILE_DISCOVERY_FORBIDDEN');
+  return c.json(await getKarma(targetId), 200);
+});
 
 usersModule.get('/:id', async (c) => {
   const targetId = c.req.param('id');
