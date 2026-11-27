@@ -7,6 +7,8 @@ export default defineConfig({
     include: ['tests/unit/**/*.test.ts', 'tests/integration/**/*.test.ts'],
     testTimeout: 30_000,
     hookTimeout: 60_000,
+    // Voir vitest.integration.config.ts : les suites d'intégration partagent Redis et la base.
+    fileParallelism: false,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html'],
