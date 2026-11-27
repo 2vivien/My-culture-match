@@ -435,6 +435,47 @@ export const culturalPlaces = pgTable(
   ],
 );
 
+export const events = pgTable(
+  'events',
+  {
+    id: text('id').primaryKey().$defaultFn(generateId),
+    title: text('title').notNull(),
+    description: text('description'),
+    startsAt: timestamp('starts_at', { withTimezone: true }).notNull(),
+    endsAt: timestamp('ends_at', { withTimezone: true }),
+    /** 'public' (lieu culturel modéré) | 'tribe' (membres) | 'friends' (compagnons). */
+    visibility: text('visibility').notNull(),
+    /** 'active' | 'cancelled'. */
+    status: text('status').notNull().default('active'),
+    organizerId: text('organizer_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    tribeId: text('tribe_id').references(() => tribes.id, { onDelete: 'cascade' }),
+    placeId: text('place_id').references(() => culturalPlaces.id, { onDelete: 'set null' }),
+    locationLabel: text('location_label'),
+    latitude: doublePrecision('latitude').notNull(),
+    longitude: doublePrecision('longitude').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index('events_start_idx').on(t.startsAt), index('events_organizer_idx').on(t.organizerId, t.createdAt)],
+);
+
+export const eventRsvps = pgTable(
+  'event_rsvps',
+  {
+    eventId: text('event_id')
+      .notNull()
+      .references(() => events.id, { onDelete: 'cascade' }),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    /** 'going' | 'interested'. */
+    status: text('status').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.eventId, t.userId] }), index('event_rsvps_user_idx').on(t.userId)],
+);
+
 export const connections = pgTable(
   'connections',
   {
