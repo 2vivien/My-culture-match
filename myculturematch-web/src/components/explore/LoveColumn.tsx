@@ -4,6 +4,7 @@ import { ArrowUp, Check, Heart, MapPin, MessageCircle, RotateCcw, Search, Shield
 import { useUIStore } from '@/src/stores/useUIStore';
 import { chatService } from '@/src/services/chat.service';
 import { loveService } from '@/src/services/loveService';
+import { ApiError } from '@/src/services/api';
 import { LoveActiveMatches } from '@/src/components/love/LoveActiveMatches';
 import type { LoveMatch, LoveSearchQuota, LoveSearchResult } from '@/src/types/love';
 
@@ -76,7 +77,20 @@ export const LoveColumn: React.FC = () => {
 
   const like = async (id: string) => { try { await loveService.expressInterest(id); setLiked((v) => ({ ...v, [id]: true })); } catch (e) { setMessages((m) => [...m, { id: crypto.randomUUID(), role: 'assistant', content: e instanceof Error ? e.message : 'Impossible d’envoyer ton intérêt.' }]); } };
   const pass = (id: string) => setPassed((v) => ({ ...v, [id]: true }));
-  const openChatWith = async (id: string) => { try { await chatService.ensureConversationWith(id); } catch { /* chat can still open */ } openChat(); };
+  const openChatWith = async (id: string, alreadyMatched = false) => {
+    // Match mutuel : la conversation existe déjà (créée par le serveur), pas de nouvelle demande de contact.
+    if (alreadyMatched) { openChat(); return; }
+    try {
+      await chatService.ensureConversationWith(id);
+      openChat();
+    } catch (e) {
+      // Le serveur refuse sans consentement (CONTACT_CONSENT_REQUIRED) : ne jamais ouvrir un chat factice.
+      const content = e instanceof ApiError && e.code === 'CONTACT_CONSENT_REQUIRED'
+        ? 'Cette personne n’accepte pas encore les messages directs. Envoie-lui d’abord ton intérêt avec « J’aime » : si elle te répond, la conversation s’ouvrira.'
+        : e instanceof Error ? e.message : 'Impossible d’ouvrir la conversation pour le moment.';
+      setMessages((m) => [...m, { id: crypto.randomUUID(), role: 'assistant', content }]);
+    }
+  };
   const visibleResults = useMemo(() => results.filter((r) => !passed[r.id]), [results, passed]);
 
   return (
@@ -92,7 +106,7 @@ export const LoveColumn: React.FC = () => {
         </div></div>
         <div className="shrink-0 border-t border-app-border bg-app-card/95 px-4 pb-4 pt-3 backdrop-blur sm:px-7"><div className="mx-auto max-w-3xl"><div className="mb-2 flex gap-2 overflow-x-auto pb-1">{QUICK_PROMPTS.map((prompt) => <button key={prompt} onClick={() => send(prompt)} disabled={loading || quota.remaining <= 0} className="shrink-0 rounded-full border border-app-border bg-app-bg px-3 py-1.5 text-xs text-app-gray hover:border-[#E27D60]/50 hover:text-app-text disabled:opacity-40">{prompt}</button>)}</div><div className="rounded-[24px] border border-app-border bg-app-bg p-2 shadow-sm"><div className="flex items-end gap-2"><textarea value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }} rows={2} placeholder="Dis-moi ce que tu recherches…" className="min-h-[56px] flex-1 resize-none bg-transparent px-3 py-2 text-sm text-app-text outline-none placeholder:text-app-gray" /><button onClick={() => send()} disabled={!query.trim() || loading || quota.remaining <= 0} className="mb-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#E27D60] text-white disabled:opacity-40"><ArrowUp className="h-5 w-5" /></button></div></div><p className="mt-2 text-center text-[11px] text-app-gray">Entrée pour envoyer · Maj+Entrée pour aller à la ligne · consentement et blocages toujours respectés</p></div></div>
       </section>
-      {activeMatches.length > 0 && <section className="mt-6"><div className="mb-3"><p className="text-xs font-bold uppercase tracking-wider text-[#E27D60]">Tes connexions</p><h2 className="mt-1 text-xl font-semibold text-app-text">Matchs Love actifs</h2></div><LoveActiveMatches matches={activeMatches} setSelectedMatch={() => undefined} onOpenChat={(match) => openChatWith(match.id)} /></section>}
+      {activeMatches.length > 0 && <section className="mt-6"><div className="mb-3"><p className="text-xs font-bold uppercase tracking-wider text-[#E27D60]">Tes connexions</p><h2 className="mt-1 text-xl font-semibold text-app-text">Matchs Love actifs</h2></div><LoveActiveMatches matches={activeMatches} setSelectedMatch={() => undefined} onOpenChat={(match) => openChatWith(match.id, true)} /></section>}
       {Object.keys(liked).length > 0 && <p className="mt-4 text-center text-xs text-app-gray">Ton intérêt a été envoyé. S’il est réciproque, votre connexion Love apparaîtra dans tes matchs actifs.</p>}
     </main>
   );
