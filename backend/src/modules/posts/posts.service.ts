@@ -224,7 +224,8 @@ export async function getPostsByIds(postIds: string[], viewerId: string): Promis
 
   const rows = await db.select().from(schema.posts).where(inArray(schema.posts.id, postIds));
   const visible = rows.filter((p) => p.status !== 'deleted' && (p.status !== 'flagged' || p.authorId === viewerId));
-  const rank = new Map(rows.map((p, i) => [p.id, i]));
+  // L'ordre des ids reçus fait foi (tri hot/top/épinglage, feed classé) ; la lecture SQL `inArray` n'a pas d'ordre garanti.
+  const rank = new Map(postIds.map((id, i) => [id, i]));
   const posts = [...visible].sort((a, b) => (rank.get(a.id) ?? 0) - (rank.get(b.id) ?? 0));
 
   const [likes, saves, votes] = await Promise.all([

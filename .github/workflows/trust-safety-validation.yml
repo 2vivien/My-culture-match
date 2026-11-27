@@ -38,7 +38,7 @@ jobs:
           cache: npm
           cache-dependency-path: backend/package-lock.json
       - run: npm ci
-      - run: npx vitest run src/modules/consent/consent.policy.test.ts
+      - run: npx vitest run --config vitest.unit.config.ts tests/unit/consent/consent.policy.test.ts
       - run: npm run typecheck
 
   frontend:
