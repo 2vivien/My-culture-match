@@ -28,6 +28,8 @@ const sharedBanner = (page: Page, text: RegExp) => page.getByText(text);
 
 test.describe('Friend — parcours demande → compagnon → carte (API simulée)', () => {
   test('suggestion, demande, acceptation, compagnon puis carte « partagée avec 1 personne »', async ({ browser }) => {
+    // Deux contextes, trois chargements complets de l'app : large marge pour le démarrage à froid de Vite.
+    test.setTimeout(240_000);
     const world = new FakeWorld([LEA, KOFI]);
 
     // 1. Léa voit Kofi en suggestion et lui envoie une demande.
@@ -38,7 +40,8 @@ test.describe('Friend — parcours demande → compagnon → carte (API simulée
     await lea.getByRole('button', { name: 'Connect', exact: true }).click();
     await requestSent;
 
-    expect(world.callsTo('POST', /\/api\/connections\/u-kofi\/request$/, LEA.id)).toHaveLength(1);
+    // waitForRequest se résout à l'émission : le journal du faux serveur est rempli un instant plus tard.
+    await expect.poll(() => world.callsTo('POST', /\/api\/connections\/u-kofi\/request$/, LEA.id).length).toBe(1);
     // La suggestion disparaît une fois la liste rechargée (la demande est en attente côté serveur).
     await expect(lea.getByRole('heading', { name: KOFI.name })).toHaveCount(0);
 
@@ -68,7 +71,8 @@ test.describe('Friend — parcours demande → compagnon → carte (API simulée
     await expect(sharedBanner(lea, /Ta position est partagée avec 1 personne$/)).toBeVisible();
     await expect(lea.getByText('1 personne à proximité')).toBeVisible();
 
-    expect(world.unmocked, 'appels /api non simulés').toEqual([]);
+    // Le reste de l'app (feed, tribus, messages…) n'est volontairement pas simulé ; le parcours Friend, si.
+    expect(world.unmocked.filter((c) => /\/api\/(connections|requests|location)/.test(c)), 'appels Friend non simulés').toEqual([]);
   });
 
   test('refuser une demande ne crée aucun compagnon', async ({ browser }) => {

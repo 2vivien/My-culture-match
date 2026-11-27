@@ -270,10 +270,10 @@ export async function installFakeApi(context: BrowserContext, world: FakeWorld, 
   );
 }
 
-/** Ouvre l'app en tant que `me` (contexte déjà équipé par installFakeApi) et va sur la page Connexion. */
+/** Ouvre l'app en tant que `me` (contexte déjà équipé par installFakeApi) et va sur la page Friends (onglet « Connexion »). */
 export async function openConnexion(page: Page): Promise<void> {
   await page.goto('/');
-  const nav = page.locator('nav').getByTitle('Connexion');
+  const nav = page.locator('nav').getByTitle('Friends', { exact: true });
   await nav.waitFor({ state: 'visible', timeout: 20_000 });
   await nav.click();
 }
