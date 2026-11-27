@@ -65,7 +65,12 @@ export async function sanctionMember(tribeId: string, actorId: string, input: Sa
 
 /** DELETE /api/tribes/:id/sanctions/:userId — lève la sanction (modérateur+). */
 export async function liftSanction(tribeId: string, actorId: string, targetUserId: string): Promise<{ lifted: boolean }> {
-  requireModerator(await roleOf(tribeId, actorId));
+  const actorRole = await roleOf(tribeId, actorId);
+  requireModerator(actorRole);
+  // Même politique que pour sanctionner : un modérateur ne peut pas lever la sanction d'un autre modérateur
+  // (ni la sienne), seul l'owner le peut.
+  const targetRole = await roleOf(tribeId, targetUserId);
+  if (!canSanction(actorRole, targetRole, actorId, targetUserId)) throw AppError.forbidden('Vous ne pouvez pas lever cette sanction', 'TRIBE_SANCTION_FORBIDDEN');
   const deleted = await db.delete(schema.tribeSanctions)
     .where(and(eq(schema.tribeSanctions.tribeId, tribeId), eq(schema.tribeSanctions.userId, targetUserId)))
     .returning({ userId: schema.tribeSanctions.userId });
