@@ -1,6 +1,6 @@
 # F11 — Contenu sur la carte : conception
 
-Statut : proposition, aucun code. À valider avant de lancer le développement.
+Statut : ordre de livraison **validé** (stories → lieux → événements, 2026-11-27). Restent à trancher : source des lieux, qui modère, géolocalisation des posts. Aucun code pour l'instant ; le lot 1 démarre après F10.
 
 ## Ce qui existe aujourd'hui
 
