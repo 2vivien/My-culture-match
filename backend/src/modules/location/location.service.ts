@@ -3,7 +3,7 @@ import { db, schema } from '../../infrastructure/database';
 import { redis } from '../../infrastructure/redis';
 import { emitToUser } from '../../infrastructure/websocket';
 import { userLocationSettings, locationAudience, audienceModes, locationPrecision, locationVisibility, type AudienceMode, type LocationPrecision, type LocationVisibility } from './location.schema';
-import { canSeeLocation, shouldHideLocation } from './location.policy';
+import { canSeeLocation, shouldHideLocation, requiresConsent, computeReach, type Reach } from './location.policy';
 import { AppError } from '../../shared/utils/AppError';
 import { haversineKm } from '../users/users.service';
 
@@ -53,8 +53,14 @@ export async function getLocationSettings(userId: string): Promise<LocationSetti
   return dto;
 }
 
-export async function updateLocationSettings(userId: string, input: Partial<LocationSettingsDto>): Promise<LocationSettingsDto> {
+export async function updateLocationSettings(userId: string, input: Partial<LocationSettingsDto> & { consent?: boolean }): Promise<LocationSettingsDto> {
   const current = await rowFor(userId);
+  if (input.sharingEnabled !== undefined) {
+    const [me] = await db.select({ enabled: schema.users.locationSharingEnabled }).from(schema.users).where(eq(schema.users.id, userId)).limit(1);
+    if (requiresConsent({ currentlyEnabled: Boolean(me?.enabled), wantsEnabled: input.sharingEnabled, consent: input.consent === true })) {
+      throw AppError.badRequest('Active le partage de position explicitement (consent: true)', 'LOCATION_CONSENT_REQUIRED');
+    }
+  }
   const visibility = input.visibility ?? current.visibility;
   const precision = input.precision ?? current.precision;
   const audienceMode = input.audienceMode ?? (validAudience(current.audienceMode) ? current.audienceMode : 'default');
@@ -226,4 +232,25 @@ export async function setAudience(userId: string, memberIds: string[]): Promise<
   });
   await redis.del(cacheKey(userId));
   return { members: unique.length };
+}
+
+/** GET /location/reach — « Ta position est partagée avec N personnes ». */
+export async function getReach(userId: string): Promise<Reach> {
+  const settings = await getLocationSettings(userId);
+  if (!settings.sharingEnabled) return computeReach({ sharingEnabled: false, ghostMode: settings.ghostMode, expiresAt: null, visibility: settings.visibility, mode: settings.audienceMode, friendIds: new Set(), friendOfFriendIds: new Set(), listedIds: new Set() });
+  const [friends, blocked] = await Promise.all([companionIds(userId), blockedBetween(userId)]);
+  for (const id of blocked) friends.delete(id);
+  const fof = await friendsOfFriendsIds(friends, userId);
+  for (const id of blocked) fof.delete(id);
+  const listedRows = await db.select({ memberId: locationAudience.memberId }).from(locationAudience).where(eq(locationAudience.ownerId, userId));
+  return computeReach({
+    sharingEnabled: true,
+    ghostMode: settings.ghostMode,
+    expiresAt: settings.expiresAt ? new Date(settings.expiresAt) : null,
+    visibility: settings.visibility,
+    mode: settings.audienceMode,
+    friendIds: friends,
+    friendOfFriendIds: fof,
+    listedIds: new Set(listedRows.map((r) => r.memberId)),
+  });
 }

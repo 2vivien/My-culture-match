@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { requireAuth } from '../auth/require-auth';
-import { getLocationSettings, updateLocationSettings, getPeopleNearby, getAudience, setAudience } from './location.service';
+import { getLocationSettings, updateLocationSettings, getPeopleNearby, getAudience, setAudience, getReach } from './location.service';
 import { z } from 'zod';
 import { zValidator } from '@hono/zod-validator';
 import { updateLocationHeartbeat } from './location.heartbeat';
@@ -17,6 +17,12 @@ locationRoutes.patch('/location/settings', async (c) => {
   const { userId } = c.get('auth');
   const body = await c.req.json();
   return c.json({ success: true, settings: await updateLocationSettings(userId, body) });
+});
+
+/** « Partagé avec N » : combien de personnes peuvent voir ma position en ce moment. */
+locationRoutes.get('/location/reach', async (c) => {
+  const { userId } = c.get('auth');
+  return c.json(await getReach(userId));
 });
 
 /** Liste de personnes choisies pour le partage de position (modes « sélection » / « tous sauf… »). */
