@@ -479,6 +479,29 @@ describe('Sanctions de tribu (ban / mute)', () => {
     expect(attempt.status).toBe(403);
   });
 
+  it('un membre muet ne peut plus voter sur un post de tribu (403), l’upvote repasse après levée', async () => {
+    const { owner, member, id, memberId } = await seed();
+    const { id: postId } = (await (await post(owner, `/api/tribes/${id}/posts`, { type: 'Text', title: 'Post à voter', body: 'Contenu' })).json()) as { id: string };
+    expect((await post(owner, `/api/tribes/${id}/sanctions`, { userId: memberId, kind: 'mute', days: 3 })).status).toBe(201);
+    const blocked = await post(member, `/api/tribu/posts/${postId}/upvote`, { value: 1 });
+    expect(blocked.status).toBe(403);
+    expect(((await blocked.json()) as { error?: { code?: string } }).error?.code).toBe('TRIBE_SANCTIONED');
+    const downBlocked = await post(member, `/api/tribu/posts/${postId}/upvote`, { value: -1 });
+    expect(downBlocked.status).toBe(403);
+
+    const lift = await app.request(`/api/tribes/${id}/sanctions/${memberId}`, { method: 'DELETE', headers: { Authorization: `Bearer ${owner}` } });
+    expect(lift.status).toBe(200);
+    expect((await post(member, `/api/tribu/posts/${postId}/upvote`, { value: 1 })).status).toBe(200);
+  });
+
+  it('un membre banni ne peut plus voter sur un post de tribu (403)', async () => {
+    const { owner, member, id, memberId } = await seed();
+    const { id: postId } = (await (await post(owner, `/api/tribes/${id}/posts`, { type: 'Text', title: 'Post à voter', body: 'Contenu' })).json()) as { id: string };
+    expect((await post(owner, `/api/tribes/${id}/sanctions`, { userId: memberId, kind: 'ban' })).status).toBe(201);
+    const res = await post(member, `/api/tribu/posts/${postId}/upvote`, { value: 1 });
+    expect(res.status).toBe(403);
+  });
+
   it('un membre banni est retiré de la tribu et ne peut pas la rejoindre', async () => {
     const { owner, member, id, memberId } = await seed();
     expect((await post(owner, `/api/tribes/${id}/sanctions`, { userId: memberId, kind: 'ban', reason: 'spam' })).status).toBe(201);

@@ -4,7 +4,7 @@ import { redis } from '../../infrastructure/redis';
 import { AppError } from '../../shared/utils/AppError';
 import { recordAudit } from '../audit/audit.service';
 import { getPostsByIds } from '../posts/posts.service';
-import { assertCanJoinTribe } from './tribes.sanctions.service';
+import { assertCanJoinTribe, assertCanWriteInTribe } from './tribes.sanctions.service';
 import type { CreateTribeInput, PatchTribeInput, CreateRuleInput, PatchRuleInput } from './tribes.schemas';
 
 const MAX_TRIBES_PER_USER = 5;
@@ -292,6 +292,8 @@ export async function tribePosts(tribeId: string, viewerId: string, cursor: stri
 export async function votePost(postId: string, userId: string, value: 1 | -1): Promise<{ myVote: number; score: number }> {
   const [post] = await db.select().from(schema.posts).where(eq(schema.posts.id, postId)).limit(1);
   if (!post || post.status === 'deleted') throw AppError.notFound('Post introuvable', 'POST_NOT_FOUND');
+  // Même garde que addComment / voteComment : un membre banni ou en sourdine ne peut plus voter.
+  if (post.tribeId) await assertCanWriteInTribe(post.tribeId, userId);
 
   const [existing] = await db.select().from(schema.postVotes).where(and(eq(schema.postVotes.postId, postId), eq(schema.postVotes.userId, userId))).limit(1);
 
