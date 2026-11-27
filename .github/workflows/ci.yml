@@ -109,22 +109,14 @@ jobs:
           --health-interval 5s
           --health-timeout 3s
           --health-retries 10
+      s3:
+        # MinIO ne publie plus ni image ni binaire : on utilise un serveur S3 de test, exposé sur le port 9000
+        # attendu par la configuration (MINIO_PORT) ; le bucket de l'application est créé au démarrage.
+        image: adobe/s3mock:latest
+        ports: ['9000:9090']
+        env:
+          COM_ADOBE_TESTING_S3MOCK_STORE_INITIAL_BUCKETS: mcm-media
     steps:
-      - name: MinIO (binaire officiel)
-        working-directory: .
-        run: |
-          curl -fsSL -o /tmp/minio https://dl.min.io/server/minio/release/linux-amd64/minio
-          chmod +x /tmp/minio
-          mkdir -p /tmp/minio-data
-          MINIO_ROOT_USER=minioadmin MINIO_ROOT_PASSWORD=minioadmin \
-            nohup /tmp/minio server /tmp/minio-data --address ":9000" > /tmp/minio.log 2>&1 &
-          for i in $(seq 1 30); do
-            curl -sf http://localhost:9000/minio/health/live && exit 0
-            sleep 2
-          done
-          echo "MinIO ne répond pas" >&2
-          cat /tmp/minio.log >&2
-          exit 1
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
@@ -174,22 +166,14 @@ jobs:
           --health-interval 5s
           --health-timeout 3s
           --health-retries 10
+      s3:
+        # MinIO ne publie plus ni image ni binaire : on utilise un serveur S3 de test, exposé sur le port 9000
+        # attendu par la configuration (MINIO_PORT) ; le bucket de l'application est créé au démarrage.
+        image: adobe/s3mock:latest
+        ports: ['9000:9090']
+        env:
+          COM_ADOBE_TESTING_S3MOCK_STORE_INITIAL_BUCKETS: mcm-media
     steps:
-      - name: MinIO (binaire officiel)
-        working-directory: .
-        run: |
-          curl -fsSL -o /tmp/minio https://dl.min.io/server/minio/release/linux-amd64/minio
-          chmod +x /tmp/minio
-          mkdir -p /tmp/minio-data
-          MINIO_ROOT_USER=minioadmin MINIO_ROOT_PASSWORD=minioadmin \
-            nohup /tmp/minio server /tmp/minio-data --address ":9000" > /tmp/minio.log 2>&1 &
-          for i in $(seq 1 30); do
-            curl -sf http://localhost:9000/minio/health/live && exit 0
-            sleep 2
-          done
-          echo "MinIO ne répond pas" >&2
-          cat /tmp/minio.log >&2
-          exit 1
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
@@ -233,22 +217,14 @@ jobs:
         ports: ['7700:7700']
         env:
           MEILI_MASTER_KEY: masterKey
+      s3:
+        # MinIO ne publie plus ni image ni binaire : on utilise un serveur S3 de test, exposé sur le port 9000
+        # attendu par la configuration (MINIO_PORT) ; le bucket de l'application est créé au démarrage.
+        image: adobe/s3mock:latest
+        ports: ['9000:9090']
+        env:
+          COM_ADOBE_TESTING_S3MOCK_STORE_INITIAL_BUCKETS: mcm-media
     steps:
-      - name: MinIO (binaire officiel)
-        working-directory: .
-        run: |
-          curl -fsSL -o /tmp/minio https://dl.min.io/server/minio/release/linux-amd64/minio
-          chmod +x /tmp/minio
-          mkdir -p /tmp/minio-data
-          MINIO_ROOT_USER=minioadmin MINIO_ROOT_PASSWORD=minioadmin \
-            nohup /tmp/minio server /tmp/minio-data --address ":9000" > /tmp/minio.log 2>&1 &
-          for i in $(seq 1 30); do
-            curl -sf http://localhost:9000/minio/health/live && exit 0
-            sleep 2
-          done
-          echo "MinIO ne répond pas" >&2
-          cat /tmp/minio.log >&2
-          exit 1
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
