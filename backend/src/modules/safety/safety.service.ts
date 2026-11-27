@@ -1,4 +1,4 @@
-import { and, eq, or } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { db, schema } from '../../infrastructure/database';
 import { AppError } from '../../shared/utils/AppError';
 import { createReport } from '../reports/reports.service';

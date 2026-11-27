@@ -63,7 +63,7 @@ export async function searchLove(userId: string, query: string): Promise<{ query
     if (excluded.has(c.id) || age < 18) continue;
     if (criteria.ageMin !== undefined && age < criteria.ageMin) continue;
     if (criteria.ageMax !== undefined && age > criteria.ageMax) continue;
-    if (criteria.genders?.length && !criteria.genders.includes(c.gender ?? '')) continue;
+    if (criteria.genders?.length && !(criteria.genders as string[]).includes(c.gender ?? '')) continue;
     if (criteria.countries?.length && !criteria.countries.some((country) => normalized(country) === normalized(c.country))) continue;
     if (!(await canLikeForLove(userId, c.id))) continue;
     visible.push(c);
