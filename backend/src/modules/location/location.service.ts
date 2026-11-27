@@ -3,13 +3,13 @@ import { db, schema } from '../../infrastructure/database';
 import { redis } from '../../infrastructure/redis';
 import { emitToUser } from '../../infrastructure/websocket';
 import { userLocationSettings, locationAudience, audienceModes, locationPrecision, locationVisibility, type AudienceMode, type LocationPrecision, type LocationVisibility } from './location.schema';
-import { canSeeLocation, shouldHideLocation, requiresConsent, computeReach, type Reach } from './location.policy';
+import { requiresConsent, computeReach, type Reach } from './location.policy';
 import { AppError } from '../../shared/utils/AppError';
 import { haversineKm } from '../users/users.service';
+import { evaluateNearbyCandidate, NEARBY_RADIUS_KM } from './location.nearby.filter';
 import { computeMatchScore } from '../users/match-score';
 
 const cacheKey = (id: string) => `location:settings:${id}`;
-const NEARBY_RADIUS_KM = 50;
 const LOCATION_EVENT = 'location:nearby:update';
 
 export interface LocationSettingsDto {
@@ -176,13 +176,9 @@ export async function getPeopleNearby(userId: string, viewerLocation?: { latitud
 
   const people: Array<Record<string, unknown>> = [];
   for (const c of candidates) {
-    if (c.id === userId || blocked.has(c.id) || c.latitude === null || c.longitude === null) continue;
-    const visibility = validVisibility(c.visibility) ? c.visibility : 'nearby';
-    if (shouldHideLocation({ sharingEnabled: true, ghostMode: c.ghost ?? false, expiresAt: c.expiresAt })) continue;
-    const mode: AudienceMode = validAudience(c.audienceMode) ? c.audienceMode : 'default';
-    if (!canSeeLocation({ visibility, mode, listed: listedBy.has(c.id), isFriend: friends.has(c.id), isFriendOfFriend: fof.has(c.id) })) continue;
-    const distance = haversineKm(origin.latitude, origin.longitude, c.latitude, c.longitude);
-    if (distance > NEARBY_RADIUS_KM) continue;
+    const distance = c.latitude !== null && c.longitude !== null ? haversineKm(origin.latitude, origin.longitude, c.latitude, c.longitude) : null;
+    const decision = evaluateNearbyCandidate(userId, c, { friendIds: friends, friendOfFriendIds: fof, blockedIds: blocked, listedByIds: listedBy }, distance);
+    if (!decision.visible || distance === null || c.latitude === null || c.longitude === null) continue;
     const precision = validPrecision(c.precision) ? c.precision : 'approximate';
     const distanceKm = c.showDistance ? (distance < 1 ? Number(distance.toFixed(1)) : Math.round(distance)) : null;
     const position = fuzz(c.latitude, c.longitude, c.id, precision);
