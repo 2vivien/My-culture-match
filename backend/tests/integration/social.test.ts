@@ -62,6 +62,14 @@ const authed = (token: string, method = 'GET') => ({
 });
 const authedJson = (token: string, body: unknown) => ({ ...authed(token, 'POST'), body: JSON.stringify(body) });
 
+/** Les préférences par défaut sont restrictives (contact : amis ; Love : désactivé) : un test qui met deux inconnus en relation les ouvre explicitement. */
+async function patchConsent(token: string, body: Record<string, unknown>): Promise<void> {
+  const res = await app.request('/api/consent/settings', { ...authed(token, 'PATCH'), body: JSON.stringify(body) });
+  expect(res.status).toBe(200);
+}
+const allowContact = (token: string) => patchConsent(token, { contactVisibility: 'everyone' });
+const enableLove = (token: string) => patchConsent(token, { loveEnabled: true });
+
 beforeAll(async () => {
   await redis.flushall();
 });
@@ -79,6 +87,7 @@ describe('MP10 — Messagerie', () => {
   it('crée une conversation 1:1 et envoie un message', async () => {
     const a = await onboardUser('msg');
     const b = await onboardUser('msg');
+    await allowContact(b.token);
 
     const create = await app.request('/api/conversations', authedJson(a.token, { participantId: b.userId }));
     expect(create.status).toBe(201);
@@ -101,6 +110,7 @@ describe('MP10 — Messagerie', () => {
   it('refuse l’envoi à un non-participant (403)', async () => {
     const a = await onboardUser('msg');
     const b = await onboardUser('msg');
+    await allowContact(b.token);
     const c = await onboardUser('msg');
 
     const create = await app.request('/api/conversations', authedJson(a.token, { participantId: b.userId }));
@@ -113,6 +123,7 @@ describe('MP10 — Messagerie', () => {
   it('liste les conversations et compte les non-lus après lecture', async () => {
     const a = await onboardUser('msg');
     const b = await onboardUser('msg');
+    await allowContact(b.token);
 
     const create = await app.request('/api/conversations', authedJson(a.token, { participantId: b.userId }));
     const conversation = (await create.json()) as { id: string };
@@ -134,6 +145,7 @@ describe('MP10 — Messagerie', () => {
   it('toggle notifications (cloche)', async () => {
     const a = await onboardUser('msg');
     const b = await onboardUser('msg');
+    await allowContact(b.token);
     const create = await app.request('/api/conversations', authedJson(a.token, { participantId: b.userId }));
     const conversation = (await create.json()) as { id: string };
 
@@ -157,6 +169,8 @@ describe('MP9 — Love / Matching', () => {
   it('swipe like mutuel → match + conversation créée', async () => {
     const a = await onboardUser('love');
     const b = await onboardUser('love');
+    await enableLove(a.token);
+    await enableLove(b.token);
 
     const aSwipes = await app.request('/api/love/swipe', authedJson(a.token, { userId: b.userId, action: 'like' }));
     expect(aSwipes.status).toBe(200);
@@ -186,6 +200,8 @@ describe('MP9 — Love / Matching', () => {
   it('refuse un double swipe (409)', async () => {
     const a = await onboardUser('love');
     const b = await onboardUser('love');
+    await enableLove(a.token);
+    await enableLove(b.token);
     await app.request('/api/love/swipe', authedJson(a.token, { userId: b.userId, action: 'like' }));
     const res = await app.request('/api/love/swipe', authedJson(a.token, { userId: b.userId, action: 'like' }));
     expect(res.status).toBe(409);
