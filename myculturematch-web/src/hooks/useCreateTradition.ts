@@ -78,10 +78,7 @@ export function useCreateTradition() {
     if (activeSubTab === 'Images' && mediaFile) {
       const uploaded = await uploadService.uploadFile(mediaFile, 'post');
       if (uploaded?.objectKey) {
-        // Mock mode returns objectKey starting with "mock/", use local URL in that case
-        resolvedMediaUrl = uploaded.objectKey.startsWith('mock/')
-          ? mediaPreview ?? undefined
-          : mediaUrl(uploaded.objectKey);
+        resolvedMediaUrl = mediaUrl(uploaded.objectKey);
       }
     }
     // Le backend exige un titre de 3 caractères minimum pour TOUS les types de posts.
