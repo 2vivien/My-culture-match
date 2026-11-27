@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { requireAuth } from '../auth/require-auth';
-import { getLocationSettings, updateLocationSettings, getPeopleNearby, getAudience, setAudience, getReach } from './location.service';
+import { getLocationSettings, updateLocationSettings, getPeopleNearby, getAudience, setAudience, getReach, getNearbyNotify, setNearbyNotify } from './location.service';
 import { z } from 'zod';
 import { zValidator } from '@hono/zod-validator';
 import { updateLocationHeartbeat } from './location.heartbeat';
@@ -17,6 +17,17 @@ locationRoutes.patch('/location/settings', async (c) => {
   const { userId } = c.get('auth');
   const body = await c.req.json();
   return c.json({ success: true, settings: await updateLocationSettings(userId, body) });
+});
+
+/** Opt-in « quelqu'un est près de toi » (désactivé par défaut). Booléen explicite requis. */
+locationRoutes.get('/location/nearby-notify', async (c) => {
+  const { userId } = c.get('auth');
+  return c.json({ success: true, ...(await getNearbyNotify(userId)) });
+});
+
+locationRoutes.patch('/location/nearby-notify', zValidator('json', z.object({ enabled: z.boolean() }).strict()), async (c) => {
+  const { userId } = c.get('auth');
+  return c.json({ success: true, ...(await setNearbyNotify(userId, c.req.valid('json').enabled)) });
 });
 
 /** « Partagé avec N » : combien de personnes peuvent voir ma position en ce moment. */
