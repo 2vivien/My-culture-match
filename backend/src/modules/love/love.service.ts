@@ -6,7 +6,7 @@ import { createNotification } from '../notifications/notifications.service';
 import { emitToUser } from '../../infrastructure/websocket';
 import { createConversationForUsers } from '../messages/messages.service';
 import { compatLove } from '../culture-engine/scoring';
-import { matchesCreatedTotal } from '../../infrastructure/monitoring/metrics';
+import { matchesCreatedTotal, loveAiSearchesTotal, loveCardsDisplayedTotal, loveRequestsTotal } from '../../infrastructure/monitoring/metrics';
 import { canLikeForLove } from '../consent/consent.service';
 import { parseLoveQuery } from './love.ai';
 
@@ -52,6 +52,7 @@ export async function searchLove(userId: string, query: string): Promise<{ query
   const quota = await redis.incr(searchQuotaKey(userId)); if (quota === 1) await redis.expire(searchQuotaKey(userId), LOVE_SEARCH_WINDOW);
   if (quota > LOVE_SEARCH_LIMIT) { const ttl = await redis.ttl(searchQuotaKey(userId)); throw AppError.tooMany(`Tu as utilisé tes 3 recherches de la semaine. Réessaie dans ${Math.max(1, Math.ceil(ttl / 86400))} jour(s).`, 'LOVE_SEARCH_QUOTA'); }
 
+  loveAiSearchesTotal.inc();
   const criteria = await parseLoveQuery(clean);
   const blocked = await blockedIds(userId);
   const existingRows = await db.select({ candidateId: schema.loveMatches.candidateId }).from(schema.loveMatches).where(eq(schema.loveMatches.userId, userId));
@@ -88,6 +89,7 @@ export async function searchLove(userId: string, query: string): Promise<{ query
     if (!reasons.length) reasons.push('Bonne compatibilité globale avec tes critères');
     return { id: c.id, name: c.name, username: c.username, avatar: c.avatar, bio: c.bio, location: c.location, country: c.country, gender: c.gender, age: computeAge(c.birthdate), matchScore: score, sharedValues, rank: 0, reasons: reasons.slice(0, 3), breakdown: { values, goals, language, culture, interests } };
   }).sort((a, b) => b.matchScore - a.matchScore).slice(0, 4).map((r, i) => ({ ...r, rank: i + 1 }));
+  loveCardsDisplayedTotal.inc(ranked.length);
   return { query: clean, criteria, results: ranked, remainingSearches: Math.max(0, LOVE_SEARCH_LIMIT - quota) };
 }
 
@@ -115,7 +117,7 @@ export async function swipe(userId: string, candidateId: string, action: 'like' 
     const mine = await tx.select({ id: schema.loveMatches.id }).from(schema.loveMatches).where(and(eq(schema.loveMatches.userId, userId), eq(schema.loveMatches.candidateId, candidateId))).limit(1);
     if (mine[0]) throw AppError.conflict('Déjà swipé', 'ALREADY_SWIPED');
     const reciprocal = await tx.select().from(schema.loveMatches).where(and(eq(schema.loveMatches.userId, candidateId), eq(schema.loveMatches.candidateId, userId), eq(schema.loveMatches.action, 'like'))).limit(1);
-    if (!reciprocal[0]) { await tx.insert(schema.loveMatches).values({ userId, candidateId, action: 'like', matchScore: score, isMutual: false }); await createNotification({ userId: candidateId, actorId: userId, type: 'match', action: 'like', target: userId }); emitToUser(candidateId, 'love:like', { userId }); return { matched: false }; }
+    if (!reciprocal[0]) { await tx.insert(schema.loveMatches).values({ userId, candidateId, action: 'like', matchScore: score, isMutual: false }); await createNotification({ userId: candidateId, actorId: userId, type: 'match', action: 'like', target: userId }); emitToUser(candidateId, 'love:like', { userId }); loveRequestsTotal.inc({ outcome: 'sent' }); return { matched: false }; }
     const { id: conversationId } = await createConversationForUsers(userId, candidateId);
     await tx.insert(schema.loveMatches).values({ userId, candidateId, action: 'like', isMutual: true, conversationId }); await tx.update(schema.loveMatches).set({ isMutual: true, conversationId }).where(and(eq(schema.loveMatches.userId, candidateId), eq(schema.loveMatches.candidateId, userId))); matchesCreatedTotal.inc();
     await createNotification({ userId, actorId: candidateId, type: 'match', action: 'match', target: candidateId, metadata: { conversationId } }); await createNotification({ userId: candidateId, actorId: userId, type: 'match', action: 'match', target: userId, metadata: { conversationId } }); emitToUser(userId, 'love:match', { userId: candidateId, conversationId }); emitToUser(candidateId, 'love:match', { userId, conversationId });
@@ -168,13 +170,16 @@ export async function getIncomingLoveRequests(userId: string): Promise<{ request
 /** Accepter = répondre par un like : le match mutuel et la conversation sont créés par swipe(). */
 export async function acceptLoveRequest(userId: string, fromUserId: string): Promise<{ matched: boolean; conversationId?: string }> {
   await assertPendingLoveRequest(userId, fromUserId);
-  return swipe(userId, fromUserId, 'like');
+  const result = await swipe(userId, fromUserId, 'like');
+  loveRequestsTotal.inc({ outcome: 'accepted' });
+  return result;
 }
 
 /** Refuser = pass : la requête disparaît sans conversation ni notification à l'émetteur. */
 export async function declineLoveRequest(userId: string, fromUserId: string): Promise<{ matched: false }> {
   await assertPendingLoveRequest(userId, fromUserId);
   await swipe(userId, fromUserId, 'pass');
+  loveRequestsTotal.inc({ outcome: 'declined' });
   return { matched: false };
 }
 
