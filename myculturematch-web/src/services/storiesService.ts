@@ -25,8 +25,9 @@ export const storiesService = {
     }));
   },
 
-  async addStory(img: string): Promise<Story> {
-    const data = await api.post<BackendStory>('/api/stories', { mediaUrl: img });
+  /** `place` : lieu choisi (facultatif), ramené à une zone approximative par le serveur. */
+  async addStory(input: { img: string; place?: { latitude: number; longitude: number; label?: string } | null }): Promise<Story> {
+    const data = await api.post<BackendStory>('/api/stories', { mediaUrl: input.img, ...(input.place ? { place: input.place } : {}) });
     return { id: data.id, name: data.name, img: data.img, isAdd: data.isMine };
   },
 };

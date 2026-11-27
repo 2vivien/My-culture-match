@@ -4,11 +4,16 @@ import { useStories } from '@/src/hooks/useStories';
 import { uploadService } from '@/src/services/uploadService';
 import { mediaUrl } from '@/src/lib/media';
 import { StoryAvatar } from './StoryAvatar';
+import { StoryPlaceDialog, type StoryPlace } from './StoryPlaceDialog';
+import { ApiError } from '@/src/services/api';
 
 export const StoriesPanel = () => {
   const { stories, addStory, isAdding } = useStories();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
+  /** URL du média téléversé, en attente du choix d'un lieu (facultatif). */
+  const [pendingUrl, setPendingUrl] = useState<string | null>(null);
+  const [placeError, setPlaceError] = useState<string | null>(null);
 
   const handleAddNewStory = () => {
     if (isAdding || uploading) return;
@@ -26,13 +31,31 @@ export const StoriesPanel = () => {
       if (uploaded?.objectKey) {
         // In mock mode, use the local file URL; in real mode, use the media URL
         const url = uploaded.objectKey.startsWith('mock/') ? URL.createObjectURL(file) : mediaUrl(uploaded.objectKey);
-        addStory(url);
+        setPlaceError(null);
+        setPendingUrl(url);
       }
     } catch {
       // Upload échoué : ignoré silencieusement
     } finally {
       setUploading(false);
     }
+  };
+
+  const publish = (place: StoryPlace | null) => {
+    if (!pendingUrl) return;
+    setPlaceError(null);
+    addStory(
+      { img: pendingUrl, place },
+      {
+        onSuccess: () => setPendingUrl(null),
+        onError: (err) => {
+          const code = err instanceof ApiError ? err.code : '';
+          if (code === 'STORY_PLACE_SHARING_OFF') setPlaceError('Active d’abord le partage de position (carte Friends) pour publier sur la carte.');
+          else if (code === 'STORY_PLACE_VISIBILITY_NOBODY') setPlaceError('Ta visibilité est réglée sur « personne » : personne ne verrait ta story sur la carte.');
+          else setPlaceError('Publication impossible. Réessaie.');
+        },
+      },
+    );
   };
 
   return (
@@ -51,6 +74,8 @@ export const StoriesPanel = () => {
           <StoryAvatar key={story.id} story={story} onAddClick={handleAddNewStory} />
         ))}
       </div>
+
+      {pendingUrl && <StoryPlaceDialog onConfirm={publish} onCancel={() => setPendingUrl(null)} busy={isAdding} error={placeError} />}
 
       <input
         ref={fileInputRef}
