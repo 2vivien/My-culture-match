@@ -5,11 +5,12 @@ import Supercluster from'supercluster';
 import{AnimatePresence,motion}from'framer-motion';
 import{Crosshair,EyeOff,Globe2,LocateFixed,Search,ShieldCheck,SlidersHorizontal,X}from'lucide-react';
 import{api}from'@/src/services/api';
+import{getMapStyle}from'@/src/lib/mapStyle';
 import'maplibre-gl/dist/maplibre-gl.css';
 
 type Person={id:string;name:string;username:string;avatar:string|null;bio:string|null;country:string|null;latitude:number;longitude:number;distanceLabel:string|null;isCompanion:boolean;isFriendOfFriend?:boolean;isActive:boolean};
 type Settings={sharingEnabled:boolean;visibility:'nobody'|'friends'|'friends_of_friends'|'nearby'|'everyone';precision:'approximate'|'area';ghostMode:boolean;showDistance:boolean;showActiveStatus:boolean;expiresAt:string|null};
-const style={version:8 as const,sources:{osm:{type:'raster' as const,tiles:['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],tileSize:256,attribution:'© OpenStreetMap contributors'}},layers:[{id:'osm',type:'raster' as const,source:'osm'}]};
+const style=getMapStyle();
 const initials=(n:string)=>n.split(/\s+/).slice(0,2).map(x=>x[0]).join('').toUpperCase();
 const locate=()=>new Promise<GeolocationPosition>((resolve,reject)=>navigator.geolocation.getCurrentPosition(resolve,reject,{enableHighAccuracy:true,timeout:10000,maximumAge:15000}));
 
