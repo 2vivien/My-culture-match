@@ -251,6 +251,12 @@ export async function deleteTribe(tribeId: string, userId: string): Promise<void
   if (tribe.createdById !== userId) {
     throw AppError.forbidden('Seul le créateur peut supprimer la tribu', 'TRIBE_DELETE_FORBIDDEN');
   }
+  if (tribe.visibility === 'private') {
+    // La clé étrangère remet tribe_id à NULL : sans cela, les posts privés deviendraient publics.
+    const doomed = await db.update(schema.posts).set({ status: 'deleted', updatedAt: new Date() })
+      .where(eq(schema.posts.tribeId, tribeId)).returning({ id: schema.posts.id });
+    if (doomed.length > 0) await redis.del(...doomed.map((d) => `post:${d.id}`));
+  }
   await db.delete(schema.tribes).where(eq(schema.tribes.id, tribeId));
   await redis.del(tribeCacheKey(tribeId), tribeMembersKey(tribeId), tribePostsKey(tribeId));
 }
