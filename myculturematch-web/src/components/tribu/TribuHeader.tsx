@@ -1,24 +1,29 @@
 import React from 'react';
-import { Landmark, Compass, Sparkles, Plus, Bell, BellOff, MoreHorizontal } from 'lucide-react';
+import { Landmark, Compass, Sparkles, Plus, Bell, BellOff, MoreHorizontal, Lock, Loader2 } from 'lucide-react';
 import { TotemAvatar } from '@/src/components/ui/TotemAvatar';
 import { Button } from '@/src/components/ui/button';
 import type { TribeInfo } from '@/src/hooks/useTribu';
+import type { JoinAction } from '@/src/lib/tribeAccess';
 
 interface TribuHeaderProps {
-  joined: boolean;
-  setJoined: (j: boolean) => void;
+  joinAction: JoinAction | null;
+  onJoinAction: (kind: JoinAction['kind']) => void;
+  membershipPending: boolean;
   notificationsOn: boolean;
   setNotificationsOn: (n: boolean) => void;
   tribeInfo?: TribeInfo | null;
 }
 
 export const TribuHeader: React.FC<TribuHeaderProps> = ({
-  joined,
-  setJoined,
+  joinAction,
+  onJoinAction,
+  membershipPending,
   notificationsOn,
   setNotificationsOn,
   tribeInfo,
 }) => {
+  const isPrivate = tribeInfo?.visibility === 'private';
+  const isMember = Boolean(tribeInfo?.joined);
   const displayName = tribeInfo?.name ?? 'Tribu';
   const memberCount = tribeInfo?.membersCount ?? 0;
 
@@ -50,7 +55,17 @@ export const TribuHeader: React.FC<TribuHeaderProps> = ({
           <div>
             <h2 className="text-xl sm:text-2xl font-black tracking-tight text-app-black dark:text-zinc-100 flex items-center gap-2">
               t/{displayName}
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" title="Active matchmaking live" />
+              {isPrivate ? (
+                <span
+                  className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-app-gray dark:text-zinc-300"
+                  title="Tribu privée"
+                >
+                  <Lock className="w-3 h-3" aria-hidden="true" />
+                  Privée
+                </span>
+              ) : (
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" title="Active matchmaking live" />
+              )}
             </h2>
             <p className="text-xs text-app-gray dark:text-zinc-400 font-bold uppercase tracking-widest mt-0.5">
               {memberCount > 0 ? `${memberCount} membres` : 'Communauté culturelle'}
@@ -64,7 +79,11 @@ export const TribuHeader: React.FC<TribuHeaderProps> = ({
               Create Tradition
             </Button>
 
+            {isMember && (
             <button
+              type="button"
+              aria-pressed={notificationsOn}
+              aria-label={notificationsOn ? 'Couper les notifications' : 'Recevoir les notifications'}
               onClick={() => setNotificationsOn(!notificationsOn)}
               className={`w-9.5 h-9.5 rounded-full border border-app-border dark:border-zinc-800 flex items-center justify-center cursor-pointer transition-colors ${
                 notificationsOn
@@ -75,17 +94,29 @@ export const TribuHeader: React.FC<TribuHeaderProps> = ({
             >
               {notificationsOn ? <Bell className="w-4.5 h-4.5" /> : <BellOff className="w-4.5 h-4.5" />}
             </button>
+            )}
 
-            <button
-              onClick={() => setJoined(!joined)}
-              className={`px-5 py-2.5 rounded-full text-xs font-black tracking-wider transition-all cursor-pointer ${
-                joined
-                  ? 'bg-[#E4E6EB] hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-app-black dark:text-zinc-200'
-                  : 'bg-[#E27D60] hover:bg-[#c66b50] text-white shadow-sm'
-              }`}
-            >
-              {joined ? 'Joined' : 'Join'}
-            </button>
+            {joinAction && (
+              <button
+                type="button"
+                data-testid="tribu-join-button"
+                disabled={joinAction.disabled || membershipPending}
+                aria-busy={membershipPending}
+                aria-label={joinAction.hint}
+                title={joinAction.hint}
+                onClick={() => onJoinAction(joinAction.kind)}
+                className={`px-5 py-2.5 rounded-full text-xs font-black tracking-wider transition-all flex items-center gap-1.5 ${
+                  joinAction.disabled || membershipPending ? 'cursor-not-allowed opacity-70' : 'cursor-pointer'
+                } ${
+                  joinAction.tone === 'secondary'
+                    ? 'bg-[#E4E6EB] hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-app-black dark:text-zinc-200'
+                    : 'bg-[#E27D60] hover:bg-[#c66b50] text-white shadow-sm'
+                }`}
+              >
+                {membershipPending && <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" />}
+                {joinAction.label}
+              </button>
+            )}
 
             <button className="w-9.5 h-9.5 rounded-full border border-app-border dark:border-zinc-800 flex items-center justify-center text-app-gray hover:text-app-black dark:hover:text-white cursor-pointer bg-white dark:bg-zinc-900">
               <MoreHorizontal className="w-4.5 h-4.5" />
