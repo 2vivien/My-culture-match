@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { detectSensitiveCategories, type SensitiveCategory } from './love.guardrails';
 
 /** Vocabulaires contrôlés (docs/love-algorithm/01-onboarding-and-features.md). */
 export const LOVE_GOALS = ['serious', 'progressive', 'open', 'intercultural'] as const;
@@ -58,3 +59,38 @@ export const LOVE_QUESTIONS = [
   { key: 'distance', kind: 'single', options: LOVE_DISTANCES },
   { key: 'understood', kind: 'text', max: 500, optional: true },
 ] as const;
+
+/**
+ * Valeurs du questionnaire qui touchent à une catégorie sensible (religion) : elles restent
+ * affichables sur le profil mais ne sont jamais transmises au moteur de classement.
+ */
+export const NON_MATCHING_VALUES: readonly string[] = ['spirituality'];
+
+export interface LoveMatchingSignals {
+  goals: string[];
+  relationship: LoveProfileAnswers['relationship'];
+  values: string[];
+  lifestyle: string[];
+  distance: LoveProfileAnswers['distance'];
+}
+
+/**
+ * Seule vue du profil autorisée à piloter un filtrage ou un classement : la réponse libre
+ * (`understood`) n'en fait jamais partie et les valeurs sensibles en sont retirées.
+ */
+export function matchingSignals(answers: LoveProfileAnswers): LoveMatchingSignals {
+  return {
+    goals: [...answers.goals],
+    relationship: answers.relationship,
+    values: answers.values.filter((v) => !NON_MATCHING_VALUES.includes(v)),
+    lifestyle: [...answers.lifestyle],
+    distance: answers.distance,
+  };
+}
+
+/** Catégories sensibles évoquées dans le profil (réponse libre + valeurs sensibles), sans doublon. */
+export function sensitiveCategoriesInProfile(answers: LoveProfileAnswers): SensitiveCategory[] {
+  const found = new Set<SensitiveCategory>(answers.understood ? detectSensitiveCategories(answers.understood) : []);
+  if (answers.values.some((v) => NON_MATCHING_VALUES.includes(v))) found.add('religion');
+  return [...found];
+}

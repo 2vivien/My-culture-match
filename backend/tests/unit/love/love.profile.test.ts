@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { loveProfileSchema, profileSearchDefaults } from '../../../src/modules/love/love.profile';
+import { loveProfileSchema, profileSearchDefaults, matchingSignals, sensitiveCategoriesInProfile } from '../../../src/modules/love/love.profile';
 
 const valid = {
   goals: ['serious'],
@@ -51,5 +51,25 @@ describe('profileSearchDefaults', () => {
     expect(profileSearchDefaults(parse({ distance: 'km25' })).distanceKm).toBe(25);
     expect(profileSearchDefaults(parse({ distance: 'country' })).distanceKm).toBeUndefined();
     expect(profileSearchDefaults(parse({ distance: 'international' }))).not.toHaveProperty('distanceKm');
+  });
+});
+
+describe('garde-fous du profil (matchingSignals)', () => {
+  const base = loveProfileSchema.parse(valid);
+
+  it('n’expose jamais la réponse libre au moteur de classement', () => {
+    expect(matchingSignals(base)).not.toHaveProperty('understood');
+  });
+
+  it('retire la valeur « spirituality » des signaux de matching', () => {
+    const s = matchingSignals({ ...base, values: ['respect', 'spirituality', 'family'] });
+    expect(s.values).toEqual(['respect', 'family']);
+  });
+
+  it('signale les catégories sensibles évoquées, sans doublon', () => {
+    expect(sensitiveCategoriesInProfile(base)).toEqual([]);
+    const cats = sensitiveCategoriesInProfile({ ...base, values: ['respect', 'spirituality', 'family'], understood: 'Quelqu’un de musulman et sans handicap' });
+    expect(cats).toEqual(expect.arrayContaining(['religion', 'santé']));
+    expect(new Set(cats).size).toBe(cats.length);
   });
 });
