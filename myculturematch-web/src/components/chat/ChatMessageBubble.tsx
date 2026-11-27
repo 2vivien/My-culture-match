@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Volume2, FileText, CheckCheck, MoreHorizontal, Reply, Pencil, Trash2, Pin, Heart, BookHeart } from 'lucide-react';
 import { IconRobot } from '@tabler/icons-react';
-import { ChatMessage } from '@/src/types/chat.types';
+import type { ChatMessage, ChatReaction } from '@/src/types/chat.types';
 import { cn } from '@/src/lib/utils';
 
 interface BubbleProps { message: ChatMessage; onAskLyra?: (message: ChatMessage) => void; onReply?: (message: ChatMessage) => void; onEdit?: (message: ChatMessage) => void; onDelete?: (message: ChatMessage) => void; onReact?: (message: ChatMessage, reaction: string) => void; onPin?: (message: ChatMessage) => void; onSaveToMemory?: (message: ChatMessage) => void; }
@@ -9,7 +9,7 @@ interface BubbleProps { message: ChatMessage; onAskLyra?: (message: ChatMessage)
 export const ChatMessageBubble: React.FC<BubbleProps> = ({ message, onAskLyra, onReply, onEdit, onDelete, onReact, onPin, onSaveToMemory }) => {
   const isMe = message.senderId === 'me';
   const [menu, setMenu] = useState(false);
-  const reactions = message.reactions ?? [];
+  const reactions: ChatReaction[] = message.reactions ?? [];
   const reactionCounts = reactions.reduce<Record<string, number>>((acc, r) => { acc[r.reaction] = (acc[r.reaction] ?? 0) + 1; return acc; }, {});
   const common = ['❤️', '😂', '👍', '👏', '😮'];
   return <div className={cn('flex flex-col mb-3 animate-fade-in max-w-[88%]', isMe ? 'ml-auto items-end' : 'mr-auto items-start')}>

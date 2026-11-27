@@ -69,7 +69,7 @@ export const ActiveChatColumn: React.FC<ActiveChatProps> = ({ partner, messages,
       const uploadedUrls: string[] = memoryMessages.flatMap((m) => m.img ? [m.img] : []);
       for (const file of memoryFiles) {
         const uploaded = await uploadService.uploadFile(file, 'file');
-        if (uploaded.objectKey) uploadedUrls.push(uploaded.objectKey.startsWith('mock/') ? URL.createObjectURL(file) : mediaUrl(uploaded.objectKey));
+        if (uploaded.objectKey) uploadedUrls.push(mediaUrl(uploaded.objectKey));
       }
       const selectedType: SharedMemoryKind = memoryKind === 'memory' && memoryFiles.length === 0 && memoryMessages.some((m) => m.img) ? 'photo' : memoryKind;
       await relationshipMemoryService.createMemoryBoxEntry(partner.id, {

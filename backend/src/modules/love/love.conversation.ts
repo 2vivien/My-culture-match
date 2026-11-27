@@ -23,7 +23,7 @@ function missingCriteria(criteria: LoveSearchCriteria): string[] {
   return missing;
 }
 
-function replyFor(criteria: LoveSearchCriteria, missing: string[], hasResults: boolean): string {
+function replyFor(missing: string[], hasResults: boolean): string {
   if (hasResults) return 'Voilà ma sélection. J’ai gardé seulement les 4 profils les plus pertinents selon tes critères et les règles de consentement.';
   if (missing[0] === 'gender') return 'D’accord. Tu recherches plutôt une femme, un homme, ou tu es ouvert aux deux ?';
   if (missing[0] === 'age') return 'Très bien. Tu as une tranche d’âge en tête, ou tu préfères que je laisse ce critère ouvert ?';
@@ -37,8 +37,8 @@ export async function handleLoveConversation(userId: string, messages: string[])
   const missing = missingCriteria(criteria);
   if (missing.length > 0) {
     const quota = await import('./love.service').then((m) => m.getLoveSearchQuota(userId));
-    return { reply: replyFor(criteria, missing, false), phase: 'clarifying', criteria, missing, remainingSearches: quota.remaining };
+    return { reply: replyFor(missing, false), phase: 'clarifying', criteria, missing, remainingSearches: quota.remaining };
   }
   const result = await searchLove(userId, combined);
-  return { reply: replyFor(criteria, [], true), phase: 'results', criteria, missing: [], remainingSearches: result.remainingSearches, results: result.results };
+  return { reply: replyFor([], true), phase: 'results', criteria, missing: [], remainingSearches: result.remainingSearches, results: result.results };
 }
