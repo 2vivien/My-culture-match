@@ -88,6 +88,10 @@ export async function updateLocationSettings(userId: string, input: Partial<Loca
     },
   });
 
+  if (input.sharingEnabled === false) {
+    // Retrait total : couper le partage efface le lieu des stories de la personne (pas seulement leur affichage).
+    await db.update(schema.stories).set({ placeLat: null, placeLon: null, placeLabel: null }).where(eq(schema.stories.userId, userId));
+  }
   if (input.sharingEnabled !== undefined) {
     await db.update(schema.users).set({
       locationSharingEnabled: input.sharingEnabled,
@@ -112,20 +116,20 @@ function fuzz(lat: number, lon: number, id: string, precision: LocationPrecision
   const magnitude = precision === 'area' ? 0.02 : 0.006;
   return { latitude: jitter(lat, `${id}:lat`, magnitude), longitude: jitter(lon, `${id}:lon`, magnitude) };
 }
-function boundingBox(latitude: number, longitude: number, radiusKm: number) {
+export function boundingBox(latitude: number, longitude: number, radiusKm: number) {
   const latDelta = radiusKm / 111;
   const lonDelta = radiusKm / (111 * Math.max(Math.cos((latitude * Math.PI) / 180), 0.2));
   return { minLat: latitude - latDelta, maxLat: latitude + latDelta, minLon: longitude - lonDelta, maxLon: longitude + lonDelta };
 }
 
-async function companionIds(userId: string): Promise<Set<string>> {
+export async function companionIds(userId: string): Promise<Set<string>> {
   const rows = await db.select({ fromUserId: schema.connections.fromUserId, toUserId: schema.connections.toUserId })
     .from(schema.connections)
     .where(and(or(eq(schema.connections.fromUserId, userId), eq(schema.connections.toUserId, userId)), eq(schema.connections.status, 'companion')));
   return new Set(rows.map(r => r.fromUserId === userId ? r.toUserId : r.fromUserId));
 }
 
-async function friendsOfFriendsIds(friendIds: Set<string>, userId: string): Promise<Set<string>> {
+export async function friendsOfFriendsIds(friendIds: Set<string>, userId: string): Promise<Set<string>> {
   if (friendIds.size === 0) return new Set();
   const ids = [...friendIds];
   const rows = await db.select({ fromUserId: schema.connections.fromUserId, toUserId: schema.connections.toUserId })
@@ -139,7 +143,7 @@ async function friendsOfFriendsIds(friendIds: Set<string>, userId: string): Prom
   return result;
 }
 
-async function blockedBetween(userId: string): Promise<Set<string>> {
+export async function blockedBetween(userId: string): Promise<Set<string>> {
   const rows = await db.select({ blockerId: schema.blocks.blockerId, blockedId: schema.blocks.blockedId })
     .from(schema.blocks)
     .where(or(eq(schema.blocks.blockerId, userId), eq(schema.blocks.blockedId, userId)));
