@@ -409,6 +409,32 @@ export const stories = pgTable(
 );
 
 // ── Connections (suggestions → interested → request → companion) ──
+export const culturalPlaces = pgTable(
+  'cultural_places',
+  {
+    id: text('id').primaryKey().$defaultFn(generateId),
+    name: text('name').notNull(),
+    category: text('category').notNull(),
+    description: text('description'),
+    country: text('country'),
+    latitude: doublePrecision('latitude').notNull(),
+    longitude: doublePrecision('longitude').notNull(),
+    /** 'pending' (défaut) | 'published' | 'rejected' : seule une modération publie. */
+    status: text('status').notNull().default('pending'),
+    rejectionReason: text('rejection_reason'),
+    createdById: text('created_by_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    reviewedById: text('reviewed_by_id').references(() => users.id, { onDelete: 'set null' }),
+    reviewedAt: timestamp('reviewed_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index('cultural_places_status_idx').on(t.status, t.createdAt),
+    index('cultural_places_creator_idx').on(t.createdById, t.createdAt),
+  ],
+);
+
 export const connections = pgTable(
   'connections',
   {
