@@ -1,5 +1,7 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMemo } from 'react';
+import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/src/services/api';
+import { buildCommentTree, mergeCommentPages, type WithReplies } from '@/src/lib/commentTree';
 
 /** Commentaire backend (liste plate avec parentId — replies inclus). */
 export interface BackendComment {
@@ -16,25 +18,10 @@ export interface BackendComment {
   author: { id: string; name: string; username: string; avatar: string | null };
 }
 
-/** Nœud de commentaire (2 niveaux : commentaire + replies). */
-export interface CommentNode extends BackendComment {
-  replies: CommentNode[];
-}
+/** Nœud de commentaire : commentaire + réponses imbriquées (profondeur libre, plafonnée à l'affichage). */
+export type CommentNode = WithReplies<BackendComment>;
 
-function buildTree(flat: BackendComment[]): CommentNode[] {
-  const map = new Map<string, CommentNode>();
-  flat.forEach((c) => map.set(c.id, { ...c, replies: [] }));
-  const roots: CommentNode[] = [];
-  flat.forEach((c) => {
-    const node = map.get(c.id)!;
-    if (c.parentId && map.has(c.parentId)) {
-      map.get(c.parentId)!.replies.push(node);
-    } else {
-      roots.push(node);
-    }
-  });
-  return roots;
-}
+const PAGE_SIZE = 30;
 
 export type CommentSort = 'best' | 'top' | 'new' | 'old';
 
@@ -42,17 +29,25 @@ export function useComments(postId: string, sort: CommentSort = 'best') {
   const queryClient = useQueryClient();
   const queryKey = ['comments', postId, sort];
 
-  const { data: tree = [], isLoading } = useQuery({
+  // Chargement progressif : le curseur est une date (sort=new) ou un décalage numérique (best/top/old),
+  // le serveur le renvoie tel quel dans nextCursor. Les pages sont fusionnées puis ré-arborescées.
+  const query = useInfiniteQuery({
     queryKey,
-    queryFn: async () => {
-      // Le serveur renvoie l'arbre déjà trié (racines puis réponses) : on conserve cet ordre.
-      const data = await api.get<{ comments: BackendComment[]; nextCursor: string | null }>(
-        `/api/posts/${postId}/comments?limit=50&sort=${sort}`,
-      );
-      return buildTree(data.comments ?? []);
+    initialPageParam: null as string | null,
+    queryFn: async ({ pageParam }) => {
+      const qs = new URLSearchParams({ limit: String(PAGE_SIZE), sort });
+      if (pageParam) qs.set('cursor', pageParam);
+      return api.get<{ comments: BackendComment[]; nextCursor: string | null }>(`/api/posts/${postId}/comments?${qs.toString()}`);
     },
+    getNextPageParam: (last) => last.nextCursor ?? undefined,
     enabled: !!postId,
   });
+
+  // Le serveur renvoie les commentaires déjà triés : l'ordre des pages est conservé par la fusion.
+  const tree = useMemo(
+    () => buildCommentTree(mergeCommentPages((query.data?.pages ?? []).map((p) => p.comments ?? []))),
+    [query.data],
+  );
 
   const addComment = useMutation({
     mutationFn: (input: { text: string; parentId?: string }) =>
@@ -67,5 +62,13 @@ export function useComments(postId: string, sort: CommentSort = 'best') {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['comments', postId] }),
   });
 
-  return { comments: tree, isLoading, addComment, voteComment };
+  return {
+    comments: tree,
+    isLoading: query.isLoading,
+    hasMore: query.hasNextPage,
+    loadingMore: query.isFetchingNextPage,
+    loadMore: () => { void query.fetchNextPage(); },
+    addComment,
+    voteComment,
+  };
 }
