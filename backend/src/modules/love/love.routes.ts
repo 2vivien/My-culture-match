@@ -3,7 +3,7 @@ import { zValidator } from '@hono/zod-validator';
 import { requireAuth } from '../auth/require-auth';
 import { swipeSchema, loveSearchSchema } from './love.schemas';
 import { withIdempotency, idempotencyKeyFrom } from '../../shared/utils/idempotency';
-import { getLoveCandidates, getLoveCandidate, getActiveLoveMatches, swipe, searchLove, getLoveSearchQuota } from './love.service';
+import { getLoveCandidates, getLoveCandidate, getActiveLoveMatches, swipe, searchLove, getLoveSearchQuota, getIncomingLoveRequests, acceptLoveRequest, declineLoveRequest } from './love.service';
 import { handleLoveConversation, loveConversationSchema } from './love.conversation';
 
 const loveRoutes = new Hono();
@@ -35,6 +35,24 @@ loveRoutes.post('/love/swipe', zValidator('json', swipeSchema), async (c) => {
   const { userId } = c.get('auth');
   const result = await withIdempotency(`love:swipe:${userId}:${candidateId}`, idempotencyKeyFrom(c), () => swipe(userId, candidateId, action));
   return c.json(result, 200);
+});
+
+/** Requêtes Love reçues (type Tinder) : l'autre personne doit accepter avant toute conversation. */
+loveRoutes.get('/love/requests', async (c) => {
+  const { userId } = c.get('auth');
+  return c.json(await getIncomingLoveRequests(userId), 200);
+});
+
+loveRoutes.post('/love/requests/:userId/accept', async (c) => {
+  const { userId } = c.get('auth');
+  const fromId = c.req.param('userId');
+  return c.json(await withIdempotency(`love:accept:${userId}:${fromId}`, idempotencyKeyFrom(c), () => acceptLoveRequest(userId, fromId)), 200);
+});
+
+loveRoutes.post('/love/requests/:userId/decline', async (c) => {
+  const { userId } = c.get('auth');
+  const fromId = c.req.param('userId');
+  return c.json(await withIdempotency(`love:decline:${userId}:${fromId}`, idempotencyKeyFrom(c), () => declineLoveRequest(userId, fromId)), 200);
 });
 
 export { loveRoutes };

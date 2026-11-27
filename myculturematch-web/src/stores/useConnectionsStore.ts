@@ -15,6 +15,8 @@ export interface ConnectionUser {
   age?: number;
   gender?: 'female' | 'male' | 'non-binary';
   isConnected?: boolean;
+  /** Origine de la demande : amitié (Friend) ou Love. Les ids Love sont préfixés `love:`. */
+  mode?: 'friend' | 'love';
 }
 
 interface ConnectionsState {
