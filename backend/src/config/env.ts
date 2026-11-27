@@ -44,6 +44,8 @@ const envSchema = z.object({
   MINIO_ACCESS_KEY: z.string().default('minioadmin'),
   MINIO_SECRET_KEY: z.string().default('minioadmin'),
   MINIO_BUCKET_NAME: z.string().default('mcm-media'),
+  /** URL publique des médias si différente de l'hôte MinIO (CDN) ; sert à reconnaître les fichiers à supprimer. */
+  MEDIA_PUBLIC_URL: z.string().optional().default(''),
 
   MEILISEARCH_HOST: z.string().url().default('http://localhost:7700'),
   MEILISEARCH_API_KEY: z.string().default('masterKey'),

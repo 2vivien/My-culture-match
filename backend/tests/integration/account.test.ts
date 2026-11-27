@@ -5,6 +5,11 @@ import { closeFeedFanoutQueue } from '../../src/modules/feed/feed.queue';
 import { closeSearchQueue } from '../../src/modules/search/search.queue';
 import { closeEmbeddingQueue } from '../../src/modules/culture-engine/embedding.queue';
 import { closeCountersFlushQueue } from '../../src/modules/feed/counters.queue';
+import { Readable } from 'node:stream';
+import { eq } from 'drizzle-orm';
+import { db, schema } from '../../src/infrastructure/database';
+import { mediaBucket, minio } from '../../src/infrastructure/minio';
+import { accountCleanupQueue, closeAccountCleanupQueue, processAccountMediaCleanup } from '../../src/modules/users/account-cleanup.queue';
 
 const app = createApp();
 
@@ -72,6 +77,7 @@ afterAll(async () => {
   await closeSearchQueue();
   await closeEmbeddingQueue();
   await closeCountersFlushQueue();
+  await closeAccountCleanupQueue();
   await redis.quit();
 });
 
@@ -105,5 +111,48 @@ describe('D1 — Export et suppression de compte', () => {
 
     expect((await app.request('/api/users/me', authed(a.token))).status).toBe(401);
     expect((await app.request(`/api/users/${a.userId}`, authed(b.token))).status).toBe(404);
+  });
+
+  it('planifie puis exécute la suppression des fichiers MinIO de la personne, sans toucher aux autres', async () => {
+    const a = await onboardUser('acct');
+    const b = await onboardUser('acct');
+    const put = async (key: string) => {
+      const body = Buffer.from('x');
+      await minio.putObject(mediaBucket, key, Readable.from(body), body.length);
+    };
+    const exists = async (key: string) => minio.statObject(mediaBucket, key).then(() => true, () => false);
+
+    const avatarKey = `avatar/${a.userId}/1-avatar.jpg`;
+    const postKey = `post/${a.userId}/2-post.png`;
+    const orphanKey = `avatar/${a.userId}/0-ancien.jpg`; // avatar remplacé, plus référencé en base
+    const otherKey = `avatar/${b.userId}/1-autre.jpg`;
+    for (const k of [avatarKey, postKey, orphanKey, otherKey]) await put(k);
+
+    const base = `http://${process.env.MINIO_ENDPOINT ?? 'localhost'}:${process.env.MINIO_PORT ?? '9000'}/${mediaBucket}`;
+    await db.update(schema.users).set({ avatar: `${base}/${avatarKey}` }).where(eq(schema.users.id, a.userId));
+    const post = await app.request('/api/posts', authedJson(a.token, { type: 'Images', title: 'Photo', body: 'x', mediaUrls: [`${base}/${postKey}`, 'https://externe.example/photo.png'] }));
+    expect([200, 201]).toContain(post.status);
+
+    const del = await app.request('/api/users/me', { ...authed(a.token, 'DELETE'), body: JSON.stringify({ confirm: 'SUPPRIMER MON COMPTE' }) });
+    expect(del.status).toBe(200);
+
+    // Un job a été planifié pour cette personne, avec les clés issues des URLs en base (et pas l'URL externe).
+    const jobs = await accountCleanupQueue.getJobs(['waiting', 'delayed', 'active', 'completed']);
+    const job = jobs.find((j) => j.data.userId === a.userId);
+    expect(job).toBeDefined();
+    expect(job!.data.keys).toEqual(expect.arrayContaining([avatarKey, postKey]));
+    expect(job!.data.keys.some((k) => k.includes('externe'))).toBe(false);
+
+    // Exécution du traitement (le worker BullMQ n'est pas démarré dans les tests).
+    const result = await processAccountMediaCleanup(job!.data);
+    expect(result.removed).toBeGreaterThanOrEqual(3);
+    expect(await exists(avatarKey)).toBe(false);
+    expect(await exists(postKey)).toBe(false);
+    expect(await exists(orphanKey)).toBe(false);
+    expect(await exists(otherKey)).toBe(true); // fichier d'une autre personne intact
+
+    // Réexécution idempotente.
+    await expect(processAccountMediaCleanup(job!.data)).resolves.toBeDefined();
+    await minio.removeObject(mediaBucket, otherKey);
   });
 });
