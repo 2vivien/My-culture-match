@@ -89,6 +89,11 @@ export function useTribu() {
           p.id === postId ? { ...p, upvotes: result.score, hasUpvoted: result.myVote === 1 } : p,
         );
       });
+      // Tris classés (Best/Hot/Controversial) : un vote change le rang → on recharge l'ordre serveur
+      // puis on abandonne la copie locale pour afficher ce nouvel ordre.
+      if (sortType !== 'New') {
+        void queryClient.invalidateQueries({ queryKey: ['tribu-posts', tribeId] }).then(() => setLocalPosts([]));
+      }
     },
   });
 
