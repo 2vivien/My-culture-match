@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { canDiscoverUser, shouldHideLocation } from './location.policy';
+import { canDiscoverUser, shouldHideLocation } from '../../../src/modules/location/location.policy';
 
 describe('People Nearby privacy policy', () => {
   it('never exposes users who selected Only me', () => {

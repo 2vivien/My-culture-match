@@ -28,6 +28,7 @@ async function rowFor(userId: string) {
   const [row] = await db.select().from(userLocationSettings).where(eq(userLocationSettings.userId, userId)).limit(1);
   if (row) return row;
   const [created] = await db.insert(userLocationSettings).values({ userId }).returning();
+  if (!created) throw AppError.badRequest('Réglages de localisation non initialisés', 'LOCATION_SETTINGS_INIT_FAILED');
   return created;
 }
 
