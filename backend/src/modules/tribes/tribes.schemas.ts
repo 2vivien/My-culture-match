@@ -50,6 +50,16 @@ export const listTribesQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(50).default(20),
 });
 
+/** POST /api/tribes/:id/sanctions — ban ou mute (temporaire si `days`). */
+export const sanctionSchema = z
+  .object({
+    userId: z.string().trim().min(1),
+    kind: z.enum(['ban', 'mute']),
+    reason: z.string().trim().max(300).optional(),
+    days: z.number().int().min(1).max(3650).optional(),
+  })
+  .strict();
+
 /** POST /api/tribu/posts/:id/upvote. */
 export const voteSchema = z
   .object({

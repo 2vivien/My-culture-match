@@ -8,6 +8,7 @@ import { incrementCounter, decrementCounter, getCounterDeltas } from '../feed/co
 import { createNotification } from '../notifications/notifications.service';
 import { enqueueFeedFanout, enqueueSearchIndex, enqueuePostEmbedding } from './posts.jobs';
 import { enqueueModerationScan } from '../moderation/moderation.queue';
+import { assertCanWriteInTribe } from '../tribes/tribes.sanctions.service';
 import { postsCreatedTotal } from '../../infrastructure/monitoring/metrics';
 import type { CreatePostInput, CreateCommentInput } from './posts.schemas';
 
@@ -85,6 +86,7 @@ export async function createPost(userId: string, input: CreatePostInput): Promis
       .where(and(eq(schema.tribeMembers.tribeId, input.tribeId), eq(schema.tribeMembers.userId, userId)))
       .limit(1);
     if (!member[0]) throw AppError.forbidden('Vous devez être membre de cette tribu pour y poster', 'TRIBE_MEMBERSHIP_REQUIRED');
+    await assertCanWriteInTribe(input.tribeId, userId);
   }
 
   const moderation = moderatePost(input.title ?? '', input.body);
@@ -276,8 +278,9 @@ async function counterValue(postId: string, counter: 'likes' | 'saves' | 'shares
 
 /** POST /api/posts/:id/comments. */
 export async function addComment(userId: string, postId: string, input: CreateCommentInput): Promise<{ commentId: string }> {
-  const [post] = await db.select({ status: schema.posts.status, authorId: schema.posts.authorId }).from(schema.posts).where(eq(schema.posts.id, postId)).limit(1);
+  const [post] = await db.select({ status: schema.posts.status, authorId: schema.posts.authorId, tribeId: schema.posts.tribeId }).from(schema.posts).where(eq(schema.posts.id, postId)).limit(1);
   if (!post || post.status === 'deleted') throw AppError.notFound('Post introuvable', 'POST_NOT_FOUND');
+  if (post.tribeId) await assertCanWriteInTribe(post.tribeId, userId);
 
   if (input.parentId) {
     const [parent] = await db.select({ id: schema.comments.id }).from(schema.comments).where(and(eq(schema.comments.id, input.parentId), eq(schema.comments.postId, postId))).limit(1);
