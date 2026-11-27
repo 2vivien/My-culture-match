@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { requireAuth } from '../auth/require-auth';
-import { createPostSchema, createCommentSchema, listCommentsQuerySchema } from './posts.schemas';
+import { createPostSchema, createCommentSchema, listCommentsQuerySchema, commentVoteSchema } from './posts.schemas';
 import { withIdempotency, idempotencyKeyFrom } from '../../shared/utils/idempotency';
 import {
   createPost,
@@ -9,6 +9,7 @@ import {
   toggleLike,
   addComment,
   listComments,
+  voteComment,
   sharePost,
   toggleSave,
   deletePost,
@@ -68,9 +69,17 @@ postsModule.post('/:id/comments', zValidator('json', createCommentSchema), async
 
 // GET /api/posts/:id/comments — liste (cursor)
 postsModule.get('/:id/comments', zValidator('query', listCommentsQuerySchema), async (c) => {
-  const { cursor, limit } = c.req.valid('query');
-  const result = await listComments(c.req.param('id'), cursor, limit);
+  const { cursor, limit, sort } = c.req.valid('query');
+  const { userId } = c.get('auth');
+  const result = await listComments(c.req.param('id'), cursor, limit, userId, sort);
   return c.json(result, 200);
+});
+
+// POST /api/posts/:id/comments/:commentId/vote — vote +1 / -1 (même valeur = retrait)
+postsModule.post('/:id/comments/:commentId/vote', zValidator('json', commentVoteSchema), async (c) => {
+  const { userId } = c.get('auth');
+  const { value } = c.req.valid('json');
+  return c.json(await voteComment(userId, c.req.param('id'), c.req.param('commentId'), value), 200);
 });
 
 // POST /api/posts/:id/share (idempotent)

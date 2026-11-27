@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, FlagTriangleLeft, Smile, Loader2, X, Repeat2, Check, Users } from 'lucide-react';
+import { ArrowLeft, ArrowBigUp, ArrowBigDown, FlagTriangleLeft, Smile, Loader2, X, Repeat2, Check, Users } from 'lucide-react';
 import { IconMessageCircle, IconReplace, IconShare3 } from '@tabler/icons-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/src/services/api';
@@ -8,7 +8,7 @@ import { PostHeader } from '@/src/components/feed/PostHeader';
 import { ShareModal } from '@/src/components/feed/ShareModal';
 import { TotemAvatar } from '@/src/components/ui/TotemAvatar';
 import { EmojiPicker } from '@/src/components/ui/EmojiPicker';
-import { useComments, type CommentNode } from '@/src/hooks/useComments';
+import { useComments, type CommentNode, type CommentSort } from '@/src/hooks/useComments';
 import { useAppStore } from '@/src/stores/useAppStore';
 import { useUIStore } from '@/src/stores/useUIStore';
 import { fallbackAvatar } from '@/src/lib/media';
@@ -42,7 +42,8 @@ const CommentItem: React.FC<{
   node: CommentNode;
   depth: number;
   onReply: (node: CommentNode) => void;
-}> = ({ node, depth, onReply }) => (
+  onVote: (commentId: string, value: 1 | -1) => void;
+}> = ({ node, depth, onReply, onVote }) => (
   <div className={cn('flex flex-col', depth > 0 && 'ml-14')}>
     <div className="flex items-start gap-3">
       {/* Style Instagram : avatar · username en gras · texte · date dessous · Répondre */}
@@ -61,6 +62,27 @@ const CommentItem: React.FC<{
         </p>
         <div className="flex items-center gap-4 mt-1 text-[11px] font-bold text-app-gray dark:text-zinc-500 select-none">
           <span className="font-medium">{timeAgo(node.createdAt)}</span>
+          <span className="flex items-center gap-0.5" aria-label={`Score ${node.score}`}>
+            <button
+              type="button"
+              aria-label="Voter pour"
+              aria-pressed={node.myVote === 1}
+              onClick={() => onVote(node.id, 1)}
+              className={cn('cursor-pointer bg-transparent border-none p-0 transition-colors', node.myVote === 1 ? 'text-[#E27D60]' : 'hover:text-app-black dark:hover:text-zinc-300')}
+            >
+              <ArrowBigUp className="w-4 h-4" />
+            </button>
+            <span className="min-w-4 text-center tabular-nums">{node.score}</span>
+            <button
+              type="button"
+              aria-label="Voter contre"
+              aria-pressed={node.myVote === -1}
+              onClick={() => onVote(node.id, -1)}
+              className={cn('cursor-pointer bg-transparent border-none p-0 transition-colors', node.myVote === -1 ? 'text-blue-500' : 'hover:text-app-black dark:hover:text-zinc-300')}
+            >
+              <ArrowBigDown className="w-4 h-4" />
+            </button>
+          </span>
           {depth === 0 && (
             <button
               type="button"
@@ -76,7 +98,7 @@ const CommentItem: React.FC<{
     {node.replies.length > 0 && (
       <div className="flex flex-col gap-4 mt-3">
         {node.replies.map((r) => (
-          <CommentItem key={r.id} node={r} depth={depth + 1} onReply={onReply} />
+          <CommentItem key={r.id} node={r} depth={depth + 1} onReply={onReply} onVote={onVote} />
         ))}
       </div>
     )}
@@ -88,7 +110,8 @@ export const PostDetailPage: React.FC = () => {
   const currentUser = useAppStore((s) => s.currentUser);
   const setActiveTab = useUIStore((s) => s.setActiveTab);
   const queryClient = useQueryClient();
-  const { comments, isLoading: loadingComments, addComment } = useComments(postId);
+  const [commentSort, setCommentSort] = useState<CommentSort>('best');
+  const { comments, isLoading: loadingComments, addComment, voteComment } = useComments(postId, commentSort);
   const [replyTo, setReplyTo] = useState<CommentNode | null>(null);
   const [text, setText] = useState('');
   const [showEmoji, setShowEmoji] = useState(false);
@@ -414,6 +437,19 @@ export const PostDetailPage: React.FC = () => {
       <h3 className="text-xs font-black uppercase tracking-wider text-app-gray mt-6 mb-3 px-1">
         Commentaires ({totalComments})
       </h3>
+      <div className="flex gap-1.5 mb-3" role="group" aria-label="Trier les commentaires">
+        {([['best', 'Meilleurs'], ['top', 'Top'], ['new', 'Récents'], ['old', 'Anciens']] as const).map(([value, label]) => (
+          <button
+            key={value}
+            type="button"
+            aria-pressed={commentSort === value}
+            onClick={() => setCommentSort(value)}
+            className={cn('px-3 py-1 rounded-full text-[11px] font-black cursor-pointer border-none transition-colors', commentSort === value ? 'bg-zinc-100 dark:bg-zinc-800 text-[#E27D60]' : 'bg-transparent text-app-gray hover:text-app-black dark:hover:text-zinc-200')}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
 
       <div className="flex-1 overflow-y-auto flex flex-col gap-5 pr-1 hide-scrollbar">
         {loadingComments ? (
@@ -425,7 +461,7 @@ export const PostDetailPage: React.FC = () => {
             Aucun commentaire pour l'instant. Soyez le premier à répondre !
           </p>
         ) : (
-          comments.map((c) => <CommentItem key={c.id} node={c} depth={0} onReply={setReplyTo} />)
+          comments.map((c) => <CommentItem key={c.id} node={c} depth={0} onReply={setReplyTo} onVote={(commentId, value) => voteComment.mutate({ commentId, value })} />)
         )}
       </div>
 

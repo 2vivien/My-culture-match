@@ -9,6 +9,9 @@ export interface BackendComment {
   text: string;
   status: string;
   likes: number;
+  /** Votes (+1 / -1) : score net et vote du lecteur (0 si aucun). */
+  score: number;
+  myVote: number;
   createdAt: string;
   author: { id: string; name: string; username: string; avatar: string | null };
 }
@@ -33,18 +36,20 @@ function buildTree(flat: BackendComment[]): CommentNode[] {
   return roots;
 }
 
-export function useComments(postId: string) {
+export type CommentSort = 'best' | 'top' | 'new' | 'old';
+
+export function useComments(postId: string, sort: CommentSort = 'best') {
   const queryClient = useQueryClient();
-  const queryKey = ['comments', postId];
+  const queryKey = ['comments', postId, sort];
 
   const { data: tree = [], isLoading } = useQuery({
     queryKey,
     queryFn: async () => {
-      // Le backend trie desc — on remet en ordre chronologique.
+      // Le serveur renvoie l'arbre déjà trié (racines puis réponses) : on conserve cet ordre.
       const data = await api.get<{ comments: BackendComment[]; nextCursor: string | null }>(
-        `/api/posts/${postId}/comments?limit=50`,
+        `/api/posts/${postId}/comments?limit=50&sort=${sort}`,
       );
-      return buildTree([...(data.comments ?? [])].reverse());
+      return buildTree(data.comments ?? []);
     },
     enabled: !!postId,
   });
@@ -52,8 +57,15 @@ export function useComments(postId: string) {
   const addComment = useMutation({
     mutationFn: (input: { text: string; parentId?: string }) =>
       api.post<{ commentId: string }>(`/api/posts/${postId}/comments`, input),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['comments', postId] }),
   });
 
-  return { comments: tree, isLoading, addComment };
+  // Un vote change le score et peut changer le rang : on recharge l'ordre serveur.
+  const voteComment = useMutation({
+    mutationFn: (input: { commentId: string; value: 1 | -1 }) =>
+      api.post<{ myVote: number; score: number }>(`/api/posts/${postId}/comments/${input.commentId}/vote`, { value: input.value }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['comments', postId] }),
+  });
+
+  return { comments: tree, isLoading, addComment, voteComment };
 }

@@ -45,4 +45,9 @@ export type CreateCommentInput = z.infer<typeof createCommentSchema>;
 export const listCommentsQuerySchema = z.object({
   cursor: z.string().trim().optional(),
   limit: z.coerce.number().int().min(1).max(50).default(20),
+  /** `new` (défaut, historique) : plus récents d'abord ; `best` / `top` / `old` : arbre trié, curseur = décalage. */
+  sort: z.enum(['best', 'top', 'new', 'old']).default('new'),
 });
+
+/** POST /api/posts/:id/comments/:commentId/vote. */
+export const commentVoteSchema = z.object({ value: z.union([z.literal(1), z.literal(-1)]) }).strict();

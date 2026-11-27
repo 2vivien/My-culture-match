@@ -1,4 +1,4 @@
-import { eq, and, lt, desc, inArray, ne } from 'drizzle-orm';
+import { eq, and, lt, desc, inArray, ne, sql } from 'drizzle-orm';
 import { db, schema } from '../../infrastructure/database';
 import { redis } from '../../infrastructure/redis';
 import { AppError } from '../../shared/utils/AppError';
@@ -11,6 +11,10 @@ import { enqueueModerationScan } from '../moderation/moderation.queue';
 import { assertCanWriteInTribe } from '../tribes/tribes.sanctions.service';
 import { postsCreatedTotal } from '../../infrastructure/monitoring/metrics';
 import type { CreatePostInput, CreateCommentInput } from './posts.schemas';
+import { sortCommentTree, type CommentSort } from './comments.ranking';
+
+/** Nombre maximal de commentaires chargés pour un tri classé (arbre calculé en mémoire). */
+const MAX_RANKED_COMMENTS = 500;
 
 const POST_CACHE_TTL = 30 * 60; // 30 min
 const postCacheKey = (id: string) => `post:${id}`;
@@ -307,38 +311,87 @@ export async function addComment(userId: string, postId: string, input: CreateCo
   return { commentId: comment.id };
 }
 
-/** GET /api/posts/:id/comments — pagination cursor. */
-export async function listComments(postId: string, cursor: string | undefined, limit: number): Promise<{ comments: Array<Record<string, unknown>>; nextCursor: string | null }> {
+/**
+ * GET /api/posts/:id/comments.
+ * `new` : pagination par curseur de date (comportement historique). Les autres tris renvoient l'arbre
+ * (racines puis réponses) trié par `best` / `top` / `old` ; le curseur est alors un décalage numérique.
+ * Chaque commentaire porte `ups`, `downs`, `score` et le vote du lecteur (`myVote`).
+ */
+export async function listComments(postId: string, cursor: string | undefined, limit: number, viewerId?: string, sort: CommentSort = 'new'): Promise<{ comments: Array<Record<string, unknown>>; nextCursor: string | null }> {
   const [post] = await db.select({ status: schema.posts.status }).from(schema.posts).where(eq(schema.posts.id, postId)).limit(1);
   if (!post || post.status === 'deleted') throw AppError.notFound('Post introuvable', 'POST_NOT_FOUND');
 
-  const query = db
-    .select({
-      id: schema.comments.id,
-      postId: schema.comments.postId,
-      parentId: schema.comments.parentId,
-      text: schema.comments.text,
-      status: schema.comments.status,
-      likes: schema.comments.likes,
-      createdAt: schema.comments.createdAt,
-      author: {
-        id: schema.users.id,
-        name: schema.users.name,
-        username: schema.users.username,
-        avatar: schema.users.avatar,
-      },
-    })
-    .from(schema.comments)
-    .innerJoin(schema.users, eq(schema.users.id, schema.comments.userId))
-    .where(and(eq(schema.comments.postId, postId), eq(schema.comments.status, 'published'), cursor ? lt(schema.comments.createdAt, new Date(cursor)) : undefined))
-    .orderBy(desc(schema.comments.createdAt))
-    .limit(limit + 1);
+  const baseSelect = {
+    id: schema.comments.id,
+    postId: schema.comments.postId,
+    parentId: schema.comments.parentId,
+    text: schema.comments.text,
+    status: schema.comments.status,
+    likes: schema.comments.likes,
+    createdAt: schema.comments.createdAt,
+    author: { id: schema.users.id, name: schema.users.name, username: schema.users.username, avatar: schema.users.avatar },
+  };
+  const visible = and(eq(schema.comments.postId, postId), eq(schema.comments.status, 'published'));
 
-  const rows = await query;
-  const hasMore = rows.length > limit;
-  const page = rows.slice(0, limit);
-  const nextCursor = hasMore ? page[page.length - 1]?.createdAt.toISOString() ?? null : null;
-  return { comments: page, nextCursor };
+  let rows;
+  let nextCursor: string | null = null;
+  if (sort === 'new') {
+    const fetched = await db.select(baseSelect).from(schema.comments).innerJoin(schema.users, eq(schema.users.id, schema.comments.userId))
+      .where(and(visible, cursor ? lt(schema.comments.createdAt, new Date(cursor)) : undefined))
+      .orderBy(desc(schema.comments.createdAt)).limit(limit + 1);
+    rows = fetched.slice(0, limit);
+    nextCursor = fetched.length > limit ? rows[rows.length - 1]?.createdAt.toISOString() ?? null : null;
+  } else {
+    rows = await db.select(baseSelect).from(schema.comments).innerJoin(schema.users, eq(schema.users.id, schema.comments.userId))
+      .where(visible).orderBy(desc(schema.comments.createdAt)).limit(MAX_RANKED_COMMENTS);
+  }
+
+  const ids = rows.map((r) => r.id);
+  const tallies = ids.length > 0
+    ? await db.select({ commentId: schema.commentVotes.commentId, ups: sql<number>`COUNT(*) FILTER (WHERE value = 1)::int`, downs: sql<number>`COUNT(*) FILTER (WHERE value = -1)::int` })
+        .from(schema.commentVotes).where(inArray(schema.commentVotes.commentId, ids)).groupBy(schema.commentVotes.commentId)
+    : [];
+  const mine = viewerId && ids.length > 0
+    ? await db.select({ commentId: schema.commentVotes.commentId, value: schema.commentVotes.value }).from(schema.commentVotes)
+        .where(and(inArray(schema.commentVotes.commentId, ids), eq(schema.commentVotes.userId, viewerId)))
+    : [];
+  const tallyBy = new Map(tallies.map((t) => [t.commentId, t]));
+  const myVoteBy = new Map(mine.map((m) => [m.commentId, m.value]));
+  const withVotes = rows.map((r) => {
+    const t = tallyBy.get(r.id);
+    const ups = t?.ups ?? 0;
+    const downs = t?.downs ?? 0;
+    return { ...r, ups, downs, score: ups - downs, myVote: myVoteBy.get(r.id) ?? 0 };
+  });
+
+  if (sort === 'new') return { comments: withVotes, nextCursor };
+
+  const ordered = sortCommentTree(withVotes, sort);
+  const offset = cursor && /^\d+$/.test(cursor) ? Number(cursor) : 0;
+  const page = ordered.slice(offset, offset + limit);
+  return { comments: page, nextCursor: offset + limit < ordered.length ? String(offset + limit) : null };
+}
+
+/** POST /api/posts/:id/comments/:commentId/vote — bascule +1 / -1 (même valeur = retrait). */
+export async function voteComment(userId: string, postId: string, commentId: string, value: 1 | -1): Promise<{ myVote: number; score: number; ups: number; downs: number }> {
+  const [comment] = await db.select({ id: schema.comments.id, status: schema.comments.status }).from(schema.comments)
+    .where(and(eq(schema.comments.id, commentId), eq(schema.comments.postId, postId))).limit(1);
+  if (!comment || comment.status === 'deleted') throw AppError.notFound('Commentaire introuvable', 'COMMENT_NOT_FOUND');
+
+  const [existing] = await db.select().from(schema.commentVotes)
+    .where(and(eq(schema.commentVotes.commentId, commentId), eq(schema.commentVotes.userId, userId))).limit(1);
+  if (existing && existing.value === value) {
+    await db.delete(schema.commentVotes).where(and(eq(schema.commentVotes.commentId, commentId), eq(schema.commentVotes.userId, userId)));
+  } else {
+    await db.insert(schema.commentVotes).values({ commentId, userId, value })
+      .onConflictDoUpdate({ target: [schema.commentVotes.commentId, schema.commentVotes.userId], set: { value, updatedAt: new Date() } });
+  }
+
+  const [t] = await db.select({ ups: sql<number>`COUNT(*) FILTER (WHERE value = 1)::int`, downs: sql<number>`COUNT(*) FILTER (WHERE value = -1)::int` })
+    .from(schema.commentVotes).where(eq(schema.commentVotes.commentId, commentId));
+  const ups = t?.ups ?? 0;
+  const downs = t?.downs ?? 0;
+  return { myVote: existing && existing.value === value ? 0 : value, score: ups - downs, ups, downs };
 }
 
 /** POST /api/posts/:id/share — une seule fois par utilisateur. */
