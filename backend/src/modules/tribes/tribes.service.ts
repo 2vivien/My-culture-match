@@ -474,6 +474,7 @@ export async function reportTribe(tribeId: string, reporterId: string, reason: s
 
 /** POST /api/tribes/:id/posts/:postId/report — signaler un post de tribu. */
 export async function reportTribePost(tribeId: string, postId: string, reporterId: string, reason: string): Promise<{ reported: boolean }> {
+  await assertCanReadTribe(tribeId, reporterId);
   const [post] = await db
     .select({ id: schema.posts.id, authorId: schema.posts.authorId })
     .from(schema.posts)
