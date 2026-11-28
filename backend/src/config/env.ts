@@ -57,6 +57,11 @@ const envSchema = z.object({
 
   CULTURE_ENGINE_BATCH_ENABLED: booleanFlag.default(true),
   CULTURE_ENGINE_VERSION: z.string().default('v1'),
+
+  // Quotas quotidiens Love (L6) — VALEURS PAR DÉFAUT À VALIDER (décision produit non tranchée).
+  // 0 = illimité ; le compteur repart à zéro à minuit UTC.
+  LOVE_DAILY_SEARCH_LIMIT: z.coerce.number().int().min(0).default(20),
+  LOVE_DAILY_REQUEST_LIMIT: z.coerce.number().int().min(0).default(30),
 });
 
 export type Env = z.infer<typeof envSchema>;

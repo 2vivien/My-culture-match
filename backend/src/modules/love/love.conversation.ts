@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { parseLoveQuery, type LoveSearchCriteria } from './love.ai';
 import { searchLove } from './love.service';
 import { profileSearchDefaults } from './love.profile';
+import { detectSensitiveCategories, sensitiveNotice, type SensitiveCategory } from './love.guardrails';
 import { getLoveProfileAnswers } from './love.profile.service';
 
 export const loveConversationSchema = z.object({
@@ -14,6 +15,8 @@ export type LoveConversationResult = {
   criteria: LoveSearchCriteria;
   missing: string[];
   remainingSearches: number;
+  /** Catégories sensibles mentionnées dans la demande et volontairement ignorées. */
+  ignored: SensitiveCategory[];
   results?: Awaited<ReturnType<typeof searchLove>>['results'];
 };
 
@@ -35,6 +38,8 @@ function replyFor(missing: string[], hasResults: boolean): string {
 
 export async function handleLoveConversation(userId: string, messages: string[]): Promise<LoveConversationResult> {
   const combined = messages.join('\n');
+  const ignored = detectSensitiveCategories(combined);
+  const notice = sensitiveNotice(ignored);
   const parsed = await parseLoveQuery(combined);
   const profile = await getLoveProfileAnswers(userId);
   // Le profil ne complète que ce que la personne n'a pas dit : sa demande actuelle prime toujours.
@@ -43,8 +48,8 @@ export async function handleLoveConversation(userId: string, messages: string[])
   const missing = missingCriteria(criteria);
   if (missing.length > 0) {
     const quota = await import('./love.service').then((m) => m.getLoveSearchQuota(userId));
-    return { reply: replyFor(missing, false), phase: 'clarifying', criteria, missing, remainingSearches: quota.remaining };
+    return { reply: replyFor(missing, false) + notice, phase: 'clarifying', criteria, missing, remainingSearches: quota.remaining, ignored };
   }
   const result = await searchLove(userId, combined);
-  return { reply: replyFor([], true), phase: 'results', criteria, missing: [], remainingSearches: result.remainingSearches, results: result.results };
+  return { reply: replyFor([], true) + notice, phase: 'results', criteria, missing: [], remainingSearches: result.remainingSearches, results: result.results, ignored };
 }

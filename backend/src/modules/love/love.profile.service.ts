@@ -1,8 +1,10 @@
 import { eq } from 'drizzle-orm';
 import { db, schema } from '../../infrastructure/database';
-import { loveProfileSchema, LOVE_QUESTIONS, type LoveProfileAnswers } from './love.profile';
+import { loveProfileSchema, LOVE_QUESTIONS, sensitiveCategoriesInProfile, type LoveProfileAnswers } from './love.profile';
+import { loveQuestionnairesCompletedTotal } from '../../infrastructure/monitoring/metrics';
+import { sensitiveNotice, type SensitiveCategory } from './love.guardrails';
 
-export interface LoveProfileDto { completed: boolean; answers: LoveProfileAnswers | null; questions: typeof LOVE_QUESTIONS }
+export interface LoveProfileDto { completed: boolean; answers: LoveProfileAnswers | null; questions: typeof LOVE_QUESTIONS; ignoredCategories?: SensitiveCategory[]; notice?: string }
 
 /** Réponses enregistrées, ou null si la personne n'a pas encore fait le questionnaire (ou si elles sont illisibles). */
 export async function getLoveProfileAnswers(userId: string): Promise<LoveProfileAnswers | null> {
@@ -19,8 +21,15 @@ export async function getLoveProfile(userId: string): Promise<LoveProfileDto> {
 
 /** PUT /api/love/profile — première réponse ou modification ultérieure. */
 export async function saveLoveProfile(userId: string, answers: LoveProfileAnswers): Promise<LoveProfileDto> {
+  const firstCompletion = (await getLoveProfileAnswers(userId)) === null;
   await db.insert(schema.loveProfiles)
     .values({ userId, answers })
     .onConflictDoUpdate({ target: schema.loveProfiles.userId, set: { answers, updatedAt: new Date() } });
-  return getLoveProfile(userId);
+  if (firstCompletion) loveQuestionnairesCompletedTotal.inc();
+  const dto = await getLoveProfile(userId);
+  // Transparence : ces éléments sont conservés sur le profil mais n'influencent jamais les recherches.
+  const ignoredCategories = sensitiveCategoriesInProfile(answers);
+  return ignoredCategories.length > 0
+    ? { ...dto, ignoredCategories, notice: sensitiveNotice(ignoredCategories).trim() }
+    : dto;
 }

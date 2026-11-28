@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Sparkles } from 'lucide-react';
-import { loveService, type LoveProfileAnswers } from '@/src/services/loveService';
+import { loveService, type LoveProfileAnswers, type LoveProfileResponse } from '@/src/services/loveService';
 
 /**
  * Questionnaire de première utilisation de Love, présenté comme une discussion avec l'IA :
@@ -22,13 +22,27 @@ const STEPS: Step[] = [
   { key: 'understood', kind: 'text', question: 'Dernière question, libre : qu’est-ce qui te fait te sentir réellement compris(e) par quelqu’un ?' },
 ];
 
-interface Props { onDone: () => void }
+interface Props {
+  onDone: (saved?: LoveProfileResponse) => void;
+  /** Réponses déjà enregistrées : active le mode « modification », questionnaire pré-rempli. */
+  initialAnswers?: LoveProfileAnswers | null;
+  /** Mode modification : permet de quitter sans rien changer. */
+  onCancel?: () => void;
+}
 
-export const LoveOnboarding: React.FC<Props> = ({ onDone }) => {
+/** Sélection / texte pré-remplis d'une étape à partir des réponses déjà enregistrées. */
+function prefill(step: Step, initial?: LoveProfileAnswers | null): { selection: string[]; text: string } {
+  const value = initial?.[step.key];
+  if (step.kind === 'text') return { selection: [], text: typeof value === 'string' ? value : '' };
+  return { selection: Array.isArray(value) ? value : typeof value === 'string' ? [value] : [], text: '' };
+}
+
+export const LoveOnboarding: React.FC<Props> = ({ onDone, initialAnswers, onCancel }) => {
+  const editing = Boolean(initialAnswers);
   const [index, setIndex] = useState(0);
   const [answers, setAnswers] = useState<Partial<Record<keyof LoveProfileAnswers, unknown>>>({});
-  const [selection, setSelection] = useState<string[]>([]);
-  const [text, setText] = useState('');
+  const [selection, setSelection] = useState<string[]>(() => prefill(STEPS[0]!, initialAnswers).selection);
+  const [text, setText] = useState(() => prefill(STEPS[0]!, initialAnswers).text);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const endRef = useRef<HTMLDivElement>(null);
@@ -46,15 +60,17 @@ export const LoveOnboarding: React.FC<Props> = ({ onDone }) => {
 
   const finish = async (final: Partial<Record<keyof LoveProfileAnswers, unknown>>) => {
     setSaving(true); setError(null);
-    try { await loveService.saveProfile(final as LoveProfileAnswers); onDone(); }
+    try { const saved = await loveService.saveProfile(final as LoveProfileAnswers); onDone(saved); }
     catch (e) { setError(e instanceof Error ? e.message : 'Impossible d’enregistrer tes réponses.'); setSaving(false); }
   };
 
   const advance = (value: unknown) => {
     const next = { ...answers, [step.key]: value };
     if (step.kind === 'text' && !value) delete next[step.key];
-    setAnswers(next); setSelection([]); setText('');
-    if (index === STEPS.length - 1) void finish(next); else setIndex(index + 1);
+    setAnswers(next);
+    if (index === STEPS.length - 1) { void finish(next); return; }
+    const following = prefill(STEPS[index + 1]!, initialAnswers);
+    setSelection(following.selection); setText(following.text); setIndex(index + 1);
   };
 
   const toggle = (option: string) => {
@@ -68,11 +84,12 @@ export const LoveOnboarding: React.FC<Props> = ({ onDone }) => {
         <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#E27D60]/10 text-[#E27D60]"><Sparkles className="h-5 w-5" /></div>
         <div>
           <p className="text-xs font-bold uppercase tracking-[.16em] text-[#E27D60]">Love AI</p>
-          <h1 className="text-lg font-semibold text-app-text">Faisons connaissance ({index + 1}/{STEPS.length})</h1>
+          <h1 className="text-lg font-semibold text-app-text">{editing ? 'Modifier mes préférences Love' : 'Faisons connaissance'} ({index + 1}/{STEPS.length})</h1>
         </div>
+        {editing && onCancel && <button type="button" disabled={saving} onClick={onCancel} className="ml-auto rounded-full border border-app-border px-4 py-1.5 text-xs font-semibold text-app-gray disabled:opacity-40">Annuler</button>}
       </header>
       <div className="flex-1 space-y-3 overflow-y-auto pb-4">
-        <Bubble role="assistant">Avant ta première recherche, j’ai quelques questions pour mieux te comprendre. Tu pourras tout modifier ensuite.</Bubble>
+        <Bubble role="assistant">{editing ? 'Voici tes réponses actuelles : garde-les ou change-les, rien n’est enregistré avant la dernière question.' : 'Avant ta première recherche, j’ai quelques questions pour mieux te comprendre. Tu pourras tout modifier ensuite.'}</Bubble>
         {history.map((h) => (
           <React.Fragment key={h.question}>
             <Bubble role="assistant">{h.question}</Bubble>
@@ -106,7 +123,7 @@ export const LoveOnboarding: React.FC<Props> = ({ onDone }) => {
             <textarea value={text} onChange={(e) => setText(e.target.value)} maxLength={500} rows={3} placeholder="Ta réponse (facultative)…"
               className="w-full resize-none rounded-2xl border border-app-border bg-app-bg p-3 text-sm text-app-text outline-none" />
             <div className="flex gap-2">
-              <button type="button" disabled={saving} onClick={() => advance(text.trim())} className="rounded-full bg-[#E27D60] px-5 py-2 text-xs font-bold text-white disabled:opacity-40">{saving ? 'Enregistrement…' : 'Terminer'}</button>
+              <button type="button" disabled={saving} onClick={() => advance(text.trim())} className="rounded-full bg-[#E27D60] px-5 py-2 text-xs font-bold text-white disabled:opacity-40">{saving ? 'Enregistrement…' : editing ? 'Enregistrer' : 'Terminer'}</button>
               <button type="button" disabled={saving} onClick={() => advance('')} className="rounded-full border border-app-border px-5 py-2 text-xs font-semibold text-app-gray">Passer</button>
             </div>
           </div>
