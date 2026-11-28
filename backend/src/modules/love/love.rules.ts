@@ -19,3 +19,19 @@ export function isAdultForLove(birthdate: Date | null | undefined, now: Date = n
   const age = computeAge(birthdate, now);
   return age !== null && age >= LOVE_MIN_AGE;
 }
+
+export interface FieldAccessLike { profile: boolean; photos: boolean; country: boolean }
+interface MaskableProfile { avatar?: string | null; bio?: string | null; country?: string | null; region?: string | null; location?: string | null }
+
+/**
+ * Applique les préférences de visibilité de la personne montrée : pays masqué (donc aussi sa région et sa
+ * localisation), photo masquée (avatar), profil masqué (bio). À appliquer AVANT le filtrage et le score
+ * pour que ni un filtre, ni un classement, ne trahisse une donnée masquée.
+ */
+export function maskForViewer<T extends MaskableProfile>(row: T, access: FieldAccessLike): T {
+  const out = { ...row };
+  if (!access.country) { if ('country' in out) out.country = null; if ('region' in out) out.region = null; if ('location' in out) out.location = null; }
+  if (!access.photos && 'avatar' in out) out.avatar = null;
+  if (!access.profile && 'bio' in out) out.bio = null;
+  return out;
+}

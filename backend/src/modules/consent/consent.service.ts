@@ -3,7 +3,7 @@ import { db, schema } from '../../infrastructure/database';
 import { AppError } from '../../shared/utils/AppError';
 import { haversineKm } from '../users/users.service';
 import type { ConsentSettings } from './consent.schema';
-import { visibilityAllows } from './consent.policy';
+import { visibilityAllows, fieldAccess, relationFlagsFor, type FieldAccess } from './consent.policy';
 import { isAdultForLove } from '../love/love.rules';
 
 const DEFAULTS: Omit<ConsentSettings, 'id' | 'userId' | 'createdAt' | 'updatedAt'> = { discoveryVisibility: 'everyone', requestVisibility: 'everyone', loveLikeVisibility: 'everyone', contactVisibility: 'friends', profileVisibility: 'everyone', photosVisibility: 'everyone', countryVisibility: 'everyone', friendshipEnabled: true, loveEnabled: false, loveProposalEnabled: true };
@@ -22,3 +22,32 @@ export async function canSendFriendRequest(viewerId: string, targetId: string): 
 export async function canLikeForLove(viewerId: string, targetId: string): Promise<boolean> { if (await isBlockedEitherWay(viewerId, targetId)) return false; if (await anyBanned([viewerId, targetId])) return false; const [viewer, target] = await Promise.all([getConsentSettings(viewerId), getConsentSettings(targetId)]); if (!viewer.loveEnabled || !target.loveEnabled || !target.loveProposalEnabled) return false; return visibilityAllows(target.loveLikeVisibility, await relationFlags(viewerId, targetId)); }
 export async function canContact(viewerId: string, targetId: string): Promise<boolean> { const settings = await getConsentSettings(targetId); return visibilityAllows(settings.contactVisibility, await relationFlags(viewerId, targetId)); }
 export async function canViewField(viewerId: string, targetId: string, field: 'profile' | 'photos' | 'country'): Promise<boolean> { if (viewerId === targetId) return true; const settings = await getConsentSettings(targetId); const key = field === 'profile' ? settings.profileVisibility : field === 'photos' ? settings.photosVisibility : settings.countryVisibility; return visibilityAllows(key, await relationFlags(viewerId, targetId)); }
+
+/**
+ * Champs visibles pour un lecteur chez plusieurs personnes, en un nombre fixe de requêtes (listes Love :
+ * 200 à 500 profils). Même règle que canViewField ; une personne sans réglages garde les valeurs par défaut.
+ */
+export async function viewableFieldsFor(viewerId: string, targetIds: string[]): Promise<Map<string, FieldAccess>> {
+  const out = new Map<string, FieldAccess>();
+  const ids = [...new Set(targetIds)].filter((id) => id !== viewerId);
+  if (targetIds.includes(viewerId)) out.set(viewerId, { profile: true, photos: true, country: true });
+  if (ids.length === 0) return out;
+  const [settingsRows, companionRows, positions] = await Promise.all([
+    db.select().from(schema.consentSettings).where(inArray(schema.consentSettings.userId, ids)),
+    db.select({ from: schema.connections.fromUserId, to: schema.connections.toUserId }).from(schema.connections).where(and(or(eq(schema.connections.fromUserId, viewerId), eq(schema.connections.toUserId, viewerId)), inArray(schema.connections.status, ['companion']))),
+    db.select({ id: schema.users.id, latitude: schema.users.latitude, longitude: schema.users.longitude }).from(schema.users).where(inArray(schema.users.id, [viewerId, ...ids])),
+  ]);
+  const friends = new Set(companionRows.map((r) => (r.from === viewerId ? r.to : r.from)));
+  const friendsOfFriends = new Set<string>();
+  if (friends.size > 0) {
+    const friendIds = [...friends];
+    const second = await db.select({ from: schema.connections.fromUserId, to: schema.connections.toUserId }).from(schema.connections).where(and(inArray(schema.connections.status, ['companion']), or(inArray(schema.connections.fromUserId, friendIds), inArray(schema.connections.toUserId, friendIds))));
+    for (const r of second) friendsOfFriends.add(friendIds.includes(r.from) ? r.to : r.from);
+  }
+  const me = positions.find((p) => p.id === viewerId);
+  const nearby = new Set<string>();
+  if (me && me.latitude !== null && me.longitude !== null) for (const p of positions) if (p.id !== viewerId && p.latitude !== null && p.longitude !== null && haversineKm(me.latitude, me.longitude, p.latitude, p.longitude) <= 50) nearby.add(p.id);
+  const byUser = new Map(settingsRows.map((r) => [r.userId, r]));
+  for (const id of ids) out.set(id, fieldAccess(byUser.get(id) ?? DEFAULTS, relationFlagsFor(id, { friends, friendsOfFriends, nearby })));
+  return out;
+}

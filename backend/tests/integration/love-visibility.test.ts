@@ -88,6 +88,7 @@ async function loveUser(prefix: string): Promise<{ token: string; userId: string
 
 
 
+const patchConsent = (token: string, body: unknown) => app.request('/api/consent/settings', { method: 'PATCH', headers: { 'content-type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(body) });
 const ids = async (token: string, path: string) => ((await (await app.request(path, authed(token))).json()) as Array<{ id: string }>).map((c) => c.id);
 
 describe('Visibilité des profils dans Love', () => {
@@ -110,5 +111,23 @@ describe('Visibilité des profils dans Love', () => {
     expect(await ids(a.token, '/api/love/active')).not.toContain(b.userId);
     const like = await app.request('/api/love/swipe', authedJson(a.token, { userId: c.userId, action: 'like' }));
     expect(like.status).toBe(403);
+  });
+
+  it('applique photosVisibility, countryVisibility et profileVisibility de la personne montrée', async () => {
+    const a = await loveUser('lvis');
+    const b = await loveUser('lvis');
+    await db.update(schema.users).set({ avatar: 'https://cdn.example/b.png', bio: 'bio de B', country: 'Bénin', region: 'Atlantique', location: 'Cotonou' }).where(eq(schema.users.id, b.userId));
+    const res = await patchConsent(b.token, { photosVisibility: 'nobody', countryVisibility: 'nobody', profileVisibility: 'nobody' });
+    expect(res.status).toBe(200);
+    await redis.del(`love:candidates:${a.userId}`);
+
+    const list = (await (await app.request('/api/love/matches', authed(a.token))).json()) as Array<{ id: string; avatar: string | null; bio: string | null; country: string | null; location: string | null }>;
+    const card = list.find((c) => c.id === b.userId);
+    expect(card).toBeDefined();
+    expect(card).toMatchObject({ avatar: null, bio: null, country: null, location: null });
+
+    const search = (await (await app.request('/api/love/search', authedJson(a.token, { query: 'une personne ouverte qui aime voyager' }))).json()) as { results: Array<{ id: string; avatar: string | null; country: string | null }> };
+    const hit = search.results.find((r) => r.id === b.userId);
+    if (hit) expect(hit).toMatchObject({ avatar: null, country: null });
   });
 });

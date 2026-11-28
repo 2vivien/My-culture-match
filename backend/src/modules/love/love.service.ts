@@ -7,10 +7,10 @@ import { emitToUser } from '../../infrastructure/websocket';
 import { createConversationForUsers } from '../messages/messages.service';
 import { compatLove } from '../culture-engine/scoring';
 import { matchesCreatedTotal, loveAiSearchesTotal, loveCardsDisplayedTotal, loveRequestsTotal } from '../../infrastructure/monitoring/metrics';
-import { canLikeForLove } from '../consent/consent.service';
+import { canLikeForLove, viewableFieldsFor } from '../consent/consent.service';
 import { parseLoveQuery } from './love.ai';
 import { consumeLoveQuota, getLoveQuota } from './love.quota.service';
-import { computeAge, isAdultForLove } from './love.rules';
+import { computeAge, isAdultForLove, maskForViewer } from './love.rules';
 import { counterpartsBlockedWith, loveCandidatesKey } from './love.blocks';
 
 const CANDIDATES_TTL = 60 * 60;
@@ -43,7 +43,9 @@ export async function getLoveCandidates(userId: string): Promise<{ candidates: L
   const blocked = await blockedIds(userId); const swiped = await redis.smembers(swipedKey(userId)); const passed = await redis.smembers('love:passed:' + userId);
   const existingRows = await db.select({ candidateId: schema.loveMatches.candidateId }).from(schema.loveMatches).where(eq(schema.loveMatches.userId, userId)); const alreadyMatched = new Set(existingRows.map((r) => r.candidateId));
   const candidates = await db.select({ id: schema.users.id, name: schema.users.name, username: schema.users.username, avatar: schema.users.avatar, bio: schema.users.bio, location: schema.users.location, country: schema.users.country, region: schema.users.region, birthdate: schema.users.birthdate, gender: schema.users.gender, profileCompleted: schema.users.profileCompleted, values: schema.users.values, languages: schema.users.languages }).from(schema.users).where(and(eq(schema.users.profileCompleted, true), isNull(schema.users.bannedAt))).limit(200);
-  const excluded = new Set([userId, ...blocked, ...swiped, ...passed, ...alreadyMatched]); const eligible = candidates.filter((c) => !excluded.has(c.id) && (computeAge(c.birthdate) ?? 0) >= 18); const visible = [] as typeof eligible; for (const candidate of eligible) if (await canLikeForLove(userId, candidate.id)) visible.push(candidate);
+  const excluded = new Set([userId, ...blocked, ...swiped, ...passed, ...alreadyMatched]); const eligible = candidates.filter((c) => !excluded.has(c.id) && (computeAge(c.birthdate) ?? 0) >= 18); const allowed = [] as typeof eligible; for (const candidate of eligible) if (await canLikeForLove(userId, candidate.id)) allowed.push(candidate);
+  // Photos / pays / profil masqués par la personne : appliqués avant le score pour ne rien trahir.
+  const access = await viewableFieldsFor(userId, allowed.map((c) => c.id)); const visible = allowed.map((c) => maskForViewer(c, access.get(c.id) ?? { profile: false, photos: false, country: false }));
   const result = visible.slice(0, MAX_CANDIDATES).map((c) => ({ id: c.id, name: c.name, username: c.username, avatar: c.avatar, bio: c.bio, location: c.location, country: c.country, gender: c.gender, age: computeAge(c.birthdate), matchScore: compatLove(toUserFeatures(me), toUserFeatures(c)), sharedValues: (c.values ?? []).filter((v) => (me.values ?? []).includes(v)) }));
   await redis.set(candidatesKey(userId), JSON.stringify(result), 'EX', CANDIDATES_TTL); return { candidates: result };
 }
@@ -72,12 +74,15 @@ export async function searchLove(userId: string, query: string): Promise<{ query
     if (criteria.ageMin !== undefined && age < criteria.ageMin) continue;
     if (criteria.ageMax !== undefined && age > criteria.ageMax) continue;
     if (criteria.genders?.length && !(criteria.genders as string[]).includes(c.gender ?? '')) continue;
-    if (criteria.countries?.length && !criteria.countries.some((country) => normalized(country) === normalized(c.country))) continue;
     if (!(await canLikeForLove(userId, c.id))) continue;
     visible.push(c);
   }
+  // Visibilité (photos / pays / profil) AVANT le filtre par pays et le score : un pays masqué ne doit être ni filtrable ni déductible.
+  const access = await viewableFieldsFor(userId, visible.map((c) => c.id));
+  const masked = visible.map((c) => maskForViewer(c, access.get(c.id) ?? { profile: false, photos: false, country: false }));
+  const countryFiltered = criteria.countries?.length ? masked.filter((c) => criteria.countries!.some((country) => normalized(country) === normalized(c.country))) : masked;
   const meFeatures = toUserFeatures(me);
-  const ranked = visible.map((c) => {
+  const ranked = countryFiltered.map((c) => {
     const sharedValues = (c.values ?? []).filter((v) => (me.values ?? []).some((mine) => normalized(mine) === normalized(v)));
     const keywordOverlap = overlap([...(c.values ?? []), ...(c.languages ?? []), c.country, c.region, c.bio].filter(Boolean) as string[], criteria.keywords ?? []);
     const scoreBase = compatLove(meFeatures, toUserFeatures(c));
@@ -109,7 +114,7 @@ export async function getLoveSearchQuota(userId: string): Promise<{ limit: numbe
 export async function getActiveLoveMatches(userId: string): Promise<{ candidates: Array<LoveCandidateDto & { connected: boolean; conversationId: string | null }> }> {
   const rows = await db.select({ candidateId: schema.loveMatches.candidateId, conversationId: schema.loveMatches.conversationId, matchScore: schema.loveMatches.matchScore }).from(schema.loveMatches).where(and(eq(schema.loveMatches.userId, userId), eq(schema.loveMatches.isMutual, true))); if (rows.length === 0) return { candidates: [] };
   const blockedSet = new Set(await blockedIds(userId)); const activeRows = rows.filter((r) => !blockedSet.has(r.candidateId)); if (activeRows.length === 0) return { candidates: [] };
-  const ids = activeRows.map((r) => r.candidateId); const users = await db.select({ id: schema.users.id, name: schema.users.name, username: schema.users.username, avatar: schema.users.avatar, bio: schema.users.bio, country: schema.users.country, location: schema.users.location, gender: schema.users.gender, birthdate: schema.users.birthdate }).from(schema.users).where(and(inArray(schema.users.id, ids), isNull(schema.users.bannedAt))); const byId = new Map(users.map((u) => [u.id, u]));
+  const ids = activeRows.map((r) => r.candidateId); const users = await db.select({ id: schema.users.id, name: schema.users.name, username: schema.users.username, avatar: schema.users.avatar, bio: schema.users.bio, country: schema.users.country, location: schema.users.location, gender: schema.users.gender, birthdate: schema.users.birthdate }).from(schema.users).where(and(inArray(schema.users.id, ids), isNull(schema.users.bannedAt))); const access = await viewableFieldsFor(userId, users.map((u) => u.id)); const byId = new Map(users.map((u) => [u.id, maskForViewer(u, access.get(u.id) ?? { profile: false, photos: false, country: false })]));
   return { candidates: activeRows.flatMap((r) => { const u = byId.get(r.candidateId); if (!u) return []; return [{ id: u.id, name: u.name, username: u.username, avatar: u.avatar, bio: u.bio, location: u.location, country: u.country, gender: u.gender, age: computeAge(u.birthdate), matchScore: r.matchScore, sharedValues: [], connected: true, conversationId: r.conversationId }]; }) };
 }
 export async function getLoveCandidate(userId: string, candidateId: string): Promise<{ candidate: LoveCandidateDto }> { const { candidates } = await getLoveCandidates(userId); const candidate = candidates.find((c) => c.id === candidateId); if (!candidate) throw AppError.notFound('Candidat introuvable', 'CANDIDATE_NOT_FOUND'); return { candidate }; }
@@ -166,7 +171,8 @@ export async function getIncomingLoveRequests(userId: string): Promise<{ request
 
   const rows = await db.select({ id: schema.users.id, name: schema.users.name, username: schema.users.username, avatar: schema.users.avatar, bio: schema.users.bio, country: schema.users.country, location: schema.users.location, birthdate: schema.users.birthdate })
     .from(schema.users).where(and(inArray(schema.users.id, pending.map((r) => r.fromId)), isNull(schema.users.bannedAt)));
-  const byId = new Map(rows.map((u) => [u.id, u]));
+  const access = await viewableFieldsFor(userId, rows.map((u) => u.id));
+  const byId = new Map(rows.map((u) => [u.id, maskForViewer(u, access.get(u.id) ?? { profile: false, photos: false, country: false })]));
   const requests = pending.flatMap((r): LoveRequestDto[] => {
     const u = byId.get(r.fromId);
     if (!u || (computeAge(u.birthdate) ?? 0) < 18) return [];

@@ -34,3 +34,23 @@ describe('isAdultForLove', () => {
     expect(isAdultForLove(undefined, now)).toBe(false);
   });
 });
+
+import { maskForViewer } from '../../../src/modules/love/love.rules';
+
+describe('maskForViewer', () => {
+  const row = { id: 'x', avatar: 'a.png', bio: 'bio', country: 'Bénin', region: 'Atlantique', location: 'Cotonou' };
+  it('masque pays, région et localisation quand le pays est caché', () => {
+    expect(maskForViewer(row, { profile: true, photos: true, country: false })).toEqual({ ...row, country: null, region: null, location: null });
+  });
+  it('masque l’avatar sans la photo, la bio sans le profil', () => {
+    expect(maskForViewer(row, { profile: false, photos: false, country: true })).toEqual({ ...row, avatar: null, bio: null });
+  });
+  it('ne change rien si tout est visible, et ne mute pas l’entrée', () => {
+    const out = maskForViewer(row, { profile: true, photos: true, country: true });
+    expect(out).toEqual(row);
+    expect(out).not.toBe(row);
+  });
+  it('n’ajoute pas de champ absent', () => {
+    expect(maskForViewer({ id: 'x', avatar: 'a' }, { profile: false, photos: true, country: false })).toEqual({ id: 'x', avatar: 'a' });
+  });
+});
