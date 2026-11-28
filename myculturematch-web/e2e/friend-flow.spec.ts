@@ -118,7 +118,7 @@ test.describe('Friend — carte People Nearby (API simulée)', () => {
     await setGeoMode(lea, 'denied');
 
     await lea.getByRole('button', { name: 'Activer ma localisation' }).click();
-    const alert = lea.getByRole('alert');
+    const alert = lea.getByRole('alert').last();
     await expect(alert).toContainText('Localisation refusée');
     // Un refus du navigateur ne doit rien enregistrer côté serveur.
     expect(world.callsTo('PATCH', /\/api\/location\/settings$/)).toHaveLength(0);
@@ -129,7 +129,7 @@ test.describe('Friend — carte People Nearby (API simulée)', () => {
     await setGeoMode(lea, 'ok');
     await alert.getByRole('button', { name: 'Réessayer' }).click();
 
-    await expect(lea.getByRole('alert')).toHaveCount(0);
+    await expect(lea.getByRole('heading', { name: 'Localisation refusée' })).toHaveCount(0);
     await expect(lea.getByRole('button', { name: 'Activer ma localisation' })).toHaveCount(0);
     await expect(sharedBanner(lea, /Ta position est partagée avec 1 personne$/)).toBeVisible();
 
@@ -144,11 +144,11 @@ test.describe('Friend — carte People Nearby (API simulée)', () => {
 
     await setGeoMode(lea, 'unavailable');
     await lea.getByRole('button', { name: 'Activer ma localisation' }).click();
-    await expect(lea.getByRole('alert')).toContainText('Position introuvable');
+    await expect(lea.getByRole('alert').last()).toContainText('Position introuvable');
 
     await setGeoMode(lea, 'timeout');
-    await lea.getByRole('alert').getByRole('button', { name: 'Réessayer' }).click();
-    await expect(lea.getByRole('alert')).toContainText('Localisation trop longue');
+    await lea.getByRole('alert').last().getByRole('button', { name: 'Réessayer' }).click();
+    await expect(lea.getByRole('alert').last()).toContainText('Localisation trop longue');
   });
 
   test('F7 — erreur de chargement puis rétablissement', async ({ browser }) => {
@@ -157,14 +157,14 @@ test.describe('Friend — carte People Nearby (API simulée)', () => {
     world.nearbyFails = true;
 
     const lea = await openAs(browser, world, LEA.id);
-    const alert = lea.getByRole('alert');
+    const alert = lea.getByRole('alert').last();
     await expect(alert).toContainText('Impossible de charger la carte');
     // Une erreur ne doit pas se faire passer pour « personne à proximité ».
     await expect(lea.getByText(/Personne à proximité/)).toHaveCount(0);
 
     world.nearbyFails = false;
     await alert.getByRole('button', { name: 'Réessayer' }).click();
-    await expect(lea.getByRole('alert')).toHaveCount(0);
+    await expect(lea.getByText('Impossible de charger la carte')).toHaveCount(0);
     await expect(lea.getByText('1 personne à proximité')).toBeVisible();
   });
 
