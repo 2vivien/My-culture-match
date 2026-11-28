@@ -8,6 +8,8 @@ import { AppError } from '../../shared/utils/AppError';
 import { haversineKm } from '../users/users.service';
 import { evaluateNearbyCandidate, NEARBY_RADIUS_KM } from './location.nearby.filter';
 import { computeMatchScore } from '../users/match-score';
+import { obfuscatePosition } from './location.privacy';
+import { env } from '../../config/env';
 
 const cacheKey = (id: string) => `location:settings:${id}`;
 const LOCATION_EVENT = 'location:nearby:update';
@@ -123,15 +125,6 @@ export async function getNearbyNotify(userId: string): Promise<{ nearbyNotify: b
   return { nearbyNotify: (await getLocationSettings(userId)).nearbyNotify === true };
 }
 
-function jitter(value: number, seed: string, magnitude: number) {
-  let h = 2166136261;
-  for (const ch of seed) h = Math.imul(h ^ ch.charCodeAt(0), 16777619);
-  return value + ((((h >>> 0) % 100000) / 100000) - 0.5) * magnitude;
-}
-function fuzz(lat: number, lon: number, id: string, precision: LocationPrecision) {
-  const magnitude = precision === 'area' ? 0.02 : 0.006;
-  return { latitude: jitter(lat, `${id}:lat`, magnitude), longitude: jitter(lon, `${id}:lon`, magnitude) };
-}
 export function boundingBox(latitude: number, longitude: number, radiusKm: number) {
   const latDelta = radiusKm / 111;
   const lonDelta = radiusKm / (111 * Math.max(Math.cos((latitude * Math.PI) / 180), 0.2));
@@ -201,7 +194,7 @@ export async function getPeopleNearby(userId: string, viewerLocation?: { latitud
     if (!decision.visible || distance === null || c.latitude === null || c.longitude === null) continue;
     const precision = validPrecision(c.precision) ? c.precision : 'approximate';
     const distanceKm = c.showDistance ? (distance < 1 ? Number(distance.toFixed(1)) : Math.round(distance)) : null;
-    const position = fuzz(c.latitude, c.longitude, c.id, precision);
+    const position = obfuscatePosition(c.latitude, c.longitude, c.id, precision, env.BETTER_AUTH_SECRET);
     people.push({
       id: c.id, name: c.name, username: c.username, avatar: c.avatar, bio: c.bio, country: c.country, location: c.location,
       languages: c.languages, values: c.values, intention: c.intention, matchScore: computeMatchScore(viewer, c), ...position, distanceKm,
