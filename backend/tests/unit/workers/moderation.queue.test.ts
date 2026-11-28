@@ -5,6 +5,8 @@ import { moderateText, moderatePost } from '../../../src/modules/posts/moderatio
 vi.mock('bullmq', async () => (await import('../helpers/bullmq-fake')).bullmqFake);
 vi.mock('../../../src/config/env', () => ({ env: { REDIS_URL: 'redis://test' } }));
 vi.mock('../../../src/middleware/logger', () => ({ logger: { info: vi.fn(), error: vi.fn() } }));
+// Le worker invalide le cache Redis du post : ce test unitaire ne doit pas ouvrir de vraie connexion.
+vi.mock('../../../src/infrastructure/redis', () => ({ redis: { del: vi.fn().mockResolvedValue(1) } }));
 
 const h = vi.hoisted(() => ({ select: vi.fn(), update: vi.fn(), delete: vi.fn(), createNotification: vi.fn() }));
 vi.mock('../../../src/infrastructure/database', () => ({
