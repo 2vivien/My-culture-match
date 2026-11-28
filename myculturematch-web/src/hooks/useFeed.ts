@@ -6,11 +6,13 @@ import { useUIStore } from '@/src/stores/useUIStore';
 import type { Post } from '@/src/types/post';
 
 /**
- * Home affiche toujours le feed global "for-you" (posts récents rankés par le
- * Culture Engine) — un nouveau compte ne suit personne et aurait sinon un feed vide.
+ * Accueil (« Best ») = posts des tribus rejointes, classés Hot. Un compte sans tribu reçoit côté serveur
+ * le feed « for-you » (repli), jamais un fil vide. « Popular » et « New » restent globaux.
  */
-function getFeedFilter(sort: string): 'following' | 'for-you' | 'popular' {
+function getFeedFilter(sort: string): 'for-you' | 'popular' | 'new' | 'tribes' {
   if (sort === 'Popular') return 'popular'
+  if (sort === 'New') return 'new'
+  if (sort === 'Best') return 'tribes'
   return 'for-you'
 }
 
