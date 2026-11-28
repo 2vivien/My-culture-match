@@ -18,6 +18,8 @@ export const userLocationSettings = pgTable(
     showDistance: boolean('show_distance').notNull().default(true),
     showActiveStatus: boolean('show_active_status').notNull().default(false),
     audienceMode: text('audience_mode').notNull().default('default'),
+    /** Opt-in de la personne qui reçoit : « quelqu'un est près de toi ». Désactivé par défaut. */
+    nearbyNotify: boolean('nearby_notify').notNull().default(false),
     expiresAt: timestamp('expires_at', { withTimezone: true }),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },

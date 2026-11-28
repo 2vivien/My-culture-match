@@ -20,6 +20,8 @@ export interface LocationSettingsDto {
   audienceMode: AudienceMode;
   showDistance: boolean;
   showActiveStatus: boolean;
+  /** Opt-in : être prévenu discrètement qu'une personne visible est près de soi. Désactivé par défaut. */
+  nearbyNotify: boolean;
   expiresAt: string | null;
 }
 
@@ -49,13 +51,14 @@ export async function getLocationSettings(userId: string): Promise<LocationSetti
     audienceMode: validAudience(row.audienceMode) ? row.audienceMode : 'default',
     showDistance: row.showDistance,
     showActiveStatus: row.showActiveStatus,
+    nearbyNotify: row.nearbyNotify === true,
     expiresAt: row.expiresAt?.toISOString() ?? null,
   };
   await redis.set(cacheKey(userId), JSON.stringify(dto), 'EX', 300);
   return dto;
 }
 
-export async function updateLocationSettings(userId: string, input: Partial<LocationSettingsDto> & { consent?: boolean }): Promise<LocationSettingsDto> {
+export async function updateLocationSettings(userId: string, input: Partial<Omit<LocationSettingsDto, 'nearbyNotify'>> & { consent?: boolean }): Promise<LocationSettingsDto> {
   const current = await rowFor(userId);
   if (input.sharingEnabled !== undefined) {
     const [me] = await db.select({ enabled: schema.users.locationSharingEnabled }).from(schema.users).where(eq(schema.users.id, userId)).limit(1);
@@ -106,6 +109,18 @@ export async function updateLocationSettings(userId: string, input: Partial<Loca
   const settings = await getLocationSettings(userId);
   await notifyLocationChange(userId, settings);
   return settings;
+}
+
+/** Active / désactive la notification « près de toi » (opt-in explicite, désactivée par défaut). */
+export async function setNearbyNotify(userId: string, enabled: boolean): Promise<{ nearbyNotify: boolean }> {
+  await rowFor(userId);
+  await db.update(userLocationSettings).set({ nearbyNotify: enabled, updatedAt: new Date() }).where(eq(userLocationSettings.userId, userId));
+  await redis.del(cacheKey(userId));
+  return { nearbyNotify: enabled };
+}
+
+export async function getNearbyNotify(userId: string): Promise<{ nearbyNotify: boolean }> {
+  return { nearbyNotify: (await getLocationSettings(userId)).nearbyNotify === true };
 }
 
 function jitter(value: number, seed: string, magnitude: number) {
