@@ -1,4 +1,4 @@
-import { DiamondPlus, SlidersHorizontal, LogOut, Info, Book, Lock, Accessibility, Briefcase } from 'lucide-react';
+import { SlidersHorizontal, LogOut, Info, Book, Lock, Accessibility, Briefcase } from 'lucide-react';
 import { useAppStore } from '@/src/stores/useAppStore';
 import { useUIStore } from '@/src/stores/useUIStore';
 import { Button } from '@/src/components/ui/button';
@@ -6,25 +6,12 @@ import { cn } from '@/src/lib/utils';
 
 export const SidebarFooter = () => {
   const { logout } = useAppStore();
-  const { activeTab, setActiveTab, isSidebarCollapsed, setShowCreateTribeModal } = useUIStore();
+  const { setActiveTab, isSidebarCollapsed } = useUIStore();
   const isCollapsed = isSidebarCollapsed;
 
   return (
     <div className="flex flex-col gap-2 select-none w-full text-sm">
       <hr className="border-app-border mb-2 mx-4" />
-
-      <Button
-        variant="ghost"
-        title="Créer une communauté"
-        onClick={() => setShowCreateTribeModal(true)}
-        className={cn(
-          "w-full text-app-gray hover:text-app-black dark:text-zinc-400 dark:hover:text-white font-medium py-3 px-4 rounded-2xl",
-          isCollapsed ? "justify-center p-3 w-12 mx-auto" : "justify-start gap-4"
-        )}
-      >
-        <DiamondPlus className="w-5 h-5 shrink-0" />
-        {!isCollapsed && <span>Créer une communauté</span>}
-      </Button>
 
       <Button
         variant="ghost"

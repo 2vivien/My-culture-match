@@ -22,10 +22,11 @@ import { useUIStore } from './stores/useUIStore';
 import { startRouter } from './lib/router';
 import { cn } from './lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AuthPage } from './pages/AuthPage';
+import { AuthModal } from './components/auth/AuthModal';
 import { OnboardingPage } from './pages/OnboardingPage';
 import { ConnexionPage } from './pages/ConnexionPage';
 import { AdminPage } from './pages/AdminPage';
+import { AboutPage } from './pages/AboutPage';
 
 export default function App() {
   const { theme, isAuthenticated, isOnboarded } = useAppStore();
@@ -49,17 +50,7 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AnimatePresence mode="wait">
-        {!isAuthenticated ? (
-          <motion.div
-            key="auth"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="w-full h-full"
-          >
-            <AuthPage />
-          </motion.div>
-        ) : !isOnboarded ? (
+        {isAuthenticated && !isOnboarded ? (
           <motion.div
             key="onboarding"
             initial={{ opacity: 0 }}
@@ -68,6 +59,16 @@ export default function App() {
             className="w-full h-full"
           >
             <OnboardingPage />
+          </motion.div>
+        ) : activeTab === 'About' ? (
+          <motion.div
+            key="about"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="w-full h-full overflow-y-auto bg-[#FEFEFE] dark:bg-[#0d1117]"
+          >
+            <AboutPage />
           </motion.div>
         ) : (
           <motion.div
@@ -139,6 +140,8 @@ export default function App() {
           </motion.div>
         )}
       </AnimatePresence>
+      {/* Home accessible sans compte : la connexion s'ouvre en popup, sans changer de page. */}
+      <AuthModal />
       <ChatPopup />
       <CreateTribeModal />
     </QueryClientProvider>

@@ -1,4 +1,5 @@
-import { Home, LandPlot, Layers, FerrisWheel, Landmark, LucideIcon, Settings, ShieldCheck } from 'lucide-react';
+import { useState } from 'react';
+import { Home, LandPlot, Layers, FerrisWheel, Landmark, DiamondPlus, ChevronDown, Settings, ShieldCheck } from 'lucide-react';
 import { IconFriends, IconId } from '@tabler/icons-react';
 import { useUIStore } from '@/src/stores/useUIStore';
 import { useAppStore } from '@/src/stores/useAppStore';
@@ -63,6 +64,8 @@ export const SidebarNav = () => {
   const { tribes } = useExplore();
   const queryClient = useQueryClient();
   const isCollapsed = isSidebarCollapsed;
+  const { setShowCreateTribeModal } = useUIStore();
+  const [isCommunityOpen, setIsCommunityOpen] = useState(true);
 
   // Tribus réelles : celles de l'utilisateur en priorité, sinon les plus populaires (API)
   const suggestedTribes = tribes.slice(0, 3);
@@ -108,11 +111,34 @@ export const SidebarNav = () => {
       {navItems.map((item) => {
         const IconComponent = iconMap[item.icon] || Home;
         const isActive = activeTab === item.name;
+        const isCommunity = item.name === 'Tribu';
 
         return (
           <div key={item.name} className="flex flex-col w-full gap-1">
+            {/* « Créer une communauté » juste après Love, avant la rubrique Communauté. */}
+            {isCommunity && (
+              <>
+                <button
+                  onClick={() => {
+                    setShowCreateTribeModal(true);
+                    if (window.innerWidth < 768 && isSidebarOpen) toggleSidebar();
+                  }}
+                  title="Créer une communauté"
+                  className={cn(
+                    'flex items-center rounded-2xl transition-all cursor-pointer w-full text-app-gray hover:bg-gray-50 dark:hover:bg-zinc-800 hover:text-app-black dark:hover:text-white',
+                    isCollapsed ? 'justify-center p-3 w-12 mx-auto' : 'gap-3 px-4 py-3 text-left font-medium text-sm'
+                  )}
+                >
+                  <DiamondPlus className="w-6 h-6 shrink-0" />
+                  {!isCollapsed && <span className="text-sm font-semibold whitespace-nowrap">Créer une communauté</span>}
+                </button>
+                {/* Trait de séparation avant Communauté. */}
+                <div className="h-px bg-app-border dark:bg-zinc-800 mx-4 my-1.5" />
+              </>
+            )}
+
             <button
-              onClick={() => handleNav(item.name)}
+              onClick={() => isCommunity ? setIsCommunityOpen((open) => !open) : handleNav(item.name)}
               title={item.label}
               className={cn(
                 'relative flex items-center rounded-2xl transition-all cursor-pointer group w-full',
@@ -127,13 +153,21 @@ export const SidebarNav = () => {
                   transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                 />
               )}
-              <div className="relative">
-                <IconComponent className={cn('w-6 h-6 transition-transform shrink-0', isActive ? 'scale-100' : 'group-hover:scale-110')} />
-              </div>
-              {!isCollapsed && <span className="text-base font-semibold">{item.label}</span>}
+              {(!isCommunity || isCollapsed) && (
+                <div className="relative">
+                  <IconComponent className={cn('w-6 h-6 transition-transform shrink-0', isActive ? 'scale-100' : 'group-hover:scale-110')} />
+                </div>
+              )}
+              {!isCollapsed && <span className="text-base font-semibold flex-1 text-left">{item.label}</span>}
+              {isCommunity && !isCollapsed && (
+                <ChevronDown
+                  className={cn('w-4 h-4 shrink-0 text-app-gray transition-transform duration-200', !isCommunityOpen && '-rotate-90')}
+                  aria-hidden="true"
+                />
+              )}
             </button>
 
-            {item.name === 'Tribu' && !isCollapsed && (
+            {isCommunity && !isCollapsed && isCommunityOpen && (
               <div className="flex flex-col gap-1 text-sm font-bold text-app-gray dark:text-zinc-400 pl-9 mt-1">
                 {suggestedTribes.length === 0 && (
                   <p className="text-xs text-app-gray/70 dark:text-zinc-500 py-1 select-none">Aucune communauté pour l'instant</p>

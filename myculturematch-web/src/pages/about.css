@@ -1,0 +1,71 @@
+/* Design tokens repris à la lettre de la maquette google-chrome (design-tokens-google-com.json). */
+.design-google {
+  --spacer-01: 8px;
+  --spacer-02: 16px;
+  --spacer-03: 24px;
+  --spacer-04: 32px;
+  --spacer-05: 24px;
+  --spacer-06: 40px;
+  --spacer-07: 64px;
+  --spacer-08: 80px;
+  --spacer-09: 120px;
+  --timed-accordion-duration: 5s;
+  --chrome-primary: #1a73e8;
+  --chrome-primary-hover: #1557b0;
+  --chrome-secondary: #174ea6;
+  --chrome-green: #188038;
+  --chrome-green-dark: #137333;
+  --chrome-green-tint: #e6f4ea;
+  --chrome-yellow: #fde293;
+  --chrome-blue-tint: #e8f0fe;
+  --chrome-surface: #f1f3f4;
+  --chrome-ink: #202124;
+  --chrome-muted: #5f6368;
+
+  background-color: #ffffff;
+  color: #202124;
+  font-family: 'Plus Jakarta Sans', 'Inter', Arial, sans-serif;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Typographie inspirée du Design System Google Sans. */
+.design-google .display-h1 { font-weight: 700; letter-spacing: -0.04em; line-height: 1.12; }
+.design-google .display-h2 { font-weight: 700; letter-spacing: -0.025em; line-height: 1.16; }
+.design-google .display-h4 { font-weight: 700; letter-spacing: -0.015em; line-height: 1.22; }
+.design-google .font-text { font-family: 'Inter', Arial, sans-serif; font-weight: 400; }
+
+/* Ombres chromaticides extraites. */
+.design-google .shadow-chrome-low { box-shadow: 0 1px 2px 0 rgba(32, 33, 36, 0.15), 0 1px 8px 0 rgba(32, 33, 36, 0.08); }
+.design-google .shadow-chrome-mid { box-shadow: 0 2px 8px 0 rgba(32, 33, 36, 0.08); }
+.design-google .shadow-chrome-high { box-shadow: 0 8px 20px 0 rgba(0, 0, 0, 0.1); }
+.design-google .shadow-inset { box-shadow: inset 0 0 2px 0 rgba(0, 0, 0, 0.25); }
+
+/* Animations de la maquette. */
+@keyframes accordionFill { 0% { height: 0%; } 100% { height: 100%; } }
+.design-google .accordion-progress-active { animation: accordionFill var(--timed-accordion-duration) linear forwards; }
+
+@keyframes floatSlow {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-6px); }
+}
+.design-google .float-card-1 { animation: floatSlow 6s ease-in-out infinite; }
+.design-google .float-card-2 { animation: floatSlow 7s ease-in-out 1s infinite; }
+
+.design-google .lens-reticle { transition: all 0.45s cubic-bezier(0.22, 1, 0.36, 1); }
+.design-google .no-scrollbar::-webkit-scrollbar { display: none; }
+.design-google .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Emplacements d'images : remplace le contenu de ces blocs par tes visuels. */
+.design-google .image-placeholder {
+  background: #e8eaed;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #80868b;
+  font-family: 'Inter', Arial, sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}

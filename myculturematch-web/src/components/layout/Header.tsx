@@ -11,8 +11,8 @@ import { useUnreadMessagesCount } from '@/src/hooks/useUnreadMessagesCount';
 import { AnimatePresence } from 'framer-motion';
 
 export const Header = () => {
-  const { toggleSidebar, notificationsCount, setActiveTab, openChat } = useUIStore();
-  const { currentUser } = useAppStore();
+  const { toggleSidebar, notificationsCount, setActiveTab, openChat, openAuthModal } = useUIStore();
+  const { currentUser, isAuthenticated } = useAppStore();
   const { data: unreadMessages } = useUnreadMessagesCount();
 
   const [showProfile, setShowProfile] = useState(false);
@@ -46,47 +46,79 @@ export const Header = () => {
       <div className="flex items-center gap-1 sm:gap-2 md:gap-3 relative shrink-0">
         {/* Recherche mobile */}
         <button
-          onClick={() => setActiveTab('Explore')}
+          onClick={() => isAuthenticated ? setActiveTab('Explore') : openAuthModal()}
           className={`${iconButton} md:hidden`}
           title="Search"
         >
           <Search className="w-5 h-5" />
         </button>
 
-        {/* Create — icône Tabler library-plus remplie + texte, sans contour */}
-        <button
-          onClick={() => setActiveTab('Create')}
-          className="h-10 flex items-center gap-2 px-3 rounded-md bg-zinc-100 dark:bg-zinc-800 text-app-black dark:text-zinc-100 font-bold text-sm hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors cursor-pointer shrink-0"
-          title="Create a post"
-        >
-          <IconLibraryPlusFilled className="w-5 h-5" />
-          <span className="hidden md:inline">Create</span>
-        </button>
+        {/* Actions de membre : invisibles tant qu'on n'est pas connecté. */}
+        {isAuthenticated && (
+          <>
+            {/* Create — icône Tabler library-plus remplie + texte, sans contour */}
+            <button
+              onClick={() => setActiveTab('Create')}
+              className="h-10 flex items-center gap-2 px-3 rounded-md bg-zinc-100 dark:bg-zinc-800 text-app-black dark:text-zinc-100 font-bold text-sm hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors cursor-pointer shrink-0"
+              title="Create a post"
+            >
+              <IconLibraryPlusFilled className="w-5 h-5" />
+              <span className="hidden md:inline">Create</span>
+            </button>
 
-        {/* Messages — icône Tabler brand-signal remplie, seule */}
-        <button onClick={openChat} className={iconButton} title="Messages">
-          <IconBrandSignalFilled className="w-5 h-5" />
-          {(unreadMessages ?? 0) > 0 && <span className={badge}>{String(unreadMessages ?? 0)}</span>}
-        </button>
+            {/* Messages — icône Tabler brand-signal remplie, seule */}
+            <button onClick={openChat} className={iconButton} title="Messages">
+              <IconBrandSignalFilled className="w-5 h-5" />
+              {(unreadMessages ?? 0) > 0 && <span className={badge}>{String(unreadMessages ?? 0)}</span>}
+            </button>
 
-        {/* Notifications — icône Tabler bell remplie, ouvre sa page */}
-        <button onClick={() => setActiveTab('Notifications')} className={iconButton} title="Notifications">
-          <IconBellFilled className="w-5 h-5" />
-          {notificationsCount > 0 && <span className={badge}>{String(notificationsCount)}</span>}
-        </button>
+            {/* Notifications — icône Tabler bell remplie, ouvre sa page */}
+            <button onClick={() => setActiveTab('Notifications')} className={iconButton} title="Notifications">
+              <IconBellFilled className="w-5 h-5" />
+              {notificationsCount > 0 && <span className={badge}>{String(notificationsCount)}</span>}
+            </button>
+          </>
+        )}
+
+        {/* Visiteur : un bouton About gris doux, puis Connexion sans icône. */}
+        {!isAuthenticated && (
+          <>
+            <button
+              type="button"
+              onClick={() => setActiveTab('About')}
+              title="About"
+              className="h-10 flex items-center gap-2 px-3 sm:px-4 rounded-md bg-zinc-100 dark:bg-zinc-800 text-app-black dark:text-zinc-100 font-bold text-sm hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors cursor-pointer shrink-0"
+            >
+              <Menu className="w-5 h-5" />
+              <span>About</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={openAuthModal}
+              aria-label="Connexion"
+              title="Connexion"
+              className="h-10 flex items-center px-3 sm:px-4 rounded-md bg-[#E27D60] hover:bg-[#c66b50] text-white font-bold text-sm transition-colors cursor-pointer shrink-0"
+            >
+              Connexion
+            </button>
+          </>
+        )}
 
         {/* Profil — avatar avec point en ligne, sans contour */}
-        <div ref={profileRef} className="hidden md:block relative shrink-0">
-          <button
-            onClick={() => setShowProfile(!showProfile)}
-            title="Profile menu"
-            className="relative cursor-pointer"
-          >
-            <ProfileAvatar size="xs" src={currentUser.avatar} alt={currentUser.name} glow="none" />
-            <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white dark:border-zinc-950" />
-          </button>
-          <AnimatePresence>{showProfile && <UserProfileDropdown onClose={() => setShowProfile(false)} />}</AnimatePresence>
-        </div>
+        {isAuthenticated && (
+          <div ref={profileRef} className="hidden md:block relative shrink-0">
+            <button
+              onClick={() => setShowProfile(!showProfile)}
+              title="Profile menu"
+              className="relative cursor-pointer"
+            >
+              <ProfileAvatar size="xs" src={currentUser.avatar} alt={currentUser.name} glow="none" />
+              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white dark:border-zinc-950" />
+            </button>
+            <AnimatePresence>{showProfile && <UserProfileDropdown onClose={() => setShowProfile(false)} />}</AnimatePresence>
+          </div>
+        )}
       </div>
     </header>
   );

@@ -25,7 +25,7 @@ export const SearchBar = () => {
         onChange={handleInputChange}
         onFocus={() => setActiveTab('Explore')}
         placeholder="Search..."
-        className="w-full bg-white dark:bg-zinc-900 text-app-black dark:text-white placeholder-app-gray border border-app-border dark:border-zinc-800 rounded-full py-3 pl-12 pr-28 shadow-sm focus:border-app-gray dark:focus:border-zinc-600 focus:ring-1 focus:ring-app-gray/40 dark:focus:ring-zinc-600 transition-all outline-none text-base font-medium"
+        className="w-full bg-zinc-100 dark:bg-zinc-800 text-app-black dark:text-white placeholder-app-gray border border-app-border dark:border-zinc-800 rounded-full py-3 pl-12 pr-28 shadow-sm focus:border-app-gray dark:focus:border-zinc-600 focus:ring-1 focus:ring-app-gray/40 dark:focus:ring-zinc-600 transition-all outline-none text-base font-medium"
       />
       <div className="absolute inset-y-1 right-1">
         <button

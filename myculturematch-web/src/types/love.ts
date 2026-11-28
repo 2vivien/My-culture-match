@@ -1,5 +1,7 @@
 export interface LoveMatch {
   id: string;
+  /** Conversation associée au match mutualisé (messages Love). */
+  conversationId?: string | null;
   name: string;
   age: number;
   gender: 'female' | 'male' | 'non-binary';

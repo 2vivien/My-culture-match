@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useAppStore } from '@/src/stores/useAppStore';
 import { AuthIllustration } from '@/src/components/auth/AuthIllustration';
 import { AuthHeader } from '@/src/components/auth/AuthHeader';
@@ -9,8 +10,16 @@ import { OtpForm } from '@/src/components/auth/OtpForm';
 import { TwoFactorForm } from '@/src/components/auth/TwoFactorForm';
 import { authService } from '@/src/services/authService';
 
-export function AuthPage() {
+interface AuthPageProps {
+  /** `modal` = formulaire seul, sans l'illustration de gauche, dans la popup du home. */
+  variant?: 'page' | 'modal';
+  /** Appelé après une connexion réussie (fermeture de la popup). */
+  onClose?: () => void;
+}
+
+export function AuthPage({ variant = 'page', onClose }: AuthPageProps) {
   const { setAuthenticated, setOnboarded, setEmail, loginUser } = useAppStore();
+  const queryClient = useQueryClient();
   const [step, setStep] = useState<'email' | 'otp' | '2fa'>('email');
   const [email, setEmailValue] = useState('');
   const [ticket, setTicket] = useState('');
@@ -41,8 +50,13 @@ export function AuthPage() {
       avatar: user.avatar ?? undefined,
     });
     setEmail((user.email ?? email).trim());
+    // Les requêtes faites en mode visiteur ont échoué en 401 : on vide leur cache
+    // pour que le feed et les panneaux soient rechargés avec la session active.
+    queryClient.clear();
     setAuthenticated(true);
     setOnboarded(!isNewUser);
+    // La popup se referme dès que la session est établie : on retombe sur le home.
+    onClose?.();
   };
 
   const handleVerify = async (code: string) => {
@@ -175,44 +189,54 @@ export function AuthPage() {
     }
   };
 
+  // Formulaire partagé entre la page d'authentification historique et la popup du home.
+  const form = (
+    <div className="max-w-md w-full mx-auto">
+      <AuthHeader />
+
+      {step === 'email' ? (
+        <AuthForm isLoading={isLoading} error={authError} onSubmit={handleContinue} />
+      ) : step === 'otp' ? (
+        <OtpForm
+          email={email}
+          isLoading={isLoading}
+          error={authError}
+          onSubmit={handleVerify}
+          onResend={handleResend}
+        />
+      ) : (
+        <TwoFactorForm
+          email={email}
+          isLoading={isLoading}
+          error={authError}
+          onSubmit={handleTwoFactor}
+          onBack={() => {
+            setStep('otp');
+            setAuthError(null);
+          }}
+        />
+      )}
+
+      {step === 'email' && (
+        <>
+          <AuthSocialButtons onGoogle={handleGoogleLogin} onApple={handleAppleLogin} isLoading={isLoading} />
+          <AuthFooter />
+        </>
+      )}
+    </div>
+  );
+
+  if (variant === 'modal') {
+    // Pas de AuthIllustration ici : la popup reste compacte et centrée sur le home.
+    return <div className="w-full">{form}</div>;
+  }
+
   return (
     <div className="h-screen w-full flex overflow-hidden bg-white dark:bg-zinc-950">
       <AuthIllustration />
 
       <div className="w-full md:w-1/2 lg:w-2/5 h-full flex flex-col px-6 sm:px-12 lg:px-16 overflow-y-auto bg-[#FEFEFE] dark:bg-zinc-950 py-12">
-        <div className="max-w-md w-full mx-auto my-auto">
-          <AuthHeader />
-
-          {step === 'email' ? (
-            <AuthForm isLoading={isLoading} error={authError} onSubmit={handleContinue} />
-          ) : step === 'otp' ? (
-            <OtpForm
-              email={email}
-              isLoading={isLoading}
-              error={authError}
-              onSubmit={handleVerify}
-              onResend={handleResend}
-            />
-          ) : (
-            <TwoFactorForm
-              email={email}
-              isLoading={isLoading}
-              error={authError}
-              onSubmit={handleTwoFactor}
-              onBack={() => {
-                setStep('otp');
-                setAuthError(null);
-              }}
-            />
-          )}
-
-          {step === 'email' && (
-            <>
-              <AuthSocialButtons onGoogle={handleGoogleLogin} onApple={handleAppleLogin} isLoading={isLoading} />
-              <AuthFooter />
-            </>
-          )}
-        </div>
+        <div className="my-auto">{form}</div>
       </div>
     </div>
   );

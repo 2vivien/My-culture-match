@@ -48,9 +48,9 @@ const chipLabels = (criteria: Record<string, unknown>) => {
 const LOVE_PROFILE_KEY = ['love', 'profile'] as const;
 
 export const LoveColumn: React.FC = () => {
-  const { openChat, setActiveTab } = useUIStore();
+  const { setActiveTab, openLoveChat } = useUIStore();
   const { setSelectedTotemUserId } = useAppStore();
-  const [messages, setMessages] = useState<ChatMessage[]>([{ id: 'welcome', role: 'assistant', content: 'Salut. Je vais t’aider à trouver des personnes qui correspondent vraiment à ce que tu recherches. Dis-moi simplement le type de personne que tu aimerais rencontrer.' }]);
+  const [messages, setMessages] = useState<ChatMessage[]>([{ id: 'welcome', role: 'assistant', content: WELCOME }]);
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<LoveSearchResult[]>([]);
   const [activeMatches, setActiveMatches] = useState<LoveMatch[]>([]);
@@ -98,17 +98,17 @@ export const LoveColumn: React.FC = () => {
   const like = async (id: string) => { try { await loveService.expressInterest(id); setLiked((v) => ({ ...v, [id]: true })); } catch (e) { setMessages((m) => [...m, { id: crypto.randomUUID(), role: 'assistant', content: e instanceof Error ? e.message : 'Impossible d’envoyer ton intérêt.' }]); } };
   const pass = (id: string) => setPassed((v) => ({ ...v, [id]: true }));
   const openChatWith = async (id: string, alreadyMatched = false) => {
-    // Match mutuel : la conversation existe déjà (créée par le serveur), pas de nouvelle demande de contact.
-    if (alreadyMatched) { openChat(); return; }
+    if (alreadyMatched) { openLoveChat(); return; }
     try {
-      await chatService.ensureConversationWith(id);
-      openChat();
+      const conversation = await chatService.ensureConversationWith(id);
+      openLoveChat(conversation.id);
     } catch (e) {
-      // Le serveur refuse sans consentement (CONTACT_CONSENT_REQUIRED) : ne jamais ouvrir un chat factice.
       const content = e instanceof ApiError && e.code === 'CONTACT_CONSENT_REQUIRED'
         ? 'Cette personne n’accepte pas encore les messages directs. Envoie-lui d’abord ton intérêt avec « J’aime » : si elle te répond, la conversation s’ouvrira.'
         : e instanceof Error ? e.message : 'Impossible d’ouvrir la conversation pour le moment.';
       setMessages((m) => [...m, { id: crypto.randomUUID(), role: 'assistant', content }]);
+    }
+  };
     }
   };
   const visibleResults = useMemo(() => results.filter((r) => !passed[r.id]), [results, passed]);

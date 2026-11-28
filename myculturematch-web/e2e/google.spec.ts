@@ -53,11 +53,12 @@ test.describe('Connexion sociale', () => {
     });
 
     await page.goto('/');
+    await page.getByRole('button', { name: 'Connexion' }).click();
     await expect(page.getByRole('button', { name: 'Google' })).toBeVisible();
 
     await page.getByRole('button', { name: 'Google' }).click();
 
-    await expect(page.locator('nav').getByTitle('Home')).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByTitle('Profile menu')).toBeVisible({ timeout: 15_000 });
     expect(payload).toEqual({ idToken: 'fake-google-id-token' });
 
     // Sécurité : le token n'est plus persisté dans localStorage (cookie HttpOnly + mémoire).
@@ -68,6 +69,7 @@ test.describe('Connexion sociale', () => {
   test('bouton Google : fallback propre si Google Identity Services n’est pas chargé', async ({ page }) => {
     await page.route(GSI_SCRIPT, (route) => route.abort('failed'));
     await page.goto('/');
+    await page.getByRole('button', { name: 'Connexion' }).click();
 
     const btn = page.getByRole('button', { name: 'Google' });
     await expect(btn).toBeVisible();
@@ -79,6 +81,7 @@ test.describe('Connexion sociale', () => {
 
   test('bouton Apple : message « pas encore disponible »', async ({ page }) => {
     await page.goto('/');
+    await page.getByRole('button', { name: 'Connexion' }).click();
     const btn = page.getByRole('button', { name: 'Apple' });
     await expect(btn).toBeVisible();
     await expect(btn).toBeEnabled();
@@ -90,6 +93,7 @@ test.describe('Connexion sociale', () => {
 
   test('tous les boutons/liens de la page de connexion sont visibles et cliquables', async ({ page }) => {
     await page.goto('/');
+    await page.getByRole('button', { name: 'Connexion' }).click();
 
     const submit = page.getByRole('button', { name: /Continuer/ });
     await expect(submit).toBeVisible();

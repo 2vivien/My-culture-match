@@ -73,6 +73,8 @@ export async function createRemoteUserAndPost(email: string, body: string): Prom
 export async function loginByOtp(page: Page, email: string, expectApp: boolean) {
   resetOtpState(email);
   await page.goto('/');
+  // Le home est le feed réel en visiteur : la connexion s'ouvre en popup.
+  await page.getByRole('button', { name: 'Connexion' }).click();
   await expect(page.getByLabel('Adresse Email')).toBeVisible();
   await page.getByLabel('Adresse Email').fill(email);
   await page.getByRole('button', { name: 'Continuer' }).click();

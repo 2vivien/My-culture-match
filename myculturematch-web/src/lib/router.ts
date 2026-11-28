@@ -24,6 +24,7 @@ const TAB_SEGMENTS: Record<string, string> = {
   PostDetail: 'post',
   Settings: 'settings',
   Notifications: 'notifications',
+  About: 'about',
   Admin: 'admin',
 };
 

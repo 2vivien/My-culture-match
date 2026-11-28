@@ -13,7 +13,6 @@ test.describe('Authentification (flux réel OTP)', () => {
   test('connexion : un email existant atterrit sur l’app après vérification OTP', async ({ page }) => {
     await loginByOtp(page, 'test.flow@example.com', true);
 
-    await expect(page.getByText('Explore Communities')).not.toBeVisible();
-    await expect(page.getByTitle('Messages')).toBeVisible();
+    await expect(page.getByTitle('Profile menu')).toBeVisible({ timeout: 15_000 });
   });
 });
