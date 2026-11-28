@@ -46,7 +46,7 @@ Points d'entrée utiles :
 - [`backend/src/app.ts`](backend/src/app.ts) — enregistrement des middlewares et des modules de routes.
 - [`backend/docs/README.md`](backend/docs/README.md) — documentation détaillée du backend (API, schéma, sécurité, ADR).
 - [`myculturematch-web/src/services/api.ts`](myculturematch-web/src/services/api.ts) — client HTTP du web.
-- [`myculturematch-web/src/lib/router.ts`](myculturematch-web/src/lib/router.ts) — routeur par hash du web.
+- [`myculturematch-web/src/lib/router.ts`](myculturematch-web/src/lib/router.ts) — routeur History API du web.
 
 ---
 

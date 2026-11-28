@@ -38,10 +38,10 @@ src/
 ├── services/       # Client HTTP et services d'accès aux données
 ├── stores/         # État global Zustand (useAppStore, useUIStore, …)
 ├── types/          # Types métier
-└── lib/            # Routeur par hash, constantes, utilitaires
+└── lib/            # Routeur History API, constantes, utilitaires
 ```
 
-La navigation n'utilise pas React Router : `src/lib/router.ts` synchronise un routeur par hash (`#/explore`, `#/tribu/:id`, `#/totem/:id`, `#/messages`, …) avec les stores Zustand.
+La navigation n'utilise pas React Router : `src/lib/router.ts` synchronise un routeur History API (`/explore`, `/tribu/:id`, `/profil/:id`, `/friends`, …) avec les stores Zustand.
 
 ## Bonnes pratiques
 

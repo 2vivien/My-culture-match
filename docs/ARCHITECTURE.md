@@ -105,7 +105,7 @@ Le champ `name` du `package.json` est encore `"react-example"` : résidu de temp
 
 ### 3.3 Routage et communication
 
-**Pas de React Router** : `src/lib/router.ts` implémente un routeur par hash (`#/explore`, `#/tribu/:id`, `#/totem/:id`, `#/post/:id`, `#/messages`, `#/settings`, `#/admin`, …) synchronisé avec les stores Zustand.
+**Pas de React Router** : `src/lib/router.ts` implémente un routeur History API (`/explore`, `/tribu/:id`, `/profil/:id`, `/post/:id`, `/friends`, `/love`, `/settings`, `/admin`, …) synchronisé avec les stores Zustand.
 
 `src/services/api.ts` utilise `API_BASE = ''` (chemins relatifs) et s'appuie sur le proxy Vite `/api` → `http://localhost:3000`. Le jeton est lu via `src/services/auth.token.ts` et envoyé en `Authorization: Bearer <token>` avec `credentials: 'include'`. Le temps réel passe par `src/services/locationRealtime.ts` et `socket.io-client`.
 
@@ -160,7 +160,7 @@ Le champ `name` du `package.json` est encore `"react-example"` : résidu de temp
 
 ## 8. Décisions et points de vigilance
 
-- **REST + WebSocket plutôt que GraphQL** : le data layer web est déjà REST et le backend est déjà Hono (cf. `stack.md`). Le mini-routeur par hash évite une refonte de navigation web mais limite le deep linking.
+- **REST + WebSocket plutôt que GraphQL** : le data layer web est déjà REST et le backend est déjà Hono (cf. `stack.md`). Le mini-routeur History API évite une refonte de navigation web et conserve des URL propres pour le deep linking.
 - **Azure/Neon, MinIO, Meilisearch** : choix d'infrastructure séparés des services applicatifs ; la configuration locale est centralisée dans `docker-compose.yml`.
 - **Spécifications non implémentées** : les corpus `RECOMMENDATION_*`, `love-algorithm/`, `RELATIONSHIP_FUTURE_FEATURES` décrivent des cibles. Leur présence ne prouve pas une fonctionnalité livrée ; se référer aux migrations et aux modules pour l'implémenté.
 - **Risque principal** : les contrôles de sécurité sont désormais démontrés par des tests d'intégration (matrice d'accès, position, consentement), mais ces tests ne tournent qu'en CI avec des services réels. Une revue de code du 28 novembre 2026 a relevé des vulnérabilités de confidentialité de position et de contrôle d'accès, corrigées en partie (voir [DOCUMENTATION_AUDIT.md](DOCUMENTATION_AUDIT.md) §7).
