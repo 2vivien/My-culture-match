@@ -101,12 +101,12 @@ export const AuthModal = () => {
               <X className="w-5 h-5" />
             </button>
 
-            {/* Bandeau d'accueil : collage de portraits, sans texte superposé. */}
-            <div className="mb-6 h-32 sm:h-40 w-full overflow-hidden rounded-[20px] bg-[#FAF8F4]">
+            {/* Bandeau d'accueil : image entière, sans crop ni texte superposé. */}
+            <div className="mb-6 w-full overflow-hidden rounded-[20px] bg-[#FAF8F4]">
               <img
                 src={loginIllustration}
                 alt="Portraits de la communauté MyCultureMatch"
-                className="w-full h-full object-cover object-center select-none"
+                className="block w-full h-auto object-contain select-none"
               />
             </div>
 

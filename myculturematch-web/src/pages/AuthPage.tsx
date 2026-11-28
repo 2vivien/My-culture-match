@@ -192,7 +192,7 @@ export function AuthPage({ variant = 'page', onClose }: AuthPageProps) {
   // Formulaire partagé entre la page d'authentification historique et la popup du home.
   const form = (
     <div className="max-w-md w-full mx-auto">
-      <AuthHeader />
+      {variant === 'page' ? <AuthHeader /> : null}
 
       {step === 'email' ? (
         <AuthForm isLoading={isLoading} error={authError} onSubmit={handleContinue} />
