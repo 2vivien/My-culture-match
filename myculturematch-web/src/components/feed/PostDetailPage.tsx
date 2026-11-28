@@ -46,9 +46,11 @@ const CommentItem: React.FC<{
   item: VisibleComment<CommentNode>;
   onReply: (node: CommentNode) => void;
   onVote: (commentId: string, value: 1 | -1) => void;
+  /** Un vote est en cours : les boutons sont désactivés (pas de double clic qui annule le vote). */
+  voting?: boolean;
   onToggle: (commentId: string) => void;
   onContinue: (commentId: string) => void;
-}> = ({ item, onReply, onVote, onToggle, onContinue }) => {
+}> = ({ item, onReply, onVote, voting = false, onToggle, onContinue }) => {
   const { node, depth, descendants, collapsed, continueThread } = item;
   const hasReplies = node.replies.length > 0;
   return (
@@ -75,6 +77,7 @@ const CommentItem: React.FC<{
               type="button"
               aria-label="Voter pour"
               aria-pressed={node.myVote === 1}
+              disabled={voting}
               onClick={() => onVote(node.id, 1)}
               className={cn('cursor-pointer bg-transparent border-none p-0 transition-colors', node.myVote === 1 ? 'text-[#E27D60]' : 'hover:text-app-black dark:hover:text-zinc-300')}
             >
@@ -85,6 +88,7 @@ const CommentItem: React.FC<{
               type="button"
               aria-label="Voter contre"
               aria-pressed={node.myVote === -1}
+              disabled={voting}
               onClick={() => onVote(node.id, -1)}
               className={cn('cursor-pointer bg-transparent border-none p-0 transition-colors', node.myVote === -1 ? 'text-blue-500' : 'hover:text-app-black dark:hover:text-zinc-300')}
             >
@@ -490,6 +494,7 @@ export const PostDetailPage: React.FC = () => {
                 item={item}
                 onReply={setReplyTo}
                 onVote={(commentId, value) => voteComment.mutate({ commentId, value })}
+                voting={voteComment.isPending}
                 onToggle={(id) => setCollapsed((prev) => toggleCollapsed(prev, id))}
                 onContinue={setFocusId}
               />
