@@ -3,7 +3,7 @@ import { db, schema } from '../../infrastructure/database';
 import { redis } from '../../infrastructure/redis';
 import { AppError } from '../../shared/utils/AppError';
 import { requiresConsent } from '../location/location.policy';
-import { ensureLocationSettingsRow } from '../location/location.sharing';
+import { disableLocationSharing, enableLocationSharing } from '../location/location.sharing';
 import type { ProfilePatchInput } from './users.schemas';
 import { addFollower, removeFollower, followingKey } from '../feed/fanout';
 
@@ -163,28 +163,13 @@ export async function updateLocation(
   }
 
   if (!enabled) {
-    await db
-      .update(schema.users)
-      .set({ locationSharingEnabled: false, updatedAt: new Date() })
-      .where(eq(schema.users.id, userId));
-    await redis.del(userCacheKey(userId));
+    await disableLocationSharing(userId);
     return { success: true, latitude: null, longitude: null, locationSharingEnabled: false };
   }
 
-  // Les réglages de confidentialité existent dès que le partage est actif (défaut : visibilité « friends »).
-  await ensureLocationSettingsRow(userId);
-  await db
-    .update(schema.users)
-    .set({
-      latitude: input.latitude,
-      longitude: input.longitude,
-      locationSharingEnabled: true,
-      locationUpdatedAt: new Date(),
-      updatedAt: new Date(),
-    })
-    .where(eq(schema.users.id, userId));
-  await redis.del(userCacheKey(userId));
-  return { success: true, latitude: input.latitude ?? null, longitude: input.longitude ?? null, locationSharingEnabled: true };
+  await enableLocationSharing(userId, { latitude: input.latitude, longitude: input.longitude });
+  const hasCoords = Number.isFinite(input.latitude) && Number.isFinite(input.longitude);
+  return { success: true, latitude: hasCoords ? (input.latitude as number) : null, longitude: hasCoords ? (input.longitude as number) : null, locationSharingEnabled: true };
 }
 
 /** Distance Haversine en km entre deux points. */

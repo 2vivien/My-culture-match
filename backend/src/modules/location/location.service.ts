@@ -10,8 +10,9 @@ import { evaluateNearbyCandidate, DEFAULT_LOCATION_VISIBILITY, NEARBY_RADIUS_KM 
 import { computeMatchScore } from '../users/match-score';
 import { obfuscatePosition } from './location.privacy';
 import { env } from '../../config/env';
+import { disableLocationSharing, enableLocationSharing, locationSettingsCacheKey } from './location.sharing';
 
-const cacheKey = (id: string) => `location:settings:${id}`;
+const cacheKey = locationSettingsCacheKey;
 const LOCATION_EVENT = 'location:nearby:update';
 
 export interface LocationSettingsDto {
@@ -94,19 +95,8 @@ export async function updateLocationSettings(userId: string, input: Partial<Omit
     },
   });
 
-  if (input.sharingEnabled === false) {
-    // Retrait total : couper le partage efface le lieu des stories de la personne (pas seulement leur affichage).
-    await db.update(schema.stories).set({ placeLat: null, placeLon: null, placeLabel: null }).where(eq(schema.stories.userId, userId));
-  }
-  if (input.sharingEnabled !== undefined) {
-    await db.update(schema.users).set({
-      locationSharingEnabled: input.sharingEnabled,
-      latitude: input.sharingEnabled ? undefined : null,
-      longitude: input.sharingEnabled ? undefined : null,
-      locationUpdatedAt: input.sharingEnabled ? new Date() : null,
-      updatedAt: new Date(),
-    }).where(eq(schema.users.id, userId));
-  }
+  if (input.sharingEnabled === false) await disableLocationSharing(userId);
+  else if (input.sharingEnabled === true) await enableLocationSharing(userId);
   await redis.del(cacheKey(userId));
   const settings = await getLocationSettings(userId);
   await notifyLocationChange(userId, settings);
