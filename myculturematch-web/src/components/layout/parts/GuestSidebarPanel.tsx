@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronLeft, ChevronRight, Mail } from 'lucide-react';
+import { Mail } from 'lucide-react';
 import { useUIStore } from '@/src/stores/useUIStore';
 import slide1 from '@/assets/screensplash/img-u7532529069045057930-1-non-916-oui-mais-je-veux-n-fond-comme-sa-stp-pas-trop-biza.jpg';
 import slide2 from '@/assets/screensplash/img-u7532529069045057930-2-non-916-oui-mais-je-veux-n-fond-comme-sa-stp-pas-trop-biza.jpg';
@@ -27,16 +27,17 @@ export const GuestSidebarPanel = () => {
   const { openAuthModal } = useUIStore();
   const slide = SLIDES[index]!;
 
-  const move = (direction: number) =>
-    setIndex((current) => (current + direction + SLIDES.length) % SLIDES.length);
-
   return (
     <div className="flex min-h-full flex-col rounded-[20px] border border-app-border bg-[#FAF8F4] p-4 shadow-sm">
-      <h3 className="text-center text-[15px] font-black leading-tight text-app-black">
-        Rejoins l&apos;endroit le plus authentique du Web
+      {/* Titre et sous-titre de l'écran actif, avant les boutons. */}
+      <h3 className="text-center text-[15px] font-black uppercase leading-tight text-app-black">
+        {slide.title}
       </h3>
+      <p className="mt-1 text-center text-[11px] leading-snug text-app-gray">
+        {slide.subtitle}
+      </p>
 
-      <div className="mt-3 space-y-2">
+      <div className="mt-4 space-y-2">
         <button
           type="button"
           onClick={openAuthModal}
@@ -64,43 +65,26 @@ export const GuestSidebarPanel = () => {
         En continuant, tu acceptes notre Contrat d&apos;utilisation et la Politique de confidentialité.
       </p>
 
-      <div className="mt-3 h-px bg-app-border" />
+      <div className="mt-5 h-px bg-app-border" />
 
-      <div className="relative mt-3">
+      {/* Image 9:16, avec le haut fondu dans le fond du panneau. */}
+      <div className="relative mt-6">
         <img
           src={slide.image}
           alt={slide.title}
-          className="w-full h-44 object-cover object-center rounded-2xl select-none"
+          className="aspect-[9/16] w-full object-cover object-center rounded-2xl select-none"
         />
-        <button
-          type="button"
-          onClick={() => move(-1)}
-          aria-label="Image précédente"
-          className="absolute left-1 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/90 border border-app-border flex items-center justify-center hover:bg-white cursor-pointer"
-        >
-          <ChevronLeft className="w-4 h-4" />
-        </button>
-        <button
-          type="button"
-          onClick={() => move(1)}
-          aria-label="Image suivante"
-          className="absolute right-1 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/90 border border-app-border flex items-center justify-center hover:bg-white cursor-pointer"
-        >
-          <ChevronRight className="w-4 h-4" />
-        </button>
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-12 rounded-t-2xl bg-gradient-to-b from-[#FAF8F4] to-transparent" />
       </div>
 
-      <h4 className="mt-2 text-[11px] font-black uppercase leading-tight text-app-black">{slide.title}</h4>
-      <p className="mt-1 text-[10px] leading-snug text-app-gray">{slide.subtitle}</p>
-
-      <div className="mt-2 flex items-center justify-center gap-1">
+      <div className="mt-3 flex items-center justify-center gap-1.5">
         {SLIDES.map((item, dot) => (
           <button
             key={item.title}
             type="button"
             onClick={() => setIndex(dot)}
             aria-label={`Voir l'écran ${dot + 1}`}
-            className={`w-1.5 h-1.5 rounded-full cursor-pointer ${dot === index ? 'bg-[#8B4A2B]' : 'bg-zinc-300'}`}
+            className={`h-2.5 rounded-full cursor-pointer transition-all ${dot === index ? 'w-5 bg-[#8B4A2B]' : 'w-2.5 bg-zinc-300 hover:bg-zinc-400'}`}
           />
         ))}
       </div>
