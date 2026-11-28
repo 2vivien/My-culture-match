@@ -6,13 +6,13 @@ import { userLocationSettings, locationAudience, audienceModes, locationPrecisio
 import { requiresConsent, computeReach, type Reach } from './location.policy';
 import { AppError } from '../../shared/utils/AppError';
 import { haversineKm } from '../users/users.service';
-import { evaluateNearbyCandidate, DEFAULT_LOCATION_VISIBILITY, NEARBY_RADIUS_KM } from './location.nearby.filter';
-import { computeMatchScore } from '../users/match-score';
-import { jitterSecret, obfuscatePosition } from './location.privacy';
+import { evaluateNearbyCandidate, NEARBY_RADIUS_KM } from './location.nearby.filter';
+import { computeVisibleMatchScore } from '../users/match-score';
+import { viewableFieldsFor } from '../consent/consent.service';
+import { obfuscatePosition } from './location.privacy';
 import { env } from '../../config/env';
-import { disableLocationSharing, enableLocationSharing, locationSettingsCacheKey } from './location.sharing';
 
-const cacheKey = locationSettingsCacheKey;
+const cacheKey = (id: string) => `location:settings:${id}`;
 const LOCATION_EVENT = 'location:nearby:update';
 
 export interface LocationSettingsDto {
@@ -48,7 +48,7 @@ export async function getLocationSettings(userId: string): Promise<LocationSetti
   const row = await rowFor(userId);
   const dto: LocationSettingsDto = {
     sharingEnabled: user.sharingEnabled,
-    visibility: validVisibility(row.visibility) ? row.visibility : DEFAULT_LOCATION_VISIBILITY,
+    visibility: validVisibility(row.visibility) ? row.visibility : 'nearby',
     precision: validPrecision(row.precision) ? row.precision : 'approximate',
     ghostMode: row.ghostMode,
     audienceMode: validAudience(row.audienceMode) ? row.audienceMode : 'default',
@@ -95,8 +95,19 @@ export async function updateLocationSettings(userId: string, input: Partial<Omit
     },
   });
 
-  if (input.sharingEnabled === false) await disableLocationSharing(userId);
-  else if (input.sharingEnabled === true) await enableLocationSharing(userId);
+  if (input.sharingEnabled === false) {
+    // Retrait total : couper le partage efface le lieu des stories de la personne (pas seulement leur affichage).
+    await db.update(schema.stories).set({ placeLat: null, placeLon: null, placeLabel: null }).where(eq(schema.stories.userId, userId));
+  }
+  if (input.sharingEnabled !== undefined) {
+    await db.update(schema.users).set({
+      locationSharingEnabled: input.sharingEnabled,
+      latitude: input.sharingEnabled ? undefined : null,
+      longitude: input.sharingEnabled ? undefined : null,
+      locationUpdatedAt: input.sharingEnabled ? new Date() : null,
+      updatedAt: new Date(),
+    }).where(eq(schema.users.id, userId));
+  }
   await redis.del(cacheKey(userId));
   const settings = await getLocationSettings(userId);
   await notifyLocationChange(userId, settings);
@@ -177,6 +188,8 @@ export async function getPeopleNearby(userId: string, viewerLocation?: { latitud
     : [];
   const listedBy = new Set(listedRows.map((r) => r.ownerId));
 
+  // Le score n'inclut la dimension pays que si la personne autorise à voir son pays.
+  const access = await viewableFieldsFor(userId, candidates.map((c) => c.id));
   const people: Array<Record<string, unknown>> = [];
   for (const c of candidates) {
     const distance = c.latitude !== null && c.longitude !== null ? haversineKm(origin.latitude, origin.longitude, c.latitude, c.longitude) : null;
@@ -184,10 +197,10 @@ export async function getPeopleNearby(userId: string, viewerLocation?: { latitud
     if (!decision.visible || distance === null || c.latitude === null || c.longitude === null) continue;
     const precision = validPrecision(c.precision) ? c.precision : 'approximate';
     const distanceKm = c.showDistance ? (distance < 1 ? Number(distance.toFixed(1)) : Math.round(distance)) : null;
-    const position = obfuscatePosition(c.latitude, c.longitude, c.id, precision, jitterSecret(env));
+    const position = obfuscatePosition(c.latitude, c.longitude, c.id, precision, env.BETTER_AUTH_SECRET);
     people.push({
       id: c.id, name: c.name, username: c.username, avatar: c.avatar, bio: c.bio, country: c.country, location: c.location,
-      languages: c.languages, values: c.values, intention: c.intention, matchScore: computeMatchScore(viewer, c), ...position, distanceKm,
+      languages: c.languages, values: c.values, intention: c.intention, matchScore: computeVisibleMatchScore(viewer, c, access.get(c.id)?.country ?? false), ...position, distanceKm,
       distanceLabel: distanceKm === null ? null : distanceKm < 1 ? 'Nearby' : `~${distanceKm} km away`,
       isCompanion: friends.has(c.id), isFriendOfFriend: fof.has(c.id),
       isActive: c.showActive ? !!c.updated && Date.now() - c.updated.getTime() < 120000 : false,

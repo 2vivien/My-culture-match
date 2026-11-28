@@ -157,16 +157,18 @@ export function emotionalMatch(a: UserFeatures, b: UserFeatures): number {
   return clamp01(0.3 + shared.length * 0.12);
 }
 
-/** P-CUL-ROOTS : racines culturelles partagées. */
+/**
+ * P-CUL-ROOTS : racines culturelles partagées (pays, à défaut langues).
+ * L'ethnie n'entre volontairement PAS dans ce score : donnée sensible, et un score affiché qui en dépend
+ * permettrait de la déduire (même règle que modules/users/match-score.ts).
+ */
 export function culturalRoots(a: UserFeatures, b: UserFeatures): number {
-  let score = 0;
-  if (a.ethnicity && b.ethnicity && a.ethnicity === b.ethnicity) score += 0.5;
-  if (a.country && b.country && a.country === b.country) score += 0.5;
-  if (score === 0 && (a.languages?.length ?? 0) > 0 && (b.languages?.length ?? 0) > 0) {
+  if (a.country && b.country && a.country === b.country) return 1;
+  if ((a.languages?.length ?? 0) > 0 && (b.languages?.length ?? 0) > 0) {
     const overlap = (a.languages ?? []).filter((l) => (b.languages ?? []).includes(l)).length;
-    score = clamp01(overlap / Math.max((a.languages ?? []).length, (b.languages ?? []).length));
+    return clamp01(overlap / Math.max((a.languages ?? []).length, (b.languages ?? []).length));
   }
-  return clamp01(score);
+  return 0;
 }
 
 /** P-PROX : proximité géographique. */

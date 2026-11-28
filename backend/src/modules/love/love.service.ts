@@ -1,4 +1,4 @@
-import { and, eq, inArray, or, sql, gt } from 'drizzle-orm';
+import { and, eq, inArray, isNull, or, sql, gt } from 'drizzle-orm';
 import { db, schema } from '../../infrastructure/database';
 import { redis } from '../../infrastructure/redis';
 import { AppError } from '../../shared/utils/AppError';
@@ -7,35 +7,45 @@ import { emitToUser } from '../../infrastructure/websocket';
 import { createConversationForUsers } from '../messages/messages.service';
 import { compatLove } from '../culture-engine/scoring';
 import { matchesCreatedTotal, loveAiSearchesTotal, loveCardsDisplayedTotal, loveRequestsTotal } from '../../infrastructure/monitoring/metrics';
-import { canLikeForLove } from '../consent/consent.service';
+import { canLikeForLove, viewableFieldsFor } from '../consent/consent.service';
 import { parseLoveQuery } from './love.ai';
 import { consumeLoveQuota, getLoveQuota } from './love.quota.service';
+import { computeAge, isAdultForLove, maskForViewer } from './love.rules';
+import { counterpartsBlockedWith, loveCandidatesKey } from './love.blocks';
 
 const CANDIDATES_TTL = 60 * 60;
 const PASS_TTL = 30 * 24 * 60 * 60;
 const SWIPED_TTL = 30 * 24 * 60 * 60;
 const MAX_CANDIDATES = 50;
-const candidatesKey = (userId: string) => `love:candidates:${userId}`;
+const candidatesKey = loveCandidatesKey;
 const swipedKey = (userId: string) => `love:swiped:${userId}`;
 const pairLock = (a: string, b: string) => `love:pair:${[a, b].sort().join(':')}`;
 
 export interface LoveCandidateDto { id: string; name: string; username: string; avatar: string | null; bio: string | null; location: string | null; country: string | null; gender: string | null; age: number | null; matchScore: number; sharedValues: string[]; }
 export interface LoveSearchResult extends LoveCandidateDto { rank: number; reasons: string[]; breakdown: { values: number; goals: number; language: number; culture: number; interests: number }; }
 
-function computeAge(birthdate: Date | null): number | null { if (!birthdate) return null; return Math.floor((Date.now() - birthdate.getTime()) / (365.25 * 24 * 60 * 60 * 1000)); }
-function toUserFeatures(row: { values: string[] | null; languages: string[] | null; ethnicity: string | null; country: string | null; region: string | null; interests?: string[] }) { return { id: '', values: row.values, languages: row.languages, ethnicity: row.ethnicity, country: row.country, region: row.region, interests: row.interests ?? row.values ?? [] }; }
+/** 403 explicite : Love est réservé aux personnes majeures (âge de la personne qui l'utilise, pas seulement du candidat). */
+function assertAdult(birthdate: Date | null): void { if (!isAdultForLove(birthdate)) throw AppError.forbidden('Love est réservé aux personnes majeures : renseigne ta date de naissance (18 ans minimum)', 'LOVE_ADULT_REQUIRED'); }
+/** Contrôle d'âge pour les points d'entrée qui ne chargent pas déjà le profil. */
+export async function assertLoveAdultUser(userId: string): Promise<void> { const [row] = await db.select({ birthdate: schema.users.birthdate }).from(schema.users).where(eq(schema.users.id, userId)).limit(1); if (!row) throw AppError.notFound('Utilisateur introuvable', 'USER_NOT_FOUND'); assertAdult(row.birthdate); }
+/** Variables du score Love : l'ethnie n'est JAMAIS transmise (donnée sensible déductible d'un score affiché). */
+function toUserFeatures(row: { values: string[] | null; languages: string[] | null; country: string | null; region: string | null; interests?: string[] }) { return { id: '', values: row.values, languages: row.languages, ethnicity: null, country: row.country, region: row.region, interests: row.interests ?? row.values ?? [] }; }
 function normalized(value: string | null | undefined): string { return (value ?? '').toLocaleLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); }
-async function blockedIds(userId: string): Promise<string[]> { const rows = await db.select({ blockedId: schema.blocks.blockedId }).from(schema.blocks).where(eq(schema.blocks.blockerId, userId)); return rows.map((r) => r.blockedId); }
+/** Blocages dans les DEUX sens : si B bloque A, A ne voit plus B (et inversement). */
+async function blockedIds(userId: string): Promise<string[]> { const rows = await db.select({ blockerId: schema.blocks.blockerId, blockedId: schema.blocks.blockedId }).from(schema.blocks).where(or(eq(schema.blocks.blockerId, userId), eq(schema.blocks.blockedId, userId))); return [...counterpartsBlockedWith(userId, rows)]; }
 async function isBlockedBetween(a: string, b: string): Promise<boolean> { const rows = await db.select({ blockerId: schema.blocks.blockerId }).from(schema.blocks).where(or(and(eq(schema.blocks.blockerId, a), eq(schema.blocks.blockedId, b)), and(eq(schema.blocks.blockerId, b), eq(schema.blocks.blockedId, a)))).limit(1); return rows.length > 0; }
 
 export async function getLoveCandidates(userId: string): Promise<{ candidates: LoveCandidateDto[] }> {
-  const cached = await redis.get(candidatesKey(userId)); if (cached) return { candidates: JSON.parse(cached) as LoveCandidateDto[] };
   const [me] = await db.select().from(schema.users).where(eq(schema.users.id, userId)).limit(1); if (!me) throw AppError.notFound('Utilisateur introuvable', 'USER_NOT_FOUND');
+  assertAdult(me.birthdate);
+  const cached = await redis.get(candidatesKey(userId)); if (cached) return { candidates: JSON.parse(cached) as LoveCandidateDto[] };
   if (!(await import('../consent/consent.service').then((m) => m.getConsentSettings(userId))).loveEnabled) return { candidates: [] };
   const blocked = await blockedIds(userId); const swiped = await redis.smembers(swipedKey(userId)); const passed = await redis.smembers('love:passed:' + userId);
   const existingRows = await db.select({ candidateId: schema.loveMatches.candidateId }).from(schema.loveMatches).where(eq(schema.loveMatches.userId, userId)); const alreadyMatched = new Set(existingRows.map((r) => r.candidateId));
-  const candidates = await db.select({ id: schema.users.id, name: schema.users.name, username: schema.users.username, avatar: schema.users.avatar, bio: schema.users.bio, location: schema.users.location, country: schema.users.country, region: schema.users.region, birthdate: schema.users.birthdate, gender: schema.users.gender, profileCompleted: schema.users.profileCompleted, values: schema.users.values, languages: schema.users.languages, ethnicity: schema.users.ethnicity }).from(schema.users).where(eq(schema.users.profileCompleted, true)).limit(200);
-  const excluded = new Set([userId, ...blocked, ...swiped, ...passed, ...alreadyMatched]); const eligible = candidates.filter((c) => !excluded.has(c.id) && (computeAge(c.birthdate) ?? 0) >= 18); const visible = [] as typeof eligible; for (const candidate of eligible) if (await canLikeForLove(userId, candidate.id)) visible.push(candidate);
+  const candidates = await db.select({ id: schema.users.id, name: schema.users.name, username: schema.users.username, avatar: schema.users.avatar, bio: schema.users.bio, location: schema.users.location, country: schema.users.country, region: schema.users.region, birthdate: schema.users.birthdate, gender: schema.users.gender, profileCompleted: schema.users.profileCompleted, values: schema.users.values, languages: schema.users.languages }).from(schema.users).where(and(eq(schema.users.profileCompleted, true), isNull(schema.users.bannedAt))).limit(200);
+  const excluded = new Set([userId, ...blocked, ...swiped, ...passed, ...alreadyMatched]); const eligible = candidates.filter((c) => !excluded.has(c.id) && (computeAge(c.birthdate) ?? 0) >= 18); const allowed = [] as typeof eligible; for (const candidate of eligible) if (await canLikeForLove(userId, candidate.id)) allowed.push(candidate);
+  // Photos / pays / profil masqués par la personne : appliqués avant le score pour ne rien trahir.
+  const access = await viewableFieldsFor(userId, allowed.map((c) => c.id)); const visible = allowed.map((c) => maskForViewer(c, access.get(c.id) ?? { profile: false, photos: false, country: false }));
   const result = visible.slice(0, MAX_CANDIDATES).map((c) => ({ id: c.id, name: c.name, username: c.username, avatar: c.avatar, bio: c.bio, location: c.location, country: c.country, gender: c.gender, age: computeAge(c.birthdate), matchScore: compatLove(toUserFeatures(me), toUserFeatures(c)), sharedValues: (c.values ?? []).filter((v) => (me.values ?? []).includes(v)) }));
   await redis.set(candidatesKey(userId), JSON.stringify(result), 'EX', CANDIDATES_TTL); return { candidates: result };
 }
@@ -45,6 +55,7 @@ function overlap(a: string[] | null | undefined, b: string[]): number { const aa
 export async function searchLove(userId: string, query: string): Promise<{ query: string; criteria: Awaited<ReturnType<typeof parseLoveQuery>>; results: LoveSearchResult[]; remainingSearches: number }> {
   const clean = query.trim(); if (clean.length < 3) throw AppError.badRequest('Décris un peu la personne que tu recherches', 'LOVE_QUERY_TOO_SHORT');
   const [me] = await db.select().from(schema.users).where(eq(schema.users.id, userId)).limit(1); if (!me) throw AppError.notFound('Utilisateur introuvable', 'USER_NOT_FOUND');
+  assertAdult(me.birthdate);
   const consent = await import('../consent/consent.service').then((m) => m.getConsentSettings(userId));
   if (!consent.loveEnabled) throw AppError.forbidden('Active Love dans tes préférences de consentement pour lancer une recherche', 'LOVE_DISABLED');
   // Quota quotidien configurable (LOVE_DAILY_SEARCH_LIMIT, 0 = illimité) : 429 explicite au-delà.
@@ -55,7 +66,7 @@ export async function searchLove(userId: string, query: string): Promise<{ query
   const blocked = await blockedIds(userId);
   const existingRows = await db.select({ candidateId: schema.loveMatches.candidateId }).from(schema.loveMatches).where(eq(schema.loveMatches.userId, userId));
   const excluded = new Set([userId, ...blocked, ...existingRows.map((r) => r.candidateId)]);
-  const candidates = await db.select({ id: schema.users.id, name: schema.users.name, username: schema.users.username, avatar: schema.users.avatar, bio: schema.users.bio, location: schema.users.location, country: schema.users.country, region: schema.users.region, birthdate: schema.users.birthdate, gender: schema.users.gender, values: schema.users.values, languages: schema.users.languages, ethnicity: schema.users.ethnicity, profileCompleted: schema.users.profileCompleted }).from(schema.users).where(eq(schema.users.profileCompleted, true)).limit(500);
+  const candidates = await db.select({ id: schema.users.id, name: schema.users.name, username: schema.users.username, avatar: schema.users.avatar, bio: schema.users.bio, location: schema.users.location, country: schema.users.country, region: schema.users.region, birthdate: schema.users.birthdate, gender: schema.users.gender, values: schema.users.values, languages: schema.users.languages, profileCompleted: schema.users.profileCompleted }).from(schema.users).where(and(eq(schema.users.profileCompleted, true), isNull(schema.users.bannedAt))).limit(500);
   const visible = [] as typeof candidates;
   for (const c of candidates) {
     const age = computeAge(c.birthdate) ?? 0;
@@ -63,12 +74,15 @@ export async function searchLove(userId: string, query: string): Promise<{ query
     if (criteria.ageMin !== undefined && age < criteria.ageMin) continue;
     if (criteria.ageMax !== undefined && age > criteria.ageMax) continue;
     if (criteria.genders?.length && !(criteria.genders as string[]).includes(c.gender ?? '')) continue;
-    if (criteria.countries?.length && !criteria.countries.some((country) => normalized(country) === normalized(c.country))) continue;
     if (!(await canLikeForLove(userId, c.id))) continue;
     visible.push(c);
   }
+  // Visibilité (photos / pays / profil) AVANT le filtre par pays et le score : un pays masqué ne doit être ni filtrable ni déductible.
+  const access = await viewableFieldsFor(userId, visible.map((c) => c.id));
+  const masked = visible.map((c) => maskForViewer(c, access.get(c.id) ?? { profile: false, photos: false, country: false }));
+  const countryFiltered = criteria.countries?.length ? masked.filter((c) => criteria.countries!.some((country) => normalized(country) === normalized(c.country))) : masked;
   const meFeatures = toUserFeatures(me);
-  const ranked = visible.map((c) => {
+  const ranked = countryFiltered.map((c) => {
     const sharedValues = (c.values ?? []).filter((v) => (me.values ?? []).some((mine) => normalized(mine) === normalized(v)));
     const keywordOverlap = overlap([...(c.values ?? []), ...(c.languages ?? []), c.country, c.region, c.bio].filter(Boolean) as string[], criteria.keywords ?? []);
     const scoreBase = compatLove(meFeatures, toUserFeatures(c));
@@ -99,15 +113,16 @@ export async function getLoveSearchQuota(userId: string): Promise<{ limit: numbe
 
 export async function getActiveLoveMatches(userId: string): Promise<{ candidates: Array<LoveCandidateDto & { connected: boolean; conversationId: string | null }> }> {
   const rows = await db.select({ candidateId: schema.loveMatches.candidateId, conversationId: schema.loveMatches.conversationId, matchScore: schema.loveMatches.matchScore }).from(schema.loveMatches).where(and(eq(schema.loveMatches.userId, userId), eq(schema.loveMatches.isMutual, true))); if (rows.length === 0) return { candidates: [] };
-  const ids = rows.map((r) => r.candidateId); const users = await db.select({ id: schema.users.id, name: schema.users.name, username: schema.users.username, avatar: schema.users.avatar, bio: schema.users.bio, country: schema.users.country, location: schema.users.location, gender: schema.users.gender, birthdate: schema.users.birthdate }).from(schema.users).where(inArray(schema.users.id, ids)); const byId = new Map(users.map((u) => [u.id, u]));
-  return { candidates: rows.flatMap((r) => { const u = byId.get(r.candidateId); if (!u) return []; return [{ id: u.id, name: u.name, username: u.username, avatar: u.avatar, bio: u.bio, location: u.location, country: u.country, gender: u.gender, age: computeAge(u.birthdate), matchScore: r.matchScore, sharedValues: [], connected: true, conversationId: r.conversationId }]; }) };
+  const blockedSet = new Set(await blockedIds(userId)); const activeRows = rows.filter((r) => !blockedSet.has(r.candidateId)); if (activeRows.length === 0) return { candidates: [] };
+  const ids = activeRows.map((r) => r.candidateId); const users = await db.select({ id: schema.users.id, name: schema.users.name, username: schema.users.username, avatar: schema.users.avatar, bio: schema.users.bio, country: schema.users.country, location: schema.users.location, gender: schema.users.gender, birthdate: schema.users.birthdate }).from(schema.users).where(and(inArray(schema.users.id, ids), isNull(schema.users.bannedAt))); const access = await viewableFieldsFor(userId, users.map((u) => u.id)); const byId = new Map(users.map((u) => [u.id, maskForViewer(u, access.get(u.id) ?? { profile: false, photos: false, country: false })]));
+  return { candidates: activeRows.flatMap((r) => { const u = byId.get(r.candidateId); if (!u) return []; return [{ id: u.id, name: u.name, username: u.username, avatar: u.avatar, bio: u.bio, location: u.location, country: u.country, gender: u.gender, age: computeAge(u.birthdate), matchScore: r.matchScore, sharedValues: [], connected: true, conversationId: r.conversationId }]; }) };
 }
 export async function getLoveCandidate(userId: string, candidateId: string): Promise<{ candidate: LoveCandidateDto }> { const { candidates } = await getLoveCandidates(userId); const candidate = candidates.find((c) => c.id === candidateId); if (!candidate) throw AppError.notFound('Candidat introuvable', 'CANDIDATE_NOT_FOUND'); return { candidate }; }
 
 export async function swipe(userId: string, candidateId: string, action: 'like' | 'pass'): Promise<{ matched: boolean; conversationId?: string }> {
-  if (userId === candidateId) throw AppError.badRequest('Impossible de swiper soi-même', 'SELF_SWIPE'); if (await isBlockedBetween(userId, candidateId)) throw AppError.forbidden('Action impossible', 'BLOCKED'); if (action === 'like' && !(await canLikeForLove(userId, candidateId))) throw AppError.forbidden('Cette personne n’accepte pas les interactions Love dans ses préférences de consentement', 'LOVE_CONSENT_REQUIRED');
+  if (userId === candidateId) throw AppError.badRequest('Impossible de swiper soi-même', 'SELF_SWIPE'); await assertLoveAdultUser(userId); if (await isBlockedBetween(userId, candidateId)) throw AppError.forbidden('Action impossible', 'BLOCKED'); if (action === 'like' && !(await canLikeForLove(userId, candidateId))) throw AppError.forbidden('Cette personne n’accepte pas les interactions Love dans ses préférences de consentement', 'LOVE_CONSENT_REQUIRED');
   const [candidate] = await db.select().from(schema.users).where(eq(schema.users.id, candidateId)).limit(1); if (!candidate) throw AppError.notFound('Candidat introuvable', 'CANDIDATE_NOT_FOUND'); if ((computeAge(candidate.birthdate) ?? 0) < 18) throw AppError.badRequest('Profil inéligible', 'CANDIDATE_NOT_ELIGIBLE');
-  const [me] = await db.select({ values: schema.users.values, languages: schema.users.languages, ethnicity: schema.users.ethnicity, country: schema.users.country, region: schema.users.region }).from(schema.users).where(eq(schema.users.id, userId)).limit(1); const score = me ? compatLove(toUserFeatures(me), toUserFeatures(candidate)) : 0;
+  const [me] = await db.select({ values: schema.users.values, languages: schema.users.languages, country: schema.users.country, region: schema.users.region }).from(schema.users).where(eq(schema.users.id, userId)).limit(1); const score = me ? compatLove(toUserFeatures(me), toUserFeatures(candidate)) : 0;
   const existing = await db.select().from(schema.loveMatches).where(and(eq(schema.loveMatches.userId, userId), eq(schema.loveMatches.candidateId, candidateId))).limit(1); if (existing[0]) throw AppError.conflict('Déjà swipé', 'ALREADY_SWIPED');
   await redis.sadd(swipedKey(userId), candidateId); await redis.expire(swipedKey(userId), SWIPED_TTL); await redis.del(candidatesKey(userId));
   if (action === 'pass') { await redis.sadd('love:passed:' + userId, candidateId); await redis.expire('love:passed:' + userId, PASS_TTL); await db.insert(schema.loveMatches).values({ userId, candidateId, action: 'pass', matchScore: score, isMutual: false }); return { matched: false }; }
@@ -144,8 +159,6 @@ export async function getIncomingLoveRequests(userId: string): Promise<{ request
   const answered = await db.select({ candidateId: schema.loveMatches.candidateId }).from(schema.loveMatches).where(eq(schema.loveMatches.userId, userId));
   const answeredIds = new Set(answered.map((r) => r.candidateId));
   const blocked = new Set(await blockedIds(userId));
-  const blockedMe = await db.select({ blockerId: schema.blocks.blockerId }).from(schema.blocks).where(eq(schema.blocks.blockedId, userId));
-  for (const b of blockedMe) blocked.add(b.blockerId);
 
   const open = incoming.filter((r) => !answeredIds.has(r.fromId) && !blocked.has(r.fromId));
   if (open.length === 0) return { requests: [] };
@@ -157,8 +170,9 @@ export async function getIncomingLoveRequests(userId: string): Promise<{ request
   if (pending.length === 0) return { requests: [] };
 
   const rows = await db.select({ id: schema.users.id, name: schema.users.name, username: schema.users.username, avatar: schema.users.avatar, bio: schema.users.bio, country: schema.users.country, location: schema.users.location, birthdate: schema.users.birthdate })
-    .from(schema.users).where(inArray(schema.users.id, pending.map((r) => r.fromId)));
-  const byId = new Map(rows.map((u) => [u.id, u]));
+    .from(schema.users).where(and(inArray(schema.users.id, pending.map((r) => r.fromId)), isNull(schema.users.bannedAt)));
+  const access = await viewableFieldsFor(userId, rows.map((u) => u.id));
+  const byId = new Map(rows.map((u) => [u.id, maskForViewer(u, access.get(u.id) ?? { profile: false, photos: false, country: false })]));
   const requests = pending.flatMap((r): LoveRequestDto[] => {
     const u = byId.get(r.fromId);
     if (!u || (computeAge(u.birthdate) ?? 0) < 18) return [];

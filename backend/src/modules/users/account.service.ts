@@ -1,4 +1,4 @@
-import { eq, or, sql } from 'drizzle-orm';
+import { and, eq, ne, or, sql } from 'drizzle-orm';
 import { db, schema } from '../../infrastructure/database';
 import { redis } from '../../infrastructure/redis';
 import { meilisearch } from '../../infrastructure/meilisearch';
@@ -11,6 +11,7 @@ import { mediaModeration } from '../safety/safety.schema';
 import { env } from '../../config/env';
 import { buildMediaBases, collectOwnedObjectKeys, runMediaCleanup } from './account.media';
 import { enqueueAccountMediaCleanup, minioStorage } from './account-cleanup.queue';
+import { planTribeSuccession } from './account.tribes';
 
 const POSTS_INDEX = 'posts';
 const ROW_LIMIT = 10_000;
@@ -114,6 +115,36 @@ async function scheduleMediaCleanup(userId: string, keys: string[]): Promise<voi
   }
 }
 
+type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
+
+/**
+ * Tribus créées par la personne : `tribes.created_by_id` est en CASCADE et `posts.tribe_id` en SET NULL, donc
+ * supprimer le compte rendrait publics (tribeId NULL = lisible par tous) les posts des autres membres.
+ * Propriété transférée au plus ancien modérateur, sinon au plus ancien membre ; à défaut, les posts de la
+ * tribu sont marqués supprimés dans la même transaction. Retourne les identifiants de posts masqués.
+ */
+async function handOverOwnedTribes(tx: Tx, userId: string): Promise<string[]> {
+  const owned = await tx.select({ id: schema.tribes.id }).from(schema.tribes).where(eq(schema.tribes.createdById, userId));
+  const hidden: string[] = [];
+  for (const tribe of owned) {
+    const members = await tx.select({ userId: schema.tribeMembers.userId, role: schema.tribeMembers.role, joinedAt: schema.tribeMembers.joinedAt })
+      .from(schema.tribeMembers).where(eq(schema.tribeMembers.tribeId, tribe.id));
+    const plan = planTribeSuccession(userId, members);
+    if (plan.successorId) {
+      await tx.update(schema.tribeMembers).set({ role: 'owner' }).where(and(eq(schema.tribeMembers.tribeId, tribe.id), eq(schema.tribeMembers.userId, plan.successorId)));
+      await tx.update(schema.tribes).set({ createdById: plan.successorId, memberCount: sql`greatest(${schema.tribes.memberCount} - 1, 0)` }).where(eq(schema.tribes.id, tribe.id));
+      // L'ancien propriétaire reste membre jusqu'à la cascade : on évite deux « owner » le temps de la transaction.
+      await tx.update(schema.tribeMembers).set({ role: 'member' }).where(and(eq(schema.tribeMembers.tribeId, tribe.id), eq(schema.tribeMembers.userId, userId)));
+    }
+    if (plan.hidePosts) {
+      const rows = await tx.update(schema.posts).set({ status: 'deleted', deletedAt: new Date() })
+        .where(and(eq(schema.posts.tribeId, tribe.id), ne(schema.posts.status, 'deleted'))).returning({ id: schema.posts.id });
+      hidden.push(...rows.map((r) => r.id));
+    }
+  }
+  return hidden;
+}
+
 /**
  * DELETE /api/users/me — effacement du compte (droit à l'effacement).
  * Les clés étrangères en cascade suppriment profil, contenus, relations et réglages ; les sessions sont
@@ -132,7 +163,9 @@ export async function deleteAccount(userId: string): Promise<{ deleted: true }> 
   );
   await revokeAllUserSessions(userId);
 
+  let hiddenPostIds: string[] = [];
   await db.transaction(async (tx) => {
+    hiddenPostIds = await handOverOwnedTribes(tx, userId);
     // `reports.moderator_id` n'a pas de ON DELETE : on détache la référence pour ne pas bloquer l'effacement.
     await tx.update(schema.reports).set({ moderatorId: null }).where(eq(schema.reports.moderatorId, userId));
     // `media_moderation.owner_id` n'a pas de clé étrangère : on retire ces lignes (elles référencent les fichiers).
@@ -140,7 +173,7 @@ export async function deleteAccount(userId: string): Promise<{ deleted: true }> 
     await tx.delete(schema.users).where(eq(schema.users.id, userId));
   });
 
-  await purgeSecondaryStores(userId, ownedPosts.map((p) => p.id));
+  await purgeSecondaryStores(userId, [...ownedPosts.map((p) => p.id), ...hiddenPostIds]);
   await scheduleMediaCleanup(userId, mediaKeys);
   logger.info({ userId }, 'compte supprimé');
   return { deleted: true };

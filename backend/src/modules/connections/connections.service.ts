@@ -1,4 +1,6 @@
-import { and, eq, or } from 'drizzle-orm';
+import { computeVisibleMatchScore } from '../users/match-score';
+import { viewableFieldsFor } from '../consent/consent.service';
+import { and, eq, or, inArray, isNotNull } from 'drizzle-orm';
 import { db, schema } from '../../infrastructure/database';
 import { redis } from '../../infrastructure/redis';
 import { AppError } from '../../shared/utils/AppError';
@@ -6,6 +8,7 @@ import { createNotification } from '../notifications/notifications.service';
 import { hashEmbedding, tokenize, cosineSimilarity } from '../culture-engine/embedding';
 import { emitToUser } from '../../infrastructure/websocket';
 import { locationAudience } from '../location/location.schema';
+import { loveCachesToInvalidate } from '../love/love.blocks';
 
 const SUGGESTIONS_PER_DAY = 20;
 const DECLINED_TTL = 30 * 24 * 60 * 60; // 30j
@@ -272,6 +275,90 @@ export async function getCompanions(userId: string): Promise<ConnectionDto[]> {
   return profiles.filter((p): p is ConnectionDto => p !== null);
 }
 
+/**
+ * GET /api/connections/nearby — amis visibles sur la carte proximity :
+ *  - connexions établies (companion) OU suggestions (bubble Snap) ;
+ *  - partage de localisation activé chez eux ET chez moi ;
+ *  - distance en km via Haversine.
+ */
+export async function getNearbyFriends(
+  userId: string,
+): Promise<{
+  me: { latitude: number | null; longitude: number | null; locationSharingEnabled: boolean };
+  friends: Array<ProfileDto & { latitude: number; longitude: number; distanceKm: number | null; lastSeen: string | null; isCompanion: boolean }>;
+}> {
+  const [me] = await db
+    .select({
+      latitude: schema.users.latitude,
+      longitude: schema.users.longitude,
+      locationSharingEnabled: schema.users.locationSharingEnabled,
+      values: schema.users.values,
+      languages: schema.users.languages,
+      country: schema.users.country,
+    })
+    .from(schema.users)
+    .where(eq(schema.users.id, userId))
+    .limit(1);
+
+  // Mon partage désactivé → carte vide (comme Snap : personne ne me voit)
+  if (!me?.locationSharingEnabled || me.latitude === null || me.longitude === null) {
+    return { me: { latitude: null, longitude: null, locationSharingEnabled: false }, friends: [] };
+  }
+
+  const { haversineKm } = await import('../users/users.service');
+
+  // Amis (companion) avec géoloc activée + suggestions proches (bubble)
+  const rows = await db
+    .select({
+      id: schema.users.id,
+      name: schema.users.name,
+      username: schema.users.username,
+      avatar: schema.users.avatar,
+      bio: schema.users.bio,
+      location: schema.users.location,
+      country: schema.users.country,
+      values: schema.users.values,
+      languages: schema.users.languages,
+      latitude: schema.users.latitude,
+      longitude: schema.users.longitude,
+      locationUpdatedAt: schema.users.locationUpdatedAt,
+      status: schema.connections.status,
+    })
+    .from(schema.connections)
+    .innerJoin(schema.users, eq(schema.users.id, schema.connections.toUserId))
+    .where(
+      and(
+        eq(schema.connections.fromUserId, userId),
+        inArray(schema.connections.status, ['companion', 'suggestion', 'interested']),
+        eq(schema.users.locationSharingEnabled, true),
+        isNotNull(schema.users.latitude),
+        isNotNull(schema.users.longitude),
+      ),
+    )
+    .limit(200);
+
+  const access = await viewableFieldsFor(userId, rows.map((r) => r.id));
+  const friends = rows
+    .filter((r) => r.latitude !== null && r.longitude !== null)
+    .map((r) => ({
+      id: r.id,
+      name: r.name,
+      username: r.username,
+      avatar: r.avatar,
+      bio: r.bio,
+      location: r.location,
+      country: r.country,
+      matchScore: computeVisibleMatchScore(me, r, access.get(r.id)?.country ?? false),
+      latitude: r.latitude as number,
+      longitude: r.longitude as number,
+      distanceKm: haversineKm(me.latitude as number, me.longitude as number, r.latitude as number, r.longitude as number),
+      lastSeen: r.locationUpdatedAt ? r.locationUpdatedAt.toISOString() : null,
+      isCompanion: r.status === 'companion',
+    }));
+
+  return { me: { latitude: me.latitude, longitude: me.longitude, locationSharingEnabled: true }, friends };
+}
+
 /** POST /api/connections/:userId/request — envoyer une demande. */
 export async function sendRequest(userId: string, targetId: string): Promise<{ success: true }> {
   if (userId === targetId) throw AppError.badRequest('Impossible de s’envoyer une demande', 'SELF_REQUEST');
@@ -384,6 +471,7 @@ export async function blockRequester(userId: string, requestId: string): Promise
   await db.insert(schema.blocks).values({ blockerId: userId, blockedId: requestId }).onConflictDoNothing();
   await removeAudienceLinks(userId, requestId);
   await redis.sadd(blockedKey(userId), requestId);
+  await redis.del(...loveCachesToInvalidate(userId, requestId)).catch(() => 0);
   await db
     .delete(schema.connections)
     .where(or(and(eq(schema.connections.fromUserId, requestId), eq(schema.connections.toUserId, userId)), and(eq(schema.connections.fromUserId, userId), eq(schema.connections.toUserId, requestId))));
