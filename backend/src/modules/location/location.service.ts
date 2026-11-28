@@ -7,7 +7,8 @@ import { requiresConsent, computeReach, type Reach } from './location.policy';
 import { AppError } from '../../shared/utils/AppError';
 import { haversineKm } from '../users/users.service';
 import { evaluateNearbyCandidate, NEARBY_RADIUS_KM } from './location.nearby.filter';
-import { computeMatchScore } from '../users/match-score';
+import { computeVisibleMatchScore } from '../users/match-score';
+import { viewableFieldsFor } from '../consent/consent.service';
 import { obfuscatePosition } from './location.privacy';
 import { env } from '../../config/env';
 
@@ -187,6 +188,8 @@ export async function getPeopleNearby(userId: string, viewerLocation?: { latitud
     : [];
   const listedBy = new Set(listedRows.map((r) => r.ownerId));
 
+  // Le score n'inclut la dimension pays que si la personne autorise à voir son pays.
+  const access = await viewableFieldsFor(userId, candidates.map((c) => c.id));
   const people: Array<Record<string, unknown>> = [];
   for (const c of candidates) {
     const distance = c.latitude !== null && c.longitude !== null ? haversineKm(origin.latitude, origin.longitude, c.latitude, c.longitude) : null;
@@ -197,7 +200,7 @@ export async function getPeopleNearby(userId: string, viewerLocation?: { latitud
     const position = obfuscatePosition(c.latitude, c.longitude, c.id, precision, env.BETTER_AUTH_SECRET);
     people.push({
       id: c.id, name: c.name, username: c.username, avatar: c.avatar, bio: c.bio, country: c.country, location: c.location,
-      languages: c.languages, values: c.values, intention: c.intention, matchScore: computeMatchScore(viewer, c), ...position, distanceKm,
+      languages: c.languages, values: c.values, intention: c.intention, matchScore: computeVisibleMatchScore(viewer, c, access.get(c.id)?.country ?? false), ...position, distanceKm,
       distanceLabel: distanceKm === null ? null : distanceKm < 1 ? 'Nearby' : `~${distanceKm} km away`,
       isCompanion: friends.has(c.id), isFriendOfFriend: fof.has(c.id),
       isActive: c.showActive ? !!c.updated && Date.now() - c.updated.getTime() < 120000 : false,

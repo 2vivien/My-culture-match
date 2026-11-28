@@ -55,3 +55,12 @@ export function computeMatchScore(a: MatchProfile, b: MatchProfile): number {
   if (totalWeight === 0) return 0;
   return Math.round((100 * weighted) / totalWeight);
 }
+
+/**
+ * Score tel que le lecteur est autorisé à le voir : si la personne masque son pays (countryVisibility),
+ * la dimension pays (20 %) est écartée du calcul. Sinon le score reflèterait l'égalité des pays
+ * (« 100 % » ou chute à 80 %) et trahirait un pays pourtant masqué.
+ */
+export function computeVisibleMatchScore(viewer: MatchProfile, target: MatchProfile, countryVisible: boolean): number {
+  return computeMatchScore(viewer, countryVisible ? target : { ...target, country: null });
+}

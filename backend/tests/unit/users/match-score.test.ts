@@ -46,3 +46,20 @@ describe('computeMatchScore', () => {
     expect(computeMatchScore(p, q)).toBe(computeMatchScore(a, a));
   });
 });
+
+import { computeVisibleMatchScore } from '../../../src/modules/users/match-score';
+
+describe('computeVisibleMatchScore (pays masqué)', () => {
+  const me = { values: ['a', 'b'], languages: ['fr'], country: 'Bénin' };
+  const sameCountry = { values: ['a', 'b'], languages: ['fr'], country: 'Bénin' };
+  const otherCountry = { values: ['a', 'b'], languages: ['fr'], country: 'Togo' };
+
+  it('pays visible : la dimension pays compte (mêmes pays > pays différents)', () => {
+    expect(computeVisibleMatchScore(me, sameCountry, true)).toBeGreaterThan(computeVisibleMatchScore(me, otherCountry, true));
+  });
+
+  it('pays masqué : le score est identique que le pays soit le même ou non, il ne trahit rien', () => {
+    expect(computeVisibleMatchScore(me, sameCountry, false)).toBe(computeVisibleMatchScore(me, otherCountry, false));
+    expect(computeVisibleMatchScore(me, sameCountry, false)).toBe(computeMatchScore(me, { ...sameCountry, country: null }));
+  });
+});

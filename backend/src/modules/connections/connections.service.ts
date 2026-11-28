@@ -1,4 +1,5 @@
-import { computeMatchScore } from '../users/match-score';
+import { computeVisibleMatchScore } from '../users/match-score';
+import { viewableFieldsFor } from '../consent/consent.service';
 import { and, eq, or, inArray, isNotNull } from 'drizzle-orm';
 import { db, schema } from '../../infrastructure/database';
 import { redis } from '../../infrastructure/redis';
@@ -336,6 +337,7 @@ export async function getNearbyFriends(
     )
     .limit(200);
 
+  const access = await viewableFieldsFor(userId, rows.map((r) => r.id));
   const friends = rows
     .filter((r) => r.latitude !== null && r.longitude !== null)
     .map((r) => ({
@@ -346,7 +348,7 @@ export async function getNearbyFriends(
       bio: r.bio,
       location: r.location,
       country: r.country,
-      matchScore: computeMatchScore(me, r),
+      matchScore: computeVisibleMatchScore(me, r, access.get(r.id)?.country ?? false),
       latitude: r.latitude as number,
       longitude: r.longitude as number,
       distanceKm: haversineKm(me.latitude as number, me.longitude as number, r.latitude as number, r.longitude as number),
