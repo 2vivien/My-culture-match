@@ -10,6 +10,7 @@ import { ApiError } from '@/src/services/api';
 import { LoveActiveMatches } from '@/src/components/love/LoveActiveMatches';
 import { LoveOnboarding } from '@/src/components/love/LoveOnboarding';
 import type { LoveMatch, LoveSearchQuota, LoveSearchResult } from '@/src/types/love';
+import { isQuotaExhausted } from '@/src/lib/loveQuota';
 
 type Role = 'user' | 'assistant';
 type ChatMessage = { id: string; role: Role; content: string; criteria?: string[]; results?: LoveSearchResult[] };
@@ -79,7 +80,7 @@ export const LoveColumn: React.FC = () => {
 
   const send = async (text = query) => {
     const clean = text.trim();
-    if (!clean || loading || quota.remaining === 0) return;
+    if (!clean || loading || isQuotaExhausted(quota)) return;
     const history = [...messages.filter((m) => m.role === 'user').map((m) => m.content), clean];
     setQuery(''); setLoading(true); setTyping(true); setMessages((m) => [...m, { id: crypto.randomUUID(), role: 'user', content: clean }]);
     try {
@@ -127,7 +128,7 @@ export const LoveColumn: React.FC = () => {
           {cards.map((match) => <MatchCard key={match.id} match={match} liked={Boolean(liked[match.id])} onLike={() => like(match.id)} onPass={() => pass(match.id)} onProfile={() => openProfile(match.id)} />)}
         </div>
         {isLast && visibleResults.length > 0 && (
-          <button onClick={() => send('Propose-moi 4 autres personnes avec les mêmes critères')} disabled={loading || quota.remaining === 0} className="mt-4 flex items-center gap-1.5 rounded-full border border-app-border px-3 py-2 text-xs font-semibold text-app-gray hover:text-app-text disabled:opacity-40"><RotateCcw className="h-3.5 w-3.5" />Autres profils</button>
+          <button onClick={() => send('Propose-moi 4 autres personnes avec les mêmes critères')} disabled={loading || isQuotaExhausted(quota)} className="mt-4 flex items-center gap-1.5 rounded-full border border-app-border px-3 py-2 text-xs font-semibold text-app-gray hover:text-app-text disabled:opacity-40"><RotateCcw className="h-3.5 w-3.5" />Autres profils</button>
         )}
       </div>
     );
@@ -148,7 +149,7 @@ export const LoveColumn: React.FC = () => {
           {criteriaChips.length > 0 && <div className="flex flex-wrap gap-2 pl-2">{criteriaChips.map((c) => <span key={c} className="rounded-full border border-app-border bg-app-bg px-3 py-1.5 text-xs font-medium text-app-gray">{c}</span>)}</div>}
           <div ref={endRef} />
         </div></div>
-        <div className="shrink-0 border-t border-app-border bg-app-card/95 px-4 pb-4 pt-3 backdrop-blur sm:px-7"><div className="mx-auto max-w-3xl"><div className="mb-2 flex gap-2 overflow-x-auto pb-1">{QUICK_PROMPTS.map((prompt) => <button key={prompt} onClick={() => send(prompt)} disabled={loading || quota.remaining <= 0} className="shrink-0 rounded-full border border-app-border bg-app-bg px-3 py-1.5 text-xs text-app-gray hover:border-[#E27D60]/50 hover:text-app-text disabled:opacity-40">{prompt}</button>)}</div><div className="rounded-[24px] border border-app-border bg-app-bg p-2 shadow-sm"><div className="flex items-end gap-2"><textarea value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }} rows={2} placeholder="Dis-moi ce que tu recherches…" className="min-h-[56px] flex-1 resize-none bg-transparent px-3 py-2 text-sm text-app-text outline-none placeholder:text-app-gray" /><button onClick={() => send()} disabled={!query.trim() || loading || quota.remaining <= 0} className="mb-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#E27D60] text-white disabled:opacity-40"><ArrowUp className="h-5 w-5" /></button></div></div><p className="mt-2 text-center text-[11px] text-app-gray">Entrée pour envoyer · Maj+Entrée pour aller à la ligne · consentement et blocages toujours respectés</p></div></div>
+        <div className="shrink-0 border-t border-app-border bg-app-card/95 px-4 pb-4 pt-3 backdrop-blur sm:px-7"><div className="mx-auto max-w-3xl"><div className="mb-2 flex gap-2 overflow-x-auto pb-1">{QUICK_PROMPTS.map((prompt) => <button key={prompt} onClick={() => send(prompt)} disabled={loading || isQuotaExhausted(quota)} className="shrink-0 rounded-full border border-app-border bg-app-bg px-3 py-1.5 text-xs text-app-gray hover:border-[#E27D60]/50 hover:text-app-text disabled:opacity-40">{prompt}</button>)}</div><div className="rounded-[24px] border border-app-border bg-app-bg p-2 shadow-sm"><div className="flex items-end gap-2"><textarea value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }} rows={2} placeholder="Dis-moi ce que tu recherches…" className="min-h-[56px] flex-1 resize-none bg-transparent px-3 py-2 text-sm text-app-text outline-none placeholder:text-app-gray" /><button onClick={() => send()} disabled={!query.trim() || loading || isQuotaExhausted(quota)} className="mb-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#E27D60] text-white disabled:opacity-40"><ArrowUp className="h-5 w-5" /></button></div></div><p className="mt-2 text-center text-[11px] text-app-gray">Entrée pour envoyer · Maj+Entrée pour aller à la ligne · consentement et blocages toujours respectés</p></div></div>
       </section>
       {activeMatches.length > 0 && <section className="mt-6"><div className="mb-3"><p className="text-xs font-bold uppercase tracking-wider text-[#E27D60]">Tes connexions</p><h2 className="mt-1 text-xl font-semibold text-app-text">Matchs Love actifs</h2></div><LoveActiveMatches matches={activeMatches} setSelectedMatch={() => undefined} onOpenChat={(match) => openChatWith(match.id, true)} /></section>}
       {Object.keys(liked).length > 0 && <p className="mt-4 text-center text-xs text-app-gray">Ton intérêt a été envoyé. S’il est réciproque, votre connexion Love apparaîtra dans tes matchs actifs.</p>}
