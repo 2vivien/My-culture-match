@@ -1,6 +1,7 @@
 import { useMemo, useState, type FormEvent } from 'react';
 import { Loader2, CalendarPlus, X } from 'lucide-react';
 import { api, ApiError } from '@/src/services/api';
+import { Dialog } from '@/src/components/ui/Dialog';
 import { searchPlaces, type PlaceSearchResult } from '@/src/lib/placeSearch';
 import { placeCategory } from '@/src/lib/placeCategories';
 import { eventErrorMessage, toIsoFromLocalInput } from '@/src/lib/eventForm';
@@ -84,7 +85,7 @@ export const EventCreateDialog = ({ places, onClose, onCreated }: Props) => {
   const field = 'mt-1 w-full rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-transparent px-4 py-2.5 text-sm font-normal outline-none';
 
   return (
-    <div className="fixed inset-0 z-[80] bg-black/50 flex items-end sm:items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="event-create-title">
+    <Dialog onClose={onClose} labelledBy="event-create-title" className="fixed inset-0 z-[80] bg-black/50 flex items-end sm:items-center justify-center p-4">
       <div className="w-full max-w-md max-h-[90vh] overflow-y-auto bg-white dark:bg-zinc-950 rounded-3xl p-5 shadow-2xl">
         <div className="flex items-start justify-between gap-3">
           <div>
@@ -96,7 +97,7 @@ export const EventCreateDialog = ({ places, onClose, onCreated }: Props) => {
 
         <form onSubmit={submit} className="mt-4 space-y-3">
           <label className="block text-xs font-black">Titre
-            <input value={title} onChange={(e) => setTitle(e.target.value)} maxLength={100} className={field} />
+            <input data-autofocus value={title} onChange={(e) => setTitle(e.target.value)} maxLength={100} className={field} />
           </label>
           <label className="block text-xs font-black">Début
             <input type="datetime-local" value={startsLocal} onChange={(e) => setStartsLocal(e.target.value)} className={field} />
@@ -154,6 +155,6 @@ export const EventCreateDialog = ({ places, onClose, onCreated }: Props) => {
           </button>
         </form>
       </div>
-    </div>
+    </Dialog>
   );
 };

@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
-import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation, useQueryClient, type InfiniteData } from '@tanstack/react-query';
 import { api } from '@/src/services/api';
+import { applyVoteToPages } from '@/src/lib/commentVote';
 import { buildCommentTree, mergeCommentPages, type WithReplies } from '@/src/lib/commentTree';
 
 /** Commentaire backend (liste plate avec parentId — replies inclus). */
@@ -55,11 +56,18 @@ export function useComments(postId: string, sort: CommentSort = 'best') {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['comments', postId] }),
   });
 
-  // Un vote change le score et peut changer le rang : on recharge l'ordre serveur.
+  // Le serveur renvoie le vote et le score à jour : on les applique au nœud dans toutes les listes en cache, sans
+  // recharger les pages (la liste ne saute pas, et un double clic ne repart pas sur des données périmées).
+  // L'ordre des tris « meilleurs/top » est rafraîchi au prochain chargement ; en tri par date il ne dépend pas du score.
   const voteComment = useMutation({
     mutationFn: (input: { commentId: string; value: 1 | -1 }) =>
       api.post<{ myVote: number; score: number }>(`/api/posts/${postId}/comments/${input.commentId}/vote`, { value: input.value }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['comments', postId] }),
+    onSuccess: (vote, input) => {
+      queryClient.setQueriesData<InfiniteData<{ comments: BackendComment[]; nextCursor: string | null }>>(
+        { queryKey: ['comments', postId] },
+        (old) => (old ? { ...old, pages: applyVoteToPages(old.pages, input.commentId, vote) } : old),
+      );
+    },
   });
 
   return {

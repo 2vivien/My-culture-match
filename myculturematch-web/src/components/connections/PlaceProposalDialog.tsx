@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { Loader2, MapPin, X } from 'lucide-react';
 import { api, ApiError } from '@/src/services/api';
+import { Dialog } from '@/src/components/ui/Dialog';
 import { searchPlaces, type PlaceSearchResult } from '@/src/lib/placeSearch';
 import { PLACE_CATEGORY_IDS, placeCategory, type PlaceCategoryId } from '@/src/lib/placeCategories';
 
@@ -68,7 +69,7 @@ export const PlaceProposalDialog = ({ onClose }: Props) => {
   };
 
   return (
-    <div className="fixed inset-0 z-[80] bg-black/50 flex items-end sm:items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="place-proposal-title">
+    <Dialog onClose={onClose} labelledBy="place-proposal-title" className="fixed inset-0 z-[80] bg-black/50 flex items-end sm:items-center justify-center p-4">
       <div className="w-full max-w-md max-h-[90vh] overflow-y-auto bg-white dark:bg-zinc-950 rounded-3xl p-5 shadow-2xl">
         <div className="flex items-start justify-between gap-3">
           <div>
@@ -87,7 +88,7 @@ export const PlaceProposalDialog = ({ onClose }: Props) => {
         ) : (
           <>
             <form onSubmit={search} className="mt-4 flex gap-2">
-              <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Rechercher le lieu sur la carte" aria-label="Rechercher le lieu sur la carte" className="flex-1 min-w-0 rounded-full border border-zinc-200 dark:border-zinc-800 bg-transparent px-4 py-2.5 text-sm outline-none" />
+              <input data-autofocus value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Rechercher le lieu sur la carte" aria-label="Rechercher le lieu sur la carte" className="flex-1 min-w-0 rounded-full border border-zinc-200 dark:border-zinc-800 bg-transparent px-4 py-2.5 text-sm outline-none" />
               <button type="submit" disabled={!query.trim() || searching} className="rounded-full bg-zinc-950 text-white dark:bg-white dark:text-black px-4 py-2.5 text-xs font-black disabled:opacity-40">
                 {searching ? <Loader2 className="w-4 h-4 animate-spin" aria-label="Recherche" /> : 'Chercher'}
               </button>
@@ -125,6 +126,6 @@ export const PlaceProposalDialog = ({ onClose }: Props) => {
           </>
         )}
       </div>
-    </div>
+    </Dialog>
   );
 };
