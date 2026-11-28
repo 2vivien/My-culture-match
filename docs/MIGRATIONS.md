@@ -55,7 +55,7 @@ Tester aussi le **chemin de mise à jour** : appliquer le journal de `main`, pui
 
 ## Collisions de numéros entre branches
 
-Conflit de numéros résolu : `0020_posts_count` et `0021_posts_vocabulary` ont été renumérotées `0031_posts_count` / `0032_posts_vocabulary` (fichier, `tag`, `idx`, `when`). Le SQL de renommage est idempotent car ces migrations avaient déjà été appliquées sous leur ancien nom sur certaines bases.
+Conflit de numéros résolu : `0020_posts_count` et `0021_posts_vocabulary` ont été renumérotées `0032_posts_count` / `0033_posts_vocabulary` (fichier, `tag`, `idx`, `when`). Le SQL de renommage est idempotent car ces migrations avaient déjà été appliquées sous leur ancien nom sur certaines bases.
 
 ## Pourquoi les snapshots manquent
 
