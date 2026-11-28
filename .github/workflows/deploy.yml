@@ -88,7 +88,23 @@ jobs:
           MEILISEARCH_API_KEY="$SMOKE_MEILI_KEY" \
           MINIO_ACCESS_KEY="$SMOKE_MINIO_ACCESS_KEY" \
           MINIO_SECRET_KEY="$SMOKE_MINIO_SECRET_KEY" \
-          docker compose -f docker-compose.prod.yml up -d --wait postgres redis meilisearch minio mailpit
+          docker compose -f docker-compose.prod.yml up -d --wait postgres redis meilisearch mailpit
+
+      # MinIO ne publie plus d'image : le test de fumée utilise un serveur S3 de test, joignable sous le nom « minio ».
+      # (Le fichier docker-compose.prod.yml référence encore minio/minio : voir la revue, point à traiter avant un
+      # déploiement de production depuis zéro.)
+      - name: Serveur S3 de test (remplace MinIO pour le test de fumée)
+        run: |
+          docker run -d --rm --name minio --network mcm-backend-prod_default --network-alias minio \
+            -e COM_ADOBE_TESTING_S3MOCK_STORE_INITIAL_BUCKETS=mcm-media \
+            adobe/s3mock:latest
+          for i in $(seq 1 30); do
+            docker exec minio sh -c 'wget -q --spider http://localhost:9090/' 2>/dev/null && exit 0
+            sleep 2
+          done
+          echo "Serveur S3 de test indisponible" >&2
+          docker logs minio >&2 || true
+          exit 1
 
       - name: Run API (image poussée)
         run: |
@@ -103,12 +119,11 @@ jobs:
             -e MEILISEARCH_HOST='http://meilisearch:7700' \
             -e MEILISEARCH_API_KEY="$SMOKE_MEILI_KEY" \
             -e MINIO_ENDPOINT='minio' \
-            -e MINIO_PORT='9000' \
+            -e MINIO_PORT='9090' \
             -e MINIO_ACCESS_KEY="$SMOKE_MINIO_ACCESS_KEY" \
             -e MINIO_SECRET_KEY="$SMOKE_MINIO_SECRET_KEY" \
             -e MINIO_BUCKET_NAME='mcm-media' \
-            -e SMTP_HOST='mailpit' \
-            -e SMTP_PORT='1025' \
+            -e BREVO_API_KEY="smoke-brevo-api-key" \
             -e LOG_LEVEL='info' \
             -e METRICS_TOKEN="$SMOKE_METRICS_TOKEN" \
             -p 3000:3000 \
@@ -121,14 +136,17 @@ jobs:
       - name: Cleanup
         if: always()
         run: |
-          docker rm -f mcm-smoke-api || true
+          docker rm -f mcm-smoke-api minio || true
           docker compose -f backend/docker-compose.prod.yml down -v
 
   deploy:
     name: Deploy ${{ github.ref == 'refs/heads/main' && 'production' || 'staging' }}
     runs-on: ubuntu-latest
     needs: [build-and-push, smoke]
-    if: github.event_name == 'push'
+    # Production : déploiement manuel uniquement (workflow_dispatch sur main). Un push sur main construit, publie et teste
+    # l'image, mais ne déploie plus tout seul : le code intégré n'a pas encore été relu ni essayé sur une base réelle.
+    # Le staging (develop) reste automatique.
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref != 'refs/heads/main')
     environment:
       name: ${{ github.ref == 'refs/heads/main' && 'production' || 'staging' }}
     steps:
