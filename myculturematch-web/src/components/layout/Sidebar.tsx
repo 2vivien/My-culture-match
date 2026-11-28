@@ -2,12 +2,15 @@ import { SidebarLogo } from './parts/SidebarLogo';
 
 import { SidebarNav } from './parts/SidebarNav';
 import { SidebarFooter } from './parts/SidebarFooter';
+import { GuestSidebarPanel } from './parts/GuestSidebarPanel';
 import { useUIStore } from '@/src/stores/useUIStore';
+import { useAppStore } from '@/src/stores/useAppStore';
 import { cn } from '@/src/lib/utils';
 import { PanelRightOpen } from 'lucide-react';
 
 export const Sidebar = () => {
   const { activeTab, isSidebarOpen, toggleSidebar, isSidebarCollapsed, toggleSidebarCollapse } = useUIStore();
+  const isAuthenticated = useAppStore((s) => s.isAuthenticated);
   const isCollapsed = isSidebarCollapsed;
 
   return (
@@ -39,6 +42,9 @@ export const Sidebar = () => {
           <div className="mt-8">
             <SidebarFooter />
           </div>
+
+          {/* Visiteur non connecté : accueil + carrousel éditorial en bas de la sidebar. */}
+          {!isAuthenticated && !isCollapsed ? <GuestSidebarPanel /> : null}
         </aside>
 
         {/* Circular resize/fold handle button positioned over the right border */}
