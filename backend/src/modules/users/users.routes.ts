@@ -5,6 +5,9 @@ import { profilePatchSchema, locationUpdateSchema } from './users.schemas';
 import { getCurrentUser, getPublicUser, updateProfile, updateLocation, followUser, unfollowUser } from './users.service';
 import { canDiscover, canViewField } from '../consent/consent.service';
 import { AppError } from '../../shared/utils/AppError';
+import { rateLimitHit } from '../../shared/utils/rate-limit';
+import { exportUserData, deleteAccount } from './account.service';
+import { DELETE_CONFIRMATION, isDeleteConfirmed } from './account.export';
 
 export const usersModule = new Hono();
 usersModule.use('*', requireAuth);
@@ -12,6 +15,27 @@ usersModule.use('*', requireAuth);
 usersModule.get('/me', async (c) => { const { userId } = c.get('auth'); return c.json(await getCurrentUser(userId), 200); });
 usersModule.patch('/me', zValidator('json', profilePatchSchema), async (c) => { const { userId } = c.get('auth'); return c.json(await updateProfile(userId, c.req.valid('json')), 200); });
 usersModule.patch('/me/location', zValidator('json', locationUpdateSchema), async (c) => { const { userId } = c.get('auth'); return c.json(await updateLocation(userId, c.req.valid('json')), 200); });
+
+/** Export des données personnelles (droit d'accès) — 3 exports par heure. */
+usersModule.get('/me/export', async (c) => {
+  const { userId } = c.get('auth');
+  const rate = await rateLimitHit(`export:${userId}`, 3, 3600);
+  if (!rate.allowed) throw AppError.tooMany('Trop d’exports, réessaie plus tard', 'RATE_LIMITED');
+  c.header('Content-Disposition', 'attachment; filename="my-culture-match-export.json"');
+  return c.json(await exportUserData(userId), 200);
+});
+
+/** Suppression définitive du compte : exige la phrase de confirmation (action irréversible). */
+usersModule.delete('/me', async (c) => {
+  const { userId } = c.get('auth');
+  const body = await c.req.json().catch(() => ({})) as { confirm?: unknown };
+  if (!isDeleteConfirmed(body.confirm)) {
+    throw AppError.badRequest(`Pour confirmer, envoie confirm: « ${DELETE_CONFIRMATION} »`, 'DELETE_CONFIRMATION_REQUIRED');
+  }
+  const rate = await rateLimitHit(`delete-account:${userId}`, 3, 3600);
+  if (!rate.allowed) throw AppError.tooMany('Trop de tentatives, réessaie plus tard', 'RATE_LIMITED');
+  return c.json(await deleteAccount(userId), 200);
+});
 
 usersModule.get('/:id', async (c) => {
   const targetId = c.req.param('id');
