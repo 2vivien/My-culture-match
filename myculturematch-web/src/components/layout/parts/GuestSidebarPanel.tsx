@@ -28,16 +28,16 @@ export const GuestSidebarPanel = () => {
   const slide = SLIDES[index]!;
 
   return (
-    <div className="flex min-h-full flex-col rounded-[20px] border border-app-border bg-[#FAF8F4] p-4 shadow-sm">
+    <div className="flex h-full min-h-full flex-col rounded-[20px] border border-app-border bg-[#FAF8F4] p-4 shadow-sm">
       {/* Titre et sous-titre de l'écran actif, avant les boutons. */}
-      <h3 className="text-center text-[15px] font-black uppercase leading-tight text-app-black">
+      <h3 className="text-center text-[17px] font-black uppercase leading-tight text-app-black">
         {slide.title}
       </h3>
       <p className="mt-1 text-center text-[11px] leading-snug text-app-gray">
         {slide.subtitle}
       </p>
 
-      <div className="mt-4 space-y-2">
+      <div className="mt-5 space-y-3">
         <button
           type="button"
           onClick={openAuthModal}
@@ -61,18 +61,18 @@ export const GuestSidebarPanel = () => {
         </button>
       </div>
 
-      <p className="mt-2 text-[10px] leading-snug text-app-gray text-center">
+      <p className="mt-3 text-[10px] leading-snug text-app-gray text-center">
         En continuant, tu acceptes notre Contrat d&apos;utilisation et la Politique de confidentialité.
       </p>
 
-      <div className="mt-5 h-px bg-app-border" />
+      <div className="mt-6 h-px bg-app-border" />
 
-      {/* Image 9:16, avec le haut fondu dans le fond du panneau. */}
-      <div className="relative mt-6">
+      {/* L'image occupe toute la hauteur restante, sans vide en bas. */}
+      <div className="relative mt-6 min-h-[280px] flex-1">
         <img
           src={slide.image}
           alt={slide.title}
-          className="aspect-[9/16] w-full object-cover object-center rounded-2xl select-none"
+          className="h-full w-full object-cover object-center rounded-2xl select-none"
         />
         <div className="pointer-events-none absolute inset-x-0 top-0 h-12 rounded-t-2xl bg-gradient-to-b from-[#FAF8F4] to-transparent" />
       </div>
