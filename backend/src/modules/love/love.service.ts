@@ -10,6 +10,7 @@ import { matchesCreatedTotal, loveAiSearchesTotal, loveCardsDisplayedTotal, love
 import { canLikeForLove } from '../consent/consent.service';
 import { parseLoveQuery } from './love.ai';
 import { consumeLoveQuota, getLoveQuota } from './love.quota.service';
+import { computeAge, isAdultForLove } from './love.rules';
 import { counterpartsBlockedWith, loveCandidatesKey } from './love.blocks';
 
 const CANDIDATES_TTL = 60 * 60;
@@ -23,7 +24,10 @@ const pairLock = (a: string, b: string) => `love:pair:${[a, b].sort().join(':')}
 export interface LoveCandidateDto { id: string; name: string; username: string; avatar: string | null; bio: string | null; location: string | null; country: string | null; gender: string | null; age: number | null; matchScore: number; sharedValues: string[]; }
 export interface LoveSearchResult extends LoveCandidateDto { rank: number; reasons: string[]; breakdown: { values: number; goals: number; language: number; culture: number; interests: number }; }
 
-function computeAge(birthdate: Date | null): number | null { if (!birthdate) return null; return Math.floor((Date.now() - birthdate.getTime()) / (365.25 * 24 * 60 * 60 * 1000)); }
+/** 403 explicite : Love est réservé aux personnes majeures (âge de la personne qui l'utilise, pas seulement du candidat). */
+function assertAdult(birthdate: Date | null): void { if (!isAdultForLove(birthdate)) throw AppError.forbidden('Love est réservé aux personnes majeures : renseigne ta date de naissance (18 ans minimum)', 'LOVE_ADULT_REQUIRED'); }
+/** Contrôle d'âge pour les points d'entrée qui ne chargent pas déjà le profil. */
+export async function assertLoveAdultUser(userId: string): Promise<void> { const [row] = await db.select({ birthdate: schema.users.birthdate }).from(schema.users).where(eq(schema.users.id, userId)).limit(1); if (!row) throw AppError.notFound('Utilisateur introuvable', 'USER_NOT_FOUND'); assertAdult(row.birthdate); }
 function toUserFeatures(row: { values: string[] | null; languages: string[] | null; ethnicity: string | null; country: string | null; region: string | null; interests?: string[] }) { return { id: '', values: row.values, languages: row.languages, ethnicity: row.ethnicity, country: row.country, region: row.region, interests: row.interests ?? row.values ?? [] }; }
 function normalized(value: string | null | undefined): string { return (value ?? '').toLocaleLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); }
 /** Blocages dans les DEUX sens : si B bloque A, A ne voit plus B (et inversement). */
@@ -31,8 +35,9 @@ async function blockedIds(userId: string): Promise<string[]> { const rows = awai
 async function isBlockedBetween(a: string, b: string): Promise<boolean> { const rows = await db.select({ blockerId: schema.blocks.blockerId }).from(schema.blocks).where(or(and(eq(schema.blocks.blockerId, a), eq(schema.blocks.blockedId, b)), and(eq(schema.blocks.blockerId, b), eq(schema.blocks.blockedId, a)))).limit(1); return rows.length > 0; }
 
 export async function getLoveCandidates(userId: string): Promise<{ candidates: LoveCandidateDto[] }> {
-  const cached = await redis.get(candidatesKey(userId)); if (cached) return { candidates: JSON.parse(cached) as LoveCandidateDto[] };
   const [me] = await db.select().from(schema.users).where(eq(schema.users.id, userId)).limit(1); if (!me) throw AppError.notFound('Utilisateur introuvable', 'USER_NOT_FOUND');
+  assertAdult(me.birthdate);
+  const cached = await redis.get(candidatesKey(userId)); if (cached) return { candidates: JSON.parse(cached) as LoveCandidateDto[] };
   if (!(await import('../consent/consent.service').then((m) => m.getConsentSettings(userId))).loveEnabled) return { candidates: [] };
   const blocked = await blockedIds(userId); const swiped = await redis.smembers(swipedKey(userId)); const passed = await redis.smembers('love:passed:' + userId);
   const existingRows = await db.select({ candidateId: schema.loveMatches.candidateId }).from(schema.loveMatches).where(eq(schema.loveMatches.userId, userId)); const alreadyMatched = new Set(existingRows.map((r) => r.candidateId));
@@ -47,6 +52,7 @@ function overlap(a: string[] | null | undefined, b: string[]): number { const aa
 export async function searchLove(userId: string, query: string): Promise<{ query: string; criteria: Awaited<ReturnType<typeof parseLoveQuery>>; results: LoveSearchResult[]; remainingSearches: number }> {
   const clean = query.trim(); if (clean.length < 3) throw AppError.badRequest('Décris un peu la personne que tu recherches', 'LOVE_QUERY_TOO_SHORT');
   const [me] = await db.select().from(schema.users).where(eq(schema.users.id, userId)).limit(1); if (!me) throw AppError.notFound('Utilisateur introuvable', 'USER_NOT_FOUND');
+  assertAdult(me.birthdate);
   const consent = await import('../consent/consent.service').then((m) => m.getConsentSettings(userId));
   if (!consent.loveEnabled) throw AppError.forbidden('Active Love dans tes préférences de consentement pour lancer une recherche', 'LOVE_DISABLED');
   // Quota quotidien configurable (LOVE_DAILY_SEARCH_LIMIT, 0 = illimité) : 429 explicite au-delà.
@@ -108,7 +114,7 @@ export async function getActiveLoveMatches(userId: string): Promise<{ candidates
 export async function getLoveCandidate(userId: string, candidateId: string): Promise<{ candidate: LoveCandidateDto }> { const { candidates } = await getLoveCandidates(userId); const candidate = candidates.find((c) => c.id === candidateId); if (!candidate) throw AppError.notFound('Candidat introuvable', 'CANDIDATE_NOT_FOUND'); return { candidate }; }
 
 export async function swipe(userId: string, candidateId: string, action: 'like' | 'pass'): Promise<{ matched: boolean; conversationId?: string }> {
-  if (userId === candidateId) throw AppError.badRequest('Impossible de swiper soi-même', 'SELF_SWIPE'); if (await isBlockedBetween(userId, candidateId)) throw AppError.forbidden('Action impossible', 'BLOCKED'); if (action === 'like' && !(await canLikeForLove(userId, candidateId))) throw AppError.forbidden('Cette personne n’accepte pas les interactions Love dans ses préférences de consentement', 'LOVE_CONSENT_REQUIRED');
+  if (userId === candidateId) throw AppError.badRequest('Impossible de swiper soi-même', 'SELF_SWIPE'); await assertLoveAdultUser(userId); if (await isBlockedBetween(userId, candidateId)) throw AppError.forbidden('Action impossible', 'BLOCKED'); if (action === 'like' && !(await canLikeForLove(userId, candidateId))) throw AppError.forbidden('Cette personne n’accepte pas les interactions Love dans ses préférences de consentement', 'LOVE_CONSENT_REQUIRED');
   const [candidate] = await db.select().from(schema.users).where(eq(schema.users.id, candidateId)).limit(1); if (!candidate) throw AppError.notFound('Candidat introuvable', 'CANDIDATE_NOT_FOUND'); if ((computeAge(candidate.birthdate) ?? 0) < 18) throw AppError.badRequest('Profil inéligible', 'CANDIDATE_NOT_ELIGIBLE');
   const [me] = await db.select({ values: schema.users.values, languages: schema.users.languages, ethnicity: schema.users.ethnicity, country: schema.users.country, region: schema.users.region }).from(schema.users).where(eq(schema.users.id, userId)).limit(1); const score = me ? compatLove(toUserFeatures(me), toUserFeatures(candidate)) : 0;
   const existing = await db.select().from(schema.loveMatches).where(and(eq(schema.loveMatches.userId, userId), eq(schema.loveMatches.candidateId, candidateId))).limit(1); if (existing[0]) throw AppError.conflict('Déjà swipé', 'ALREADY_SWIPED');

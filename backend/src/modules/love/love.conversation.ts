@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { parseLoveQuery, type LoveSearchCriteria } from './love.ai';
-import { searchLove } from './love.service';
+import { searchLove, assertLoveAdultUser } from './love.service';
 import { profileSearchDefaults } from './love.profile';
 import { detectSensitiveCategories, sensitiveNotice, type SensitiveCategory } from './love.guardrails';
 import { getLoveProfileAnswers } from './love.profile.service';
@@ -37,6 +37,7 @@ function replyFor(missing: string[], hasResults: boolean): string {
 }
 
 export async function handleLoveConversation(userId: string, messages: string[]): Promise<LoveConversationResult> {
+  await assertLoveAdultUser(userId);
   const combined = messages.join('\n');
   const ignored = detectSensitiveCategories(combined);
   const notice = sensitiveNotice(ignored);
