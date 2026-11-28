@@ -236,8 +236,20 @@ describe('scoring — LOVE', () => {
     expect(emotionalMatch(baseUser, { ...baseUser, values: [] })).toBe(0.3);
   });
 
-  it('culturalRoots : même ethnicité + pays → 1', () => {
+  it('culturalRoots : même pays → 1', () => {
     expect(culturalRoots(baseUser, baseUser)).toBe(1);
+  });
+
+  it('culturalRoots : l’ethnie ne compte pas (même ethnie, autre pays et autres langues → 0)', () => {
+    const other = { ...baseUser, country: 'FR', languages: ['xx'] };
+    expect(culturalRoots(baseUser, { ...other, ethnicity: baseUser.ethnicity })).toBe(0);
+    expect(culturalRoots(baseUser, { ...other, ethnicity: 'Autre' })).toBe(0);
+  });
+
+  it('compatLove ne dépend pas de l’ethnie : le score affiché ne permet pas de la déduire', () => {
+    const b = { ...baseUser, id: 'other' };
+    expect(compatLove({ ...baseUser, ethnicity: 'Fon' }, { ...b, ethnicity: 'Fon' })).toBe(compatLove({ ...baseUser, ethnicity: 'Fon' }, { ...b, ethnicity: 'Wolof' }));
+    expect(compatLove({ ...baseUser, ethnicity: null }, { ...b, ethnicity: 'Wolof' })).toBe(compatLove({ ...baseUser, ethnicity: 'Fon' }, { ...b, ethnicity: 'Wolof' }));
   });
 
   it('proximity : pays identique mais région différente → 0.6', () => {
