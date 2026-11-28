@@ -9,7 +9,7 @@
 | Users / Profil | `modules/users/` | `GET/PATCH /api/users/me`, profil public |
 | Settings | `modules/settings/` | Paramètres, 2FA TOTP, changement d'email |
 | Uploads | `modules/uploads/` | Presigned URLs MinIO + queue de traitement média |
-| Posts / Traditions | `modules/posts/` | CRUD posts, likes, commentaires, partages, signets |
+| Posts | `modules/posts/` | CRUD posts, likes, commentaires, partages, signets |
 | Feed | `modules/feed/` | Fanout push, feeds following/foryou/new/popular, compteurs |
 | Tribus | `modules/tribes/` | Communautés, règles, modérateurs, votes, pin |
 | Connexions | `modules/connections/` | Suggestions, demandes, compagnons, blocage |

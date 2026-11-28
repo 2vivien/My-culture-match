@@ -1,19 +1,15 @@
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useFeed } from '@/src/hooks/useFeed';
 import { FeedFilterToggle } from './FeedFilterToggle';
-
-import { useUIStore } from '@/src/stores/useUIStore';
 import { PostCard } from './PostCard';
 import { fadeInUp, staggerChildren } from '@/src/lib/animations';
 
 export const MainFeedColumn = () => {
   const { posts, isLoading } = useFeed();
-  const { activeTab } = useUIStore();
 
   return (
-    <main className="flex-1 max-w-2xl mx-auto w-full flex flex-col gap-6 overflow-y-auto hide-scrollbar pb-10">
+    <main className="flex-1 max-w-2xl mx-auto w-full flex flex-col min-h-0 pb-6">
       <FeedFilterToggle />
-
 
       {isLoading ? (
         <div className="flex justify-center py-10">
@@ -24,21 +20,16 @@ export const MainFeedColumn = () => {
           variants={staggerChildren}
           initial="hidden"
           animate="visible"
-          className="flex flex-col gap-6"
+          className="flex-1 min-h-0 overflow-y-auto hide-scrollbar bg-white dark:bg-zinc-950 rounded-xl border border-app-border dark:border-zinc-800 divide-y divide-zinc-200 dark:divide-zinc-800"
         >
-          <AnimatePresence mode="popLayout">
-            {posts.map((post) => (
-              <motion.div
-                key={post.id}
-                variants={fadeInUp}
-                layout
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.3 }}
-              >
-                <PostCard post={post} />
-              </motion.div>
-            ))}
-          </AnimatePresence>
+          {posts.map((post) => (
+            <motion.div key={post.id} variants={fadeInUp} layout>
+              <PostCard post={post} flat />
+            </motion.div>
+          ))}
+          {posts.length === 0 && (
+            <p className="py-16 text-center text-sm text-zinc-500">No posts yet.</p>
+          )}
         </motion.div>
       )}
     </main>

@@ -1,10 +1,11 @@
-import { Home, LandPlot, Layers, FerrisWheel, Landmark, LucideIcon, Settings, ShieldCheck } from 'lucide-react';
-import { IconFriends } from '@tabler/icons-react';
+import { useState } from 'react';
+import { Home, LandPlot, Layers, FerrisWheel, Landmark, DiamondPlus, ChevronDown, Settings, ShieldCheck } from 'lucide-react';
+import { IconFriends, IconId } from '@tabler/icons-react';
 import { useUIStore } from '@/src/stores/useUIStore';
 import { useAppStore } from '@/src/stores/useAppStore';
 import { useExplore } from '@/src/hooks/useExplore';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { traditionService } from '@/src/services/traditionService';
+import { postService } from '@/src/services/postService';
 import { cn } from '@/src/lib/utils';
 import { motion } from 'framer-motion';
 import { SandboxIcon } from '@/src/components/ui/SandboxIcon';
@@ -17,17 +18,8 @@ const CloudHeartIcon = (props: any) => (
   </svg>
 );
 
-/** Icône Totem (idem sidebar) — exportée pour le menu profil. */
-export const GrimTotemIcon = (props: any) => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-    <path d="M12 2v20" />
-    <path d="M8 6h8" />
-    <path d="M7 10h10" />
-    <path d="M6 14h12" />
-    <path d="M10 18h4" />
-    <circle cx="12" cy="10" r="2" />
-  </svg>
-);
+/** Icône Profil Tabler "id" (ti-id) — exportée pour le menu profil. */
+export const ProfileIcon = (props: any) => <IconId {...props} />;
 
 const LayersPlusIcon = (props: any) => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
@@ -47,19 +39,19 @@ interface OwnedTribe {
 }
 
 const iconMap: Record<string, any> = {
-  Home, Popular: LandPlot, Love: CloudHeartIcon, New: LayersPlusIcon, Explore: FerrisWheel, Tribu: Landmark, Totem: GrimTotemIcon, Sandbox: SandboxIcon,
+  Home, Popular: LandPlot, Love: CloudHeartIcon, New: LayersPlusIcon, Explore: FerrisWheel, Tribu: Landmark, Profil: ProfileIcon, Sandbox: SandboxIcon,
   Friends: IconFriends, Admin: ShieldCheck,
 };
 
 const navItems = [
-  { name: 'Home', icon: 'Home' },
-  { name: 'Popular', icon: 'Popular' },
-  { name: 'New', icon: 'New' },
-  { name: 'Explore', icon: 'Explore' },
-  { name: 'Friends', icon: 'Friends' },
-  { name: 'Love', icon: 'Love' },
-  { name: 'Tribu', icon: 'Tribu' },
-  { name: 'Totem', icon: 'Totem' },
+  { name: 'Home', label: 'Home', icon: 'Home' },
+  { name: 'Popular', label: 'Popular', icon: 'Popular' },
+  { name: 'New', label: 'New', icon: 'New' },
+  { name: 'Explore', label: 'Explore', icon: 'Explore' },
+  { name: 'Friends', label: 'Friends', icon: 'Friends' },
+  { name: 'Love', label: 'Love', icon: 'Love' },
+  { name: 'Tribu', label: 'Communauté', icon: 'Tribu' },
+  { name: 'Profil', label: 'Profil', icon: 'Profil' },
 ];
 
 const adminItem = { name: 'Admin', icon: 'Admin' };
@@ -68,10 +60,12 @@ const isAdminRole = (role?: string) => role === 'admin' || role === 'superadmin'
 
 export const SidebarNav = () => {
   const { activeTab, setActiveTab, isSidebarOpen, toggleSidebar, isSidebarCollapsed, openChat } = useUIStore();
-  const { setSelectedTotemUserId, setFeedSort, currentUser, setSelectedTribeId } = useAppStore();
+  const { setSelectedProfileUserId, setFeedSort, currentUser, setSelectedTribeId } = useAppStore();
   const { tribes } = useExplore();
   const queryClient = useQueryClient();
   const isCollapsed = isSidebarCollapsed;
+  const { setShowCreateTribeModal } = useUIStore();
+  const [isCommunityOpen, setIsCommunityOpen] = useState(true);
 
   // Tribus réelles : celles de l'utilisateur en priorité, sinon les plus populaires (API)
   const suggestedTribes = tribes.slice(0, 3);
@@ -80,7 +74,7 @@ export const SidebarNav = () => {
   // (useCreateTribe invalide ['my-tribes'] et ['tribe-options'] à la soumission).
   const { data: myTribesData = [] } = useQuery<OwnedTribe[]>({
     queryKey: ['my-tribes'],
-    queryFn: traditionService.getMyTribes,
+    queryFn: postService.getMyTribes,
     staleTime: 1000 * 30,
   });
   const myTribes = myTribesData.slice(0, 4);
@@ -102,10 +96,10 @@ export const SidebarNav = () => {
       setFeedSort('Best');
     }
 
-    if (name === 'Totem') {
-      // "My Totem Profile" : l'icône Totem de la sidebar ouvre toujours
+    if (name === 'Profil') {
+      // "My Profile" : l'icône Profile de la sidebar ouvre toujours
       // SON propre profil (jamais le profil d'un autre utilisateur).
-      setSelectedTotemUserId('user-current');
+      setSelectedProfileUserId('user-current');
     }
     if (window.innerWidth < 768 && isSidebarOpen) {
       toggleSidebar();
@@ -117,12 +111,35 @@ export const SidebarNav = () => {
       {navItems.map((item) => {
         const IconComponent = iconMap[item.icon] || Home;
         const isActive = activeTab === item.name;
+        const isCommunity = item.name === 'Tribu';
 
         return (
           <div key={item.name} className="flex flex-col w-full gap-1">
+            {/* « Créer une communauté » juste après Love, avant la rubrique Communauté. */}
+            {isCommunity && (
+              <>
+                <button
+                  onClick={() => {
+                    setShowCreateTribeModal(true);
+                    if (window.innerWidth < 768 && isSidebarOpen) toggleSidebar();
+                  }}
+                  title="Créer une communauté"
+                  className={cn(
+                    'flex items-center rounded-2xl transition-all cursor-pointer w-full text-app-gray hover:bg-gray-50 dark:hover:bg-zinc-800 hover:text-app-black dark:hover:text-white',
+                    isCollapsed ? 'justify-center p-3 w-12 mx-auto' : 'gap-3 px-4 py-3 text-left font-medium text-sm'
+                  )}
+                >
+                  <DiamondPlus className="w-6 h-6 shrink-0" />
+                  {!isCollapsed && <span className="text-sm font-semibold whitespace-nowrap">Créer une communauté</span>}
+                </button>
+                {/* Trait de séparation avant Communauté. */}
+                <div className="h-px bg-app-border dark:bg-zinc-800 mx-4 my-1.5" />
+              </>
+            )}
+
             <button
-              onClick={() => handleNav(item.name)}
-              title={item.name}
+              onClick={() => isCommunity ? setIsCommunityOpen((open) => !open) : handleNav(item.name)}
+              title={item.label}
               className={cn(
                 'relative flex items-center rounded-2xl transition-all cursor-pointer group w-full',
                 isCollapsed ? 'justify-center p-3 w-12 mx-auto' : 'gap-4 px-4 py-3 text-left font-medium text-sm',
@@ -136,43 +153,51 @@ export const SidebarNav = () => {
                   transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                 />
               )}
-              <div className="relative">
-                <IconComponent className={cn('w-6 h-6 transition-transform shrink-0', isActive ? 'scale-100' : 'group-hover:scale-110')} />
-              </div>
-              {!isCollapsed && <span className="text-base font-semibold">{item.name}</span>}
+              {(!isCommunity || isCollapsed) && (
+                <div className="relative">
+                  <IconComponent className={cn('w-6 h-6 transition-transform shrink-0', isActive ? 'scale-100' : 'group-hover:scale-110')} />
+                </div>
+              )}
+              {!isCollapsed && <span className="text-base font-semibold flex-1 text-left">{item.label}</span>}
+              {isCommunity && !isCollapsed && (
+                <ChevronDown
+                  className={cn('w-4 h-4 shrink-0 text-app-gray transition-transform duration-200', !isCommunityOpen && '-rotate-90')}
+                  aria-hidden="true"
+                />
+              )}
             </button>
 
-            {item.name === 'Tribu' && !isCollapsed && (
+            {isCommunity && !isCollapsed && isCommunityOpen && (
               <div className="flex flex-col gap-1 text-sm font-bold text-app-gray dark:text-zinc-400 pl-9 mt-1">
                 {suggestedTribes.length === 0 && (
-                  <p className="text-xs text-app-gray/70 dark:text-zinc-500 py-1 select-none">Aucune tribu pour l'instant</p>
+                  <p className="text-xs text-app-gray/70 dark:text-zinc-500 py-1 select-none">Aucune communauté pour l'instant</p>
                 )}
                 {suggestedTribes.map((tribe) => (
                   <button
                     key={tribe.id}
                     onClick={() => { setSelectedTribeId(tribe.id); setActiveTab('Tribu'); if (window.innerWidth < 768 && isSidebarOpen) toggleSidebar(); }}
-                    className="flex items-center gap-1.5 hover:text-[#E27D60] cursor-pointer text-left py-1 text-app-black dark:text-zinc-300 bg-transparent border-none"
+                    className="flex items-center gap-1.5 hover:text-zinc-900 dark:hover:text-zinc-100 cursor-pointer text-left py-1 text-app-black dark:text-zinc-300 bg-transparent border-none"
                   >
-                    <span className="w-1 h-1 rounded-full bg-[#E27D60] shrink-0" />
+                    <span className="w-1 h-1 rounded-full bg-zinc-400 dark:bg-zinc-500 shrink-0" />
                     <span className="truncate">t/{tribe.name}</span>
                   </button>
                 ))}
 
                 {myTribes.length > 0 && (
                   <div className="flex flex-col gap-1 mt-3 border-t border-app-border/40 dark:border-zinc-800 pt-2 w-full">
-                    <span className="text-[11px] uppercase tracking-wider text-app-gray/60 dark:text-zinc-500 font-black mb-1 select-none">Your Own Tribes</span>
+                    <span className="text-[11px] uppercase tracking-wider text-app-gray/60 dark:text-zinc-500 font-black mb-1 select-none">Your Communities</span>
                     {myTribes.map((tribe) => (
-                      <div key={tribe.id} className="group/item flex items-center justify-between hover:text-[#E27D60] py-1 text-app-black dark:text-zinc-300 select-none">
-                        <button onClick={() => { setSelectedTribeId(tribe.id); setActiveTab('Tribu'); if (window.innerWidth < 768 && isSidebarOpen) toggleSidebar(); }} className="flex items-center gap-1.5 cursor-pointer text-left text-app-black dark:text-zinc-300 bg-transparent border-none hover:text-[#E27D60] flex-1 min-w-0 font-bold text-sm">
+                      <div key={tribe.id} className="group/item flex items-center justify-between hover:text-zinc-900 dark:hover:text-zinc-100 py-1 text-app-black dark:text-zinc-300 select-none">
+                        <button onClick={() => { setSelectedTribeId(tribe.id); setActiveTab('Tribu'); if (window.innerWidth < 768 && isSidebarOpen) toggleSidebar(); }} className="flex items-center gap-1.5 cursor-pointer text-left text-app-black dark:text-zinc-300 bg-transparent border-none hover:text-zinc-900 dark:hover:text-zinc-100 flex-1 min-w-0 font-bold text-sm">
                           <span className="w-1 h-1 rounded-full bg-zinc-400 dark:bg-zinc-600 shrink-0" />
                           <span className="truncate">t/{tribe.name}</span>
                         </button>
                         <button
                           onClick={(e) => { e.stopPropagation(); setActiveTab('TribuSettings'); }}
-                          className="opacity-0 group-hover/item:opacity-100 hover:text-[#E27D60] p-1 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-all cursor-pointer mr-1 flex items-center justify-center border-none bg-transparent"
-                          title="Tribe Settings"
+                          className="opacity-0 group-hover/item:opacity-100 hover:text-zinc-900 dark:hover:text-zinc-100 p-1 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-all cursor-pointer mr-1 flex items-center justify-center border-none bg-transparent"
+                          title="Community settings"
                         >
-                          <Settings className="w-4 h-4 text-app-gray hover:text-[#E27D60] dark:text-zinc-400" />
+                          <Settings className="w-4 h-4 text-app-gray hover:text-zinc-900 dark:hover:text-zinc-100 dark:text-zinc-400" />
                         </button>
                       </div>
                     ))}

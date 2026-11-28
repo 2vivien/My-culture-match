@@ -272,7 +272,7 @@ Une petite fraction du Feed doit proposer :
 relevant but unexpected
 ```
 
-Exemple : un utilisateur intéressé par la culture béninoise peut découvrir un contenu sur une tradition togolaise voisine, sans quitter complètement son univers.
+Exemple : un utilisateur intéressé par la culture béninoise peut découvrir un contenu sur une post togolaise voisine, sans quitter complètement son univers.
 
 ## Exploration
 

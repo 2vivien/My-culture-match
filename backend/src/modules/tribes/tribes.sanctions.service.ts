@@ -33,6 +33,19 @@ export async function assertCanJoinTribe(tribeId: string, userId: string): Promi
   if (sanction && blocksMembership(sanction.kind)) throw AppError.forbidden('Vous êtes banni de cette tribu', 'TRIBE_BANNED');
 }
 
+/**
+ * Une sanction encore active prononcée par quelqu'un d'autre ne peut être levée ni écrasée que par l'owner : sans cela,
+ * un modérateur annulerait le bannissement qu'un collègue ou l'owner a prononcé (le bannissement supprime la ligne de membre,
+ * donc le rôle de la cible n'est plus connu et canSanction le traite comme un membre ordinaire).
+ */
+async function assertMayTouchExisting(tribeId: string, actorRole: TribeRole | null, actorId: string, targetUserId: string): Promise<void> {
+  const [row] = await db.select({ createdBy: schema.tribeSanctions.createdBy, expiresAt: schema.tribeSanctions.expiresAt }).from(schema.tribeSanctions)
+    .where(and(eq(schema.tribeSanctions.tribeId, tribeId), eq(schema.tribeSanctions.userId, targetUserId))).limit(1);
+  if (!row || !isSanctionActive(row.expiresAt)) return;
+  if (actorRole === 'owner' || row.createdBy === actorId) return;
+  throw AppError.forbidden('Cette sanction a été prononcée par quelqu’un d’autre : seul l’owner peut la modifier', 'TRIBE_SANCTION_FORBIDDEN');
+}
+
 export interface SanctionInput { userId: string; kind: SanctionKind; reason?: string; days?: number }
 
 function requireModerator(role: TribeRole | null): void {
@@ -46,6 +59,7 @@ export async function sanctionMember(tribeId: string, actorId: string, input: Sa
   const targetRole = await roleOf(tribeId, input.userId);
   if (!canSanction(actorRole, targetRole, actorId, input.userId)) throw AppError.forbidden('Vous ne pouvez pas sanctionner cette personne', 'TRIBE_SANCTION_FORBIDDEN');
 
+  await assertMayTouchExisting(tribeId, actorRole, actorId, input.userId);
   const expiresAt = expiryFromDays(input.days);
   await db.insert(schema.tribeSanctions)
     .values({ tribeId, userId: input.userId, kind: input.kind, reason: input.reason ?? null, createdBy: actorId, expiresAt })
@@ -54,6 +68,10 @@ export async function sanctionMember(tribeId: string, actorId: string, input: Sa
       set: { kind: input.kind, reason: input.reason ?? null, createdBy: actorId, expiresAt, createdAt: new Date() },
     });
 
+  if (blocksMembership(input.kind)) {
+    // Une demande d'adhésion en attente ne doit pas permettre à une personne bannie de devenir membre.
+    await db.delete(schema.tribeJoinRequests).where(and(eq(schema.tribeJoinRequests.tribeId, tribeId), eq(schema.tribeJoinRequests.userId, input.userId)));
+  }
   if (blocksMembership(input.kind) && targetRole) {
     await db.delete(schema.tribeMembers).where(and(eq(schema.tribeMembers.tribeId, tribeId), eq(schema.tribeMembers.userId, input.userId)));
     await redis.srem(`tribe:${tribeId}:members`, input.userId);
@@ -71,6 +89,7 @@ export async function liftSanction(tribeId: string, actorId: string, targetUserI
   // (ni la sienne), seul l'owner le peut.
   const targetRole = await roleOf(tribeId, targetUserId);
   if (!canSanction(actorRole, targetRole, actorId, targetUserId)) throw AppError.forbidden('Vous ne pouvez pas lever cette sanction', 'TRIBE_SANCTION_FORBIDDEN');
+  await assertMayTouchExisting(tribeId, actorRole, actorId, targetUserId);
   const deleted = await db.delete(schema.tribeSanctions)
     .where(and(eq(schema.tribeSanctions.tribeId, tribeId), eq(schema.tribeSanctions.userId, targetUserId)))
     .returning({ userId: schema.tribeSanctions.userId });

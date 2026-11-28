@@ -89,7 +89,7 @@ L'onboarding est bien orienté pour alimenter le moteur culturel.
 - profession
 - tags
 - données personnelles
-- progression/totem
+- progression/profil
 - titres culturels comme Explorateur, Voyageur, Gardien, Sage, Ancêtre
 
 ## Culture Engine / Matching
@@ -304,7 +304,7 @@ Les langues doivent alimenter onboarding, profil, search, matching et chat.
 
 Créer un système de découverte culturelle :
 
-- traditions
+- posts
 - cuisine
 - musique
 - langues

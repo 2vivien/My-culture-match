@@ -12,6 +12,7 @@ import {
   voteComment,
   sharePost,
   toggleSave,
+  removeSave,
   deletePost,
   listSaves,
 } from './posts.service';
@@ -101,7 +102,7 @@ postsModule.post('/:id/save', async (c) => {
 // DELETE /api/posts/:id/save — retrait signet
 postsModule.delete('/:id/save', async (c) => {
   const { userId } = c.get('auth');
-  const result = await toggleSave(userId, c.req.param('id'));
+  const result = await removeSave(userId, c.req.param('id'));
   return c.json(result, 200);
 });
 

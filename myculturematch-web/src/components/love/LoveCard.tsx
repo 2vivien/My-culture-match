@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { TotemAvatar } from '@/src/components/ui/TotemAvatar';
+import { ProfileAvatar } from '@/src/components/ui/ProfileAvatar';
 import type { LoveMatch } from '@/src/types/love';
 
 interface LoveCardProps {
@@ -13,7 +13,7 @@ interface LoveCardProps {
 /**
  * Carte Love — photo pleine avec le % de match en haut de la carte
  * (badge visible, comme "99% match"), et en bas : photo de profil en forme
- * dentelée (cloud Totem) + nom. Le clic ouvre le popup détail.
+ * dentelée (cloud Profil) + nom. Le clic ouvre le popup détail.
  */
 export const LoveCard: React.FC<LoveCardProps> = ({
   match,
@@ -50,7 +50,7 @@ export const LoveCard: React.FC<LoveCardProps> = ({
 
       {/* Ligne du bas : photo de profil dentelée (cloud) + nom */}
       <div className="absolute bottom-4 inset-x-4 flex items-center gap-2.5 select-none">
-        <TotemAvatar
+        <ProfileAvatar
           src={match.avatar}
           alt={match.name}
           size="xs"

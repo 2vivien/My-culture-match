@@ -121,7 +121,7 @@ export async function getExploreData(userId: string) {
       tags: schema.posts.tags,
     })
     .from(schema.posts)
-    .where(and(eq(schema.posts.type, 'Images'), isNull(schema.posts.deletedAt), readablePostCondition(userId)))
+    .where(and(eq(schema.posts.type, 'Images'), eq(schema.posts.status, 'published'), isNull(schema.posts.deletedAt), readablePostCondition(userId)))
     .orderBy(desc(schema.posts.likes))
     .limit(6);
 
@@ -150,7 +150,7 @@ export async function getExploreData(userId: string) {
       tags: schema.posts.tags,
     })
     .from(schema.posts)
-    .where(and(eq(schema.posts.type, 'Images'), isNull(schema.posts.deletedAt), readablePostCondition(userId)))
+    .where(and(eq(schema.posts.type, 'Images'), eq(schema.posts.status, 'published'), isNull(schema.posts.deletedAt), readablePostCondition(userId)))
     .orderBy(desc(schema.posts.views))
     .limit(4);
 

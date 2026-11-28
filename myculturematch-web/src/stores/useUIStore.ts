@@ -22,6 +22,17 @@ interface UIState {
   isChatOpen: boolean;
   openChat: () => void;
   closeChat: () => void;
+  /** Onglet actif du popup Messages : conversations Love ou Friends. */
+  chatScope: 'friends' | 'love';
+  setChatScope: (scope: 'friends' | 'love') => void;
+  /** Conversations ouvertes depuis Love, à afficher dans l'onglet Love. */
+  loveConversationIds: string[];
+  markLoveConversation: (id: string) => void;
+  openLoveChat: (conversationId?: string) => void;
+  /** Popup de connexion ouverte depuis le home en mode visiteur. */
+  isAuthModalOpen: boolean;
+  openAuthModal: () => void;
+  closeAuthModal: () => void;
 }
 
 export const useUIStore = create<UIState>()(
@@ -57,9 +68,36 @@ export const useUIStore = create<UIState>()(
         };
       }),
       isChatOpen: false,
-      openChat: () => set({ isChatOpen: true }),
+      openChat: () => set({ isChatOpen: true, chatScope: 'friends' }),
       closeChat: () => set({ isChatOpen: false }),
+      chatScope: 'friends',
+      setChatScope: (chatScope) => set({ chatScope }),
+      loveConversationIds: [],
+      markLoveConversation: (id) => set((s) => (
+        id && !s.loveConversationIds.includes(id)
+          ? { loveConversationIds: [...s.loveConversationIds, id] }
+          : s
+      )),
+      openLoveChat: (conversationId) => set((s) => ({
+        isChatOpen: true,
+        chatScope: 'love',
+        loveConversationIds: conversationId && !s.loveConversationIds.includes(conversationId)
+          ? [...s.loveConversationIds, conversationId]
+          : s.loveConversationIds,
+      })),
+      isAuthModalOpen: false,
+      openAuthModal: () => set({ isAuthModalOpen: true }),
+      closeAuthModal: () => set({ isAuthModalOpen: false }),
     }),
-    { name: 'ui-store' },
+    {
+      name: 'ui-store',
+      // Toujours fermée au rechargement, même si le store est persisté.
+      merge: (persisted, current) => ({
+        ...current,
+        ...(persisted as Partial<UIState>),
+        isAuthModalOpen: false,
+        chatScope: 'friends',
+      }),
+    },
   )
 );

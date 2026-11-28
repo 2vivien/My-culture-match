@@ -9,7 +9,7 @@ export interface CurrentUser {
   level: number;
   glow: 'orange' | 'red' | 'blue' | 'turquoise' | 'violet';
   tribes: string[];
-  traditionsCount: number;
+  postsCount: number;
   culturesCount: number;
   tribesCount: number;
   location: string;
@@ -18,12 +18,14 @@ export interface CurrentUser {
   age?: number | null;
   interestedCount?: number;
   companionsCount?: number;
+  followersCount?: number;
+  followingCount?: number;
   role?: string;
 }
 
-export type TotemTitle = 'Explorateur' | 'Voyageur' | 'Gardien' | 'Sage' | 'Ancêtre';
+export type ProfileTitle = 'Explorateur' | 'Voyageur' | 'Gardien' | 'Sage' | 'Ancêtre';
 
-export function getTotemTitle(level: number): TotemTitle {
+export function getProfileTitle(level: number): ProfileTitle {
   if (level <= 10) return 'Explorateur';
   if (level <= 20) return 'Voyageur';
   if (level <= 40) return 'Gardien';

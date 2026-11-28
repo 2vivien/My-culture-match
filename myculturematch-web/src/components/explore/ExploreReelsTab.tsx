@@ -10,7 +10,7 @@ import {
   ChevronLeft,
 } from 'lucide-react';
 import { IconBrandParsinta } from '@tabler/icons-react';
-import { TotemAvatar } from '@/src/components/ui/TotemAvatar';
+import { ProfileAvatar } from '@/src/components/ui/ProfileAvatar';
 import { useFeed } from '@/src/hooks/useFeed';
 import type { Post } from '@/src/types/post';
 
@@ -98,7 +98,7 @@ export const ExploreReelsTab: React.FC<{ onBack?: () => void }> = ({ onBack }) =
                       <ChevronLeft className="w-6 h-6" />
                     </button>
                   ) : (
-                    <TotemAvatar
+                    <ProfileAvatar
                       src={reel.author.avatar}
                       alt={reel.author.name}
                       size="xs"

@@ -88,9 +88,9 @@ export const ProfileCompletionPanel: React.FC = () => {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <span className="text-sm font-black text-primary">{pct}%</span>
+            <span className="text-sm font-black text-zinc-700 dark:text-zinc-200">{pct}%</span>
             <div className="h-2 w-28 bg-zinc-200 dark:bg-zinc-800 rounded-full overflow-hidden">
-              <div className="h-full bg-primary transition-all duration-300" style={{ width: `${pct}%` }} />
+              <div className="h-full bg-zinc-800 dark:bg-zinc-300 transition-all duration-300" style={{ width: `${pct}%` }} />
             </div>
           </div>
         </div>

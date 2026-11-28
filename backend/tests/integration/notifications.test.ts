@@ -148,7 +148,7 @@ describe('MP11 — Notifications', () => {
     const a = await onboardUser('notif');
     const b = await onboardUser('notif');
 
-    const create = await app.request('/api/posts', authedJson(b.token, { type: 'Text', title: 'Yamato day', body: 'une belle tradition japonaise' }));
+    const create = await app.request('/api/posts', authedJson(b.token, { type: 'Text', title: 'Yamato day', body: 'une belle post japonaise' }));
     const post = (await create.json()) as { id: string };
 
     await app.request(`/api/posts/${post.id}/like`, authed(a.token, 'POST'));

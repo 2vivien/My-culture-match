@@ -1,106 +1,125 @@
 import { useState, useRef, useEffect } from 'react';
-import { Bell, Menu, ChevronDown, Plus, SquarePen, Search } from 'lucide-react';
-import { SandboxIcon } from '@/src/components/ui/SandboxIcon';
+import { Menu, Search } from 'lucide-react';
+import { IconBellFilled, IconBrandSignalFilled, IconLibraryPlusFilled } from '@tabler/icons-react';
 import { SearchBar } from './parts/SearchBar';
 import { useUIStore } from '@/src/stores/useUIStore';
 import { useAppStore } from '@/src/stores/useAppStore';
-import { TotemAvatar } from '@/src/components/ui/TotemAvatar';
-import { NotificationDropdown } from './parts/NotificationDropdown';
+import { ProfileAvatar } from '@/src/components/ui/ProfileAvatar';
 import { UserProfileDropdown } from './parts/UserProfileDropdown';
 import { useUnreadMessagesCount } from '@/src/hooks/useUnreadMessagesCount';
 
 import { AnimatePresence } from 'framer-motion';
 
 export const Header = () => {
-  const { toggleSidebar, notificationsCount, setActiveTab, openChat } = useUIStore();
-  const { currentUser } = useAppStore();
+  const { toggleSidebar, notificationsCount, setActiveTab, openChat, openAuthModal } = useUIStore();
+  const { currentUser, isAuthenticated } = useAppStore();
   const { data: unreadMessages } = useUnreadMessagesCount();
 
-  const [showNotif, setShowNotif] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
-
-  
-  const notifRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const clickOutside = (e: MouseEvent) => {
-      if (notifRef.current && !notifRef.current.contains(e.target as Node)) setShowNotif(false);
       if (profileRef.current && !profileRef.current.contains(e.target as Node)) setShowProfile(false);
     };
     document.addEventListener('mousedown', clickOutside);
     return () => document.removeEventListener('mousedown', clickOutside);
   }, []);
 
+  const iconButton =
+    'w-10 h-10 flex items-center justify-center text-app-black dark:text-zinc-100 hover:text-zinc-500 dark:hover:text-zinc-400 transition-colors cursor-pointer relative shrink-0';
+  const badge =
+    'absolute -top-0.5 -right-0.5 min-w-[15px] h-[15px] px-0.5 rounded-full flex items-center justify-center bg-[#E27D60] text-[9px] font-black text-white';
+
   return (
     <header className="h-20 md:h-24 px-4 sm:px-6 md:px-10 flex items-center justify-between gap-4 shrink-0 bg-[#FEFEFE]/85 dark:bg-[#0d1117]/80 backdrop-blur-md sticky top-0 z-40 w-full border-b border-app-border/40 dark:border-zinc-800/40">
-      <button onClick={toggleSidebar} className="md:hidden p-2 bg-white dark:bg-zinc-900 w-10 h-10 rounded-full border border-app-border dark:border-zinc-800 text-app-gray dark:text-zinc-300 cursor-pointer flex items-center justify-center shrink-0">
+      <button
+        onClick={toggleSidebar}
+        className="md:hidden p-2 w-10 h-10 flex items-center justify-center text-app-black dark:text-zinc-100 cursor-pointer shrink-0"
+        title="Menu"
+      >
         <Menu className="w-5 h-5" />
       </button>
 
       <SearchBar />
 
-      <div className="flex items-center gap-1.5 sm:gap-3 md:gap-5 select-none relative shrink-0">
-        {/* Mobile search icon button - placed side-by-side with others */}
+      <div className="flex items-center gap-1 sm:gap-2 md:gap-3 relative shrink-0">
+        {/* Recherche mobile */}
         <button
-          onClick={() => setActiveTab('Explore')}
-          className="md:hidden w-10 h-10 bg-white dark:bg-zinc-900 rounded-full shadow-sm border border-app-border dark:border-zinc-800 flex items-center justify-center text-app-gray hover:text-app-black dark:hover:text-white cursor-pointer select-none shrink-0"
+          onClick={() => isAuthenticated ? setActiveTab('Explore') : openAuthModal()}
+          className={`${iconButton} md:hidden`}
           title="Search"
         >
-          <Search className="w-4.5 h-4.5 text-app-black dark:text-zinc-300" />
+          <Search className="w-5 h-5" />
         </button>
 
-        {/* Create Tradition Action Button */}
-        <button
-          onClick={() => setActiveTab('Create')}
-          className="h-10 w-10 md:h-12 md:w-auto md:px-6 rounded-full bg-white dark:bg-zinc-900 text-app-black dark:text-zinc-100 border border-app-border dark:border-zinc-700 font-extrabold text-xs shadow-sm hover:shadow-md hover:scale-[1.02] tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer uppercase shrink-0"
-          title="Create a tradition"
-        >
-          <SquarePen className="w-5 h-5 md:w-4 md:h-4" />
-          <span className="hidden md:inline">Create</span>
-        </button>
+        {/* Actions de membre : invisibles tant qu'on n'est pas connecté. */}
+        {isAuthenticated && (
+          <>
+            {/* Create — icône Tabler library-plus remplie + texte, sans contour */}
+            <button
+              onClick={() => setActiveTab('Create')}
+              className="h-10 flex items-center gap-2 px-3 rounded-md bg-zinc-100 dark:bg-zinc-800 text-app-black dark:text-zinc-100 font-bold text-sm hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors cursor-pointer shrink-0"
+              title="Create a post"
+            >
+              <IconLibraryPlusFilled className="w-5 h-5" />
+              <span className="hidden md:inline">Create</span>
+            </button>
 
-        {/* Message Bubble Switcher Shortcut */}
-        <button 
-          onClick={openChat} 
-          className="w-10 h-10 md:w-12 md:h-12 bg-white dark:bg-zinc-900 rounded-full shadow-sm border border-app-border dark:border-zinc-800 flex items-center justify-center text-app-gray hover:text-app-black dark:hover:text-white hover:shadow-md transition-all relative cursor-pointer shrink-0"
-          title="Messages"
-        >
-          <SandboxIcon className="w-4.5 h-4.5 md:w-5 md:h-5 text-app-black dark:text-zinc-300" />
-          {(unreadMessages ?? 0) > 0 && (
-            <span className="absolute -top-1 -right-1.5 min-w-[16px] h-4 px-1 rounded-full flex items-center justify-center bg-[#E27D60] text-[9px] font-black text-white shadow-sm">
-              {String(unreadMessages ?? 0)}
-            </span>
-          )}
-        </button>
+            {/* Messages — icône Tabler brand-signal remplie, seule */}
+            <button onClick={openChat} className={iconButton} title="Messages">
+              <IconBrandSignalFilled className="w-5 h-5" />
+              {(unreadMessages ?? 0) > 0 && <span className={badge}>{String(unreadMessages ?? 0)}</span>}
+            </button>
 
-        {/* Notification Icon and Trigger */}
-        <div ref={notifRef} className="relative shrink-0">
-          <button onClick={() => setShowNotif(!showNotif)} className="w-10 h-10 md:w-12 md:h-12 bg-white dark:bg-zinc-900 rounded-full shadow-sm border border-app-border dark:border-zinc-800 flex items-center justify-center text-app-gray hover:text-app-black dark:hover:text-white hover:shadow-md transition-all relative cursor-pointer">
-            <Bell className="w-4.5 h-4.5 md:w-5 md:h-5 text-app-black dark:text-zinc-300" />
-            {notificationsCount > 0 && (
-              <span className="absolute -top-1 -right-1.5 min-w-[16px] h-4 px-1 rounded-full flex items-center justify-center bg-[#E27D60] text-[9px] font-black text-white shadow-sm">
-                {String(notificationsCount)}
-              </span>
-            )}
-          </button>
-          <AnimatePresence>{showNotif && <NotificationDropdown />}</AnimatePresence>
-        </div>
+            {/* Notifications — icône Tabler bell remplie, ouvre sa page */}
+            <button onClick={() => setActiveTab('Notifications')} className={iconButton} title="Notifications">
+              <IconBellFilled className="w-5 h-5" />
+              {notificationsCount > 0 && <span className={badge}>{String(notificationsCount)}</span>}
+            </button>
+          </>
+        )}
 
-        {/* User Profile Avatar and Trigger (Desktop only) */}
-        <div ref={profileRef} className="hidden md:block relative shrink-0">
-          <div onClick={() => setShowProfile(!showProfile)} className="bg-white dark:bg-zinc-900 p-0.5 md:pl-2.5 md:pr-4 md:py-1.5 rounded-full shadow-sm border border-app-border dark:border-zinc-800 flex items-center gap-2 cursor-pointer hover:shadow-md transition-all">
-            <TotemAvatar size="xs" src={currentUser.avatar} alt={currentUser.name} countryFlag={currentUser.country} glow={currentUser.glow} />
-            <div className="hidden md:flex items-center gap-1.5">
-              <span className="text-xs font-black text-app-black dark:text-zinc-200">{currentUser.username}</span>
-              <ChevronDown className="w-3.5 h-3.5 text-app-gray transition-transform duration-250 group-hover:translate-y-0.5" />
-            </div>
+        {/* Visiteur : un bouton About gris doux, puis Connexion sans icône. */}
+        {!isAuthenticated && (
+          <>
+            <button
+              type="button"
+              onClick={() => setActiveTab('About')}
+              title="About"
+              className="h-10 flex items-center gap-2 px-3 sm:px-4 rounded-md bg-zinc-100 dark:bg-zinc-800 text-app-black dark:text-zinc-100 font-bold text-sm hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors cursor-pointer shrink-0"
+            >
+              <Menu className="w-5 h-5" />
+              <span>About</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={openAuthModal}
+              aria-label="Connexion"
+              title="Connexion"
+              className="h-10 flex items-center px-3 sm:px-4 rounded-md bg-[#E27D60] hover:bg-[#c66b50] text-white font-bold text-sm transition-colors cursor-pointer shrink-0"
+            >
+              Connexion
+            </button>
+          </>
+        )}
+
+        {/* Profil — avatar avec point en ligne, sans contour */}
+        {isAuthenticated && (
+          <div ref={profileRef} className="hidden md:block relative shrink-0">
+            <button
+              onClick={() => setShowProfile(!showProfile)}
+              title="Profile menu"
+              className="relative cursor-pointer"
+            >
+              <ProfileAvatar size="xs" src={currentUser.avatar} alt={currentUser.name} glow="none" />
+              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white dark:border-zinc-950" />
+            </button>
+            <AnimatePresence>{showProfile && <UserProfileDropdown onClose={() => setShowProfile(false)} />}</AnimatePresence>
           </div>
-          <AnimatePresence>{showProfile && <UserProfileDropdown onClose={() => setShowProfile(false)} />}</AnimatePresence>
-        </div>
+        )}
       </div>
-
-
     </header>
   );
 };

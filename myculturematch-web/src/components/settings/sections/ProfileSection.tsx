@@ -72,7 +72,7 @@ export const ProfileSection: React.FC = () => {
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="px-3.5 py-2 text-sm rounded-xl border border-app-border bg-zinc-50 dark:bg-zinc-900 text-app-black dark:text-zinc-200 focus:outline-none focus:border-[#E27D60] w-64"
+              className="px-3.5 py-2 text-sm rounded-xl border border-app-border bg-zinc-50 dark:bg-zinc-900 text-app-black dark:text-zinc-200 focus:outline-none focus:border-zinc-400 w-64"
             />
           </div>
           <div className="py-4.5 flex flex-col sm:flex-row sm:items-start justify-between gap-2.5">
@@ -81,7 +81,7 @@ export const ProfileSection: React.FC = () => {
               value={bio}
               onChange={(e) => setBio(e.target.value)}
               placeholder={bioLoaded ? 'Votre bio (min. 10 caractères)…' : 'Chargement…'}
-              className="px-3.5 py-2 text-sm rounded-xl border border-app-border bg-zinc-50 dark:bg-zinc-900 text-app-black dark:text-zinc-200 focus:outline-none focus:border-[#E27D60] resize-none h-16 w-64"
+              className="px-3.5 py-2 text-sm rounded-xl border border-app-border bg-zinc-50 dark:bg-zinc-900 text-app-black dark:text-zinc-200 focus:outline-none focus:border-zinc-400 resize-none h-16 w-64"
             />
           </div>
           <div className="py-4.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
@@ -97,7 +97,7 @@ export const ProfileSection: React.FC = () => {
         <button
           onClick={handleSave}
           disabled={saving}
-          className="bg-[#E27D60] hover:bg-[#c66b50] disabled:opacity-60 text-white rounded-full px-6 py-2 text-xs font-black cursor-pointer flex items-center gap-2"
+          className="bg-zinc-800 dark:bg-zinc-700 hover:bg-zinc-700 disabled:opacity-60 text-white rounded-full px-6 py-2 text-xs font-black cursor-pointer flex items-center gap-2"
         >
           {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : saved ? <Check className="w-3.5 h-3.5" /> : null}
           {saving ? 'Sauvegarde…' : saved ? 'Enregistré !' : 'Save Profile Changes'}

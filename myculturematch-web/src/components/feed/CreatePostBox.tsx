@@ -2,14 +2,14 @@ import { useRef, useState, type ChangeEvent } from 'react';
 import { Image, Camera, Smile, Send, X } from 'lucide-react';
 import { useAppStore } from '@/src/stores/useAppStore';
 import { useFeed } from '@/src/hooks/useFeed';
-import { TotemAvatar } from '@/src/components/ui/TotemAvatar';
+import { ProfileAvatar } from '@/src/components/ui/ProfileAvatar';
 import { Button } from '@/src/components/ui/button';
 import { useUIStore } from '@/src/stores/useUIStore';
 import { uploadService } from '@/src/services/uploadService';
 import { mediaUrl } from '@/src/lib/media';
 
 export const CreatePostBox = () => {
-  const { currentUser, setSelectedTotemUserId } = useAppStore();
+  const { currentUser, setSelectedProfileUserId } = useAppStore();
   const { setActiveTab } = useUIStore();
   const { createPost, isCreating } = useFeed();
   const [text, setText] = useState('');
@@ -55,20 +55,20 @@ export const CreatePostBox = () => {
   };
 
   const handleAvatarClick = () => {
-    setSelectedTotemUserId(currentUser.id);
-    setActiveTab('Totem');
+    setSelectedProfileUserId(currentUser.id);
+    setActiveTab('Profil');
   };
 
   return (
     <div className="bg-white dark:bg-zinc-950 rounded-3xl p-5 shadow-soft border border-app-border dark:border-zinc-800 flex flex-col gap-4 select-none">
       <div className="flex items-center gap-4">
-        <TotemAvatar size="md" src={currentUser.avatar} alt={currentUser.name} glow={currentUser.glow} level={currentUser.level} onClick={handleAvatarClick} />
+        <ProfileAvatar size="md" src={currentUser.avatar} alt={currentUser.name} glow={currentUser.glow} level={currentUser.level} onClick={handleAvatarClick} />
         <input
           type="text"
           value={text}
           onChange={(e) => setText(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
-          placeholder="Share a tradition..."
+          placeholder="Share a post..."
           className="flex-1 bg-transparent text-sm sm:text-base md:text-lg placeholder-app-gray text-app-black dark:text-zinc-300 border-none outline-none focus:ring-0"
         />
       </div>

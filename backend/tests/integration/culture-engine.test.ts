@@ -76,7 +76,7 @@ const authedJson = (token: string, body: unknown) => ({
 async function createPost(token: string, title: string, body = 'Un contenu culturel authentique'): Promise<string> {
   const res = await app.request(
     '/api/posts',
-    authedJson(token, { type: 'Text', title, body, tags: ['tradition', 'culture'] }),
+    authedJson(token, { type: 'Text', title, body, tags: ['post', 'culture'] }),
   );
   expect(res.status).toBe(201);
   const post = (await res.json()) as { id: string };

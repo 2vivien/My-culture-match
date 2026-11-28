@@ -7,7 +7,7 @@ interface TribuAboutProps {
 }
 
 export const TribuAbout: React.FC<TribuAboutProps> = ({ tribeInfo }) => {
-  const displayName = tribeInfo?.name ?? 'Tribu';
+  const displayName = tribeInfo?.name ?? 'Communauté';
   const createdDate = tribeInfo?.createdAt
     ? new Date(tribeInfo.createdAt).toLocaleDateString('fr-FR', { year: 'numeric', month: 'short', day: 'numeric' })
     : null;
@@ -19,7 +19,7 @@ export const TribuAbout: React.FC<TribuAboutProps> = ({ tribeInfo }) => {
       </h3>
       <p className="text-xs text-app-gray dark:text-zinc-400 leading-relaxed mt-2.5">
         {tribeInfo?.description ||
-          `Discussion hub de la tribu ${displayName} : découvrez les traditions, langues et célébrations transmises de génération en génération.`}
+          `Discussion hub de la communauté ${displayName} : découvrez les posts, langues et célébrations transmises de génération en génération.`}
       </p>
 
       {/* Created info */}

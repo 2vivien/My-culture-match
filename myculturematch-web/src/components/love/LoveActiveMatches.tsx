@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { TotemAvatar } from '@/src/components/ui/TotemAvatar';
+import { ProfileAvatar } from '@/src/components/ui/ProfileAvatar';
 import type { LoveMatch } from '@/src/types/love';
 
 interface LoveActiveMatchesProps {
@@ -43,7 +43,7 @@ export const LoveActiveMatches: React.FC<LoveActiveMatchesProps> = ({
               }
             >
               <div className="rounded-full bg-white dark:bg-zinc-950 p-[2px]">
-                <TotemAvatar
+                <ProfileAvatar
                   src={item.avatar}
                   alt={item.name}
                   size="lg"

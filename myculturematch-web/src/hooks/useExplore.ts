@@ -51,8 +51,8 @@ export function useExplore(posts: Post[] = []) {
     return t.desc.toLowerCase().includes(activeCategory.split(' ')[0].toLowerCase()) || t.name.toLowerCase().includes(activeCategory.split(' ')[0].toLowerCase());
   }), [localTribes, searchQuery, activeCategory]);
 
-  // Traditions : tous les posts du feed, filtrés par catégorie (tags) et recherche
-  const filteredTraditions = useMemo(() => posts.filter((p) => {
+  // Posts : tous les posts du feed, filtrés par catégorie (tags) et recherche
+  const filteredPosts = useMemo(() => posts.filter((p) => {
     const matchSearch = searchQuery.trim() === '' ||
       (p.title ?? '').toLowerCase().includes(searchQuery.toLowerCase()) ||
       (p.text ?? '').toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -83,7 +83,7 @@ export function useExplore(posts: Post[] = []) {
     tribes: localTribes.length > 0 ? localTribes : tribes,
     filteredTribes,
     moreTribes: localMoreTribes,
-    filteredTraditions,
+    filteredPosts,
     filteredVideos,
     toggleJoinTribe,
     launchThemes,

@@ -1,16 +1,21 @@
-const TOKEN_KEY = 'mcm.auth.token';
+/**
+ * Token de session en mémoire uniquement.
+ *
+ * Le cookie HttpOnly posé par le backend est la vraie source d'authentification.
+ * Le token n'est plus persisté dans localStorage : un XSS ne peut pas le voler
+ * durablement, il disparaît à la fermeture/rechargement de la page.
+ * Au rechargement, `authService.restoreSession()` le récupère via /api/auth/session.
+ */
+let token: string | null = null;
 
 export function getAuthToken(): string | null {
-  if (typeof window === 'undefined') return null;
-  return window.localStorage.getItem(TOKEN_KEY);
+  return token;
 }
 
-export function setAuthToken(token: string): void {
-  if (typeof window === 'undefined') return;
-  window.localStorage.setItem(TOKEN_KEY, token);
+export function setAuthToken(value: string): void {
+  token = value;
 }
 
 export function clearAuthToken(): void {
-  if (typeof window === 'undefined') return;
-  window.localStorage.removeItem(TOKEN_KEY);
+  token = null;
 }

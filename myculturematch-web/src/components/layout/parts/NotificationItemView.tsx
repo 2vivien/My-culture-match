@@ -2,7 +2,7 @@ import React from 'react';
 import { MessageCircle, Bell, Heart, UserPlus } from 'lucide-react';
 import { IconMoodHeart, IconFriends } from '@tabler/icons-react';
 import type { NotificationItem } from '@/src/types/notification';
-import { TotemAvatar } from '@/src/components/ui/TotemAvatar';
+import { ProfileAvatar } from '@/src/components/ui/ProfileAvatar';
 
 interface NotificationItemViewProps {
   item: NotificationItem;
@@ -26,7 +26,7 @@ export const NotificationItemView: React.FC<NotificationItemViewProps> = ({
     >
       {/* Avatar + badge type superposé */}
       <div className="relative shrink-0 select-none">
-        <TotemAvatar
+        <ProfileAvatar
           src={item.user.avatar}
           alt={item.user.name}
           size="md"

@@ -105,10 +105,13 @@ export function safeFlairColor(color: unknown): string {
   return isValidFlairColor(color) ? color : FLAIR_DEFAULT_COLOR;
 }
 
-/** Style inline de la pastille de flair (fond translucide, texte et bordure à la couleur). */
+/**
+ * Style inline de la pastille de flair : fond plein à la couleur du flair, texte sombre ou clair selon le contraste
+ * WCAG (une couleur libre comme le jaune était illisible en texte sur fond blanc).
+ */
 export function flairBadgeStyle(color: unknown): { color: string; backgroundColor: string; borderColor: string } {
   const c = safeFlairColor(color);
-  return { color: c, backgroundColor: `${c}1F`, borderColor: `${c}66` };
+  return { color: readableTextColor(c), backgroundColor: c, borderColor: c };
 }
 
 export interface Flair {
@@ -131,4 +134,24 @@ export function validateFlairName(name: string): string | null {
   if (n.length < 2) return 'Flair : 2 caractères minimum';
   if (n.length > 24) return 'Flair : 24 caractères maximum';
   return null;
+}
+
+/** Luminance relative WCAG 2.x d'une couleur `#RRGGBB` (0 = noir, 1 = blanc). */
+export function relativeLuminance(hex: string): number {
+  const channel = (i: number) => {
+    const v = parseInt(hex.slice(1 + i * 2, 3 + i * 2), 16) / 255;
+    return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+  };
+  return 0.2126 * channel(0) + 0.7152 * channel(1) + 0.0722 * channel(2);
+}
+
+function contrastRatio(l1: number, l2: number): number {
+  const [hi, lo] = l1 >= l2 ? [l1, l2] : [l2, l1];
+  return (hi + 0.05) / (lo + 0.05);
+}
+
+/** Texte lisible (sombre ou clair) sur un fond de la couleur donnée : on retient le meilleur contraste. */
+export function readableTextColor(background: unknown): '#111111' | '#FFFFFF' {
+  const bg = relativeLuminance(safeFlairColor(background));
+  return contrastRatio(bg, relativeLuminance('#111111')) >= contrastRatio(bg, 1) ? '#111111' : '#FFFFFF';
 }

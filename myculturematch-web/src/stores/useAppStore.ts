@@ -12,11 +12,11 @@ interface AppState {
   feedSort: string;
   feedCulture: string;
   currentUser: CurrentUser;
-  selectedTotemUserId: string;
+  selectedProfileUserId: string;
   selectedTribeId: string | null;
-  /** Publication ouverte dans la page détail (#/post/:id). */
+  /** Publication ouverte dans la page détail (/post/:id). */
   selectedPostId: string | null;
-  profileActiveTab: 'Posts' | 'Photos' | 'Videos' | 'Traditions' | 'About' | 'Saves';
+  profileActiveTab: 'Posts' | 'Comments' | 'Saved';
   isAuthenticated: boolean;
   isOnboarded: boolean;
   email: string;
@@ -25,10 +25,10 @@ interface AppState {
   setLocale: (locale: string) => void;
   setFeedSort: (sort: string) => void;
   setFeedCulture: (culture: string) => void;
-  setSelectedTotemUserId: (id: string) => void;
+  setSelectedProfileUserId: (id: string) => void;
   setSelectedTribeId: (id: string | null) => void;
   setSelectedPostId: (id: string | null) => void;
-  setProfileActiveTab: (tab: 'Posts' | 'Photos' | 'Videos' | 'Traditions' | 'About' | 'Saves') => void;
+  setProfileActiveTab: (tab: 'Posts' | 'Comments' | 'Saved') => void;
   setAuthenticated: (auth: boolean) => void;
   setOnboarded: (onboarded: boolean) => void;
   setEmail: (email: string) => void;
@@ -50,7 +50,7 @@ const defaultUser: CurrentUser = {
   location: '',
   country: '',
   tribes: [],
-  traditionsCount: 0,
+  postsCount: 0,
   culturesCount: 0,
   tribesCount: 0,
   interestedCount: 0,
@@ -65,7 +65,7 @@ export const useAppStore = create<AppState>()(
       feedSort: 'Best',
       feedCulture: 'Toutes les thématiques',
       currentUser: defaultUser,
-      selectedTotemUserId: 'user-current',
+      selectedProfileUserId: 'user-current',
   selectedTribeId: null,
   selectedPostId: null,
   setSelectedPostId: (selectedPostId) => set({ selectedPostId }),
@@ -78,7 +78,7 @@ export const useAppStore = create<AppState>()(
       setLocale: (locale) => set({ locale }),
       setFeedSort: (feedSort) => set({ feedSort }),
       setFeedCulture: (feedCulture) => set({ feedCulture }),
-      setSelectedTotemUserId: (id) => set({ selectedTotemUserId: id }),
+      setSelectedProfileUserId: (id) => set({ selectedProfileUserId: id }),
   setSelectedTribeId: (id) => set({ selectedTribeId: id }),
       setProfileActiveTab: (profileActiveTab) => set({ profileActiveTab }),
       setAuthenticated: (isAuthenticated) => set({ isAuthenticated }),

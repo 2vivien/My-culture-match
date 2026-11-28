@@ -1,6 +1,6 @@
 import React from 'react';
 import { SandboxIcon } from '@/src/components/ui/SandboxIcon';
-import { TotemAvatar } from '@/src/components/ui/TotemAvatar';
+import { ProfileAvatar } from '@/src/components/ui/ProfileAvatar';
 import { Message } from '@/src/types/message';
 import { useUIStore } from '@/src/stores/useUIStore';
 
@@ -19,7 +19,7 @@ export const MessageItem: React.FC<MessageItemProps> = ({ message, onToggleNotif
   return (
     <div onClick={handleClick} className="flex items-center justify-between group cursor-pointer p-2 -mx-2 rounded-xl hover:bg-[#FCFCFC] dark:hover:bg-zinc-800 transition-colors select-none">
       <div className="flex items-center gap-3 min-w-0 flex-1">
-        <TotemAvatar src={message.img} alt={message.name} size="sm" glow="none" />
+        <ProfileAvatar src={message.img} alt={message.name} size="sm" glow="none" />
         <div className="min-w-0 flex-1">
           <h4 className="font-bold text-sm text-app-black dark:text-zinc-100 group-hover:text-[#E27D60] transition-colors leading-tight">
             {message.username || message.name}

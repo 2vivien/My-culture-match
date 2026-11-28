@@ -13,7 +13,7 @@ export const EmailSection: React.FC = () => {
         <div className="divide-y divide-app-border/40 dark:divide-zinc-800/40">
           <ToggleRow
             title="Weekly Highlights"
-            description="Top traditions and news from the community"
+            description="Top posts and news from the community"
             isActive={weeklyHighlights}
             onToggle={() => setWeeklyHighlights(!weeklyHighlights)}
           />

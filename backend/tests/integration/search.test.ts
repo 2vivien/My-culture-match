@@ -110,7 +110,7 @@ describe('MP13 — Recherche globale', () => {
 
     const created = await app.request(
       '/api/tribes',
-      authedJson(a.token, { name: tribeName, tag: tribeTag, description: 'Culture japonaise', topic: 'traditions' }),
+      authedJson(a.token, { name: tribeName, tag: tribeTag, description: 'Culture japonaise', topic: 'posts' }),
     );
     expect(created.status).toBe(201);
 

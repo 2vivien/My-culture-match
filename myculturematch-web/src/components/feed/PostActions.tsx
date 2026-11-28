@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Smile, FlagTriangleLeft, X, Loader2, Repeat2, Check, Users } from 'lucide-react';
+import { Smile, FlagTriangleLeft, X, Loader2, Repeat2, Check, Users, Send } from 'lucide-react';
 import { IconMessageCircle, IconReplace, IconShare3 } from '@tabler/icons-react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/src/services/api';
@@ -11,7 +11,7 @@ import { Button } from '@/src/components/ui/button';
 import { EmojiPicker } from '@/src/components/ui/EmojiPicker';
 import { ShareModal } from './ShareModal';
 import { useComments } from '@/src/hooks/useComments';
-import { useUIStore } from '@/src/stores/useUIStore';
+import { navigate } from '@/src/lib/router';
 import { cn } from '@/src/lib/utils';
 
 interface PostActionsProps {
@@ -33,12 +33,10 @@ interface MyTribe {
 /**
  * Actions d'un post : like, commentaire (envoi réel à l'API), emoji picker
  * complet, Repost (popup avec sélecteur de communauté) + Share (popup Partager
- * à la Instagram), et ouverture de la page détail (#/post/:id).
+ * à la Instagram), et ouverture de la page détail (/post/:id).
  */
 export const PostActions = ({ postId, commentsCount, likes, liked, authorId, onLike }: PostActionsProps) => {
   const { currentUser } = useAppStore();
-  const setActiveTab = useUIStore((s) => s.setActiveTab);
-  const setSelectedPostId = useAppStore((s) => s.setSelectedPostId);
   const queryClient = useQueryClient();
   const { addComment } = useComments(postId);
   const [comment, setComment] = useState('');
@@ -51,7 +49,7 @@ export const PostActions = ({ postId, commentsCount, likes, liked, authorId, onL
 
   const isMyPost = authorId !== undefined && authorId === currentUser?.id;
 
-  // Communautés rejointes : même source que le créateur de tradition (tribes/mine).
+  // Communautés rejointes : même source que le créateur de post (tribes/mine).
   const { data: myTribes = [] } = useQuery<MyTribe[]>({
     queryKey: ['my-tribes'],
     queryFn: async () => {
@@ -98,17 +96,13 @@ export const PostActions = ({ postId, commentsCount, likes, liked, authorId, onL
     setShowEmoji(false);
   };
 
-  const openPostDetail = () => {
-    setSelectedPostId(postId);
-    window.location.hash = `#/post/${postId}`;
-    setActiveTab('PostDetail');
-  };
+  const openPostDetail = () => navigate('PostDetail', postId);
 
   const appendEmoji = (emoji: string) => {
     setComment((prev) => prev + emoji);
   };
 
-  const shareUrl = `${window.location.origin}${window.location.pathname}#/post/${postId}`;
+  const shareUrl = `${window.location.origin}/post/${postId}`;
   const formatLikes = (num: number) => {
     if (num >= 10000) return `${(num / 1000).toFixed(0)}k`;
     if (num >= 1000) return `${(num / 1000).toFixed(1)}k`.replace('.0', '');
@@ -116,12 +110,16 @@ export const PostActions = ({ postId, commentsCount, likes, liked, authorId, onL
   };
 
   return (
-    <div className="flex flex-col gap-3 select-none w-full">
+    <div className="flex flex-col gap-3 w-full">
       {/* Rangée d'actions : like · commentaire · repost · share — tout à droite */}
       <div className="flex items-center justify-end gap-5 text-app-gray px-1">
         <button
           onClick={onLike}
-          className={`flex items-center gap-1.5 transition-colors font-semibold text-sm cursor-pointer bg-transparent border-none ${liked ? 'text-[#E27D60]' : 'hover:text-[#E27D60] text-app-gray'}`}
+          className={`flex items-center gap-1.5 transition-colors font-semibold text-sm cursor-pointer bg-transparent border-none ${
+            liked
+              ? 'text-[#E27D60]'
+              : 'text-[#E27D60]/80 hover:text-[#E27D60] dark:text-[#E27D60]/70'
+          }`}
           title="J'aime"
         >
           <FlagTriangleLeft className={`w-5 h-5 ${liked ? 'fill-current' : ''}`} />
@@ -129,7 +127,7 @@ export const PostActions = ({ postId, commentsCount, likes, liked, authorId, onL
         </button>
         <button
           onClick={openPostDetail}
-          className="flex items-center gap-1.5 hover:text-[#E27D60] transition-colors font-semibold text-sm cursor-pointer bg-transparent border-none text-app-gray"
+          className="flex items-center gap-1.5 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors font-semibold text-sm cursor-pointer bg-transparent border-none text-app-gray"
           title="Voir la publication et tous les commentaires"
         >
           <IconMessageCircle size={20} />
@@ -138,7 +136,7 @@ export const PostActions = ({ postId, commentsCount, likes, liked, authorId, onL
         {/* Reposter (popup avec choix de la communauté) */}
         <button
           onClick={() => setShowRepost(true)}
-          className="flex items-center gap-1.5 hover:text-[#E27D60] transition-colors font-semibold text-sm cursor-pointer bg-transparent border-none text-app-gray"
+          className="flex items-center gap-1.5 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors font-semibold text-sm cursor-pointer bg-transparent border-none text-app-gray"
           title="Reposter dans une communauté"
         >
           <IconReplace size={20} />
@@ -146,7 +144,7 @@ export const PostActions = ({ postId, commentsCount, likes, liked, authorId, onL
         {/* Partager */}
         <button
           onClick={() => setShowShare(true)}
-          className="flex items-center gap-1.5 hover:text-[#E27D60] transition-colors font-semibold text-sm cursor-pointer bg-transparent border-none text-app-gray"
+          className="flex items-center gap-1.5 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors font-semibold text-sm cursor-pointer bg-transparent border-none text-app-gray"
           title="Partager"
         >
           <IconShare3 size={20} />
@@ -155,7 +153,7 @@ export const PostActions = ({ postId, commentsCount, likes, liked, authorId, onL
 
       <div className="flex items-center w-full gap-3 relative mt-1">
         <Avatar src={currentUser?.avatar} alt={currentUser?.name} size="sm" />
-        <div className="flex-1 bg-[#FCFCFC] dark:bg-zinc-900 rounded-full px-4 py-2.5 flex items-center border border-app-border focus-within:ring-1 focus-within:ring-[#E27D60]/20 transition-all relative">
+        <div className="flex-1 bg-[#FCFCFC] dark:bg-zinc-900 rounded-full px-4 py-1 flex items-center border border-app-border focus-within:ring-1 focus-within:ring-zinc-300 dark:focus-within:ring-zinc-600 transition-all relative">
           <input
             type="text"
             value={comment}
@@ -177,17 +175,17 @@ export const PostActions = ({ postId, commentsCount, likes, liked, authorId, onL
             <EmojiPicker onSelect={appendEmoji} onClose={() => setShowEmoji(false)} />
           )}
         </div>
-        <Button
-          onClick={handleSendComment}
-          disabled={!comment.trim() || addComment.isPending}
-          size="icon"
-          className="w-10 h-10 bg-[#E27D60] text-white hover:bg-[#c66b50] hover:scale-105"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4.5 h-4.5 text-white">
-            <path d="M3 20l3 -3" />
-            <path d="M5 14a8 8 0 1 0 3.4 -9.3a8.06 8.06 0 0 0 -4.4 5.3l1 4z" />
-          </svg>
-        </Button>
+        {comment.trim().length > 0 && (
+          <Button
+            onClick={handleSendComment}
+            disabled={addComment.isPending}
+            size="icon"
+            title="Send comment"
+            className="w-9 h-9 bg-zinc-800 dark:bg-zinc-700 text-white hover:bg-zinc-700 hover:scale-105"
+          >
+            <Send className="w-4 h-4 text-white" />
+          </Button>
+        )}
       </div>
 
       {/* Popup Reposter : choix de la communauté où partager */}
@@ -232,8 +230,8 @@ export const PostActions = ({ postId, commentsCount, likes, liked, authorId, onL
               ) : (
                 <>
                   <div className="px-6 pt-5 pb-3 flex flex-col gap-2 text-center">
-                    <span className="mx-auto w-14 h-14 rounded-full bg-[#E27D60]/10 flex items-center justify-center">
-                      <Repeat2 className="w-7 h-7 text-[#E27D60]" />
+                    <span className="mx-auto w-14 h-14 rounded-full bg-zinc-400 dark:bg-zinc-500/10 flex items-center justify-center">
+                      <Repeat2 className="w-7 h-7 text-zinc-500 dark:text-zinc-400" />
                     </span>
                     <p className="text-sm font-semibold text-app-black dark:text-zinc-200 leading-relaxed">
                       {isMyPost
@@ -258,8 +256,8 @@ export const PostActions = ({ postId, commentsCount, likes, liked, authorId, onL
                             className={cn(
                               'w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl border text-left transition-all cursor-pointer bg-transparent disabled:opacity-60',
                               selectedTribeId === tribe.id
-                                ? 'border-[#E27D60] bg-[#E27D60]/5'
-                                : 'border-app-border/60 dark:border-zinc-800 hover:border-[#E27D60]/40 hover:bg-zinc-50 dark:hover:bg-zinc-900',
+                                ? 'border-zinc-500 dark:border-zinc-400 bg-zinc-100 dark:bg-zinc-800'
+                                : 'border-app-border/60 dark:border-zinc-800 hover:border-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-900',
                             )}
                           >
                             <span className="w-9 h-9 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center shrink-0">
@@ -269,7 +267,7 @@ export const PostActions = ({ postId, commentsCount, likes, liked, authorId, onL
                               {tribe.name}
                             </span>
                             {selectedTribeId === tribe.id && (
-                              <Check className="w-4.5 h-4.5 text-[#E27D60] shrink-0" />
+                              <Check className="w-4.5 h-4.5 text-zinc-500 dark:text-zinc-400 shrink-0" />
                             )}
                           </button>
                         ))
@@ -294,7 +292,7 @@ export const PostActions = ({ postId, commentsCount, likes, liked, authorId, onL
                       type="button"
                       onClick={handleRepost}
                       disabled={!selectedTribeId || repostState === 'pending' || isMyPost}
-                      className="flex-1 py-3 rounded-2xl bg-[#E27D60] hover:bg-[#c66b50] text-white text-sm font-black transition-colors cursor-pointer border-none disabled:opacity-50 flex items-center justify-center gap-2"
+                      className="flex-1 py-3 rounded-2xl bg-zinc-400 dark:bg-zinc-500 hover:bg-zinc-700 text-white text-sm font-black transition-colors cursor-pointer border-none disabled:opacity-50 flex items-center justify-center gap-2"
                     >
                       {repostState === 'pending' && <Loader2 className="w-4 h-4 animate-spin" />}
                       Reposter

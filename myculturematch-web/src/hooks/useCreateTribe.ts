@@ -50,7 +50,7 @@ export function useCreateTribe() {
     try {
       await createTribeService.submitTribe(submission);
       // Rafraîchit les listes de tribus : sidebar "Your Own Tribes" (['my-tribes']),
-      // create tradition (['tribe-options']) et explore (['explore']).
+      // create post (['tribe-options']) et explore (['explore']).
       await queryClient.invalidateQueries({ queryKey: ['my-tribes'] });
       await queryClient.invalidateQueries({ queryKey: ['tribe-options'] });
       await queryClient.invalidateQueries({ queryKey: ['explore'] });

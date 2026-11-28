@@ -1,6 +1,6 @@
 # Stack Backend — My Culture Match
 
-> **Document de référence** pour l'infrastructure technique du backend de **My Culture Match** (réseau social interculturel : traditions, tribus, connexions, matching, messagerie).
+> **Document de référence** pour l'infrastructure technique du backend de **My Culture Match** (réseau social interculturel : posts, tribus, connexions, matching, messagerie).
 >
 > ⚠️ **Note d'alignement** : cette version remplace la précédente, qui était un template du projet "SuperFans" (monétisation de créateurs). Alignée sur :
 > - les **fonctionnalités réelles** du produit (voir `SKILL-audit-fonctionnel-ultra-complet.md`),
@@ -64,7 +64,7 @@ Les chemins exacts attendus par le front sont déjà définis dans `src/services
 | Onboarding | `POST /api/onboarding` |
 | Users / Profil | `GET /api/users/me`, `GET /api/users/:id`, `PATCH /api/users/me` |
 | Feed / Posts | `GET /api/feed?filter=following\|for-you`, `POST /api/posts`, `POST /api/posts/:id/like` |
-| Traditions | `POST /api/traditions`, `GET /api/tribes` |
+| Posts | `POST /api/posts`, `GET /api/tribes` |
 | Tribus | `GET /api/tribes/:id`, `POST /api/tribes`, `GET /api/tribu/posts`, `GET /api/tribu/rules` |
 | Connexions | `GET /api/connections/*`, `POST /api/requests/:id/accept\|decline\|block` |
 | Love | `GET /api/love/matches`, `POST /api/love/swipe` |
@@ -106,7 +106,7 @@ Pour des millions d'utilisateurs actifs, planifier dès maintenant :
   - Pooler de connexions Neon (ne pas saturer la limite de connexions)
 ```
 
-**Tables à prévoir (domaines de l'audit) :** users, user_settings, tribes, tribe_posts, tribe_rules, tribe_moderators, posts/traditions, comments, likes, saves, shares, stories, conversations, messages, connections, love_matches, notifications, reports, follows, blocked_users.
+**Tables à prévoir (domaines de l'audit) :** users, user_settings, tribes, tribe_posts, tribe_rules, tribe_moderators, posts, comments, likes, saves, shares, stories, conversations, messages, connections, love_matches, notifications, reports, follows, blocked_users.
 
 ---
 
@@ -152,7 +152,7 @@ Protection anti-spam et anti-bot (jour 1 pour un réseau social grand public).
 
 ### ✅ MinIO (S3-compatible)
 
-- **Images** : avatars, photos de traditions/posts, bannières de tribus, stories
+- **Images** : avatars, photos de posts, bannières de tribus, stories
 - **Vidéos** : contenu culturel (durées/plays)
 - **Audio** : notes vocales de la messagerie
 - **Fichiers** : pièces jointes du chat (`file { name, size }`)
@@ -205,7 +205,7 @@ Upload → BullMQ → Sharp/FFmpeg → MinIO
 - **Notifications** (nouveau like, commentaire, demande de connexion, match Love)
 - **Messagerie** (messages en temps réel, read receipts, typing)
 - **Présence** (online / offline)
-- **Commentaires live** sur les posts/traditions
+- **Commentaires live** sur les posts
 
 **Scalabilité :** plusieurs nœuds WS derrière un load balancer + `@socket.io/redis-adapter` pour broadcaster sur tous les nœuds.
 
@@ -223,7 +223,7 @@ Quand un utilisateur suit 500 profils, son feed "Following" **ne doit pas** fair
 ### Recommandation : push (fanout à la publication)
 
 ```
-Auteur publie une tradition
+Auteur publie une post
   → POST /api/posts (persiste en PG)
   → BullMQ job "feed.fanout"
       → Pour chaque follower : PUSH id du post dans sa timeline Redis
@@ -254,7 +254,7 @@ Auteur publie une tradition
 
 - Recherche full-text instantanée avec **tolérance aux fautes de frappe** (le front a une barre de recherche globale + recherche connexions)
 - Auto-complétion "search-as-you-type"
-- **Entités indexées** : utilisateurs (nom, username, bio, pays), traditions/posts (texte, tags), tribus (nom, tag, description), messages
+- **Entités indexées** : utilisateurs (nom, username, bio, pays), posts (texte, tags), tribus (nom, tag, description), messages
 - Filtres facettés : catégorie/thématique culturelle (`launchThemes`), tribu, pays
 - **Indexation asynchrone** via BullMQ (sur publication, édition, suppression)
 
@@ -299,7 +299,7 @@ File d'attente unique, simple, pas de service supplémentaire.
 
 **Cas d'usage My Culture Match :**
 ```yaml
-Publication d'une tradition:
+Publication d'une post:
   → BullMQ: "feed.fanout" (push aux followers)
   → BullMQ: "search.index" (Meilisearch)
   → BullMQ: "notifications.fanout" (abonnés)
@@ -368,7 +368,7 @@ Compteurs:
 
 ### ✅ Construire avec Drizzle + Hono (recommandé)
 
-Les **traditions, tribus, posts, commentaires** sont **le cœur du produit** — pas un outil externe.
+Les **posts, tribus, posts, commentaires** sont **le cœur du produit** — pas un outil externe.
 
 ```
 Drizzle ORM → Tables Post, Comment, Like, Save, Share, Report,
@@ -446,7 +446,7 @@ Réseau social grand public = contenu inapproprié/illégal dès le premier util
 
 ### 🔷 PostHog
 
-- Analytics produit : événements, funnels (signup → première tradition → premier match), rétention
+- Analytics produit : événements, funnels (signup → première post → premier match), rétention
 - **Feature flags** (sans outil séparé)
 - Session recording
 - Self-hosted possible (RGPD)
@@ -556,7 +556,7 @@ La précédente version incluait Stripe (wallet, tips, abonnements) pour "SuperF
 
 | Technologie | Usage | Priorité |
 |---|---|---|
-| ✅ Custom (Drizzle + Hono) | Tribus, posts, traditions, commentaires | 🔴 Immédiat |
+| ✅ Custom (Drizzle + Hono) | Tribus, posts, posts, commentaires | 🔴 Immédiat |
 | 🔷 Hive AI / OpenAI Moderation | Modération auto (texte + image) | 🔴 Immédiat |
 | ✅ PostHog | Analytics + feature flags | 🟢 Semaine 5+ |
 
@@ -584,7 +584,7 @@ La précédente version incluait Stripe (wallet, tips, abonnements) pour "SuperF
 ```
 Semaine 0  : schéma DB + migrations Drizzle + CI/CD + Better Auth (email+OTP+OAuth)
 Semaine 1  : onboarding + users + settings + uploads présignés + Sharp
-Semaine 2  : feed (fanout) + posts/traditions + Redis compteurs + WS + notifications in-app
+Semaine 2  : feed (fanout) + posts + Redis compteurs + WS + notifications in-app
 Semaine 3  : tribus + commentaires + likes + Meilisearch + BullMQ + k6 + modération auto
 Semaine 4  : Love (matching) + connexions (suggestions/requests/block) + stories
 Semaine 5  : messagerie temps réel + recherche globale + i18n + PostHog

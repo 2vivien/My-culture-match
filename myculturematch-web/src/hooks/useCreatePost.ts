@@ -1,0 +1,159 @@
+import { useState, type ChangeEvent } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { postService } from '@/src/services/postService';
+import { uploadService } from '@/src/services/uploadService';
+import { tribuService } from '@/src/services/tribuService';
+import type { Flair } from '@/src/lib/tribeAccess';
+import { mediaUrl } from '@/src/lib/media';
+import type { TribeOption, PostSubmission } from '@/src/types/createPost';
+import { useUIStore } from '@/src/stores/useUIStore';
+
+export function useCreatePost() {
+  const { setActiveTab } = useUIStore();
+  const queryClient = useQueryClient();
+
+  const { data: tribes = [] } = useQuery<TribeOption[]>({
+    queryKey: ['tribe-options'],
+    queryFn: postService.getTribes,
+    staleTime: 1000 * 60 * 10,
+  });
+
+  const [selectedTribe, setSelectedTribe] = useState<TribeOption | null>(null);
+  const [tribuDropdownOpen, setTribuDropdownOpen] = useState(false);
+  const [activeSubTab, setActiveSubTab] = useState<'Text' | 'Images' | 'Link'>('Text');
+
+  const [title, setTitle] = useState('');
+  const [body, setBody] = useState('');
+  const [linkUrl, setLinkUrl] = useState('');
+  const [mediaPreview, setMediaPreview] = useState<string | null>(null);
+  const [mediaFile, setMediaFile] = useState<File | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+
+  const toggleTag = (tag: string) => {
+    setSelectedTags((prev) =>
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
+    );
+  };
+
+  const [formats, setFormats] = useState<Record<string, boolean>>({
+    bold: false,
+    italic: false,
+    strikethrough: false,
+    superscript: false,
+    list: false,
+    orderedList: false,
+    quote: false,
+    code: false,
+  });
+
+  const toggleFormat = (format: string) => {
+    setFormats((prev) => ({ ...prev, [format]: !prev[format] }));
+  };
+
+  // Flairs de la tribu choisie ; un 403 (tribu privée non rejointe) donne simplement « aucun flair ».
+  const { data: flairs = [], isLoading: flairsLoading } = useQuery<Flair[]>({
+    queryKey: ['tribu-flairs', selectedTribe?.id],
+    queryFn: () => tribuService.getFlairs(selectedTribe!.id).catch(() => []),
+    enabled: !!selectedTribe,
+    staleTime: 1000 * 60 * 5,
+  });
+  const [selectedFlairId, setSelectedFlairId] = useState<string | null>(null);
+
+  const selectTribe = (tribe: TribeOption) => {
+    setSelectedTribe(tribe);
+    setSelectedFlairId(null);
+    setTribuDropdownOpen(false);
+  };
+
+  const handleMediaChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setMediaFile(file);
+      setMediaPreview(URL.createObjectURL(file));
+    }
+  };
+
+  const clearMedia = () => {
+    setMediaFile(null);
+    setMediaPreview(null);
+  };
+
+  const handleSubmit = async () => {
+    if (activeSubTab === 'Text' && !title.trim()) return;
+    if (activeSubTab === 'Images' && !mediaPreview) return;
+    if (activeSubTab === 'Link' && !linkUrl.trim()) return;
+
+    setIsSubmitting(true);
+
+    let resolvedMediaUrl = mediaPreview ?? undefined;
+    if (activeSubTab === 'Images' && mediaFile) {
+      const uploaded = await uploadService.uploadFile(mediaFile, 'post');
+      if (uploaded?.objectKey) {
+        resolvedMediaUrl = mediaUrl(uploaded.objectKey);
+      }
+    }
+    // Le backend exige un titre de 3 caractères minimum pour TOUS les types de posts.
+    if (title.trim().length < 3 && activeSubTab !== 'Text') {
+      setTitle(body.trim().slice(0, 60) || 'Ma tradition');
+    }
+
+    const submission: PostSubmission = {
+      title:
+        title.trim().length >= 3
+          ? title
+          : activeSubTab === 'Link'
+            ? 'Partage de lien'
+            : body.trim().slice(0, 60) || 'Ma tradition',
+      body: activeSubTab === 'Text' ? body : undefined,
+      mediaUrl: activeSubTab === 'Images' ? resolvedMediaUrl : undefined,
+      linkUrl: activeSubTab === 'Link' ? linkUrl : undefined,
+      tribeId: selectedTribe?.id,
+      // Le flair n'a de sens que dans une tribu, et doit appartenir à cette tribu.
+      flairId: selectedTribe && flairs.some((f) => f.id === selectedFlairId) ? (selectedFlairId ?? undefined) : undefined,
+      type: activeSubTab,
+      tags: selectedTags.length > 0 ? selectedTags : undefined,
+    };
+
+    try {
+      await postService.submitPost(submission);
+      // Le feed et les posts de tribu doivent montrer la nouvelle publication.
+      await queryClient.invalidateQueries({ queryKey: ['feed'] });
+      await queryClient.invalidateQueries({ queryKey: ['tribu-posts'] });
+      setActiveTab('Home');
+    } catch (err) {
+      console.error('Error submitting tradition:', err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return {
+    tribes,
+    selectedTribe,
+    tribuDropdownOpen,
+    setTribuDropdownOpen,
+    activeSubTab,
+    setActiveSubTab,
+    title,
+    setTitle,
+    body,
+    setBody,
+    linkUrl,
+    setLinkUrl,
+    mediaPreview,
+    handleMediaChange,
+    clearMedia,
+    formats,
+    toggleFormat,
+    isSubmitting,
+    selectTribe,
+    handleSubmit,
+    selectedTags,
+    toggleTag,
+    flairs,
+    flairsLoading,
+    selectedFlairId,
+    setSelectedFlairId,
+  };
+}

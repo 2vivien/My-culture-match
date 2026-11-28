@@ -202,7 +202,7 @@ describe('Posts de tribu', () => {
     const post = await app.request(`/api/tribes/${id}/posts`, {
       method: 'POST',
       headers: { 'content-type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ type: 'Text', title: 'Ma première tradition', body: 'Une danse du sud' }),
+      body: JSON.stringify({ type: 'Text', title: 'Ma première post', body: 'Une danse du sud' }),
     });
     expect(post.status).toBe(201);
     const { id: postId } = (await post.json()) as { id: string };

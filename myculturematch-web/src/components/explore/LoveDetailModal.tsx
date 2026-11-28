@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { X, MessageCircle, Flame } from 'lucide-react';
 import { cn } from '@/src/lib/utils';
-import { TotemAvatar } from '@/src/components/ui/TotemAvatar';
+import { ProfileAvatar } from '@/src/components/ui/ProfileAvatar';
 import type { LoveMatch } from '@/src/types/love';
 
 interface LoveDetailModalProps {
@@ -60,7 +60,7 @@ export const LoveDetailModal: React.FC<LoveDetailModalProps> = ({
 
           {/* Photo de profil dentelée (cloud) + nom + % sur la même ligne, en bas de la photo */}
           <div className="absolute bottom-4 left-5 right-5 flex items-center gap-3">
-            <TotemAvatar
+            <ProfileAvatar
               src={match.avatar}
               alt={match.name}
               size="md"

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Check, X, Loader2, UserPlus } from 'lucide-react';
-import { TotemAvatar } from '@/src/components/ui/TotemAvatar';
+import { ProfileAvatar } from '@/src/components/ui/ProfileAvatar';
 import type { JoinRequest } from '@/src/services/tribuService';
 
 interface TribuJoinRequestsProps {
@@ -70,7 +70,7 @@ export const TribuJoinRequests: React.FC<TribuJoinRequestsProps> = ({
           return (
             <div key={r.userId} className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2.5 min-w-0">
-                <TotemAvatar src={r.avatar ?? ''} alt={r.name} size="xs" glow="none" />
+                <ProfileAvatar src={r.avatar ?? ''} alt={r.name} size="xs" glow="none" />
                 <div className="min-w-0">
                   <p className="text-xs font-bold text-app-black dark:text-zinc-100 truncate">{r.name}</p>
                   <p className="text-[10px] text-app-gray dark:text-zinc-500 truncate">

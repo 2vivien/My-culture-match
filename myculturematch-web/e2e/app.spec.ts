@@ -17,33 +17,33 @@ test.describe('Application connectée', () => {
     await expect(nav.getByTitle('New')).toBeVisible();
   });
 
-  test('navigation : Love, Explore, Connexion, Totem', async ({ page }) => {
+  test('navigation : Love, Explore, Connexion, Profile', async ({ page }) => {
     const nav = page.locator('nav');
     await nav.getByTitle('Love').click();
-    await expect(page.getByRole('heading', { name: 'Love Matchmaker' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'AI Love Chat', exact: true })).toBeVisible();
 
     await nav.getByTitle('Explore').click();
     await expect(page.getByRole('heading', { name: 'Explore Communities' })).toBeVisible();
 
-    await nav.getByTitle('Connexion').click();
+    await nav.getByTitle('Friends').click();
     await expect(page.locator('main, .flex-1').first()).toBeVisible();
 
-    await nav.getByTitle('Totem').click();
+    await nav.getByTitle('Profil').click();
     await expect(page.locator('main, .flex-1').first()).toBeVisible();
   });
 
-  test('création d’une tradition (bouton header)', async ({ page }) => {
-    await page.getByTitle('Create a tradition').click();
-    await expect(page.getByRole('heading', { name: 'Create Tradition' })).toBeVisible();
+  test('création d’un post (bouton header)', async ({ page }) => {
+    await page.getByTitle('Create a post').click();
+    await expect(page.getByRole('heading', { name: 'Create Post' })).toBeVisible();
   });
 
-  test('publication via l’UI : formulaire + bouton Publish Tradition → retour Home', async ({ page }) => {
-    await page.getByTitle('Create a tradition').click();
-    await expect(page.getByRole('heading', { name: 'Create Tradition' })).toBeVisible();
+  test('publication via l’UI : formulaire + bouton Publish Post → retour Home', async ({ page }) => {
+    await page.getByTitle('Create a post').click();
+    await expect(page.getByRole('heading', { name: 'Create Post' })).toBeVisible();
 
-    await page.getByPlaceholder('Title').fill('Titre tradition e2e');
+    await page.getByPlaceholder('Title').fill('Titre post e2e');
     await page.getByPlaceholder('Body text (optional)').fill(`Post e2e vérification ${Date.now()}`);
-    await page.getByRole('button', { name: 'Publish Tradition' }).click();
+    await page.getByRole('button', { name: 'Publish Post' }).click();
 
     await expect(page.locator('nav').getByTitle('Home')).toBeVisible({ timeout: 15_000 });
   });
@@ -71,8 +71,8 @@ test.describe('Application connectée', () => {
       // Menu "..." du post : Save / Mute / Report sont cliquables (terrain réel)
       const menuBtn = post.getByRole('button').nth(0);
       await menuBtn.click();
-      await post.getByText('Save this Tradition').click();
-      await expect(post.getByText('Tradition Saved!')).toBeVisible();
+      await post.getByText('Save this Post').click();
+      await expect(post.getByText('Post Saved!')).toBeVisible();
       await page.waitForTimeout(900);
 
       await menuBtn.click();
@@ -93,9 +93,9 @@ test.describe('Application connectée', () => {
   });
 
   test('le chat popup s’ouvre depuis Messages et charge les conversations réelles', async ({ page }) => {
-    await page.locator('nav').getByTitle('Messages').click();
-    const popup = page.locator('div').filter({ hasText: /Conversations|Messages/ }).last();
-    await expect(popup).toBeVisible({ timeout: 10_000 });
+    await page.getByTitle('Messages').click();
+    await expect(page.getByRole('heading', { name: 'Messages', exact: true })).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByPlaceholder('Rechercher...')).toBeVisible({ timeout: 10_000 });
   });
 
   test('onglet Admin accessible pour un role admin — routes réelles', async ({ page }) => {

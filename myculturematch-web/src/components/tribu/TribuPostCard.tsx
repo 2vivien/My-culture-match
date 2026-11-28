@@ -64,7 +64,7 @@ export const TribuPostCard: React.FC<TribuPostCardProps> = ({
 
           <div className="flex items-center gap-1.5 text-xs text-app-gray dark:text-zinc-400 font-medium">
             <span className="font-black text-[#E27D60] dark:text-[#E27D60]">
-              t/{tribeName ?? 'Tribu'}
+              t/{tribeName ?? 'Communauté'}
             </span>
             <span>•</span>
             <span className="font-extrabold text-app-black dark:text-zinc-300">
@@ -98,7 +98,7 @@ export const TribuPostCard: React.FC<TribuPostCardProps> = ({
                 >
                   <span className="flex items-center gap-2">
                     <Bookmark className="w-4 h-4 text-app-gray" />
-                    {isSaved ? 'Tradition Saved!' : 'Save this Tradition'}
+                    {isSaved ? 'Post Saved!' : 'Save this Post'}
                   </span>
                   {isSaved && <Check className="w-3.5 h-3.5 text-[#E27D60]" />}
                 </button>

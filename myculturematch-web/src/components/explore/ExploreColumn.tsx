@@ -3,10 +3,9 @@ import { AnimatePresence } from 'framer-motion';
 import { useUIStore } from '@/src/stores/useUIStore';
 import { useExplore } from '@/src/hooks/useExplore';
 import { ExploreHeader } from './ExploreHeader';
-import { ExploreTabs } from './ExploreTabs';
 import { ExploreCategories } from './ExploreCategories';
 import { ExploreTribesTab } from './ExploreTribesTab';
-import { ExploreTraditionsTab } from './ExploreTraditionsTab';
+import { ExplorePostsTab } from './ExplorePostsTab';
 import { ExploreReelsTab } from './ExploreReelsTab';
 import { ExploreVideosTab } from './ExploreVideosTab';
 import { ExploreSearchResults } from './ExploreSearchResults';
@@ -17,14 +16,12 @@ export const ExploreColumn: React.FC = () => {
   const { posts } = useFeed();
   const {
     activeSubTab,
-    setActiveSubTab,
     activeCategory,
     setActiveCategory,
     searchQuery,
-    setSearchQuery,
     filteredTribes,
     moreTribes,
-    filteredTraditions,
+    filteredPosts,
     filteredVideos,
     toggleJoinTribe,
   } = useExplore(posts);
@@ -34,17 +31,10 @@ export const ExploreColumn: React.FC = () => {
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden select-none px-1">
       {/* Header with Title & Search bar */}
-      <ExploreHeader searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+      <ExploreHeader />
 
       {!showSearchResults ? (
         <>
-          {/* Sub-tabs switchers */}
-          <ExploreTabs
-            activeSubTab={activeSubTab}
-            setActiveSubTab={setActiveSubTab}
-            setActiveCategory={setActiveCategory}
-          />
-
           {/* Category Pills list */}
           <ExploreCategories
             activeSubTab={activeSubTab}
@@ -64,8 +54,8 @@ export const ExploreColumn: React.FC = () => {
                 />
               )}
 
-              {activeSubTab === 'Traditions' && (
-                <ExploreTraditionsTab posts={posts} />
+              {activeSubTab === 'Posts' && (
+                <ExplorePostsTab posts={posts} />
               )}
 
               {activeSubTab === 'Reels' && (

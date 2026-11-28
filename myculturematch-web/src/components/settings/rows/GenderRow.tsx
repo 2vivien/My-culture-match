@@ -27,7 +27,7 @@ export const GenderRow: React.FC<GenderRowProps> = ({
               setGender(e.target.value);
               setIsEditingGender(false);
             }}
-            className="px-3.5 py-2 text-sm rounded-xl border border-app-border bg-zinc-50 dark:bg-zinc-900 text-app-black dark:text-zinc-200 outline-none focus:ring-1 focus:ring-[#E27D60]"
+            className="px-3.5 py-2 text-sm rounded-xl border border-app-border bg-zinc-50 dark:bg-zinc-900 text-app-black dark:text-zinc-200 outline-none focus:ring-1 focus:ring-zinc-400"
           >
             <option value="Male">Male</option>
             <option value="Female">Female</option>

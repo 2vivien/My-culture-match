@@ -4,7 +4,7 @@ import { X, Search, Link2, Check, Loader2 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { chatService } from '@/src/services/chat.service';
 import { connectionsService } from '@/src/services/connectionsService';
-import { TotemAvatar } from '@/src/components/ui/TotemAvatar';
+import { ProfileAvatar } from '@/src/components/ui/ProfileAvatar';
 import { useAppStore } from '@/src/stores/useAppStore';
 import type { ConnectionUser } from '@/src/stores/useConnectionsStore';
 
@@ -232,7 +232,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({ open, shareUrl, shareTex
                         className="flex flex-col items-center gap-1.5 py-2 rounded-2xl hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors cursor-pointer disabled:opacity-80 bg-transparent border-none"
                       >
                         <div className="relative">
-                          <TotemAvatar src={f.avatar} alt={f.name} size="lg" glow="none" />
+                          <ProfileAvatar src={f.avatar} alt={f.name} size="lg" glow="none" />
                           {state === 'sent' && (
                             <span className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full bg-emerald-500 border-2 border-white dark:border-[#161b22] flex items-center justify-center">
                               <Check className="w-3 h-3 text-white" />

@@ -19,7 +19,7 @@ const ACTION_CONFIG: Record<string, { icon: React.ElementType; color: string; la
   'user.login': { icon: LogIn, color: 'bg-blue-100 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400', label: 'Connexion' },
   'user.unban': { icon: User, color: 'bg-emerald-100 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400', label: 'Débannissement' },
   'post.created': { icon: FileText, color: 'bg-violet-100 dark:bg-violet-900/20 text-violet-600 dark:text-violet-400', label: 'Post créé' },
-  'tribe.joined': { icon: Users, color: 'bg-pink-100 dark:bg-pink-900/20 text-pink-600 dark:text-pink-400', label: 'Tribu rejointe' },
+  'tribe.joined': { icon: Users, color: 'bg-pink-100 dark:bg-pink-900/20 text-pink-600 dark:text-pink-400', label: 'Communauté rejointe' },
   'match.created': { icon: Heart, color: 'bg-rose-100 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400', label: 'Match' },
   'stories.cleanup': { icon: Database, color: 'bg-cyan-100 dark:bg-cyan-900/20 text-cyan-600 dark:text-cyan-400', label: 'Nettoyage' },
 };

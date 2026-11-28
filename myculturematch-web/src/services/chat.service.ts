@@ -13,7 +13,7 @@ function mapMessage(m: BackendChatMessage): ChatMessage { return { id: m.id, con
 export const chatService = {
   async getConversations(): Promise<Conversation[]> {
     const list = await api.get<BackendConversationSummary[]>('/api/conversations');
-    return (list ?? []).map((c) => { const other = c.participant; return { id: c.id, name: other?.name ?? c.name ?? 'Conversation', avatar: other?.avatar ?? fallbackAvatarFor(c.id), culture: other?.username ? `@${other.username}` : '', lang: '', online: Boolean(c.online), lastMsg: c.lastMessage ?? '', timeAgo: timeAgo(c.lastMessageAt), unreadCount: c.unreadCount ?? 0, glow: 'orange', level: 1, bio: '', country: '', traditions: [], tribes: [], sharedMedia: [] } satisfies Conversation; });
+    return (list ?? []).map((c) => { const other = c.participant; return { id: c.id, name: other?.name ?? c.name ?? 'Conversation', avatar: other?.avatar ?? fallbackAvatarFor(c.id), culture: other?.username ? `@${other.username}` : '', lang: '', online: Boolean(c.online), lastMsg: c.lastMessage ?? '', timeAgo: timeAgo(c.lastMessageAt), unreadCount: c.unreadCount ?? 0, glow: 'orange', level: 1, bio: '', country: '', posts: [], tribes: [], sharedMedia: [] } satisfies Conversation; });
   },
   async getMessages(conversationId: string): Promise<ChatMessage[]> {
     try { const data = await api.get<{ messages: BackendChatMessage[]; nextCursor: string | null }>(`/api/conversations/${conversationId}/messages/enhanced?limit=50`); return [...(data.messages ?? [])].reverse().map(mapMessage); }

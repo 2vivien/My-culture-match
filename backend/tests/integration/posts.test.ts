@@ -39,7 +39,7 @@ async function createPost(token: string, overrides: Record<string, unknown> = {}
     body: JSON.stringify({
       type: 'Text',
       title: 'La danse Gelede au Bénin #culture',
-      body: 'Une tradition ancestrale que je souhaite partager avec la communauté.',
+      body: 'Une post ancestrale que je souhaite partager avec la communauté.',
       tags: ['dance', 'benin'],
       ...overrides,
     }),

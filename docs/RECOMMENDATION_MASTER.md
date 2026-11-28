@@ -62,7 +62,7 @@ Recommande groupes, discussions, événements et membres.
 
 ### 6. Culture
 
-Recommande des sujets, cultures, langues, traditions, musique, cuisine, histoire et créateurs.
+Recommande des sujets, cultures, langues, posts, musique, cuisine, histoire et créateurs.
 
 ### 7. Messages
 

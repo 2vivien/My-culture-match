@@ -200,7 +200,7 @@ export const TribuDetailView: React.FC = () => {
                   }, 1200);
                 }}
                 onReport={() => {
-                  alert('Thank you for making this community safe. The cultural guardians team will review this traditional transmission.');
+                  alert('Thank you for making this community safe. The cultural guardians team will review this post.');
                   setOpenMenuPostId(null);
                 }}
                 onCommentChange={(text) => handleCommentChange(post.id, text)}

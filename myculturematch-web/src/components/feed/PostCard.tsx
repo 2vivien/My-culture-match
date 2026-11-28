@@ -3,34 +3,33 @@ import { PostHeader } from './PostHeader';
 import { PostImage } from './PostImage';
 import { PostActions } from './PostActions';
 import { useFeed } from '@/src/hooks/useFeed';
-import { useAppStore } from '@/src/stores/useAppStore';
-import { useUIStore } from '@/src/stores/useUIStore';
-import { TotemAvatar } from '@/src/components/ui/TotemAvatar';
+import { navigate } from '@/src/lib/router';
+import { ProfileAvatar } from '@/src/components/ui/ProfileAvatar';
 import { Repeat2 } from 'lucide-react';
 
 interface PostCardProps {
   post: Post;
+  /** Feed : une seule carte contient tous les posts, donc pas de chrome individuel. */
+  flat?: boolean;
 }
 
-export const PostCard = ({ post }: PostCardProps) => {
+export const PostCard = ({ post, flat = false }: PostCardProps) => {
   const { likePost, isPostLiked } = useFeed();
   const liked = isPostLiked(post.id);
-  const setSelectedPostId = useAppStore((s) => s.setSelectedPostId);
-  const setActiveTab = useUIStore((s) => s.setActiveTab);
 
-  const openPostDetail = (id: string) => {
-    setSelectedPostId(id);
-    window.location.hash = `#/post/${id}`;
-    setActiveTab('PostDetail');
-  };
+  const openPostDetail = (id: string) => navigate('PostDetail', id);
+
+  const cardClass = flat
+    ? 'px-5 py-5 hover:bg-zinc-50/60 dark:hover:bg-zinc-900/40 transition-colors'
+    : 'bg-white dark:bg-zinc-950 rounded-[24px] p-5 shadow-soft border border-app-border dark:border-zinc-800 hover:shadow-float transition-all duration-300';
 
   // ── Repost dont l'original a été supprimé : carte neutre ──
   if (post.type === 'Repost' && !post.originalPost) {
     return (
-      <article className="bg-white dark:bg-zinc-950 rounded-[24px] p-5 shadow-soft border border-app-border dark:border-zinc-800">
+      <article className={cardClass}>
         <PostHeader author={post.author} date={post.date} tribe={post.tribe} />
         <div className="flex items-center gap-2 mb-3 -mt-1 px-1 text-app-gray">
-          <Repeat2 className="w-4 h-4 text-[#E27D60]" />
+          <Repeat2 className="w-4 h-4 text-zinc-500 dark:text-zinc-400" />
           <span className="text-xs font-bold">a reposté</span>
         </div>
         <p className="text-sm text-app-gray italic py-4 text-center">Cette publication n'est plus disponible.</p>
@@ -44,12 +43,12 @@ export const PostCard = ({ post }: PostCardProps) => {
     const originalLiked = isPostLiked(original.id);
 
     return (
-      <article className="bg-white dark:bg-zinc-950 rounded-[24px] p-5 shadow-soft border border-app-border dark:border-zinc-800 hover:shadow-float transition-all duration-300">
+      <article className={cardClass}>
         <PostHeader author={post.author} date={post.date} tribe={post.tribe} />
 
         {/* Bandeau repost */}
         <div className="flex items-center gap-2 mb-3 -mt-1 px-1 text-app-gray">
-          <Repeat2 className="w-4 h-4 text-[#E27D60]" />
+          <Repeat2 className="w-4 h-4 text-zinc-500 dark:text-zinc-400" />
           <span className="text-xs font-bold text-app-gray dark:text-zinc-400">
             a reposté dans {post.tribe?.name ?? 'une communauté'}
           </span>
@@ -61,7 +60,7 @@ export const PostCard = ({ post }: PostCardProps) => {
           className="rounded-2xl border border-app-border dark:border-zinc-800 p-4 mb-3 cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-900/50 transition-colors"
         >
           <div className="flex items-center gap-2.5 mb-2">
-            <TotemAvatar
+            <ProfileAvatar
               src={original.author.avatar}
               alt={original.author.name}
               size="xs"
@@ -109,12 +108,27 @@ export const PostCard = ({ post }: PostCardProps) => {
 
   // ── Post classique ──
   return (
-    <article className="bg-white dark:bg-zinc-950 rounded-[24px] p-5 shadow-soft border border-app-border dark:border-zinc-800 hover:shadow-float transition-all duration-300">
+    <article className={cardClass}>
       <PostHeader author={post.author} date={post.date} tribe={post.tribe} />
       {post.title && (
-        <h3 className="text-base font-black text-app-black dark:text-zinc-100 leading-snug mb-1">{post.title}</h3>
+        <h3
+          onClick={() => openPostDetail(post.id)}
+          className="text-base font-black text-app-black dark:text-zinc-100 leading-snug mb-1 cursor-pointer select-text hover:underline"
+        >
+          {post.title}
+        </h3>
       )}
-      <p className="text-sm mb-4 font-semibold text-app-black dark:text-zinc-300 leading-relaxed">{post.text}</p>
+      <p
+        onClick={() => openPostDetail(post.id)}
+        className="text-sm mb-4 font-semibold text-app-black dark:text-zinc-300 leading-relaxed cursor-pointer select-text"
+      >
+        {post.text}
+        {post.tags && post.tags.length > 0 && (
+          <span className="ml-1.5 text-zinc-500 dark:text-zinc-400 font-bold">
+            {post.tags.slice(0, 3).map((tag) => `#${tag}`).join(' ')}
+          </span>
+        )}
+      </p>
       <PostImage
         image={post.image}
         likes={post.likes}
@@ -123,16 +137,6 @@ export const PostCard = ({ post }: PostCardProps) => {
         onLike={() => likePost(post.id)}
       />
       
-      {post.tags && post.tags.length > 0 && (
-        <div className="flex flex-wrap gap-2 mt-3 mb-1 px-1 select-none">
-          {post.tags.slice(0, 3).map((tag) => (
-            <span key={tag} className="text-xs font-black text-[#E27D60] hover:underline cursor-pointer">
-              {tag}
-            </span>
-          ))}
-        </div>
-      )}
-
       <PostActions
         postId={post.id}
         commentsCount={post.comments ?? 0}

@@ -4,7 +4,7 @@ import { Search, Users, Newspaper, Landmark } from 'lucide-react';
 import { useSearch } from '@/src/hooks/useSearch';
 import { useAppStore } from '@/src/stores/useAppStore';
 import { useUIStore } from '@/src/stores/useUIStore';
-import { TotemAvatar } from '@/src/components/ui/TotemAvatar';
+import { ProfileAvatar } from '@/src/components/ui/ProfileAvatar';
 import type { SearchUser, SearchTribe, SearchPost } from '@/src/types/search';
 
 interface ExploreSearchResultsProps {
@@ -16,12 +16,12 @@ const fallbackAvatar = (seed: string) =>
 
 export const ExploreSearchResults: React.FC<ExploreSearchResultsProps> = ({ query }) => {
   const { data, hasQuery, isLoading, error } = useSearch(query);
-  const { setSelectedTotemUserId } = useAppStore();
+  const { setSelectedProfileUserId } = useAppStore();
   const { setActiveTab } = useUIStore();
 
   const openUser = (user: SearchUser) => {
-    setSelectedTotemUserId(user.id);
-    setActiveTab('Totem');
+    setSelectedProfileUserId(user.id);
+    setActiveTab('Profil');
   };
 
   if (!hasQuery) {
@@ -81,7 +81,7 @@ export const ExploreSearchResults: React.FC<ExploreSearchResultsProps> = ({ quer
                 onClick={() => openUser(user)}
                 className="w-full flex items-center gap-3.5 px-5 py-3.5 text-left hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors cursor-pointer"
               >
-                <TotemAvatar src={user.avatar ?? fallbackAvatar(user.username)} alt={user.name} size="sm" glow="none" />
+                <ProfileAvatar src={user.avatar ?? fallbackAvatar(user.username)} alt={user.name} size="sm" glow="none" />
                 <div className="min-w-0">
                   <p className="font-extrabold text-sm text-app-black dark:text-zinc-100 truncate">{user.name}</p>
                   <p className="text-[10px] text-app-gray dark:text-zinc-400 font-bold uppercase tracking-wider truncate">
@@ -106,7 +106,7 @@ export const ExploreSearchResults: React.FC<ExploreSearchResultsProps> = ({ quer
                 onClick={() => setActiveTab('Tribu')}
                 className="w-full flex items-center gap-3.5 px-5 py-3.5 text-left hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors cursor-pointer"
               >
-                <TotemAvatar src={tribe.avatar ?? fallbackAvatar(tribe.name)} alt={tribe.name} size="sm" glow="none" />
+                <ProfileAvatar src={tribe.avatar ?? fallbackAvatar(tribe.name)} alt={tribe.name} size="sm" glow="none" />
                 <div className="min-w-0 flex-1">
                   <p className="font-extrabold text-sm text-app-black dark:text-zinc-100 truncate">{tribe.name}</p>
                   <p className="text-[10px] text-app-gray dark:text-zinc-400 font-bold uppercase tracking-wider truncate">
@@ -132,7 +132,7 @@ export const ExploreSearchResults: React.FC<ExploreSearchResultsProps> = ({ quer
                 className="w-full flex flex-col gap-1 px-5 py-3.5 text-left hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors cursor-pointer"
               >
                 <p className="font-extrabold text-sm text-app-black dark:text-zinc-100 line-clamp-1">
-                  {post.title ?? 'Untitled tradition'}
+                  {post.title ?? 'Untitled post'}
                 </p>
                 <p className="text-[10px] text-app-gray dark:text-zinc-400 font-bold uppercase tracking-wider">
                   by {post.authorName} · {post.type}

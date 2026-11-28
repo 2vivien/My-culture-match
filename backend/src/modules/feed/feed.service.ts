@@ -1,4 +1,4 @@
-import { and, desc, eq, gt, inArray } from 'drizzle-orm';
+import { and, desc, eq, gt, inArray, isNull } from 'drizzle-orm';
 import { db, schema } from '../../infrastructure/database';
 import { redis } from '../../infrastructure/redis';
 import { AppError } from '../../shared/utils/AppError';
@@ -57,6 +57,38 @@ async function getTribesHome(userId: string, limit: number, offset: number): Pro
   const ordered = sortHot(hydrated);
   const page = ordered.slice(offset, offset + limit);
   return { posts: page, total: ordered.length, nextCursor: offset + page.length < ordered.length ? String(offset + page.length) : null };
+}
+
+/**
+ * Feed public pour les visiteurs : publications publiées récemment, sans
+ * personnalisation ni états personnels. Les tribus privées restent exclues.
+ */
+export async function getGuestFeed(
+  filter: 'for-you' | 'popular' | 'new' = 'for-you',
+  limit = 20,
+  cursor?: string,
+): Promise<{ posts: HydratedPost[]; total: number; nextCursor: string | null }> {
+  const offset = cursor ? parseInt(cursor, 10) || 0 : 0;
+  const rows = await db
+    .select({ id: schema.posts.id })
+    .from(schema.posts)
+    .where(and(
+      eq(schema.posts.status, 'published'),
+      isNull(schema.posts.deletedAt),
+      readablePostCondition(''),
+      gt(schema.posts.createdAt, new Date(Date.now() - FOR_YOU_WINDOW_MS)),
+    ))
+    .orderBy(filter === 'new' ? desc(schema.posts.createdAt) : desc(schema.posts.score))
+    .limit(FEED_CANDIDATES);
+  const postIds = rows.map((r) => r.id);
+  if (postIds.length === 0) return { posts: [], total: 0, nextCursor: null };
+
+  // viewerId vide : aucun like/save/vote personnel ne peut correspondre.
+  const hydrated = await getPostsByIds(postIds, '');
+  const visible = hydrated.filter((p) => p.status === 'published');
+  const page = visible.slice(offset, offset + limit);
+  const nextCursor = offset + page.length < visible.length ? String(offset + page.length) : null;
+  return { posts: page, total: visible.length, nextCursor };
 }
 
 /**

@@ -1,4 +1,4 @@
-export type ExploreTab = 'Tribu' | 'Traditions' | 'Reels' | 'Vidéo';
+export type ExploreTab = 'Tribu' | 'Posts' | 'Reels' | 'Vidéo';
 
 export interface TribeItem {
   id: string;

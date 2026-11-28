@@ -6,14 +6,15 @@ import { Sidebar } from './components/layout/Sidebar';
 import { Header } from './components/layout/Header';
 import { MainFeedColumn } from './components/feed/MainFeedColumn';
 import { RightPanel } from './components/RightPanel';
-import { TotemProfile } from './components/totem/TotemProfile';
+import { ProfilePage } from './components/profile/ProfilePage';
 import { ChatPopup } from './components/chat/ChatPopup';
 import { ExploreColumn } from './components/explore/ExploreColumn';
 import { TribuDetailView } from './components/explore/TribuDetailView';
 import { TribuSettingsView } from './components/explore/TribuSettingsView';
-import { CreateTraditionView } from './components/feed/CreateTraditionView';
+import { CreatePostView } from './components/feed/CreatePostView';
 import { PostDetailPage } from './components/feed/PostDetailPage';
 import { SettingsPage } from './pages/SettingsPage';
+import { NotificationsPage } from './pages/NotificationsPage';
 import { LoveColumn } from './components/explore/LoveColumn';
 import { CreateTribeModal } from './components/explore/CreateTribeModal';
 import { useAppStore } from './stores/useAppStore';
@@ -21,10 +22,11 @@ import { useUIStore } from './stores/useUIStore';
 import { startRouter } from './lib/router';
 import { cn } from './lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AuthPage } from './pages/AuthPage';
+import { AuthModal } from './components/auth/AuthModal';
 import { OnboardingPage } from './pages/OnboardingPage';
 import { ConnexionPage } from './pages/ConnexionPage';
 import { AdminPage } from './pages/AdminPage';
+import { AboutPage } from './pages/AboutPage';
 
 export default function App() {
   const { theme, isAuthenticated, isOnboarded } = useAppStore();
@@ -32,7 +34,7 @@ export default function App() {
 
   useEffect(() => {
     authService.restoreSession();
-    // Routeur par hash : deep-links (#/totem/:id, #/tribu/:id, ...) + back/forward navigateur.
+    // Routeur History API : deep-links (/profil/:id, /tribu/:id, ...) + back/forward navigateur.
     // Les stores sont abonnés au routeur : l'URL se met à jour à chaque navigation.
     startRouter();
   }, []);
@@ -48,17 +50,7 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AnimatePresence mode="wait">
-        {!isAuthenticated ? (
-          <motion.div
-            key="auth"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="w-full h-full"
-          >
-            <AuthPage />
-          </motion.div>
-        ) : !isOnboarded ? (
+        {isAuthenticated && !isOnboarded ? (
           <motion.div
             key="onboarding"
             initial={{ opacity: 0 }}
@@ -67,6 +59,16 @@ export default function App() {
             className="w-full h-full"
           >
             <OnboardingPage />
+          </motion.div>
+        ) : activeTab === 'About' ? (
+          <motion.div
+            key="about"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="w-full h-full overflow-y-auto bg-[#FEFEFE] dark:bg-[#0d1117]"
+          >
+            <AboutPage />
           </motion.div>
         ) : (
           <motion.div
@@ -86,14 +88,15 @@ export default function App() {
 
               <div className={cn(
                 "flex-1 overflow-hidden flex",
-                "px-4 md:px-10 pb-4 gap-8"
+                "px-4 md:px-10 pb-4 gap-8",
+                activeTab === 'PostDetail' && 'bg-zinc-100/70 dark:bg-zinc-900/30 rounded-2xl'
               )}>
                 {activeTab === 'Feed' || activeTab === 'Home' || activeTab === 'Popular' || activeTab === 'New' ? (
                   <MainFeedColumn />
                 ) : activeTab === 'Love' ? (
                   <LoveColumn />
-                ) : activeTab === 'Totem' ? (
-                  <TotemProfile />
+                ) : activeTab === 'Profil' ? (
+                  <ProfilePage />
                 ) : activeTab === 'Explore' ? (
                   <ExploreColumn />
                 ) : activeTab === 'Tribu' ? (
@@ -101,9 +104,11 @@ export default function App() {
                 ) : activeTab === 'TribuSettings' ? (
                   <TribuSettingsView />
                 ) : activeTab === 'Create' ? (
-                  <CreateTraditionView />
+                  <CreatePostView />
                 ) : activeTab === 'PostDetail' ? (
                   <PostDetailPage />
+                ) : activeTab === 'Notifications' ? (
+                  <NotificationsPage />
                 ) : activeTab === 'Settings' ? (
                   <SettingsPage />
                 ) : activeTab === 'Friends' || activeTab === 'Connexion' || activeTab === 'Connections' ? (
@@ -135,6 +140,8 @@ export default function App() {
           </motion.div>
         )}
       </AnimatePresence>
+      {/* Home accessible sans compte : la connexion s'ouvre en popup, sans changer de page. */}
+      <AuthModal />
       <ChatPopup />
       <CreateTribeModal />
     </QueryClientProvider>

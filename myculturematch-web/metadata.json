@@ -1,6 +1,6 @@
 {
   "name": "MyCultureMatch",
-  "description": "A modern cultural social network for sharing traditions, discovering cultures, connecting with tribes, and building intercultural matches.",
+  "description": "A modern cultural social network for sharing posts, discovering cultures, connecting with tribes, and building intercultural matches.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

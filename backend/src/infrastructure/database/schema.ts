@@ -54,7 +54,7 @@ export const users = pgTable(
     familyQuiz: text('family_quiz'),
     situation: text('situation'),
     criteria: jsonb('criteria').$type<string[]>(),
-    traditionsCount: integer('traditions_count').notNull().default(0),
+    postsCount: integer('posts_count').notNull().default(0),
     culturesCount: integer('cultures_count').notNull().default(0),
     tribesCount: integer('tribes_count').notNull().default(0),
     interestedCount: integer('interested_count').notNull().default(0),
@@ -299,7 +299,7 @@ export const tribeModerators = pgTable('tribe_moderators', {
   role: text('role').notNull(),
 });
 
-// ── Posts / Traditions ─────────────────────────────────────
+// ── Posts ─────────────────────────────────────
 export const posts = pgTable(
   'posts',
   {

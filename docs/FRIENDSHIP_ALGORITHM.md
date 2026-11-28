@@ -130,7 +130,7 @@ roots
 languages
 countries
 regions
-traditions
+posts
 music
 food
 history

@@ -29,12 +29,12 @@ export const TrustSafetySection: React.FC = () => {
 
       <section>
         <div className="flex items-center gap-2 mb-4"><Ban className="w-4 h-4" /><h2 className="text-sm uppercase font-extrabold tracking-wider text-app-gray">Utilisateurs bloqués</h2></div>
-        {blocked.length === 0 ? <p className="text-sm text-app-gray">Aucun utilisateur bloqué.</p> : <div className="space-y-2">{blocked.map((user) => <div key={user.id} className="flex items-center justify-between rounded-xl border border-app-border/50 dark:border-zinc-800 p-3"><div><p className="font-bold text-sm">{user.name}</p><p className="text-xs text-app-gray">@{user.username}</p></div><button className="text-sm font-bold text-[#E27D60]" onClick={async () => { await api.delete(`/api/safety/users/${user.id}/block`); await reload(); }}>Débloquer</button></div>)}</div>}
+        {blocked.length === 0 ? <p className="text-sm text-app-gray">Aucun utilisateur bloqué.</p> : <div className="space-y-2">{blocked.map((user) => <div key={user.id} className="flex items-center justify-between rounded-xl border border-app-border/50 dark:border-zinc-800 p-3"><div><p className="font-bold text-sm">{user.name}</p><p className="text-xs text-app-gray">@{user.username}</p></div><button className="text-sm font-bold text-zinc-700 dark:text-zinc-200" onClick={async () => { await api.delete(`/api/safety/users/${user.id}/block`); await reload(); }}>Débloquer</button></div>)}</div>}
       </section>
 
       <section>
         <div className="flex items-center gap-2 mb-4"><BellOff className="w-4 h-4" /><h2 className="text-sm uppercase font-extrabold tracking-wider text-app-gray">Utilisateurs masqués</h2></div>
-        {muted.length === 0 ? <p className="text-sm text-app-gray">Aucun utilisateur masqué.</p> : <div className="space-y-2">{muted.map((user) => <div key={user.id} className="flex items-center justify-between rounded-xl border border-app-border/50 dark:border-zinc-800 p-3"><div><p className="font-bold text-sm">{user.name}</p><p className="text-xs text-app-gray">@{user.username}</p></div><button className="text-sm font-bold text-[#E27D60]" onClick={async () => { await api.delete(`/api/safety/users/${user.id}/mute`); await reload(); }}>Réafficher</button></div>)}</div>}
+        {muted.length === 0 ? <p className="text-sm text-app-gray">Aucun utilisateur masqué.</p> : <div className="space-y-2">{muted.map((user) => <div key={user.id} className="flex items-center justify-between rounded-xl border border-app-border/50 dark:border-zinc-800 p-3"><div><p className="font-bold text-sm">{user.name}</p><p className="text-xs text-app-gray">@{user.username}</p></div><button className="text-sm font-bold text-zinc-700 dark:text-zinc-200" onClick={async () => { await api.delete(`/api/safety/users/${user.id}/mute`); await reload(); }}>Réafficher</button></div>)}</div>}
       </section>
 
       <section className="grid sm:grid-cols-3 gap-3">

@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { isOwner, type TribeVisibility } from '@/src/lib/tribeAccess';
 import { Camera, Image as ImageIcon, Search, ShieldAlert, ShieldCheck, Settings, Lock, Unlock, Check, X } from 'lucide-react';
 import { Button } from '@/src/components/ui/button';
-import { TotemAvatar } from '@/src/components/ui/TotemAvatar';
+import { ProfileAvatar } from '@/src/components/ui/ProfileAvatar';
 import { tribuService } from '@/src/services/tribuService';
 import { useAppStore } from '@/src/stores/useAppStore';
 
@@ -143,7 +143,7 @@ export const TribuSettingsView: React.FC = () => {
             <div className="flex items-center gap-5">
               <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-app-border dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-950 flex items-center justify-center">
                 {tribeInfo ? (
-                  <TotemAvatar alt={`${tribeInfo.name} Tribe Logo`} size="lg" glow="turquoise" shape="hexagon" />
+                  <ProfileAvatar alt={`${tribeInfo.name} Tribe Logo`} size="lg" glow="turquoise" shape="hexagon" />
                 ) : (
                   <ImageIcon className="w-6 h-6 text-app-gray" />
                 )}
@@ -245,7 +245,7 @@ export const TribuSettingsView: React.FC = () => {
               return (
                 <div key={member.id} className="flex items-center justify-between p-2 rounded-xl bg-zinc-50/50 dark:bg-zinc-950/40 hover:bg-zinc-100/30 dark:hover:bg-zinc-950/80 transition-all border border-transparent dark:border-zinc-900">
                   <div className="flex items-center gap-2.5 min-w-0">
-                    <TotemAvatar src={member.avatar} alt={member.name} size="xs" glow="none" />
+                    <ProfileAvatar src={member.avatar} alt={member.name} size="xs" glow="none" />
                     <div className="min-w-0">
                       <div className="flex items-center gap-1.5">
                         <h5 className="font-bold text-xs text-app-black dark:text-zinc-100 truncate">{member.name}</h5>

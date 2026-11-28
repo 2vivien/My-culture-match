@@ -26,8 +26,8 @@ export const NotificationsSection: React.FC = () => {
             onToggle={() => setMessages(!messages)}
           />
           <ToggleRow
-            title="Tribu Activity"
-            description="Updates from Tribes you have joined"
+            title="Community Activity"
+            description="Updates from communities you have joined"
             isActive={tribuActivity}
             onToggle={() => setTribuActivity(!tribuActivity)}
           />

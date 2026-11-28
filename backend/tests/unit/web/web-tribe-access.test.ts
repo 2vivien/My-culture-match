@@ -8,6 +8,8 @@ import {
   safeFlairColor,
   isValidFlairColor,
   flairBadgeStyle,
+  readableTextColor,
+  relativeLuminance,
   normalizeFlair,
   validateFlairName,
   FLAIR_DEFAULT_COLOR,
@@ -81,9 +83,29 @@ describe('couleur de flair (anti-injection CSS)', () => {
     expect(safeFlairColor(42)).toBe(FLAIR_DEFAULT_COLOR);
   });
   it('flairBadgeStyle n’émet que des hex validés', () => {
-    expect(flairBadgeStyle('#112233')).toEqual({ color: '#112233', backgroundColor: '#1122331F', borderColor: '#11223366' });
+    expect(flairBadgeStyle('#112233')).toEqual({ color: '#FFFFFF', backgroundColor: '#112233', borderColor: '#112233' });
     const bad = flairBadgeStyle('expression(alert(1))');
     for (const v of Object.values(bad)) expect(v).toMatch(/^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$/);
+  });
+});
+
+describe('lisibilité du texte de flair', () => {
+  it('luminance : noir 0, blanc 1', () => {
+    expect(relativeLuminance('#000000')).toBe(0);
+    expect(relativeLuminance('#FFFFFF')).toBeCloseTo(1, 5);
+  });
+  it('texte sombre sur les fonds clairs (jaune, blanc)', () => {
+    expect(readableTextColor('#FFFF00')).toBe('#111111');
+    expect(readableTextColor('#FFFFFF')).toBe('#111111');
+    expect(readableTextColor('#FFD400')).toBe('#111111');
+  });
+  it('texte clair sur les fonds sombres (bleu nuit, noir, rouge sombre)', () => {
+    expect(readableTextColor('#000000')).toBe('#FFFFFF');
+    expect(readableTextColor('#112233')).toBe('#FFFFFF');
+    expect(readableTextColor('#8B0000')).toBe('#FFFFFF');
+  });
+  it('couleur invalide : repli sur la couleur par défaut, toujours lisible', () => {
+    expect(['#111111', '#FFFFFF']).toContain(readableTextColor('javascript:1'));
   });
 });
 

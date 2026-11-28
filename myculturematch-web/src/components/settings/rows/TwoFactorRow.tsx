@@ -28,7 +28,7 @@ export const TwoFactorRow: React.FC<TwoFactorRowProps> = ({ twoFactor, setTwoFac
         onClick={() => setTwoFactor(!twoFactor)}
         className={cn(
           "w-11 h-6 rounded-full transition-colors relative focus:outline-none cursor-pointer flex items-center shrink-0",
-          twoFactor ? "bg-[#E27D60]" : "bg-zinc-200 dark:bg-zinc-800"
+          twoFactor ? "bg-zinc-800 dark:bg-zinc-700" : "bg-zinc-200 dark:bg-zinc-800"
         )}
       >
         <span

@@ -6,8 +6,9 @@ import {defineConfig} from 'vite';
 export default defineConfig(() => {
   return {
     plugins: [react(), tailwindcss()],
-    // Expose aussi les vars sans préfixe VITE_ (GEMINI_API_KEY du .env du projet).
-    envPrefix: ['VITE_', 'GEMINI_'],
+    // Seules les variables explicitement publiques sont exposées au navigateur.
+    // Les clés d'IA restent côté backend (jamais dans le bundle).
+    envPrefix: ['VITE_'],
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),

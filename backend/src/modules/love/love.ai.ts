@@ -33,7 +33,12 @@ function deterministicParse(query: string): LoveSearchCriteria {
   if (/pres|proche|voisin|voisine|ma region/.test(q)) criteria.distanceKm = 50;
   const keywords = ['voyage', 'voyager', 'culture', 'musique', 'sport', 'lecture', 'cuisine', 'famille', 'ouvert', 'ouverte', 'spirituel', 'aventure'];
   criteria.keywords = keywords.filter((k) => q.includes(k));
-  return criteriaSchema.parse(criteria);
+  const parsed = criteriaSchema.safeParse(criteria);
+  if (parsed.success) return parsed.data;
+  // Âges incohérents ou hors bornes saisis par l'utilisateur (« entre 40 et 30 », « entre 12 et 15 ») :
+  // on ignore la tranche d'âge plutôt que de faire échouer toute la recherche.
+  const { ageMin: _ageMin, ageMax: _ageMax, ...withoutAges } = criteria;
+  return criteriaSchema.parse(withoutAges);
 }
 
 function extractJson(text: string): unknown {

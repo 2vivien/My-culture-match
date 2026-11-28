@@ -43,7 +43,7 @@ export const ExploreTribesTab: React.FC<ExploreTribesTabProps> = ({
 
         {filteredTribes.length > 0 && (
           <div className="mt-6 flex justify-center">
-            <Button variant="outline" className="text-xs font-extrabold rounded-full px-8 py-2.5 dark:border-zinc-800 dark:text-zinc-300">
+            <Button variant="outline" className="text-xs font-extrabold rounded-md px-8 py-2.5 bg-transparent border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800">
               Show more
             </Button>
           </div>
@@ -52,7 +52,7 @@ export const ExploreTribesTab: React.FC<ExploreTribesTabProps> = ({
 
       <div>
         <h3 className="text-xs font-black text-app-gray dark:text-zinc-400 uppercase tracking-widest mb-4">
-          More like your Totem Match
+          More like your Profile Match
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {moreTribes.map((item) => (

@@ -29,7 +29,7 @@ export const ToggleRow: React.FC<ToggleRowProps> = ({
           "w-11 h-6 rounded-full transition-colors relative focus:outline-none flex items-center shrink-0",
           disabled 
             ? "cursor-not-allowed bg-zinc-400 dark:bg-zinc-600 opacity-70"
-            : cn("cursor-pointer", isActive ? "bg-[#E27D60]" : "bg-zinc-200 dark:bg-zinc-800")
+            : cn("cursor-pointer", isActive ? "bg-zinc-800 dark:bg-zinc-700" : "bg-zinc-200 dark:bg-zinc-800")
         )}
       >
         <span

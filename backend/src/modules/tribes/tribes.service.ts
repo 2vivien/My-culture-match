@@ -252,13 +252,21 @@ export async function deleteTribe(tribeId: string, userId: string): Promise<void
   if (tribe.createdById !== userId) {
     throw AppError.forbidden('Seul le créateur peut supprimer la tribu', 'TRIBE_DELETE_FORBIDDEN');
   }
-  if (tribe.visibility === 'private') {
-    // La clé étrangère remet tribe_id à NULL : sans cela, les posts privés deviendraient publics.
-    const doomed = await db.update(schema.posts).set({ status: 'deleted', updatedAt: new Date() })
-      .where(eq(schema.posts.tribeId, tribeId)).returning({ id: schema.posts.id });
-    if (doomed.length > 0) await redis.del(...doomed.map((d) => `post:${d.id}`));
-  }
-  await db.delete(schema.tribes).where(eq(schema.tribes.id, tribeId));
+  // La clé étrangère remet tribe_id à NULL : sans précaution, les posts d'une tribu privée deviendraient publics.
+  // Marqués supprimés (statut ET deletedAt, que l'Explorer et d'autres lectures filtrent) dans la MÊME transaction que
+  // la suppression : un post publié entre les deux ne peut plus devenir public.
+  const doomedIds = await db.transaction(async (tx) => {
+    let ids: string[] = [];
+    if (tribe.visibility === 'private') {
+      const now = new Date();
+      const doomed = await tx.update(schema.posts).set({ status: 'deleted', deletedAt: now, updatedAt: now })
+        .where(eq(schema.posts.tribeId, tribeId)).returning({ id: schema.posts.id });
+      ids = doomed.map((d) => d.id);
+    }
+    await tx.delete(schema.tribes).where(eq(schema.tribes.id, tribeId));
+    return ids;
+  });
+  if (doomedIds.length > 0) await redis.del(...doomedIds.map((id) => `post:${id}`));
   await redis.del(tribeCacheKey(tribeId), tribeMembersKey(tribeId), tribePostsKey(tribeId));
 }
 
@@ -392,6 +400,7 @@ async function recomputeScore(postId: string): Promise<number> {
   const [row] = await db.select({ total: sql<number>`COALESCE(SUM(value),0)::int` }).from(schema.postVotes).where(eq(schema.postVotes.postId, postId));
   const score = row?.total ?? 0;
   await db.update(schema.posts).set({ score, updatedAt: new Date() }).where(eq(schema.posts.id, postId));
+  await redis.del(`post:${postId}`);
   return score;
 }
 
@@ -404,6 +413,7 @@ export async function pinTribePost(tribeId: string, postId: string, userId: stri
   if (!post) throw AppError.notFound('Post introuvable dans cette tribu', 'POST_NOT_FOUND');
 
   await db.update(schema.posts).set({ pinned, updatedAt: new Date() }).where(eq(schema.posts.id, postId));
+  await redis.del(`post:${postId}`);
   return { pinned };
 }
 
@@ -649,6 +659,7 @@ export async function resolveJoinRequest(tribeId: string, moderatorId: string, t
     .returning({ userId: schema.tribeJoinRequests.userId });
   if (removed.length === 0) throw AppError.notFound('Demande introuvable', 'JOIN_REQUEST_NOT_FOUND');
 
+  if (approve) await assertCanJoinTribe(tribeId, targetUserId);
   if (approve && !(await isMember(tribeId, targetUserId))) {
     await db.insert(schema.tribeMembers).values({ tribeId, userId: targetUserId, role: 'member' });
     await redis.sadd(tribeMembersKey(tribeId), targetUserId);

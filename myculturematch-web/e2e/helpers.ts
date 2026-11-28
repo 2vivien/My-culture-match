@@ -62,7 +62,7 @@ export async function createRemoteUserAndPost(email: string, body: string): Prom
   const res = await fetch(`${API_URL}/api/posts`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ type: 'Text', title: 'Tradition partagée e2e', body }),
+    body: JSON.stringify({ type: 'Text', title: 'Post partagée e2e', body }),
   });
   if (!res.ok) throw new Error(`create post ${res.status}: ${await res.text()}`);
   const post = (await res.json()) as { id: string };
@@ -73,6 +73,8 @@ export async function createRemoteUserAndPost(email: string, body: string): Prom
 export async function loginByOtp(page: Page, email: string, expectApp: boolean) {
   resetOtpState(email);
   await page.goto('/');
+  // Le home est le feed réel en visiteur : la connexion s'ouvre en popup.
+  await page.getByRole('button', { name: 'Connexion' }).click();
   await expect(page.getByLabel('Adresse Email')).toBeVisible();
   await page.getByLabel('Adresse Email').fill(email);
   await page.getByRole('button', { name: 'Continuer' }).click();
@@ -87,18 +89,16 @@ export async function loginByOtp(page: Page, email: string, expectApp: boolean) 
   }
 }
 
-/** Force le rôle admin côté store local (pour exposer l'onglet Admin). */
+/**
+ * Force le rôle admin pour le test en interceptant /api/users/me.
+ * Le store n'est plus une source de vérité : la session est restaurée depuis
+ * le cookie HttpOnly, donc on simule la réponse API plutôt que localStorage.
+ */
 export async function forceAdminRole(page: Page): Promise<void> {
-  await page.evaluate(() => {
-    const raw = localStorage.getItem('app-store');
-    const store = raw ? JSON.parse(raw) : {};
-    store.state = {
-      ...(store.state ?? {}),
-      currentUser: { ...(store.state?.currentUser ?? {}), role: 'admin' },
-      isAuthenticated: true,
-      isOnboarded: true,
-    };
-    localStorage.setItem('app-store', JSON.stringify(store));
+  await page.route('**/api/users/me', async (route) => {
+    const response = await route.fetch();
+    const body = (await response.json()) as Record<string, unknown>;
+    await route.fulfill({ response, json: { ...body, role: 'admin' } });
   });
   await page.reload();
 }

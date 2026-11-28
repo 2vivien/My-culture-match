@@ -29,16 +29,12 @@ export const Sidebar = () => {
         isSidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
       )}>
         <aside className={cn(
-          "bg-white dark:bg-zinc-950 border-r border-app-border dark:border-zinc-900 flex flex-col py-6 select-none transition-all duration-300 ease-in-out overflow-y-auto overflow-x-hidden hide-scrollbar w-full h-full",
+          "bg-white dark:bg-zinc-950 border-r border-app-border dark:border-zinc-900 flex flex-col pt-0 pb-6 select-none transition-all duration-300 ease-in-out overflow-y-auto overflow-x-hidden hide-scrollbar w-full h-full",
           isCollapsed ? "px-2" : "px-4"
         )}>
           <SidebarLogo />
 
-          {!isCollapsed && (
-            <p className="text-xs text-app-gray font-semibold uppercase tracking-wider px-4 mb-4 select-none mt-2">
-              Menu
-            </p>
-          )}
+          <hr className="border-app-border dark:border-zinc-800 mx-4 mt-0 mb-3" />
           <SidebarNav />
           <div className="mt-8">
             <SidebarFooter />
