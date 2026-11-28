@@ -1,62 +1,93 @@
 # My Culture Match
 
-Réseau social interculturel : communautés (tribus) façon Reddit, connexions Friend avec carte « autour de moi », matchmaking Love conversationnel par IA, messagerie.
+Réseau social interculturel : traditions, tribus, connexions, matching amoureux et messagerie. Le produit repose sur un backend Hono et une application web Vite/React.
 
-| Dossier | Contenu |
-|---|---|
-| `backend/` | API Hono + socket.io + workers BullMQ (Node ≥ 20, TypeScript, Drizzle/PostgreSQL, Redis, Meilisearch, MinIO) |
-| `myculturematch-web/` | Front Vite + React 19 + Tailwind 4 |
-| `mobile-app/` | Maquette Expo / React Native (pas encore reliée à l'API) |
-| `docs/`, `backend/docs/` | Spécifications, algorithmes, ADR, sécurité, audit, plan d'issues |
+> État des lieux mis à jour le **28 novembre 2026**. Le backend et le web sont des implémentations fonctionnelles ; `mobile-app/` a été retiré du dépôt. Voir [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) et [docs/DOCUMENTATION_AUDIT.md](docs/DOCUMENTATION_AUDIT.md).
 
-## Démarrer en local
+---
 
-Prérequis : Node ≥ 20, Docker (PostgreSQL, Redis, Meilisearch, MinIO, Mailpit).
+## Démarrage rapide
 
 ```bash
-# 1. dépendances (chaque sous-projet a son propre node_modules)
+# Infrastructure locale (Postgres, Redis, Meilisearch, MinIO, Mailpit)
+docker compose up -d
+
+# Dépendances (racine + chaque workspace)
 npm install
 npm install --prefix backend
 npm install --prefix myculturematch-web
 
-# 2. variables d'environnement
-cp backend/.env.example backend/.env    # puis compléter les secrets
-
-# 3. services + API + front
-docker compose up -d                    # stack complète, ou seulement les services de backend/docker-compose.yml
-npm run dev                             # backend (3000) + web (5173)
+# API (http://localhost:3000) + web (http://localhost:5173)
+npm run dev
 ```
 
-Le front proxifie `/api` et `/health` vers `localhost:3000`. Hors Docker, appliquer les migrations avec `npm run migrate --prefix backend`.
+La configuration d'environnement du backend est documentée dans [`backend/.env.example`](backend/.env.example). Le frontend web utilise un proxy Vite `/api` → `http://localhost:3000` (voir `myculturematch-web/vite.config.ts`).
 
-## Variables du front (`myculturematch-web`)
+---
 
-| Variable | Rôle |
+## Stack
+
+| Workspace | Stack | État |
+|---|---|---|
+| `backend/` | Hono 4, TypeScript strict, Drizzle + PostgreSQL 16, Redis 7 / BullMQ, Meilisearch, MinIO, socket.io + Redis adapter, Pino / Prometheus / Sentry / Better Stack | Implémenté |
+| `myculturematch-web/` | Vite 6, React 19, Tailwind 4, TanStack Query 5, Zustand 5, socket.io-client, MapLibre, Playwright | Implémenté |
+| Infrastructure | Docker Compose : Postgres, Redis, Meilisearch, MinIO, Mailpit ; CI GitHub Actions (lint, typecheck, build, tests unitaires et d'intégration, couverture) | Implémentée |
+
+---
+
+## Architecture
+
+Le backend expose une API REST `/api/*` et un canal WebSocket. Le web consomme l'API via des services (`src/services/*.ts`) avec un jeton Bearer .
+
+Cartographie complète, modules, flux et écarts documentaires : **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**.
+
+Points d'entrée utiles :
+
+- [`backend/src/app.ts`](backend/src/app.ts) — enregistrement des middlewares et des modules de routes.
+- [`backend/docs/README.md`](backend/docs/README.md) — documentation détaillée du backend (API, schéma, sécurité, ADR).
+- [`myculturematch-web/src/services/api.ts`](myculturematch-web/src/services/api.ts) — client HTTP du web.
+- [`myculturematch-web/src/lib/router.ts`](myculturematch-web/src/lib/router.ts) — routeur par hash du web.
+
+---
+
+## Documentation
+
+### Référentiels canoniques
+
+| Document | Rôle |
 |---|---|
-| `VITE_API_URL` | URL de l'API (sockets) |
-| `VITE_MEDIA_URL` | Base des médias MinIO |
-| `VITE_GOOGLE_CLIENT_ID` | Connexion Google |
-| `VITE_MAP_TILES_URL` | Modèle de tuiles de carte `https://…/{z}/{x}/{y}.png` — **obligatoire en production** (les tuiles OpenStreetMap ne servent qu'en développement) |
-| `VITE_MAP_ATTRIBUTION` | Attribution du fournisseur de tuiles |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Architecture réelle du backend, du web et de l'infrastructure |
+| [docs/DOCUMENTATION_AUDIT.md](docs/DOCUMENTATION_AUDIT.md) | Audit documentaire, décisions de nettoyage et actions restantes |
+| [backend/docs/README.md](backend/docs/README.md) | Index de la documentation backend |
+| [docs/MIGRATIONS.md](docs/MIGRATIONS.md) | Convention des migrations Drizzle écrites à la main, contrôle de cohérence |
+| [docs/PLAN_ISSUES_2026-11-27.md](docs/PLAN_ISSUES_2026-11-27.md) | Plan et avancement des chantiers Communauté / Friend-Maps / Love |
+| [docs/F11_CONTENU_SUR_LA_CARTE.md](docs/F11_CONTENU_SUR_LA_CARTE.md) | Conception du contenu sur la carte (stories, lieux culturels, événements) |
+| [SKILL-audit-fonctionnel-ultra-complet.md](SKILL-audit-fonctionnel-ultra-complet.md) | Contrat fonctionnel / endpoints attendus par le front |
+| [stack.md](stack.md) | Référence d'infrastructure backend (à lire avec les correctifs de l'audit) |
 
-## Qualité
+### Spécifications produit et algorithmes
 
-```bash
-# backend
-npm run typecheck --prefix backend
-npm run lint --prefix backend
-npm test --prefix backend              # unit + intégration (nécessite PostgreSQL et Redis)
+Ces documents décrivent des **cibles de conception**, pas nécessairement de l'implémenté. Leur statut est précisé dans l'audit documentaire.
 
-# web
-npm run lint --prefix myculturematch-web    # tsc --noEmit
-npm run build --prefix myculturematch-web
-npm run test:e2e --prefix myculturematch-web   # Playwright, nécessite l'API
-```
+- Relation et mémoire : [`docs/RELATIONSHIP_MEMORY_MASTER.md`](docs/RELATIONSHIP_MEMORY_MASTER.md), [`docs/RELATIONSHIP_MEMORY_V2.md`](docs/RELATIONSHIP_MEMORY_V2.md), [`docs/RELATIONSHIP_MEMORY_API.md`](docs/RELATIONSHIP_MEMORY_API.md), [`docs/RELATIONSHIP_MEMORY_ALGORITHMS.md`](docs/RELATIONSHIP_MEMORY_ALGORITHMS.md), [`docs/RELATIONSHIP_MEMORY_ISSUES.md`](docs/RELATIONSHIP_MEMORY_ISSUES.md), [`docs/RELATIONSHIP_FUTURE_FEATURES.md`](docs/RELATIONSHIP_FUTURE_FEATURES.md)
+- Recommandation : [`docs/RECOMMENDATION_MASTER.md`](docs/RECOMMENDATION_MASTER.md) et ses cinq documents de spécification
+- Love : [`docs/LOVE_CONVERSATIONAL_MATCHMAKING.md`](docs/LOVE_CONVERSATIONAL_MATCHMAKING.md) et la série [`docs/love-algorithm/`](docs/love-algorithm/)
+- Autres algorithmes : [`docs/FRIENDSHIP_ALGORITHM.md`](docs/FRIENDSHIP_ALGORITHM.md), [`docs/FEED_RANKING_ALGORITHM.md`](docs/FEED_RANKING_ALGORITHM.md), [`docs/EXPLORE_CULTURE_COMMUNITY_ALGORITHM.md`](docs/EXPLORE_CULTURE_COMMUNITY_ALGORITHM.md), [`ALGO-culture-engine.md`](ALGO-culture-engine.md)
+- Sécurité / chat : [`docs/CONSENT_TRUST_SAFETY.md`](docs/CONSENT_TRUST_SAFETY.md), [`docs/CHAT_V2.md`](docs/CHAT_V2.md), [`docs/TEMPORAL_MESSAGES.md`](docs/TEMPORAL_MESSAGES.md)
+- Audits produit : [`docs/MY_CULTURE_MATCH_AUDIT_ROADMAP.md`](docs/MY_CULTURE_MATCH_AUDIT_ROADMAP.md), [`docs/AUDIT_360_PRE_PRODUCTION_2026-11-27.md`](docs/AUDIT_360_PRE_PRODUCTION_2026-11-27.md)
 
-La CI GitHub (`.github/workflows/`) exécute lint, typecheck, build et tests pour le backend, et typecheck + build pour le web.
+### Règles de développement
 
-## Pour aller plus loin
+[`SKILL_web.md`](SKILL_web.md), [`SKILL_react_native.md`](SKILL_react_native.md), [`skill-refractory.md`](skill-refractory.md) et [`loop/`](loop/) décrivent des conventions de travail. `SKILL_react_native.md` décrit une cible mobile : le dossier `mobile-app/` a été retiré du dépôt, ce document est conservé comme référence de conception.
 
-- État du projet et backlog : `docs/PLAN_ISSUES_2026-11-27.md`, `docs/AUDIT_360_PRE_PRODUCTION_2026-11-27.md`
-- Architecture, API, sécurité : `backend/docs/`
-- Guide pour les agents : `CLAUDE.md`
+---
+
+## Limites connues avant production
+
+- La couverture d'instructions du backend est de **76,9 %** (seuil de la CI : 80 %) ; le job de couverture est donc rouge tant que le seuil n'est pas atteint ou révisé.
+- Les écrans récents (carte People Nearby avec stories, lieux et événements, tribus privées, Love) sont vérifiés par `tsc` et par des tests Playwright sur API simulée, **pas par un essai manuel complet**.
+- Les migrations 0020 à 0033 n'ont pas été appliquées sur une base de production réelle : les essayer sur une base jetable avant tout déploiement.
+- Le déploiement de **production est manuel** (`workflow_dispatch`) ; seul le staging est automatique. L'image MinIO référencée par `backend/docker-compose.prod.yml` n'est plus publiée : choisir un stockage objet de remplacement avant de reconstruire une pile de production.
+- Plusieurs spécifications algorithmiques ne sont pas implémentées et ne doivent pas être lues comme telles.
+
+Détails et priorisation dans [docs/DOCUMENTATION_AUDIT.md](docs/DOCUMENTATION_AUDIT.md) et [docs/AUDIT_360_PRE_PRODUCTION_2026-11-27.md](docs/AUDIT_360_PRE_PRODUCTION_2026-11-27.md).
