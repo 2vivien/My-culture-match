@@ -1,3 +1,4 @@
+import { computeMatchScore } from '../users/match-score';
 import { and, eq, or, inArray, isNotNull } from 'drizzle-orm';
 import { db, schema } from '../../infrastructure/database';
 import { redis } from '../../infrastructure/redis';
@@ -5,6 +6,7 @@ import { AppError } from '../../shared/utils/AppError';
 import { createNotification } from '../notifications/notifications.service';
 import { hashEmbedding, tokenize, cosineSimilarity } from '../culture-engine/embedding';
 import { emitToUser } from '../../infrastructure/websocket';
+import { locationAudience } from '../location/location.schema';
 
 const SUGGESTIONS_PER_DAY = 20;
 const DECLINED_TTL = 30 * 24 * 60 * 60; // 30j
@@ -288,6 +290,9 @@ export async function getNearbyFriends(
       latitude: schema.users.latitude,
       longitude: schema.users.longitude,
       locationSharingEnabled: schema.users.locationSharingEnabled,
+      values: schema.users.values,
+      languages: schema.users.languages,
+      country: schema.users.country,
     })
     .from(schema.users)
     .where(eq(schema.users.id, userId))
@@ -310,6 +315,8 @@ export async function getNearbyFriends(
       bio: schema.users.bio,
       location: schema.users.location,
       country: schema.users.country,
+      values: schema.users.values,
+      languages: schema.users.languages,
       latitude: schema.users.latitude,
       longitude: schema.users.longitude,
       locationUpdatedAt: schema.users.locationUpdatedAt,
@@ -338,7 +345,7 @@ export async function getNearbyFriends(
       bio: r.bio,
       location: r.location,
       country: r.country,
-      matchScore: 0,
+      matchScore: computeMatchScore(me, r),
       latitude: r.latitude as number,
       longitude: r.longitude as number,
       distanceKm: haversineKm(me.latitude as number, me.longitude as number, r.latitude as number, r.longitude as number),
@@ -449,8 +456,17 @@ export async function declineRequest(userId: string, requestId: string): Promise
 }
 
 /** POST /api/requests/:id/block — bloquer l'émetteur de la demande. */
+/** Retire les deux sens de la liste d'audience de position quand le lien entre deux personnes disparaît. */
+async function removeAudienceLinks(a: string, b: string): Promise<void> {
+  await db.delete(locationAudience).where(or(
+    and(eq(locationAudience.ownerId, a), eq(locationAudience.memberId, b)),
+    and(eq(locationAudience.ownerId, b), eq(locationAudience.memberId, a)),
+  ));
+}
+
 export async function blockRequester(userId: string, requestId: string): Promise<{ success: true }> {
   await db.insert(schema.blocks).values({ blockerId: userId, blockedId: requestId }).onConflictDoNothing();
+  await removeAudienceLinks(userId, requestId);
   await redis.sadd(blockedKey(userId), requestId);
   await db
     .delete(schema.connections)
@@ -474,6 +490,7 @@ export async function removeCompanion(userId: string, targetId: string): Promise
     .returning({ fromUserId: schema.connections.fromUserId });
 
   if (deleted.length === 0) throw AppError.notFound('Connexion introuvable', 'CONNECTION_NOT_FOUND');
+  await removeAudienceLinks(userId, targetId);
   await redis.srem(companionsKey(userId), targetId);
   await redis.srem(companionsKey(targetId), userId);
 

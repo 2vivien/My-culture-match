@@ -3,7 +3,7 @@ export interface TribeTopic {
   icon: string;
 }
 
-export type TribeType = 'public' | 'restricted' | 'private';
+export type TribeType = 'public' | 'private';
 
 export interface TribeSubmission {
   topics: string[];

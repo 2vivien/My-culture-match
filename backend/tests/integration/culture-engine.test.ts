@@ -143,8 +143,13 @@ describe('Culture Engine (L03-L11)', () => {
   });
 
   it('calcule des matchScore love compris entre 0 et 100', async () => {
-    await onboardUser('lva');
+    const a = await onboardUser('lva');
     const b = await onboardUser('lvb');
+    // Love est désactivé par défaut : seuls les profils qui l'ont activé sont proposés.
+    for (const t of [a.token, b.token]) {
+      const r = await app.request('/api/consent/settings', { method: 'PATCH', headers: { 'content-type': 'application/json', Authorization: `Bearer ${t}` }, body: JSON.stringify({ loveEnabled: true }) });
+      expect(r.status).toBe(200);
+    }
 
     const res = await app.request('/api/love/matches', authed(b.token));
     expect(res.status).toBe(200);

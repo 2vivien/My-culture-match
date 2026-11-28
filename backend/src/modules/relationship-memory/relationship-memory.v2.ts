@@ -16,7 +16,7 @@ const tokens = (s: string) => normalize(s).split(/\s+/).filter((x) => x.length >
 
 function hashVector(text: string, dims = 96): number[] {
   const v = Array.from({ length: dims }, () => 0); const ts = tokens(text);
-  for (const t of ts) { let h = 2166136261; for (let i = 0; i < t.length; i++) h = Math.imul(h ^ t.charCodeAt(i), 16777619); v[Math.abs(h) % dims] += 1; }
+  for (const t of ts) { let h = 2166136261; for (let i = 0; i < t.length; i++) h = Math.imul(h ^ t.charCodeAt(i), 16777619); { const idx = Math.abs(h) % dims; v[idx] = (v[idx] ?? 0) + 1; } }
   const norm = Math.sqrt(v.reduce((a, b) => a + b * b, 0)); return norm ? v.map((x) => x / norm) : v;
 }
 
@@ -49,8 +49,10 @@ async function messages(conversationId: string): Promise<Message[]> {
   return rows.map((m) => ({ ...m, createdAt: new Date(m.createdAt) }));
 }
 
-function phasesFor(messages: Message[]) {
-  if (!messages.length) return [] as Array<{ key: string; label: string; start: Date; end: Date; items: Message[] }>;
+type Phase = { key: string; label: string; start: Date; end: Date; items: Message[]; activity: number; pos: number; ten: number };
+
+function phasesFor(messages: Message[]): Phase[] {
+  if (!messages.length) return [];
   const sorted = messages; const gaps = sorted.slice(1).map((m, i) => m.createdAt.getTime() - sorted[i]!.createdAt.getTime());
   const median = [...gaps].sort((a, b) => a - b)[Math.floor(gaps.length / 2)] ?? 0;
   const threshold = Math.max(48 * 3600000, Math.min(14 * 86400000, median * 8 || 48 * 3600000));
@@ -80,7 +82,7 @@ export async function rebuildRelationshipMemoryV2(conversationId: string, userId
   const first = msgs[0]!; candidates.push({ kind: 'first', title: 'Le début de votre histoire', summary: `La conversation a commencé avec un message de ${first.senderId === userId ? 'toi' : 'ton interlocuteur'}.`, date: first.createdAt, actor: first.senderId, evidence: [first.id], confidence: .99, importance: .96, semantic: 1, phase: phases[0]!.key });
   const firstMedia = msgs.find((m) => m.type !== 'text'); if (firstMedia) candidates.push({ kind: 'media', title: 'Premier contenu partagé', summary: `Votre premier contenu partagé était de type ${firstMedia.type}.`, date: firstMedia.createdAt, actor: firstMedia.senderId, evidence: [firstMedia.id], confidence: .98, importance: .72, semantic: 1, phase: phases.find((p) => firstMedia.createdAt >= p.start && firstMedia.createdAt <= p.end)?.key ?? phases[0]!.key });
   for (const p of phases) {
-    const terms = termsFor(p.items); if (!terms.length) continue; const representative = p.items[Math.floor(p.items.length / 2)]!; const semantic = await semanticScore(p.items.map((m) => m.text ?? '').join(' ').slice(0, 6000), terms); const intensity = clamp(p.items.length / 20); const reciprocity = (() => { const c = new Map<string, number>(); for (const m of p.items) c.set(m.senderId, (c.get(m.senderId) ?? 0) + 1); const v = [...c.values()]; return v.length > 1 ? Math.min(...v) / Math.max(...v) : 0.2; })(); const importance = clamp(.25 * intensity + .25 * semantic + .2 * reciprocity + .15 * (p.pos > p.ten ? 1 : 0.4) + .15 * (p.items.length > 8 ? 1 : .4)); candidates.push({ kind: p.pos > p.ten * 1.5 && p.pos >= 2 ? 'positive' : p.ten > p.pos * 1.5 && p.ten >= 2 ? 'tension' : 'turning_point', title: p.label, summary: `Cette phase se distingue par ${p.items.length} messages, avec des thèmes récurrents autour de ${terms.slice(0, 4).join(', ')}.`, date: p.start, actor: null, evidence: p.items.slice(0, 12).map((m) => m.id), confidence: clamp(.55 + intensity * .35 + reciprocity * .1), importance, semantic, phase: p.key });
+    const terms = termsFor(p.items); if (!terms.length) continue; const semantic = await semanticScore(p.items.map((m) => m.text ?? '').join(' ').slice(0, 6000), terms); const intensity = clamp(p.items.length / 20); const reciprocity = (() => { const c = new Map<string, number>(); for (const m of p.items) c.set(m.senderId, (c.get(m.senderId) ?? 0) + 1); const v = [...c.values()]; return v.length > 1 ? Math.min(...v) / Math.max(...v) : 0.2; })(); const importance = clamp(.25 * intensity + .25 * semantic + .2 * reciprocity + .15 * (p.pos > p.ten ? 1 : 0.4) + .15 * (p.items.length > 8 ? 1 : .4)); candidates.push({ kind: p.pos > p.ten * 1.5 && p.pos >= 2 ? 'positive' : p.ten > p.pos * 1.5 && p.ten >= 2 ? 'tension' : 'turning_point', title: p.label, summary: `Cette phase se distingue par ${p.items.length} messages, avec des thèmes récurrents autour de ${terms.slice(0, 4).join(', ')}.`, date: p.start, actor: null, evidence: p.items.slice(0, 12).map((m) => m.id), confidence: clamp(.55 + intensity * .35 + reciprocity * .1), importance, semantic, phase: p.key });
   }
 
   await db.execute(sql`DELETE FROM relationship_memories WHERE conversation_id = ${conversationId}`);

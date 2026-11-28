@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Volume2, FileText, CheckCheck, MoreHorizontal, Reply, Pencil, Trash2, Pin, Heart, BookHeart } from 'lucide-react';
 import { IconRobot } from '@tabler/icons-react';
-import { ChatMessage, type ChatReaction } from '@/src/types/chat.types';
+import type { ChatMessage, ChatReaction } from '@/src/types/chat.types';
 import { cn } from '@/src/lib/utils';
 
 interface BubbleProps { message: ChatMessage; onAskLyra?: (message: ChatMessage) => void; onReply?: (message: ChatMessage) => void; onEdit?: (message: ChatMessage) => void; onDelete?: (message: ChatMessage) => void; onReact?: (message: ChatMessage, reaction: string) => void; onPin?: (message: ChatMessage) => void; onSaveToMemory?: (message: ChatMessage) => void; }

@@ -18,7 +18,7 @@ en TypeScript strict, pensée pour scaler vers des millions d'utilisateurs dès 
 | **Meilisearch** | Recherche full-text (users, posts, tribus) |
 | **MinIO** | Stockage médias S3-compatible + uploads présignés |
 | **socket.io + Redis adapter** | Temps réel (messagerie, notifications, présence) |
-| **Better Auth (interne)** | OTP + OAuth Google/Apple + sessions JWT |
+| **Auth maison (`jose`)** | OTP + OAuth Google/Apple + sessions JWT + TOTP 2FA |
 | **Pino / Sentry / Prometheus / Better Stack** | Logs, erreurs, métriques (MP18) |
 
 ## Démarrage rapide
@@ -54,7 +54,7 @@ curl http://localhost:3000/health   # → {"status":"ok",...}
 | `npm run test:coverage` | Couverture complète (unit + intégration) |
 | `npm run migrate` / `migrate:generate` | Appliquer / générer les migrations Drizzle |
 | `npm run migrate:prod` | Runner migrations bundle (production / image Docker) |
-| `npm run seed` | Seed de données de dev |
+| `backend/scripts/seed-*.sql` | Jeux de données de dev (pas de script `npm run seed`) |
 | `npm run studio` | Drizzle Studio (explorateur de schéma) |
 
 ## Observabilité (MP18)

@@ -3,7 +3,9 @@ import { db, schema } from '../../infrastructure/database';
 import { redis } from '../../infrastructure/redis';
 import { AppError } from '../../shared/utils/AppError';
 import { logger } from '../../middleware/logger';
+import { userLocationSettings } from '../location/location.schema';
 import { enqueueModerationScan } from '../moderation/moderation.queue';
+import { cleanPlaceLabel, snapToGrid, type PlacePrecision } from './stories.place';
 
 const STORY_TTL_MS = 24 * 60 * 60 * 1000; // 24h
 const viewedKey = (storyId: string) => `stories:viewed:${storyId}`;
@@ -20,6 +22,8 @@ export interface StoryDto {
   expiresAt: string;
   isMine: boolean;
   viewed: boolean;
+  /** Lieu flouté (centre de cellule) ; renvoyé uniquement à l'auteur de la story. */
+  place: { latitude: number; longitude: number; label: string | null } | null;
 }
 
 /** Sérialise une story avec les infos de son auteur. */
@@ -36,16 +40,31 @@ function toDto(row: schema.Story, mine: boolean, viewed: boolean, name: string, 
     expiresAt: row.expiresAt.toISOString(),
     isMine: mine,
     viewed,
+    // Le lieu n'est exposé qu'à son auteur ici : pour les autres, seule la carte (décision de visibilité) le montre.
+    place: mine && row.placeLat !== null && row.placeLon !== null ? { latitude: row.placeLat, longitude: row.placeLon, label: row.placeLabel } : null,
   };
 }
 
 /** POST /api/stories — crée une story (remplace l'active du user si < 24h). */
 export async function createStory(
   userId: string,
-  input: { img?: string; mediaUrl?: string; type?: 'image' | 'video'; caption?: string },
+  input: { img?: string; mediaUrl?: string; type?: 'image' | 'video'; caption?: string; place?: { latitude: number; longitude: number; label?: string } },
 ): Promise<StoryDto> {
   const url = input.mediaUrl ?? input.img;
   if (!url) throw AppError.badRequest('img ou mediaUrl est requis', 'STORY_MEDIA_REQUIRED');
+
+  // Lieu : seulement si la personne partage sa position et n'est pas invisible. Le point choisi est ramené au
+  // centre d'une cellule de grille AVANT stockage : aucune coordonnée exacte n'est conservée.
+  let place: { latitude: number; longitude: number; label: string | null } | null = null;
+  if (input.place) {
+    const [me] = await db.select({ sharing: schema.users.locationSharingEnabled, visibility: userLocationSettings.visibility, precision: userLocationSettings.precision, ghost: userLocationSettings.ghostMode })
+      .from(schema.users).leftJoin(userLocationSettings, eq(userLocationSettings.userId, schema.users.id)).where(eq(schema.users.id, userId)).limit(1);
+    if (!me?.sharing) throw AppError.forbidden('Active le partage de position pour ajouter une story à la carte', 'STORY_PLACE_SHARING_OFF');
+    if (me.visibility === 'nobody') throw AppError.badRequest('Ta visibilité est réglée sur « personne » : la story ne serait vue de personne', 'STORY_PLACE_VISIBILITY_NOBODY');
+    const precision: PlacePrecision = me.precision === 'area' ? 'area' : 'approximate';
+    const snapped = snapToGrid({ latitude: input.place.latitude, longitude: input.place.longitude }, precision);
+    place = { ...snapped, label: cleanPlaceLabel(input.place.label) };
+  }
 
   const now = new Date();
 
@@ -59,6 +78,9 @@ export async function createStory(
       type: input.type ?? 'image',
       url,
       caption: input.caption ?? null,
+      placeLat: place?.latitude ?? null,
+      placeLon: place?.longitude ?? null,
+      placeLabel: place?.label ?? null,
       expiresAt: new Date(now.getTime() + STORY_TTL_MS),
     })
     .returning();

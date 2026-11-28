@@ -4,7 +4,7 @@ import { api } from './api';
 import { slugifyTag } from '@/src/lib/slug';
 
 export const feedService = {
-  async getPosts(filter: 'following' | 'for-you' | 'popular' = 'following'): Promise<Post[]> {
+  async getPosts(filter: 'following' | 'for-you' | 'popular' | 'new' | 'tribes' = 'following'): Promise<Post[]> {
     const data = await api.get<{ posts: unknown[]; total: number; nextCursor: string | null }>(`/api/feed?filter=${filter}`);
     return (data.posts ?? []).map(mapHydratedPost);
   },

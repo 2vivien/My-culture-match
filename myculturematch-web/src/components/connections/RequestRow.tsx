@@ -24,7 +24,7 @@ export const RequestRow: React.FC<RequestRowProps> = ({ user, onAccept, onDeclin
             <h4 className="font-extrabold text-sm text-app-black dark:text-zinc-300 truncate leading-tight">{user.name}</h4>
           </div>
           <p className="text-[11px] text-app-gray dark:text-zinc-400 font-semibold mt-1.5 truncate">
-            {user.interests && user.interests.length > 0 ? user.interests.join(', ') : `${user.country} • Request`}
+            {user.mode === 'love' ? `Love request${user.country ? ` • ${user.country}` : ''}` : user.interests && user.interests.length > 0 ? user.interests.join(', ') : `${user.country} • Request`}
           </p>
         </div>
       </div>

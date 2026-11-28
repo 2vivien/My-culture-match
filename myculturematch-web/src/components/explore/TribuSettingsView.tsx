@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { isOwner, type TribeVisibility } from '@/src/lib/tribeAccess';
 import { Camera, Image as ImageIcon, Search, ShieldAlert, ShieldCheck, Settings, Lock, Unlock, Check, X } from 'lucide-react';
 import { Button } from '@/src/components/ui/button';
 import { ProfileAvatar } from '@/src/components/ui/ProfileAvatar';
@@ -40,6 +41,23 @@ export const TribuSettingsView: React.FC = () => {
     queryKey: ['tribu-moderators', selectedTribeId],
     queryFn: () => tribuService.fetchModerators(selectedTribeId ?? undefined),
     enabled: !!selectedTribeId,
+  });
+
+  const queryClient = useQueryClient();
+  const visibilityMutation = useMutation({
+    mutationFn: (visibility: TribeVisibility) => tribuService.setVisibility(selectedTribeId as string, visibility),
+    onSuccess: async (_r, visibility) => {
+      setErrorMsg(null);
+      setSuccessMsg(visibility === 'private' ? 'La tribu est maintenant privée.' : 'La tribu est maintenant publique.');
+      setTimeout(() => setSuccessMsg(null), 3000);
+      for (const queryKey of [['tribu-info', selectedTribeId], ['tribu-posts', selectedTribeId], ['tribu-join-requests', selectedTribeId], ['explore'], ['my-tribes']]) {
+        await queryClient.invalidateQueries({ queryKey });
+      }
+    },
+    onError: (err) => {
+      setSuccessMsg(null);
+      setErrorMsg(err instanceof Error && err.message ? err.message : 'Modification de la visibilité impossible');
+    },
   });
 
   const tribeName = tribeInfo?.name ? `t/${tribeInfo.name}` : 'Tribu';
@@ -154,6 +172,50 @@ export const TribuSettingsView: React.FC = () => {
               </div>
             )}
           </div>
+
+          {/* Visibilité : modifiable par l'administrateur uniquement */}
+          {tribeInfo && (
+            <div className="bg-white dark:bg-zinc-900 rounded-[28px] border border-app-border dark:border-zinc-800 p-6 shadow-soft flex flex-col gap-4">
+              <h3 className="font-extrabold text-sm text-app-black dark:text-white uppercase tracking-wider border-b border-app-border dark:border-zinc-800 pb-2">
+                Visibilité
+              </h3>
+              <div role="radiogroup" aria-label="Visibilité de la tribu" className="flex flex-col gap-2.5">
+                {(['public', 'private'] as const).map((v) => {
+                  const current = tribeInfo.visibility ?? 'public';
+                  const selected = current === v;
+                  return (
+                    <button
+                      key={v}
+                      type="button"
+                      role="radio"
+                      aria-checked={selected}
+                      disabled={!isOwner(tribeInfo.role) || visibilityMutation.isPending}
+                      onClick={() => !selected && visibilityMutation.mutate(v)}
+                      className={`text-left p-3.5 rounded-2xl border transition-all disabled:cursor-not-allowed ${
+                        selected
+                          ? 'bg-[#E27D60]/5 border-[#E27D60] dark:bg-[#E27D60]/10'
+                          : 'bg-zinc-50 dark:bg-zinc-900 border-app-border dark:border-zinc-800 enabled:hover:bg-zinc-100/50 enabled:cursor-pointer'
+                      }`}
+                    >
+                      <span className="font-extrabold text-xs text-app-black dark:text-white block">
+                        {v === 'public' ? 'Publique' : 'Privée'}
+                      </span>
+                      <span className="text-[10px] text-app-gray dark:text-zinc-400 font-medium block mt-0.5">
+                        {v === 'public'
+                          ? 'Tout le monde peut voir le contenu et rejoindre la tribu.'
+                          : 'Le contenu est réservé aux membres ; les adhésions passent par une demande approuvée par un modérateur.'}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+              {!isOwner(tribeInfo.role) && (
+                <p className="text-[10px] text-app-gray dark:text-zinc-500 font-semibold">
+                  Seul l’administrateur de la tribu peut modifier sa visibilité.
+                </p>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Members Management Column */}

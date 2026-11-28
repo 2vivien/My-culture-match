@@ -457,3 +457,156 @@ describe('Signalements', () => {
     expect(body.reports.map((r) => r.targetType)).toContain('tribe');
   });
 });
+
+describe('Sanctions de tribu (ban / mute)', () => {
+  const post = (token: string, path: string, body: unknown) =>
+    app.request(path, { method: 'POST', headers: { 'content-type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(body) });
+  const userIdOf = async (token: string) => ((await (await app.request('/api/users/me', { headers: { Authorization: `Bearer ${token}` } })).json()) as { id: string }).id;
+
+  async function seed() {
+    const owner = await login();
+    const member = await login();
+    const { id } = (await (await createTribe(owner)).json()) as { id: string };
+    await app.request(`/api/tribes/${id}/join`, { method: 'POST', headers: { Authorization: `Bearer ${member}` } });
+    return { owner, member, id, memberId: await userIdOf(member) };
+  }
+
+  it('un membre muet ne peut plus publier (403) mais reste membre', async () => {
+    const { owner, member, id, memberId } = await seed();
+    const res = await post(owner, `/api/tribes/${id}/sanctions`, { userId: memberId, kind: 'mute', days: 3 });
+    expect(res.status).toBe(201);
+    const attempt = await post(member, `/api/tribes/${id}/posts`, { type: 'Text', title: 'Je parle quand même', body: 'Contenu' });
+    expect(attempt.status).toBe(403);
+  });
+
+  it('un membre muet ne peut plus voter sur un post de tribu (403), l’upvote repasse après levée', async () => {
+    const { owner, member, id, memberId } = await seed();
+    const { id: postId } = (await (await post(owner, `/api/tribes/${id}/posts`, { type: 'Text', title: 'Post à voter', body: 'Contenu' })).json()) as { id: string };
+    expect((await post(owner, `/api/tribes/${id}/sanctions`, { userId: memberId, kind: 'mute', days: 3 })).status).toBe(201);
+    const blocked = await post(member, `/api/tribu/posts/${postId}/upvote`, { value: 1 });
+    expect(blocked.status).toBe(403);
+    expect(((await blocked.json()) as { error?: { code?: string } }).error?.code).toBe('TRIBE_SANCTIONED');
+    const downBlocked = await post(member, `/api/tribu/posts/${postId}/upvote`, { value: -1 });
+    expect(downBlocked.status).toBe(403);
+
+    const lift = await app.request(`/api/tribes/${id}/sanctions/${memberId}`, { method: 'DELETE', headers: { Authorization: `Bearer ${owner}` } });
+    expect(lift.status).toBe(200);
+    expect((await post(member, `/api/tribu/posts/${postId}/upvote`, { value: 1 })).status).toBe(200);
+  });
+
+  it('un membre banni ne peut plus voter sur un post de tribu (403)', async () => {
+    const { owner, member, id, memberId } = await seed();
+    const { id: postId } = (await (await post(owner, `/api/tribes/${id}/posts`, { type: 'Text', title: 'Post à voter', body: 'Contenu' })).json()) as { id: string };
+    expect((await post(owner, `/api/tribes/${id}/sanctions`, { userId: memberId, kind: 'ban' })).status).toBe(201);
+    const res = await post(member, `/api/tribu/posts/${postId}/upvote`, { value: 1 });
+    expect(res.status).toBe(403);
+  });
+
+  it('un membre banni est retiré de la tribu et ne peut pas la rejoindre', async () => {
+    const { owner, member, id, memberId } = await seed();
+    expect((await post(owner, `/api/tribes/${id}/sanctions`, { userId: memberId, kind: 'ban', reason: 'spam' })).status).toBe(201);
+    const rejoin = await app.request(`/api/tribes/${id}/join`, { method: 'POST', headers: { Authorization: `Bearer ${member}` } });
+    expect(rejoin.status).toBe(403);
+  });
+
+  it('lever la sanction rétablit l’accès', async () => {
+    const { owner, member, id, memberId } = await seed();
+    await post(owner, `/api/tribes/${id}/sanctions`, { userId: memberId, kind: 'ban' });
+    const lift = await app.request(`/api/tribes/${id}/sanctions/${memberId}`, { method: 'DELETE', headers: { Authorization: `Bearer ${owner}` } });
+    expect(lift.status).toBe(200);
+    const rejoin = await app.request(`/api/tribes/${id}/join`, { method: 'POST', headers: { Authorization: `Bearer ${member}` } });
+    expect(rejoin.status).toBe(200);
+  });
+
+  it('un simple membre ne peut ni sanctionner ni lister les sanctions (403)', async () => {
+    const { owner, member, id } = await seed();
+    const ownerId = await userIdOf(owner);
+    expect((await post(member, `/api/tribes/${id}/sanctions`, { userId: ownerId, kind: 'mute' })).status).toBe(403);
+    expect((await app.request(`/api/tribes/${id}/sanctions`, { headers: { Authorization: `Bearer ${member}` } })).status).toBe(403);
+  });
+
+  it('l’owner ne peut pas être sanctionné', async () => {
+    const { owner, id } = await seed();
+    const ownerId = await userIdOf(owner);
+    expect((await post(owner, `/api/tribes/${id}/sanctions`, { userId: ownerId, kind: 'ban' })).status).toBe(403);
+  });
+});
+
+describe('Sanctions de tribu — levée', () => {
+  it('un modérateur ne peut pas lever la sanction d’un autre modérateur (403), l’owner le peut', async () => {
+    const j = (t: string, body?: unknown, method = 'POST') => ({ method, headers: { 'content-type': 'application/json', Authorization: `Bearer ${t}` }, ...(body ? { body: JSON.stringify(body) } : {}) });
+    const me = async (t: string) => ((await (await app.request('/api/users/me', { headers: { Authorization: `Bearer ${t}` } })).json()) as { id: string }).id;
+    const owner = await login();
+    const modA = await login();
+    const modB = await login();
+    const { id } = (await (await createTribe(owner)).json()) as { id: string };
+    for (const t of [modA, modB]) await app.request(`/api/tribes/${id}/join`, j(t));
+    const [aId, bId] = [await me(modA), await me(modB)];
+    for (const uid of [aId, bId]) await app.request(`/api/tribes/${id}/moderators`, j(owner, { userId: uid }));
+
+    expect((await app.request(`/api/tribes/${id}/sanctions`, j(owner, { userId: bId, kind: 'mute' }))).status).toBe(201);
+    expect((await app.request(`/api/tribes/${id}/sanctions/${bId}`, j(modA, undefined, 'DELETE'))).status).toBe(403);
+    expect((await app.request(`/api/tribes/${id}/sanctions/${bId}`, j(owner, undefined, 'DELETE'))).status).toBe(200);
+  });
+});
+
+describe('Tri des posts de tribu (sort=hot|top|controversial|new)', () => {
+  const json = (token: string, body: unknown) => ({
+    method: 'POST',
+    headers: { 'content-type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify(body),
+  });
+
+  async function seed() {
+    const owner = await login();
+    const voterA = await login();
+    const voterB = await login();
+    const { id } = (await (await createTribe(owner)).json()) as { id: string };
+    for (const t of [voterA, voterB]) await app.request(`/api/tribes/${id}/join`, { method: 'POST', headers: { Authorization: `Bearer ${t}` } });
+    const mk = async (title: string) =>
+      ((await (await app.request(`/api/tribes/${id}/posts`, json(owner, { type: 'Text', title, body: 'Contenu' }))).json()) as { id: string }).id;
+    const vote = (token: string, postId: string, value: 1 | -1) => app.request(`/api/tribu/posts/${postId}/upvote`, json(token, { value }));
+    return { owner, voterA, voterB, id, mk, vote };
+  }
+  const order = async (token: string, id: string, query: string) =>
+    (((await (await app.request(`/api/tribes/${id}/posts?${query}`, { headers: { Authorization: `Bearer ${token}` } })).json()) as { posts: Array<{ id: string }> }).posts).map((p) => p.id);
+
+  it('top : le post le mieux noté vient en premier', async () => {
+    const { owner, voterA, voterB, id, mk, vote } = await seed();
+    const low = await mk('Bas');
+    const high = await mk('Haut');
+    await vote(voterA, high, 1); await vote(voterB, high, 1); await vote(voterA, low, -1);
+    expect((await order(owner, id, 'sort=top'))[0]).toBe(high);
+  });
+
+  it('controversial : camps équilibrés avant consensus', async () => {
+    const { owner, voterA, voterB, id, mk, vote } = await seed();
+    const consensus = await mk('Consensus');
+    const split = await mk('Partagé');
+    await vote(voterA, consensus, 1); await vote(voterB, consensus, 1); await vote(owner, consensus, 1);
+    await vote(voterA, split, 1); await vote(voterB, split, -1);
+    expect((await order(owner, id, 'sort=controversial'))[0]).toBe(split);
+  });
+
+  it('new (défaut) : le plus récent en premier', async () => {
+    const { owner, id, mk } = await seed();
+    await mk('Ancien');
+    const recent = await mk('Récent');
+    expect((await order(owner, id, ''))[0]).toBe(recent);
+  });
+
+  it('un post épinglé reste en tête quel que soit le tri', async () => {
+    const { owner, voterA, id, mk, vote } = await seed();
+    const pinned = await mk('Épinglé');
+    const popular = await mk('Populaire');
+    await vote(voterA, popular, 1);
+    await app.request(`/api/tribes/${id}/posts/${pinned}/pin`, { method: 'POST', headers: { Authorization: `Bearer ${owner}` } });
+    for (const sort of ['hot', 'top', 'controversial']) expect((await order(owner, id, `sort=${sort}`))[0]).toBe(pinned);
+  });
+
+  it('refuse un tri inconnu (400)', async () => {
+    const { owner, id } = await seed();
+    const res = await app.request(`/api/tribes/${id}/posts?sort=bogus`, { headers: { Authorization: `Bearer ${owner}` } });
+    expect(res.status).toBe(400);
+  });
+});

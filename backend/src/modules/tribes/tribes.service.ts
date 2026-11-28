@@ -4,6 +4,8 @@ import { redis } from '../../infrastructure/redis';
 import { AppError } from '../../shared/utils/AppError';
 import { recordAudit } from '../audit/audit.service';
 import { getPostsByIds } from '../posts/posts.service';
+import { assertCanJoinTribe, assertCanWriteInTribe } from './tribes.sanctions.service';
+import { canReadTribeContent, assertCanReadTribePost } from './tribes.access';
 import type { CreateTribeInput, PatchTribeInput, CreateRuleInput, PatchRuleInput } from './tribes.schemas';
 
 const MAX_TRIBES_PER_USER = 5;
@@ -29,6 +31,9 @@ export interface TribeDetail {
   postsCount: number;
   role: string | null;
   joined: boolean;
+  visibility: 'public' | 'private';
+  /** Tribu privée : le lecteur a une demande d'adhésion en attente. */
+  requestPending: boolean;
   rules: Array<{ number: number; title: string; description: string | null }>;
   moderators: Array<{ userId: string; role: string; name: string }>;
   createdAt: string;
@@ -54,7 +59,7 @@ function hasModRole(role: string | null | undefined): boolean {
 }
 
 /** GET /api/tribes — liste paginée + recherche. */
-export async function listTribes(search: string | undefined, cursor: string | undefined, limit: number): Promise<{ tribes: Array<Record<string, unknown>>; nextCursor: string | null }> {
+export async function listTribes(search: string | undefined, cursor: string | undefined, limit: number, viewerId?: string): Promise<{ tribes: Array<Record<string, unknown>>; nextCursor: string | null }> {
   const query = db
     .select({
       id: schema.tribes.id,
@@ -71,6 +76,10 @@ export async function listTribes(search: string | undefined, cursor: string | un
     .from(schema.tribes)
     .where(
       and(
+        // Les tribus privées ne sont listées que pour leurs membres.
+        viewerId
+          ? sql`(${schema.tribes.visibility} = 'public' OR EXISTS (SELECT 1 FROM tribe_members m WHERE m.tribe_id = ${schema.tribes.id} AND m.user_id = ${viewerId}))`
+          : eq(schema.tribes.visibility, 'public'),
         search ? or(ilike(schema.tribes.name, `%${search}%`), ilike(schema.tribes.tag ?? '', `%${search}%`)) : undefined,
         cursor ? lt(schema.tribes.createdAt, new Date(cursor)) : undefined,
       ),
@@ -147,6 +156,7 @@ export async function createTribe(userId: string, input: CreateTribeInput): Prom
       avatar: input.avatar ?? null,
       banner: input.banner ?? null,
       createdById: userId,
+      visibility: input.visibility,
       memberCount: 1,
     })
     .returning();
@@ -185,6 +195,8 @@ export async function getTribeDetail(tribeId: string, viewerId: string | null): 
     .where(and(eq(schema.tribeMembers.tribeId, tribeId), sql`${schema.tribeMembers.role} in ('owner', 'moderator')`));
 
   const membership = viewerId ? await isMember(tribeId, viewerId) : null;
+  const isPrivate = tribe.visibility === 'private';
+  const requestPending = Boolean(viewerId && isPrivate && !membership && (await hasPendingRequest(tribeId, viewerId)));
 
   return {
     id: tribe.id,
@@ -200,6 +212,8 @@ export async function getTribeDetail(tribeId: string, viewerId: string | null): 
     postsCount,
     role: membership?.role ?? null,
     joined: Boolean(membership),
+    visibility: isPrivate ? 'private' : 'public',
+    requestPending,
     rules: rules.map((r) => ({ number: r.number, title: r.title, description: r.desc })),
     moderators: moderators.map((m) => ({ userId: m.userId, role: m.role, name: m.name })),
     createdAt: tribe.createdAt.toISOString(),
@@ -224,6 +238,7 @@ export async function patchTribe(tribeId: string, userId: string, patch: PatchTr
       desc: patch.description,
       avatar: patch.avatar,
       banner: patch.banner,
+      visibility: patch.visibility,
     })
     .where(eq(schema.tribes.id, tribeId));
 
@@ -237,14 +252,28 @@ export async function deleteTribe(tribeId: string, userId: string): Promise<void
   if (tribe.createdById !== userId) {
     throw AppError.forbidden('Seul le créateur peut supprimer la tribu', 'TRIBE_DELETE_FORBIDDEN');
   }
+  if (tribe.visibility === 'private') {
+    // La clé étrangère remet tribe_id à NULL : sans cela, les posts privés deviendraient publics.
+    const doomed = await db.update(schema.posts).set({ status: 'deleted', updatedAt: new Date() })
+      .where(eq(schema.posts.tribeId, tribeId)).returning({ id: schema.posts.id });
+    if (doomed.length > 0) await redis.del(...doomed.map((d) => `post:${d.id}`));
+  }
   await db.delete(schema.tribes).where(eq(schema.tribes.id, tribeId));
   await redis.del(tribeCacheKey(tribeId), tribeMembersKey(tribeId), tribePostsKey(tribeId));
 }
 
 /** POST /api/tribes/:id/join. */
-export async function joinTribe(tribeId: string, userId: string): Promise<{ joined: boolean; membersCount: number }> {
+export async function joinTribe(tribeId: string, userId: string): Promise<{ joined: boolean; requested?: boolean; membersCount: number }> {
+  await assertCanJoinTribe(tribeId, userId);
   const existing = await isMember(tribeId, userId);
   if (existing) return { joined: false, membersCount: await memberCount(tribeId) };
+
+  const tribe = await findTribe(tribeId);
+  if (tribe.visibility === 'private') {
+    // Tribu privée : demande idempotente, qu'un modérateur approuve ou refuse.
+    await db.insert(schema.tribeJoinRequests).values({ tribeId, userId }).onConflictDoNothing();
+    return { joined: false, requested: true, membersCount: await memberCount(tribeId) };
+  }
 
   await db.insert(schema.tribeMembers).values({ tribeId, userId, role: 'member' });
   await redis.sadd(tribeMembersKey(tribeId), userId);
@@ -270,26 +299,78 @@ async function memberCount(tribeId: string): Promise<number> {
   return tribe?.count ?? 0;
 }
 
-/** GET /api/tribes/:id/posts — posts tribu (cursor), hydratés (auteur, likes, votes). */
-export async function tribePosts(tribeId: string, viewerId: string, cursor: string | undefined, limit: number): Promise<{ posts: Awaited<ReturnType<typeof getPostsByIds>>; nextCursor: string | null }> {
-  const query = db
-    .select()
+export type TribePostSort = 'new' | 'hot' | 'top' | 'controversial';
+export type TribePostWindow = 'hour' | 'day' | 'week' | 'month' | 'year' | 'all';
+
+const WINDOW_MS: Record<Exclude<TribePostWindow, 'all'>, number> = {
+  hour: 3_600_000,
+  day: 86_400_000,
+  week: 7 * 86_400_000,
+  month: 30 * 86_400_000,
+  year: 365 * 86_400_000,
+};
+
+/** Score « hot » façon Reddit : log10 du score net + ancienneté (45 000 s ≈ 12,5 h par décade). */
+const hotRank = sql`(SIGN(${schema.posts.score})::float * LOG(GREATEST(ABS(${schema.posts.score}), 1)) + EXTRACT(EPOCH FROM ${schema.posts.createdAt}) / 45000)`;
+const upvotes = sql`(SELECT COUNT(*) FROM post_votes v WHERE v.post_id = ${schema.posts.id} AND v.value = 1)`;
+const downvotes = sql`(SELECT COUNT(*) FROM post_votes v WHERE v.post_id = ${schema.posts.id} AND v.value = -1)`;
+/** Controversé = beaucoup de votes ET camps équilibrés. */
+const controversyRank = sql`((${upvotes} + ${downvotes}) * (LEAST(${upvotes}, ${downvotes})::float / NULLIF(GREATEST(${upvotes}, ${downvotes}), 0)))`;
+
+/**
+ * GET /api/tribes/:id/posts — posts tribu hydratés (auteur, likes, votes).
+ * `new` pagine par curseur de date ; les autres tris paginent par décalage (curseur = offset numérique).
+ * Les posts épinglés restent toujours en tête.
+ */
+export async function tribePosts(
+  tribeId: string,
+  viewerId: string,
+  cursor: string | undefined,
+  limit: number,
+  sort: TribePostSort = 'new',
+  window: TribePostWindow = 'all',
+  flairId?: string,
+): Promise<{ posts: Awaited<ReturnType<typeof getPostsByIds>>; nextCursor: string | null }> {
+  await assertCanReadTribe(tribeId, viewerId);
+  const base = [eq(schema.posts.tribeId, tribeId), eq(schema.posts.status, 'published')];
+  if (flairId) base.push(eq(schema.posts.flairId, flairId));
+  if ((sort === 'top' || sort === 'controversial') && window !== 'all') {
+    base.push(sql`${schema.posts.createdAt} >= ${new Date(Date.now() - WINDOW_MS[window])}`);
+  }
+
+  if (sort === 'new') {
+    const rows = await db
+      .select()
+      .from(schema.posts)
+      .where(and(...base, cursor ? lt(schema.posts.createdAt, new Date(cursor)) : undefined))
+      .orderBy(desc(schema.posts.pinned), desc(schema.posts.createdAt))
+      .limit(limit + 1);
+    const page = rows.slice(0, limit);
+    const nextCursor = rows.length > limit ? page[page.length - 1]?.createdAt.toISOString() ?? null : null;
+    return { posts: await getPostsByIds(page.map((p) => p.id), viewerId), nextCursor };
+  }
+
+  const offset = cursor && /^\d+$/.test(cursor) ? Number(cursor) : 0;
+  const rank = sort === 'hot' ? hotRank : sort === 'controversial' ? controversyRank : sql`${schema.posts.score}`;
+  const rows = await db
+    .select({ id: schema.posts.id })
     .from(schema.posts)
-    .where(and(eq(schema.posts.tribeId, tribeId), eq(schema.posts.status, 'published'), cursor ? lt(schema.posts.createdAt, new Date(cursor)) : undefined))
-    .orderBy(desc(schema.posts.pinned), desc(schema.posts.createdAt))
-    .limit(limit + 1);
-  const rows = await query;
-  const hasMore = rows.length > limit;
+    .where(and(...base))
+    .orderBy(desc(schema.posts.pinned), sql`${rank} DESC NULLS LAST`, desc(schema.posts.createdAt))
+    .limit(limit + 1)
+    .offset(offset);
   const page = rows.slice(0, limit);
-  const nextCursor = hasMore ? page[page.length - 1]?.createdAt.toISOString() ?? null : null;
-  const posts = await getPostsByIds(page.map((p) => p.id), viewerId);
-  return { posts, nextCursor };
+  const nextCursor = rows.length > limit ? String(offset + limit) : null;
+  return { posts: await getPostsByIds(page.map((p) => p.id), viewerId), nextCursor };
 }
 
 /** POST /api/tribu/posts/:id/upvote — toggle up/down. */
 export async function votePost(postId: string, userId: string, value: 1 | -1): Promise<{ myVote: number; score: number }> {
   const [post] = await db.select().from(schema.posts).where(eq(schema.posts.id, postId)).limit(1);
   if (!post || post.status === 'deleted') throw AppError.notFound('Post introuvable', 'POST_NOT_FOUND');
+  await assertCanReadTribePost(post.tribeId, userId);
+  // Même garde que addComment / voteComment : un membre banni ou en sourdine ne peut plus voter.
+  if (post.tribeId) await assertCanWriteInTribe(post.tribeId, userId);
 
   const [existing] = await db.select().from(schema.postVotes).where(and(eq(schema.postVotes.postId, postId), eq(schema.postVotes.userId, userId))).limit(1);
 
@@ -445,6 +526,7 @@ export async function reportTribe(tribeId: string, reporterId: string, reason: s
 
 /** POST /api/tribes/:id/posts/:postId/report — signaler un post de tribu. */
 export async function reportTribePost(tribeId: string, postId: string, reporterId: string, reason: string): Promise<{ reported: boolean }> {
+  await assertCanReadTribe(tribeId, reporterId);
   const [post] = await db
     .select({ id: schema.posts.id, authorId: schema.posts.authorId })
     .from(schema.posts)
@@ -522,4 +604,123 @@ export async function listTribeReports(
     reports: page.map((r) => ({ ...r, createdAt: r.createdAt.toISOString() })),
     nextCursor,
   };
+}
+
+
+// ── Tribus privées : demandes d'adhésion ───────────────────────
+
+async function hasPendingRequest(tribeId: string, userId: string): Promise<boolean> {
+  const [row] = await db.select({ userId: schema.tribeJoinRequests.userId }).from(schema.tribeJoinRequests)
+    .where(and(eq(schema.tribeJoinRequests.tribeId, tribeId), eq(schema.tribeJoinRequests.userId, userId))).limit(1);
+  return Boolean(row);
+}
+
+async function requireModerator(tribeId: string, userId: string): Promise<void> {
+  const membership = await isMember(tribeId, userId);
+  if (!hasModRole(membership?.role)) throw AppError.forbidden('Réservé aux modérateurs', 'TRIBE_MODERATOR_REQUIRED');
+}
+
+/** DELETE /api/tribes/:id/join-request — le demandeur retire sa demande. */
+export async function cancelJoinRequest(tribeId: string, userId: string): Promise<{ cancelled: boolean }> {
+  const removed = await db.delete(schema.tribeJoinRequests)
+    .where(and(eq(schema.tribeJoinRequests.tribeId, tribeId), eq(schema.tribeJoinRequests.userId, userId)))
+    .returning({ userId: schema.tribeJoinRequests.userId });
+  return { cancelled: removed.length > 0 };
+}
+
+/** GET /api/tribes/:id/join-requests — demandes en attente (modérateur+). */
+export async function listJoinRequests(tribeId: string, userId: string): Promise<{ requests: Array<{ userId: string; name: string; username: string | null; avatar: string | null; createdAt: string }> }> {
+  await requireModerator(tribeId, userId);
+  const rows = await db
+    .select({ userId: schema.users.id, name: schema.users.name, username: schema.users.username, avatar: schema.users.avatar, createdAt: schema.tribeJoinRequests.createdAt })
+    .from(schema.tribeJoinRequests)
+    .innerJoin(schema.users, eq(schema.users.id, schema.tribeJoinRequests.userId))
+    .where(eq(schema.tribeJoinRequests.tribeId, tribeId))
+    .orderBy(schema.tribeJoinRequests.createdAt)
+    .limit(100);
+  return { requests: rows.map((r) => ({ ...r, createdAt: r.createdAt.toISOString() })) };
+}
+
+/** POST /api/tribes/:id/join-requests/:userId/approve|decline (modérateur+). */
+export async function resolveJoinRequest(tribeId: string, moderatorId: string, targetUserId: string, approve: boolean): Promise<{ approved: boolean; membersCount: number }> {
+  await requireModerator(tribeId, moderatorId);
+  const removed = await db.delete(schema.tribeJoinRequests)
+    .where(and(eq(schema.tribeJoinRequests.tribeId, tribeId), eq(schema.tribeJoinRequests.userId, targetUserId)))
+    .returning({ userId: schema.tribeJoinRequests.userId });
+  if (removed.length === 0) throw AppError.notFound('Demande introuvable', 'JOIN_REQUEST_NOT_FOUND');
+
+  if (approve && !(await isMember(tribeId, targetUserId))) {
+    await db.insert(schema.tribeMembers).values({ tribeId, userId: targetUserId, role: 'member' });
+    await redis.sadd(tribeMembersKey(tribeId), targetUserId);
+    await db.update(schema.tribes).set({ memberCount: sql`member_count + 1` }).where(eq(schema.tribes.id, tribeId));
+  }
+  return { approved: approve, membersCount: await memberCount(tribeId) };
+}
+
+/** Garde-fou lecture : 403 pour un non-membre d'une tribu privée. */
+async function assertCanReadTribe(tribeId: string, viewerId: string): Promise<void> {
+  const tribe = await findTribe(tribeId);
+  const membership = await isMember(tribeId, viewerId);
+  if (!canReadTribeContent(tribe.visibility, Boolean(membership))) {
+    throw AppError.forbidden('Cette tribu est privée : demandez à la rejoindre', 'TRIBE_PRIVATE');
+  }
+}
+
+
+// ── Flairs ─────────────────────────────────────────────────────
+
+const MAX_FLAIRS_PER_TRIBE = 20;
+
+/** GET /api/tribes/:id/flairs — lisible comme le reste du contenu de la tribu. */
+export async function listFlairs(tribeId: string, viewerId: string): Promise<{ flairs: Array<{ id: string; name: string; color: string }> }> {
+  await assertCanReadTribe(tribeId, viewerId);
+  const flairs = await db.select({ id: schema.tribeFlairs.id, name: schema.tribeFlairs.name, color: schema.tribeFlairs.color })
+    .from(schema.tribeFlairs).where(eq(schema.tribeFlairs.tribeId, tribeId)).orderBy(schema.tribeFlairs.createdAt);
+  return { flairs };
+}
+
+/** POST /api/tribes/:id/flairs — modérateur+. */
+export async function createFlair(tribeId: string, userId: string, input: { name: string; color: string }): Promise<{ id: string; name: string; color: string }> {
+  await requireModerator(tribeId, userId);
+  const [count] = await db.select({ n: sql<number>`count(*)::int` }).from(schema.tribeFlairs).where(eq(schema.tribeFlairs.tribeId, tribeId));
+  if ((count?.n ?? 0) >= MAX_FLAIRS_PER_TRIBE) throw AppError.badRequest(`Maximum ${MAX_FLAIRS_PER_TRIBE} flairs par tribu`, 'FLAIR_LIMIT_REACHED');
+  const [dup] = await db.select({ id: schema.tribeFlairs.id }).from(schema.tribeFlairs)
+    .where(and(eq(schema.tribeFlairs.tribeId, tribeId), sql`lower(${schema.tribeFlairs.name}) = lower(${input.name})`)).limit(1);
+  if (dup) throw AppError.conflict('Ce flair existe déjà', 'FLAIR_NAME_TAKEN');
+  const [flair] = await db.insert(schema.tribeFlairs).values({ tribeId, name: input.name, color: input.color }).returning();
+  if (!flair) throw AppError.badRequest('Échec de création du flair', 'FLAIR_CREATE_FAILED');
+  return { id: flair.id, name: flair.name, color: flair.color };
+}
+
+/** DELETE /api/tribes/:id/flairs/:flairId — modérateur+ ; les posts concernés perdent leur flair. */
+export async function deleteFlair(tribeId: string, userId: string, flairId: string): Promise<{ deleted: boolean }> {
+  await requireModerator(tribeId, userId);
+  const affected = await db.select({ id: schema.posts.id }).from(schema.posts).where(eq(schema.posts.flairId, flairId));
+  const removed = await db.delete(schema.tribeFlairs)
+    .where(and(eq(schema.tribeFlairs.id, flairId), eq(schema.tribeFlairs.tribeId, tribeId)))
+    .returning({ id: schema.tribeFlairs.id });
+  if (removed.length === 0) throw AppError.notFound('Flair introuvable', 'FLAIR_NOT_FOUND');
+  // La clé étrangère annule flair_id en base ; on purge le cache des posts qui le portaient.
+  if (affected.length > 0) await redis.del(...affected.map((a) => `post:${a.id}`));
+  return { deleted: true };
+}
+
+/** PUT /api/tribes/:id/posts/:postId/flair — l'auteur du post ou un modérateur ; flairId null le retire. */
+export async function setPostFlair(tribeId: string, postId: string, userId: string, flairId: string | null): Promise<{ flairId: string | null }> {
+  const membership = await isMember(tribeId, userId);
+  if (!membership) throw AppError.forbidden('Réservé aux membres de la tribu', 'TRIBE_MEMBERSHIP_REQUIRED');
+  const [post] = await db.select({ authorId: schema.posts.authorId, status: schema.posts.status }).from(schema.posts)
+    .where(and(eq(schema.posts.id, postId), eq(schema.posts.tribeId, tribeId))).limit(1);
+  if (!post || post.status === 'deleted') throw AppError.notFound('Post introuvable dans cette tribu', 'POST_NOT_FOUND');
+  if (post.authorId !== userId && !hasModRole(membership.role)) {
+    throw AppError.forbidden('Seul l’auteur ou un modérateur peut changer le flair', 'FLAIR_FORBIDDEN');
+  }
+  if (flairId) {
+    const [flair] = await db.select({ id: schema.tribeFlairs.id }).from(schema.tribeFlairs)
+      .where(and(eq(schema.tribeFlairs.id, flairId), eq(schema.tribeFlairs.tribeId, tribeId))).limit(1);
+    if (!flair) throw AppError.badRequest('Flair inconnu pour cette tribu', 'FLAIR_NOT_FOUND');
+  }
+  await db.update(schema.posts).set({ flairId, updatedAt: new Date() }).where(eq(schema.posts.id, postId));
+  await redis.del(`post:${postId}`);
+  return { flairId };
 }

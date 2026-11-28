@@ -23,6 +23,7 @@
     "migrate": "drizzle-kit migrate",
     "seed:feed": "tsx scripts/seed-feed.ts",
     "migrate:generate": "drizzle-kit generate",
+    "check:migrations": "tsx scripts/check-migrations.ts",
     "studio": "drizzle-kit studio"
   },
   "dependencies": {

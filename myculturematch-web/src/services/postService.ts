@@ -43,6 +43,7 @@ export const postService = {
       title: data.title.trim().slice(0, 200),
       tribeId: data.tribeId,
     };
+    if (data.tribeId && data.flairId) payload.flairId = data.flairId;
     if (data.body?.trim()) payload.body = data.body.trim().slice(0, 5000);
     if (data.mediaUrl) payload.mediaUrls = [data.mediaUrl];
     if (data.linkUrl?.trim()) payload.linkUrl = data.linkUrl.trim();

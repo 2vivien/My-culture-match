@@ -9,6 +9,7 @@ on:
   pull_request:
     paths:
       - 'backend/**'
+      - '.github/workflows/ci.yml'
 
 concurrency:
   group: ci-backend-${{ github.ref }}
@@ -23,8 +24,7 @@ env:
   REDIS_POOL_SIZE: 5
   BETTER_AUTH_SECRET: ci-secret-ci-secret-ci-secret-32chars
   BETTER_AUTH_URL: http://localhost:3000
-  SMTP_HOST: localhost
-  SMTP_PORT: 1025
+  BREVO_API_KEY: ci-brevo-api-key
   MINIO_ENDPOINT: localhost
   MINIO_PORT: 9000
   MINIO_USE_SSL: 'false'
@@ -72,9 +72,50 @@ jobs:
   unit-tests:
     name: Tests unitaires (Vitest)
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     defaults:
       run:
         working-directory: backend
+    # Plusieurs suites « unitaires » (otp, fanout, profile-vector, app, observability) utilisent un vrai Redis ;
+    # sans service, elles restent bloquées à la connexion.
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: mcm
+          POSTGRES_PASSWORD: mcm_secret
+          POSTGRES_DB: mcm
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U mcm -d mcm"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports: ['6379:6379']
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+      meilisearch:
+        image: getmeili/meilisearch:v1.11
+        ports: ['7700:7700']
+        env:
+          MEILI_MASTER_KEY: masterKey
+        options: >-
+          --health-cmd "curl -sf http://localhost:7700/health"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+      s3:
+        # MinIO ne publie plus ni image ni binaire : on utilise un serveur S3 de test, exposé sur le port 9000
+        # attendu par la configuration (MINIO_PORT) ; le bucket de l'application est créé au démarrage.
+        image: adobe/s3mock:latest
+        ports: ['9000:9090']
+        env:
+          COM_ADOBE_TESTING_S3MOCK_STORE_INITIAL_BUCKETS: mcm-media
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -83,6 +124,10 @@ jobs:
           cache: npm
           cache-dependency-path: backend/package-lock.json
       - run: npm ci
+      - name: Cohérence des migrations Drizzle (journal / fichiers)
+        run: npm run check:migrations
+      - name: Migrations DB
+        run: npm run migrate
       - run: npm run test:unit
 
   integration-tests:
@@ -123,17 +168,13 @@ jobs:
           --health-interval 5s
           --health-timeout 3s
           --health-retries 10
-      minio:
-        image: minio/minio:latest
-        ports: ['9000:9000']
+      s3:
+        # MinIO ne publie plus ni image ni binaire : on utilise un serveur S3 de test, exposé sur le port 9000
+        # attendu par la configuration (MINIO_PORT) ; le bucket de l'application est créé au démarrage.
+        image: adobe/s3mock:latest
+        ports: ['9000:9090']
         env:
-          MINIO_ROOT_USER: minioadmin
-          MINIO_ROOT_PASSWORD: minioadmin
-        options: >-
-          --health-cmd "curl -sf http://localhost:9000/minio/health/live"
-          --health-interval 5s
-          --health-timeout 3s
-          --health-retries 10
+          COM_ADOBE_TESTING_S3MOCK_STORE_INITIAL_BUCKETS: mcm-media
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -178,12 +219,13 @@ jobs:
         ports: ['7700:7700']
         env:
           MEILI_MASTER_KEY: masterKey
-      minio:
-        image: minio/minio:latest
-        ports: ['9000:9000']
+      s3:
+        # MinIO ne publie plus ni image ni binaire : on utilise un serveur S3 de test, exposé sur le port 9000
+        # attendu par la configuration (MINIO_PORT) ; le bucket de l'application est créé au démarrage.
+        image: adobe/s3mock:latest
+        ports: ['9000:9090']
         env:
-          MINIO_ROOT_USER: minioadmin
-          MINIO_ROOT_PASSWORD: minioadmin
+          COM_ADOBE_TESTING_S3MOCK_STORE_INITIAL_BUCKETS: mcm-media
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

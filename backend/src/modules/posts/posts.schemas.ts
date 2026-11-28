@@ -11,6 +11,8 @@ const basePostFields = {
   mediaUrls: z.array(z.string().url()).min(1, 'Au moins un média requis').max(10, '10 médias maximum').optional(),
   linkUrl: z.string().url('URL invalide').optional(),
   tribeId: z.string().trim().min(1).optional(),
+  /** Flair de la tribu (nécessite tribeId). */
+  flairId: z.string().trim().min(1).optional(),
   tags: z.array(z.string().regex(TAG_REGEX, 'Tag : lettres minuscules, chiffres ou tirets uniquement')).max(5, '5 tags maximum').optional(),
 };
 
@@ -45,4 +47,9 @@ export type CreateCommentInput = z.infer<typeof createCommentSchema>;
 export const listCommentsQuerySchema = z.object({
   cursor: z.string().trim().optional(),
   limit: z.coerce.number().int().min(1).max(50).default(20),
+  /** `new` (défaut, historique) : plus récents d'abord ; `best` / `top` / `old` : arbre trié, curseur = décalage. */
+  sort: z.enum(['best', 'top', 'new', 'old']).default('new'),
 });
+
+/** POST /api/posts/:id/comments/:commentId/vote. */
+export const commentVoteSchema = z.object({ value: z.union([z.literal(1), z.literal(-1)]) }).strict();

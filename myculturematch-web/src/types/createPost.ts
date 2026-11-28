@@ -10,6 +10,7 @@ export interface PostSubmission {
   mediaUrl?: string;
   linkUrl?: string;
   tribeId?: string;
+  flairId?: string;
   type: 'Text' | 'Images' | 'Link';
   tags?: string[];
 }

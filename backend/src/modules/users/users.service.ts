@@ -2,6 +2,7 @@ import { and, desc, eq, or, sql } from 'drizzle-orm';
 import { db, schema } from '../../infrastructure/database';
 import { redis } from '../../infrastructure/redis';
 import { AppError } from '../../shared/utils/AppError';
+import { requiresConsent } from '../location/location.policy';
 import type { ProfilePatchInput } from './users.schemas';
 import { addFollower, removeFollower, followingKey } from '../feed/fanout';
 
@@ -148,9 +149,17 @@ export async function getCurrentUser(userId: string): Promise<PublicUser> {
  */
 export async function updateLocation(
   userId: string,
-  input: { latitude?: number; longitude?: number; enabled?: boolean },
+  input: { latitude?: number; longitude?: number; enabled?: boolean; consent?: boolean },
 ): Promise<{ success: true; latitude: number | null; longitude: number | null; locationSharingEnabled: boolean }> {
   const enabled = input.enabled ?? true;
+
+  if (enabled) {
+    // Envoyer des coordonnées n'équivaut pas à consentir : l'activation initiale doit être explicite.
+    const [me] = await db.select({ on: schema.users.locationSharingEnabled }).from(schema.users).where(eq(schema.users.id, userId)).limit(1);
+    if (requiresConsent({ currentlyEnabled: Boolean(me?.on), wantsEnabled: true, consent: input.consent === true })) {
+      throw AppError.badRequest('Active le partage de position explicitement (consent: true)', 'LOCATION_CONSENT_REQUIRED');
+    }
+  }
 
   if (!enabled) {
     await db

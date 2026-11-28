@@ -2,9 +2,14 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FlagTriangleLeft, MoreHorizontal, Bookmark, Share2, BellOff, AlertTriangle, Check, MessageCircle } from 'lucide-react';
 import type { PostItem } from '@/src/types/tribu';
+import type { Flair } from '@/src/lib/tribeAccess';
+import { FlairBadge } from './FlairBadge';
 
 interface TribuPostCardProps {
   post: PostItem;
+  /** Flairs de la tribu + callback : fournis seulement aux modérateurs (changer le flair d'un post). */
+  flairs?: Flair[];
+  onSetFlair?: (flairId: string | null) => void;
   tribeName?: string;
   commentInput: string;
   isMenuOpen: boolean;
@@ -23,6 +28,8 @@ interface TribuPostCardProps {
 
 export const TribuPostCard: React.FC<TribuPostCardProps> = ({
   post,
+  flairs,
+  onSetFlair,
   tribeName,
   commentInput,
   isMenuOpen,
@@ -118,6 +125,24 @@ export const TribuPostCard: React.FC<TribuPostCardProps> = ({
                   {isMuted && <Check className="w-3.5 h-3.5 text-[#E27D60]" />}
                 </button>
 
+                {onSetFlair && flairs && flairs.length > 0 && (
+                  <label className="block px-3.5 py-2">
+                    <span className="block text-[10px] font-black uppercase tracking-wider text-app-gray mb-1">Flair du post</span>
+                    <select
+                      value={post.flair?.id ?? ''}
+                      onChange={(e) => onSetFlair(e.target.value || null)}
+                      className="w-full text-xs font-bold rounded-lg border border-app-border dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 text-app-black dark:text-zinc-200 px-2 py-1.5 cursor-pointer"
+                    >
+                      <option value="">Aucun flair</option>
+                      {flairs.map((f) => (
+                        <option key={f.id} value={f.id}>
+                          {f.name}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                )}
+
                 <div className="border-t border-app-border/60 dark:border-zinc-800/60 my-1" />
 
                 <button
@@ -137,9 +162,12 @@ export const TribuPostCard: React.FC<TribuPostCardProps> = ({
         <h3 className="font-black text-sm sm:text-base text-app-black dark:text-zinc-100 leading-snug">
           {post.title}
         </h3>
-        <span className={`inline-block text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full mt-2.5 ${post.tagColor}`}>
-          {post.tagText}
-        </span>
+        <div className="flex items-center gap-1.5 flex-wrap mt-2.5">
+          {post.flair && <FlairBadge name={post.flair.name} color={post.flair.color} />}
+          <span className={`inline-block text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full ${post.tagColor}`}>
+            {post.tagText}
+          </span>
+        </div>
 
         {post.mediaUrl && (
           <div className="mt-4 rounded-xl overflow-hidden border border-app-border dark:border-zinc-800 max-h-96">

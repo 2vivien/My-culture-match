@@ -1,18 +1,20 @@
 import { useState, type ChangeEvent } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { postService } from '@/src/services/postService';
+import { traditionService } from '@/src/services/traditionService';
 import { uploadService } from '@/src/services/uploadService';
+import { tribuService } from '@/src/services/tribuService';
+import type { Flair } from '@/src/lib/tribeAccess';
 import { mediaUrl } from '@/src/lib/media';
-import type { TribeOption, PostSubmission } from '@/src/types/createPost';
+import type { TribeOption, TraditionSubmission } from '@/src/types/createTradition';
 import { useUIStore } from '@/src/stores/useUIStore';
 
-export function useCreatePost() {
+export function useCreateTradition() {
   const { setActiveTab } = useUIStore();
   const queryClient = useQueryClient();
 
   const { data: tribes = [] } = useQuery<TribeOption[]>({
     queryKey: ['tribe-options'],
-    queryFn: postService.getTribes,
+    queryFn: traditionService.getTribes,
     staleTime: 1000 * 60 * 10,
   });
 
@@ -49,8 +51,18 @@ export function useCreatePost() {
     setFormats((prev) => ({ ...prev, [format]: !prev[format] }));
   };
 
-  const selectTribe = (tribe: TribeOption | null) => {
+  // Flairs de la tribu choisie ; un 403 (tribu privée non rejointe) donne simplement « aucun flair ».
+  const { data: flairs = [], isLoading: flairsLoading } = useQuery<Flair[]>({
+    queryKey: ['tribu-flairs', selectedTribe?.id],
+    queryFn: () => tribuService.getFlairs(selectedTribe!.id).catch(() => []),
+    enabled: !!selectedTribe,
+    staleTime: 1000 * 60 * 5,
+  });
+  const [selectedFlairId, setSelectedFlairId] = useState<string | null>(null);
+
+  const selectTribe = (tribe: TribeOption) => {
     setSelectedTribe(tribe);
+    setSelectedFlairId(null);
     setTribuDropdownOpen(false);
   };
 
@@ -78,40 +90,39 @@ export function useCreatePost() {
     if (activeSubTab === 'Images' && mediaFile) {
       const uploaded = await uploadService.uploadFile(mediaFile, 'post');
       if (uploaded?.objectKey) {
-        // Mock mode returns objectKey starting with "mock/", use local URL in that case
-        resolvedMediaUrl = uploaded.objectKey.startsWith('mock/')
-          ? mediaPreview ?? undefined
-          : mediaUrl(uploaded.objectKey);
+        resolvedMediaUrl = mediaUrl(uploaded.objectKey);
       }
     }
     // Le backend exige un titre de 3 caractères minimum pour TOUS les types de posts.
     if (title.trim().length < 3 && activeSubTab !== 'Text') {
-      setTitle(body.trim().slice(0, 60) || 'Ma post');
+      setTitle(body.trim().slice(0, 60) || 'Ma tradition');
     }
 
-    const submission: PostSubmission = {
+    const submission: TraditionSubmission = {
       title:
         title.trim().length >= 3
           ? title
           : activeSubTab === 'Link'
             ? 'Partage de lien'
-            : body.trim().slice(0, 60) || 'Ma post',
+            : body.trim().slice(0, 60) || 'Ma tradition',
       body: activeSubTab === 'Text' ? body : undefined,
       mediaUrl: activeSubTab === 'Images' ? resolvedMediaUrl : undefined,
       linkUrl: activeSubTab === 'Link' ? linkUrl : undefined,
       tribeId: selectedTribe?.id,
+      // Le flair n'a de sens que dans une tribu, et doit appartenir à cette tribu.
+      flairId: selectedTribe && flairs.some((f) => f.id === selectedFlairId) ? (selectedFlairId ?? undefined) : undefined,
       type: activeSubTab,
       tags: selectedTags.length > 0 ? selectedTags : undefined,
     };
 
     try {
-      await postService.submitPost(submission);
+      await traditionService.submitTradition(submission);
       // Le feed et les posts de tribu doivent montrer la nouvelle publication.
       await queryClient.invalidateQueries({ queryKey: ['feed'] });
       await queryClient.invalidateQueries({ queryKey: ['tribu-posts'] });
       setActiveTab('Home');
     } catch (err) {
-      console.error('Error submitting post:', err);
+      console.error('Error submitting tradition:', err);
     } finally {
       setIsSubmitting(false);
     }
@@ -140,5 +151,9 @@ export function useCreatePost() {
     handleSubmit,
     selectedTags,
     toggleTag,
+    flairs,
+    flairsLoading,
+    selectedFlairId,
+    setSelectedFlairId,
   };
 }
