@@ -28,6 +28,12 @@ const envSchema = z.object({
     .string()
     .min(32, 'BETTER_AUTH_SECRET doit contenir au moins 32 caractères'),
   BETTER_AUTH_URL: z.string().url().default('http://localhost:3000'),
+  /**
+   * Secret du décalage de floutage des positions (HMAC). Facultatif : à défaut on réutilise BETTER_AUTH_SECRET.
+   * Un secret dédié évite qu'une rotation du secret d'authentification déplace tous les marqueurs, et qu'une fuite
+   * de l'un compromette l'autre. Vide = non défini.
+   */
+  LOCATION_JITTER_SECRET: z.preprocess((v) => (v === '' ? undefined : v), z.string().min(32, 'LOCATION_JITTER_SECRET doit contenir au moins 32 caractères').optional()),
 
   GOOGLE_CLIENT_ID: z.string().optional().default(''),
   GOOGLE_CLIENT_SECRET: z.string().optional().default(''),

@@ -8,7 +8,7 @@ import { AppError } from '../../shared/utils/AppError';
 import { haversineKm } from '../users/users.service';
 import { evaluateNearbyCandidate, DEFAULT_LOCATION_VISIBILITY, NEARBY_RADIUS_KM } from './location.nearby.filter';
 import { computeMatchScore } from '../users/match-score';
-import { obfuscatePosition } from './location.privacy';
+import { jitterSecret, obfuscatePosition } from './location.privacy';
 import { env } from '../../config/env';
 import { disableLocationSharing, enableLocationSharing, locationSettingsCacheKey } from './location.sharing';
 
@@ -184,7 +184,7 @@ export async function getPeopleNearby(userId: string, viewerLocation?: { latitud
     if (!decision.visible || distance === null || c.latitude === null || c.longitude === null) continue;
     const precision = validPrecision(c.precision) ? c.precision : 'approximate';
     const distanceKm = c.showDistance ? (distance < 1 ? Number(distance.toFixed(1)) : Math.round(distance)) : null;
-    const position = obfuscatePosition(c.latitude, c.longitude, c.id, precision, env.BETTER_AUTH_SECRET);
+    const position = obfuscatePosition(c.latitude, c.longitude, c.id, precision, jitterSecret(env));
     people.push({
       id: c.id, name: c.name, username: c.username, avatar: c.avatar, bio: c.bio, country: c.country, location: c.location,
       languages: c.languages, values: c.values, intention: c.intention, matchScore: computeMatchScore(viewer, c), ...position, distanceKm,
