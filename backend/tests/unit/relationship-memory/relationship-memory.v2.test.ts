@@ -56,8 +56,6 @@ describe('rebuildRelationshipMemoryV2', () => {
       msg('m4', 'bob', 'Désolé pour hier, dispute stupide, pardon', 24 * 10),
       msg('m5', 'alice', 'Silence entre nous, triste, problème', 24 * 10 + 1),
     ];
-    const out = await rebuildRelationshipMemoryV2('c1', 'alice');
-    void out;
     const writes = fakeDb({ messages });
     const res = await rebuildRelationshipMemoryV2('c1', 'alice');
     expect(res.messageCount).toBe(5);
@@ -79,10 +77,8 @@ describe('rebuildRelationshipMemoryV2', () => {
     const first = res.memories.find((m) => m.kind === 'first')!;
     expect(first).toMatchObject({ actor: 'bob', evidence: ['m1'], importance: 0.96, phase: 'phase-1' });
     expect(first.summary).toContain('ton interlocuteur');
-    const second = await (async () => {
-      fakeDb({ messages: [msg('m1', 'alice', 'Salut, enchanté', 0)] });
-      return rebuildRelationshipMemoryV2('c1', 'alice');
-    })();
+    fakeDb({ messages: [msg('m1', 'alice', 'Salut, enchanté', 0)] });
+    const second = await rebuildRelationshipMemoryV2('c1', 'alice');
     expect(second.memories.find((m) => m.kind === 'first')!.summary).toContain('toi');
   });
 
