@@ -1,4 +1,4 @@
-import { eq, and, lt, desc, inArray, ne, sql } from 'drizzle-orm';
+import { eq, and, lt, desc, inArray, sql } from 'drizzle-orm';
 import { db, schema } from '../../infrastructure/database';
 import { redis } from '../../infrastructure/redis';
 import { AppError } from '../../shared/utils/AppError';
@@ -77,7 +77,7 @@ export async function createPost(userId: string, input: CreatePostInput): Promis
       .from(schema.posts)
       .where(eq(schema.posts.id, input.originalPostId))
       .limit(1);
-    if (!original || original.status === 'deleted') {
+    if (!original || original.status !== 'published') {
       throw AppError.notFound('Post original introuvable', 'POST_NOT_FOUND');
     }
     await assertCanReadTribePost(original.tribeId, userId);
@@ -185,7 +185,7 @@ async function hydratePost(
     const [original] = await db
       .select()
       .from(schema.posts)
-      .where(and(eq(schema.posts.id, post.originalPostId), ne(schema.posts.status, 'deleted')))
+      .where(and(eq(schema.posts.id, post.originalPostId), eq(schema.posts.status, 'published')))
       .limit(1);
     // Reposts anciens d'un post devenu privé : l'original n'est exposé qu'à ceux qui peuvent le lire.
     const originalHidden = original?.tribeId ? (await unreadableTribeIds([original.tribeId], viewerId)).has(original.tribeId) : false;
@@ -238,6 +238,9 @@ export async function getPostById(postId: string, viewerId: string): Promise<Hyd
     // lecture répétée d'un post dans la fenêtre du cache. On les reconstitue donc en Date.
     const post = reviveDates(JSON.parse(cached) as schema.Post);
     if (post.status !== 'deleted') {
+      if (post.status === 'flagged' && post.authorId !== viewerId) {
+        throw AppError.forbidden('Ce post est en attente de modération', 'POST_FLAGGED');
+      }
       await assertCanReadTribePost(post.tribeId, viewerId);
       const rel = await postRelations(postId, viewerId);
       return hydratePost(post, viewerId, rel);
@@ -252,7 +255,8 @@ export async function getPostById(postId: string, viewerId: string): Promise<Hyd
   }
   await assertCanReadTribePost(post.tribeId, viewerId);
 
-  await redis.set(postCacheKey(postId), JSON.stringify(post), 'EX', POST_CACHE_TTL);
+  // Seul un post publié est mis en cache : une version « signalée » servie à tous pendant 30 minutes contournerait la modération.
+  if (post.status === 'published') await redis.set(postCacheKey(postId), JSON.stringify(post), 'EX', POST_CACHE_TTL);
   const rel = await postRelations(postId, viewerId);
   return hydratePost(post, viewerId, rel);
 }
@@ -285,6 +289,7 @@ export async function toggleLike(userId: string, postId: string): Promise<{ like
   const [post] = await db.select({ status: schema.posts.status, authorId: schema.posts.authorId, tribeId: schema.posts.tribeId }).from(schema.posts).where(eq(schema.posts.id, postId)).limit(1);
   if (!post || post.status === 'deleted') throw AppError.notFound('Post introuvable', 'POST_NOT_FOUND');
   await assertCanReadTribePost(post.tribeId, userId);
+  if (post.tribeId) await assertCanWriteInTribe(post.tribeId, userId);
 
   const existing = await db.select().from(schema.postLikes).where(and(eq(schema.postLikes.postId, postId), eq(schema.postLikes.userId, userId))).limit(1);
   if (existing[0]) {
@@ -293,12 +298,9 @@ export async function toggleLike(userId: string, postId: string): Promise<{ like
     return { liked: false, likes: await counterValue(postId, 'likes') };
   }
 
-  try {
-    await db.insert(schema.postLikes).values({ postId, userId });
-  } catch {
-    // contrainte UNIQUE : like simultané déjà présent
-    return { liked: true, likes: await counterValue(postId, 'likes') };
-  }
+  // Insertion atomique : un like simultané déjà présent n'est pas une erreur, et une vraie panne de base n'est plus avalée.
+  const inserted = await db.insert(schema.postLikes).values({ postId, userId }).onConflictDoNothing().returning({ postId: schema.postLikes.postId });
+  if (inserted.length === 0) return { liked: true, likes: await counterValue(postId, 'likes') };
   await incrementCounter(postId, 'likes');
   await createNotification({
     userId: post.authorId,
@@ -415,6 +417,7 @@ export async function voteComment(userId: string, postId: string, commentId: str
   // Mêmes garde-fous que la lecture et que addComment : post visible, commentaire publié, pas de sanction de tribu.
   const [post] = await db.select({ status: schema.posts.status, tribeId: schema.posts.tribeId }).from(schema.posts).where(eq(schema.posts.id, postId)).limit(1);
   if (!post || post.status === 'deleted') throw AppError.notFound('Post introuvable', 'POST_NOT_FOUND');
+  await assertCanReadTribePost(post.tribeId, userId);
   const [comment] = await db.select({ id: schema.comments.id, status: schema.comments.status }).from(schema.comments)
     .where(and(eq(schema.comments.id, commentId), eq(schema.comments.postId, postId))).limit(1);
   if (!comment || comment.status !== 'published') throw AppError.notFound('Commentaire introuvable', 'COMMENT_NOT_FOUND');
@@ -441,12 +444,11 @@ export async function sharePost(userId: string, postId: string): Promise<{ share
   const [post] = await db.select({ status: schema.posts.status, tribeId: schema.posts.tribeId }).from(schema.posts).where(eq(schema.posts.id, postId)).limit(1);
   if (!post || post.status === 'deleted') throw AppError.notFound('Post introuvable', 'POST_NOT_FOUND');
   await assertCanReadTribePost(post.tribeId, userId);
+  if (post.tribeId) await assertCanWriteInTribe(post.tribeId, userId);
 
-  try {
-    await db.insert(schema.shares).values({ postId, userId });
-  } catch {
-    return { shared: false, shares: await counterValue(postId, 'shares') };
-  }
+  // Insertion atomique : un partage déjà présent n'est pas une erreur, et une vraie panne de base n'est plus avalée.
+  const inserted = await db.insert(schema.shares).values({ postId, userId }).onConflictDoNothing().returning({ postId: schema.shares.postId });
+  if (inserted.length === 0) return { shared: false, shares: await counterValue(postId, 'shares') };
   await incrementCounter(postId, 'shares');
   return { shared: true, shares: await counterValue(postId, 'shares') };
 }
@@ -463,9 +465,16 @@ export async function toggleSave(userId: string, postId: string): Promise<{ save
     await decrementCounter(postId, 'saves');
     return { saved: false, saves: await counterValue(postId, 'saves') };
   }
-  await db.insert(schema.saves).values({ postId, userId });
-  await incrementCounter(postId, 'saves');
+  const inserted = await db.insert(schema.saves).values({ postId, userId }).onConflictDoNothing().returning({ postId: schema.saves.postId });
+  if (inserted.length > 0) await incrementCounter(postId, 'saves');
   return { saved: true, saves: await counterValue(postId, 'saves') };
+}
+
+/** DELETE /api/posts/:id/save — retire le signet (idempotent : n'en crée jamais un). */
+export async function removeSave(userId: string, postId: string): Promise<{ saved: boolean; saves: number }> {
+  const removed = await db.delete(schema.saves).where(and(eq(schema.saves.postId, postId), eq(schema.saves.userId, userId))).returning({ postId: schema.saves.postId });
+  if (removed.length > 0) await decrementCounter(postId, 'saves');
+  return { saved: false, saves: await counterValue(postId, 'saves') };
 }
 
 /** GET /api/posts/saves/list — posts enregistrés par l'utilisateur. */

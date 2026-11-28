@@ -1,3 +1,4 @@
+import { redis } from '../../infrastructure/redis';
 import { Queue, Worker } from 'bullmq';
 import { eq } from 'drizzle-orm';
 import { env } from '../../config/env';
@@ -50,6 +51,8 @@ export async function processModerationScan(job: ModerationJob): Promise<{ flag:
     const result = moderatePost(post.title ?? '', post.body ?? '');
     if (result.flag && post.status === 'published') {
       await db.update(schema.posts).set({ status: 'flagged', updatedAt: new Date() }).where(eq(schema.posts.id, targetId));
+      // Le cache de post (30 min) servirait sinon l'ancienne version « publiée » à tous.
+      await redis.del(`post:${targetId}`);
       await createNotification({
         userId: post.authorId,
         actorId: null,
