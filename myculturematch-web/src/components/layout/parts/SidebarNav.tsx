@@ -40,7 +40,7 @@ interface OwnedTribe {
 
 const iconMap: Record<string, any> = {
   Home, Popular: LandPlot, Love: CloudHeartIcon, New: LayersPlusIcon, Explore: FerrisWheel, Tribu: Landmark, Profil: ProfileIcon, Sandbox: SandboxIcon,
-  Friends: IconFriends, Admin: ShieldCheck,
+  Friends: IconFriends, Admin: ShieldCheck, Settings,
 };
 
 const navItems = [
@@ -52,6 +52,7 @@ const navItems = [
   { name: 'Love', label: 'Love', icon: 'Love' },
   { name: 'Tribu', label: 'Communauté', icon: 'Tribu' },
   { name: 'Profil', label: 'Profil', icon: 'Profil' },
+  { name: 'Settings', label: 'Paramètres', icon: 'Settings' },
 ];
 
 const adminItem = { name: 'Admin', icon: 'Admin' };
