@@ -1,6 +1,6 @@
 import React from 'react';
 import { Landmark, Compass, Sparkles, Plus, Bell, BellOff, MoreHorizontal, Lock, Loader2 } from 'lucide-react';
-import { TotemAvatar } from '@/src/components/ui/TotemAvatar';
+import { ProfileAvatar } from '@/src/components/ui/ProfileAvatar';
 import { Button } from '@/src/components/ui/button';
 import type { TribeInfo } from '@/src/hooks/useTribu';
 import type { JoinAction } from '@/src/lib/tribeAccess';
@@ -42,7 +42,7 @@ export const TribuHeader: React.FC<TribuHeaderProps> = ({
       <div className="relative px-6 pb-4 border-b border-app-border dark:border-zinc-800 shrink-0 bg-white dark:bg-zinc-900 rounded-b-[24px] shadow-xs">
         <div className="absolute -top-10 left-6">
           <div className="p-1 rounded-full bg-white dark:bg-zinc-900 border border-app-border dark:border-zinc-800 shadow-md">
-            <TotemAvatar
+            <ProfileAvatar
               alt={`${displayName} Tribe Logo`}
               size="lg"
               glow="turquoise"

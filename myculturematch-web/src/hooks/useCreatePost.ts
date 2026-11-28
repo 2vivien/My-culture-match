@@ -1,20 +1,20 @@
 import { useState, type ChangeEvent } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { traditionService } from '@/src/services/traditionService';
+import { postService } from '@/src/services/postService';
 import { uploadService } from '@/src/services/uploadService';
 import { tribuService } from '@/src/services/tribuService';
 import type { Flair } from '@/src/lib/tribeAccess';
 import { mediaUrl } from '@/src/lib/media';
-import type { TribeOption, TraditionSubmission } from '@/src/types/createTradition';
+import type { TribeOption, PostSubmission } from '@/src/types/createPost';
 import { useUIStore } from '@/src/stores/useUIStore';
 
-export function useCreateTradition() {
+export function useCreatePost() {
   const { setActiveTab } = useUIStore();
   const queryClient = useQueryClient();
 
   const { data: tribes = [] } = useQuery<TribeOption[]>({
     queryKey: ['tribe-options'],
-    queryFn: traditionService.getTribes,
+    queryFn: postService.getTribes,
     staleTime: 1000 * 60 * 10,
   });
 
@@ -98,7 +98,7 @@ export function useCreateTradition() {
       setTitle(body.trim().slice(0, 60) || 'Ma tradition');
     }
 
-    const submission: TraditionSubmission = {
+    const submission: PostSubmission = {
       title:
         title.trim().length >= 3
           ? title
@@ -116,7 +116,7 @@ export function useCreateTradition() {
     };
 
     try {
-      await traditionService.submitTradition(submission);
+      await postService.submitPost(submission);
       // Le feed et les posts de tribu doivent montrer la nouvelle publication.
       await queryClient.invalidateQueries({ queryKey: ['feed'] });
       await queryClient.invalidateQueries({ queryKey: ['tribu-posts'] });

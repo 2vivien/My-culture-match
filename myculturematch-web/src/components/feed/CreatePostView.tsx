@@ -1,15 +1,15 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { useCreateTradition } from '@/src/hooks/useCreateTradition';
-import { CreateTraditionHeader } from '../create-tradition/CreateTraditionHeader';
-import { TribuSelector } from '../create-tradition/TribuSelector';
-import { FlairSelector } from '../create-tradition/FlairSelector';
-import { CreateTraditionTabs } from '../create-tradition/CreateTraditionTabs';
-import { CreateTraditionTextForm } from '../create-tradition/CreateTraditionTextForm';
-import { CreateTraditionMediaForm } from '../create-tradition/CreateTraditionMediaForm';
-import { CreateTraditionLinkForm } from '../create-tradition/CreateTraditionLinkForm';
+import { useCreatePost } from '@/src/hooks/useCreatePost';
+import { CreatePostHeader } from '../create-post/CreatePostHeader';
+import { TribuSelector } from '../create-post/TribuSelector';
+import { FlairSelector } from '../create-post/FlairSelector';
+import { CreatePostTabs } from '../create-post/CreatePostTabs';
+import { CreatePostTextForm } from '../create-post/CreatePostTextForm';
+import { CreatePostMediaForm } from '../create-post/CreatePostMediaForm';
+import { CreatePostLinkForm } from '../create-post/CreatePostLinkForm';
 
-export const CreateTraditionView: React.FC = () => {
+export const CreatePostView: React.FC = () => {
   const {
     tribes,
     selectedTribe,
@@ -37,7 +37,7 @@ export const CreateTraditionView: React.FC = () => {
     flairsLoading,
     selectedFlairId,
     setSelectedFlairId,
-  } = useCreateTradition();
+  } = useCreatePost();
 
   return (
     <motion.div 
@@ -46,7 +46,7 @@ export const CreateTraditionView: React.FC = () => {
       exit={{ opacity: 0, y: -15 }}
       className="flex-1 max-w-3xl w-full h-full mx-auto pb-12 pt-4 select-none overflow-y-auto hide-scrollbar pr-2"
     >
-      <CreateTraditionHeader />
+      <CreatePostHeader />
 
       <div className="bg-white dark:bg-zinc-950 rounded-[20px] p-6 border border-app-border dark:border-zinc-800 shadow-sm">
         <TribuSelector
@@ -66,13 +66,13 @@ export const CreateTraditionView: React.FC = () => {
           />
         )}
 
-        <CreateTraditionTabs
+        <CreatePostTabs
           activeTab={activeSubTab} 
           setActiveTab={setActiveSubTab} 
         />
 
         {activeSubTab === 'Text' && (
-          <CreateTraditionTextForm
+          <CreatePostTextForm
             title={title}
             setTitle={setTitle}
             body={body}
@@ -87,7 +87,7 @@ export const CreateTraditionView: React.FC = () => {
         )}
 
         {activeSubTab === 'Images' && (
-          <CreateTraditionMediaForm
+          <CreatePostMediaForm
             mediaPreview={mediaPreview}
             onMediaChange={handleMediaChange}
             onClearMedia={clearMedia}
@@ -97,7 +97,7 @@ export const CreateTraditionView: React.FC = () => {
         )}
 
         {activeSubTab === 'Link' && (
-          <CreateTraditionLinkForm
+          <CreatePostLinkForm
             linkUrl={linkUrl}
             setLinkUrl={setLinkUrl}
             isSubmitting={isSubmitting}

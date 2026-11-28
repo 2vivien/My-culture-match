@@ -12,6 +12,8 @@ import { LoveOnboarding } from '@/src/components/love/LoveOnboarding';
 import type { LoveMatch, LoveSearchQuota, LoveSearchResult } from '@/src/types/love';
 import { isQuotaExhausted } from '@/src/lib/loveQuota';
 
+const WELCOME = 'Salut. Je vais t’aider à trouver des personnes qui correspondent vraiment à ce que tu recherches. Dis-moi simplement le type de personne que tu aimerais rencontrer.';
+
 type Role = 'user' | 'assistant';
 type ChatMessage = { id: string; role: Role; content: string; criteria?: string[]; results?: LoveSearchResult[] };
 
@@ -49,7 +51,7 @@ const LOVE_PROFILE_KEY = ['love', 'profile'] as const;
 
 export const LoveColumn: React.FC = () => {
   const { setActiveTab, openLoveChat } = useUIStore();
-  const { setSelectedTotemUserId } = useAppStore();
+  const { setSelectedProfileUserId } = useAppStore();
   const [messages, setMessages] = useState<ChatMessage[]>([{ id: 'welcome', role: 'assistant', content: WELCOME }]);
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<LoveSearchResult[]>([]);
@@ -109,13 +111,11 @@ export const LoveColumn: React.FC = () => {
       setMessages((m) => [...m, { id: crypto.randomUUID(), role: 'assistant', content }]);
     }
   };
-    }
-  };
   const visibleResults = useMemo(() => results.filter((r) => !passed[r.id]), [results, passed]);
   const lastResultsId = useMemo(() => [...messages].reverse().find((m) => m.results?.length)?.id, [messages]);
 
   /** Ouvre le profil complet de la personne proposée (pas de conversation sans acceptation). */
-  const openProfile = (id: string) => { setSelectedTotemUserId(id); setActiveTab('Totem'); };
+  const openProfile = (id: string) => { setSelectedProfileUserId(id); setActiveTab('Totem'); };
 
   /** Sélection de profils rendue comme faisant partie de la conversation avec l'IA. */
   const renderCards = (message: ChatMessage) => {
