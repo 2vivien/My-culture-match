@@ -23,6 +23,13 @@ export function getMapStyle(): StyleSpecification {
     };
   }
 
+  // L'attribution OSM n'est valable que pour les tuiles OSM de repli : un fournisseur configuré
+  // doit fournir la sienne (VITE_MAP_ATTRIBUTION), sinon on n'en invente pas.
+  const attribution = configured ? import.meta.env.VITE_MAP_ATTRIBUTION?.trim() ?? '' : '© OpenStreetMap contributors';
+  if (configured && !attribution) {
+    console.warn('[map] VITE_MAP_ATTRIBUTION est vide : renseigner le crédit exigé par le fournisseur de tuiles.');
+  }
+
   return {
     version: 8,
     sources: {
@@ -30,7 +37,7 @@ export function getMapStyle(): StyleSpecification {
         type: 'raster',
         tiles: [tiles],
         tileSize: 256,
-        attribution: import.meta.env.VITE_MAP_ATTRIBUTION || '© OpenStreetMap contributors',
+        attribution,
       },
     },
     layers: [{ id: 'basemap', type: 'raster', source: 'basemap' }],

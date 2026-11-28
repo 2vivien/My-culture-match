@@ -4,6 +4,7 @@ import { redis } from '../../infrastructure/redis';
 import { AppError } from '../../shared/utils/AppError';
 import { followingKey } from './fanout';
 import { getPostsByIds, type HydratedPost } from '../posts/posts.service';
+import { sortHot, HOME_WINDOW_MS } from './feed.home';
 import { scoreFeed, type FeedContext, type PostFeatures, type UserFeatures } from '../culture-engine/scoring';
 
 const FEED_CANDIDATES = 500;
@@ -31,14 +32,52 @@ function toFeatures(post: HydratedPost): PostFeatures {
   };
 }
 
-/** GET /api/feed?filter=following|for-you|popular|new — posts rankés par le Culture Engine. */
+export type FeedFilter = 'following' | 'for-you' | 'popular' | 'new' | 'tribes';
+
+/** Fil d'accueil : posts publiés des tribus rejointes, classés « Hot ». Posts bloqués exclus. */
+async function getTribesHome(userId: string, limit: number, offset: number): Promise<{ posts: HydratedPost[]; total: number; nextCursor: string | null } | null> {
+  const memberships = await db.select({ tribeId: schema.tribeMembers.tribeId }).from(schema.tribeMembers).where(eq(schema.tribeMembers.userId, userId));
+  if (memberships.length === 0) return null;
+
+  const rows = await db
+    .select({ id: schema.posts.id })
+    .from(schema.posts)
+    .where(and(
+      inArray(schema.posts.tribeId, memberships.map((m) => m.tribeId)),
+      eq(schema.posts.status, 'published'),
+      gt(schema.posts.createdAt, new Date(Date.now() - HOME_WINDOW_MS)),
+    ))
+    .orderBy(desc(schema.posts.createdAt))
+    .limit(FEED_CANDIDATES);
+  if (rows.length === 0) return { posts: [], total: 0, nextCursor: null };
+
+  const blocked = await blockedIds(userId);
+  const hydrated = (await getPostsByIds(rows.map((r) => r.id), userId)).filter((p) => !blocked.has(p.author.id));
+  const ordered = sortHot(hydrated);
+  const page = ordered.slice(offset, offset + limit);
+  return { posts: page, total: ordered.length, nextCursor: offset + page.length < ordered.length ? String(offset + page.length) : null };
+}
+
+/**
+ * GET /api/feed?filter=tribes|following|for-you|popular|new.
+ * `tribes` = accueil des tribus rejointes (Hot) ; sans tribu rejointe, repli sur « for-you » pour ne pas
+ * afficher un fil vide à un nouveau compte. Les autres filtres sont rankés par le Culture Engine.
+ */
 export async function getFeed(
   userId: string,
-  filter: 'following' | 'for-you' | 'popular' | 'new' = 'following',
+  requested: FeedFilter = 'following',
   limit = 20,
   cursor?: string,
 ): Promise<{ posts: HydratedPost[]; total: number; nextCursor: string | null }> {
   const offset = cursor ? parseInt(cursor, 10) || 0 : 0;
+  let filter: Exclude<FeedFilter, 'tribes'>;
+  if (requested === 'tribes') {
+    const home = await getTribesHome(userId, limit, offset);
+    if (home) return home;
+    filter = 'for-you';
+  } else {
+    filter = requested;
+  }
   const [me] = await db.select().from(schema.users).where(eq(schema.users.id, userId)).limit(1);
   if (!me) throw AppError.notFound('Utilisateur introuvable', 'USER_NOT_FOUND');
 

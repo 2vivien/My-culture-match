@@ -80,10 +80,10 @@ export const tribuService = {
     };
   },
 
-  async fetchPosts(tribeId?: string): Promise<PostItem[]> {
+  async fetchPosts(tribeId?: string, sort: 'new' | 'hot' | 'top' | 'controversial' = 'new'): Promise<PostItem[]> {
     if (!tribeId) return [];
     const data = await api.get<{ posts: BackendHydratedPost[] } | BackendHydratedPost[]>(
-      `/api/tribes/${tribeId}/posts`,
+      `/api/tribes/${tribeId}/posts?sort=${sort}`,
     );
     const list = Array.isArray(data) ? data : (data.posts ?? []);
     return list.map(mapPost);

@@ -272,20 +272,66 @@ async function memberCount(tribeId: string): Promise<number> {
   return tribe?.count ?? 0;
 }
 
-/** GET /api/tribes/:id/posts — posts tribu (cursor), hydratés (auteur, likes, votes). */
-export async function tribePosts(tribeId: string, viewerId: string, cursor: string | undefined, limit: number): Promise<{ posts: Awaited<ReturnType<typeof getPostsByIds>>; nextCursor: string | null }> {
-  const query = db
-    .select()
+export type TribePostSort = 'new' | 'hot' | 'top' | 'controversial';
+export type TribePostWindow = 'hour' | 'day' | 'week' | 'month' | 'year' | 'all';
+
+const WINDOW_MS: Record<Exclude<TribePostWindow, 'all'>, number> = {
+  hour: 3_600_000,
+  day: 86_400_000,
+  week: 7 * 86_400_000,
+  month: 30 * 86_400_000,
+  year: 365 * 86_400_000,
+};
+
+/** Score « hot » façon Reddit : log10 du score net + ancienneté (45 000 s ≈ 12,5 h par décade). */
+const hotRank = sql`(SIGN(${schema.posts.score})::float * LOG(GREATEST(ABS(${schema.posts.score}), 1)) + EXTRACT(EPOCH FROM ${schema.posts.createdAt}) / 45000)`;
+const upvotes = sql`(SELECT COUNT(*) FROM post_votes v WHERE v.post_id = ${schema.posts.id} AND v.value = 1)`;
+const downvotes = sql`(SELECT COUNT(*) FROM post_votes v WHERE v.post_id = ${schema.posts.id} AND v.value = -1)`;
+/** Controversé = beaucoup de votes ET camps équilibrés. */
+const controversyRank = sql`((${upvotes} + ${downvotes}) * (LEAST(${upvotes}, ${downvotes})::float / NULLIF(GREATEST(${upvotes}, ${downvotes}), 0)))`;
+
+/**
+ * GET /api/tribes/:id/posts — posts tribu hydratés (auteur, likes, votes).
+ * `new` pagine par curseur de date ; les autres tris paginent par décalage (curseur = offset numérique).
+ * Les posts épinglés restent toujours en tête.
+ */
+export async function tribePosts(
+  tribeId: string,
+  viewerId: string,
+  cursor: string | undefined,
+  limit: number,
+  sort: TribePostSort = 'new',
+  window: TribePostWindow = 'all',
+): Promise<{ posts: Awaited<ReturnType<typeof getPostsByIds>>; nextCursor: string | null }> {
+  const base = [eq(schema.posts.tribeId, tribeId), eq(schema.posts.status, 'published')];
+  if ((sort === 'top' || sort === 'controversial') && window !== 'all') {
+    base.push(sql`${schema.posts.createdAt} >= ${new Date(Date.now() - WINDOW_MS[window])}`);
+  }
+
+  if (sort === 'new') {
+    const rows = await db
+      .select()
+      .from(schema.posts)
+      .where(and(...base, cursor ? lt(schema.posts.createdAt, new Date(cursor)) : undefined))
+      .orderBy(desc(schema.posts.pinned), desc(schema.posts.createdAt))
+      .limit(limit + 1);
+    const page = rows.slice(0, limit);
+    const nextCursor = rows.length > limit ? page[page.length - 1]?.createdAt.toISOString() ?? null : null;
+    return { posts: await getPostsByIds(page.map((p) => p.id), viewerId), nextCursor };
+  }
+
+  const offset = cursor && /^\d+$/.test(cursor) ? Number(cursor) : 0;
+  const rank = sort === 'hot' ? hotRank : sort === 'controversial' ? controversyRank : sql`${schema.posts.score}`;
+  const rows = await db
+    .select({ id: schema.posts.id })
     .from(schema.posts)
-    .where(and(eq(schema.posts.tribeId, tribeId), eq(schema.posts.status, 'published'), cursor ? lt(schema.posts.createdAt, new Date(cursor)) : undefined))
-    .orderBy(desc(schema.posts.pinned), desc(schema.posts.createdAt))
-    .limit(limit + 1);
-  const rows = await query;
-  const hasMore = rows.length > limit;
+    .where(and(...base))
+    .orderBy(desc(schema.posts.pinned), sql`${rank} DESC NULLS LAST`, desc(schema.posts.createdAt))
+    .limit(limit + 1)
+    .offset(offset);
   const page = rows.slice(0, limit);
-  const nextCursor = hasMore ? page[page.length - 1]?.createdAt.toISOString() ?? null : null;
-  const posts = await getPostsByIds(page.map((p) => p.id), viewerId);
-  return { posts, nextCursor };
+  const nextCursor = rows.length > limit ? String(offset + limit) : null;
+  return { posts: await getPostsByIds(page.map((p) => p.id), viewerId), nextCursor };
 }
 
 /** POST /api/tribu/posts/:id/upvote — toggle up/down. */

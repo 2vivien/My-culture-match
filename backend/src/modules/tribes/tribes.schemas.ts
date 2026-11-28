@@ -60,6 +60,13 @@ export const sanctionSchema = z
   })
   .strict();
 
+/** GET /api/tribes/:id/posts — tri façon Reddit. */
+export const tribePostsQuerySchema = listTribesQuerySchema.extend({
+  sort: z.enum(['new', 'hot', 'top', 'controversial']).default('new'),
+  /** Fenêtre de temps pour `top` et `controversial`. */
+  t: z.enum(['hour', 'day', 'week', 'month', 'year', 'all']).default('all'),
+});
+
 /** POST /api/tribu/posts/:id/upvote. */
 export const voteSchema = z
   .object({
