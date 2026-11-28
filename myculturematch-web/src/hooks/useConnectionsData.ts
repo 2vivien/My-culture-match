@@ -1,6 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { connectionsService } from '@/src/services/connectionsService';
+import { loveService, LOVE_REQUEST_PREFIX } from '@/src/services/loveService';
 import type { ConnectionUser } from '@/src/stores/useConnectionsStore';
+
+const isLoveId = (id: string) => id.startsWith(LOVE_REQUEST_PREFIX);
 
 /**
  * Hook React Query pour les connexions.
@@ -26,6 +29,13 @@ export function useConnectionsData() {
     staleTime: 1000 * 60 * 3,
   });
 
+  // Requêtes Love (mode distinct de Friend, jamais fusionnées côté serveur)
+  const loveRequests = useQuery<ConnectionUser[]>({
+    queryKey: ['connections', 'love-requests'],
+    queryFn: loveService.getRequests,
+    staleTime: 1000 * 60 * 3,
+  });
+
   const companions = useQuery<ConnectionUser[]>({
     queryKey: ['connections', 'companions'],
     queryFn: connectionsService.getCompanions,
@@ -42,12 +52,12 @@ export function useConnectionsData() {
   });
 
   const acceptRequest = useMutation({
-    mutationFn: connectionsService.acceptRequest,
+    mutationFn: async (id: string): Promise<void> => { if (isLoveId(id)) await loveService.acceptRequest(id); else await connectionsService.acceptRequest(id); },
     onSuccess: invalidateAll,
   });
 
   const declineRequest = useMutation({
-    mutationFn: connectionsService.declineRequest,
+    mutationFn: async (id: string): Promise<void> => { if (isLoveId(id)) await loveService.declineRequest(id); else await connectionsService.declineRequest(id); },
     onSuccess: invalidateAll,
   });
 
@@ -59,9 +69,9 @@ export function useConnectionsData() {
   return {
     suggestions: suggestions.data ?? [],
     interested: interested.data ?? [],
-    requests: requests.data ?? [],
+    requests: [...(loveRequests.data ?? []), ...(requests.data ?? [])],
     companions: companions.data ?? [],
-    isLoading: suggestions.isLoading || interested.isLoading || requests.isLoading || companions.isLoading,
+    isLoading: suggestions.isLoading || interested.isLoading || requests.isLoading || loveRequests.isLoading || companions.isLoading,
     sendRequest: sendRequest.mutate,
     acceptRequest: acceptRequest.mutate,
     declineRequest: declineRequest.mutate,
