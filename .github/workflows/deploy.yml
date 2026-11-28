@@ -88,7 +88,7 @@ jobs:
           MEILISEARCH_API_KEY="$SMOKE_MEILI_KEY" \
           MINIO_ACCESS_KEY="$SMOKE_MINIO_ACCESS_KEY" \
           MINIO_SECRET_KEY="$SMOKE_MINIO_SECRET_KEY" \
-          docker compose -f docker-compose.prod.yml up -d --wait postgres redis meilisearch mailpit
+          docker compose -f docker-compose.prod.yml up -d --wait postgres redis meilisearch
 
       # MinIO ne publie plus d'image : le test de fumée utilise un serveur S3 de test, joignable sous le nom « minio ».
       # (Le fichier docker-compose.prod.yml référence encore minio/minio : voir la revue, point à traiter avant un
