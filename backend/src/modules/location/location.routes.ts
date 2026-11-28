@@ -6,6 +6,7 @@ import { zValidator } from '@hono/zod-validator';
 import { updateLocationHeartbeat } from './location.heartbeat';
 import { getMapStories } from '../stories/stories.map.service';
 import { mapStoriesQuerySchema } from '../stories/stories.schemas';
+import { geocode } from './geocode.service';
 
 const locationRoutes = new Hono();
 locationRoutes.use('*', requireAuth);
@@ -55,6 +56,12 @@ locationRoutes.get('/location/stories', zValidator('query', mapStoriesQuerySchem
   const { lat, lon } = c.req.valid('query');
   const origin = lat !== undefined && lon !== undefined ? { latitude: lat, longitude: lon } : undefined;
   return c.json({ success: true, ...(await getMapStories(userId, origin)) });
+});
+
+/** Recherche de lieu (proxy de géocodage, cache + limite de débit). */
+locationRoutes.get('/location/geocode', async (c) => {
+  const { userId } = c.get('auth');
+  return c.json({ results: await geocode(userId, c.req.query('q') ?? '') });
 });
 
 locationRoutes.post('/location/heartbeat', async (c) => {
