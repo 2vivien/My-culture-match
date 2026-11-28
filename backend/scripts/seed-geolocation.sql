@@ -2,7 +2,7 @@
 -- Seed positions géographiques (démo Friends Proximity, style Snap Map)
 -- Run: docker exec -i mcm_postgres psql -U mcm -d mcm < backend/scripts/seed-geolocation.sql
 -- Active le partage de position des users mock autour de Cotonou pour que
--- la carte /api/connections/nearby montre des amis.
+-- la carte /api/location/nearby (People Nearby) montre ces personnes.
 -- ─────────────────────────────────────────────────────────────
 
 -- Aïcha (Dakar) — partage activé
