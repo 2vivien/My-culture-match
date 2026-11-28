@@ -1,4 +1,4 @@
-import { and, eq, inArray, or, sql, gt } from 'drizzle-orm';
+import { and, eq, inArray, isNull, or, sql, gt } from 'drizzle-orm';
 import { db, schema } from '../../infrastructure/database';
 import { redis } from '../../infrastructure/redis';
 import { AppError } from '../../shared/utils/AppError';
@@ -42,7 +42,7 @@ export async function getLoveCandidates(userId: string): Promise<{ candidates: L
   if (!(await import('../consent/consent.service').then((m) => m.getConsentSettings(userId))).loveEnabled) return { candidates: [] };
   const blocked = await blockedIds(userId); const swiped = await redis.smembers(swipedKey(userId)); const passed = await redis.smembers('love:passed:' + userId);
   const existingRows = await db.select({ candidateId: schema.loveMatches.candidateId }).from(schema.loveMatches).where(eq(schema.loveMatches.userId, userId)); const alreadyMatched = new Set(existingRows.map((r) => r.candidateId));
-  const candidates = await db.select({ id: schema.users.id, name: schema.users.name, username: schema.users.username, avatar: schema.users.avatar, bio: schema.users.bio, location: schema.users.location, country: schema.users.country, region: schema.users.region, birthdate: schema.users.birthdate, gender: schema.users.gender, profileCompleted: schema.users.profileCompleted, values: schema.users.values, languages: schema.users.languages }).from(schema.users).where(eq(schema.users.profileCompleted, true)).limit(200);
+  const candidates = await db.select({ id: schema.users.id, name: schema.users.name, username: schema.users.username, avatar: schema.users.avatar, bio: schema.users.bio, location: schema.users.location, country: schema.users.country, region: schema.users.region, birthdate: schema.users.birthdate, gender: schema.users.gender, profileCompleted: schema.users.profileCompleted, values: schema.users.values, languages: schema.users.languages }).from(schema.users).where(and(eq(schema.users.profileCompleted, true), isNull(schema.users.bannedAt))).limit(200);
   const excluded = new Set([userId, ...blocked, ...swiped, ...passed, ...alreadyMatched]); const eligible = candidates.filter((c) => !excluded.has(c.id) && (computeAge(c.birthdate) ?? 0) >= 18); const visible = [] as typeof eligible; for (const candidate of eligible) if (await canLikeForLove(userId, candidate.id)) visible.push(candidate);
   const result = visible.slice(0, MAX_CANDIDATES).map((c) => ({ id: c.id, name: c.name, username: c.username, avatar: c.avatar, bio: c.bio, location: c.location, country: c.country, gender: c.gender, age: computeAge(c.birthdate), matchScore: compatLove(toUserFeatures(me), toUserFeatures(c)), sharedValues: (c.values ?? []).filter((v) => (me.values ?? []).includes(v)) }));
   await redis.set(candidatesKey(userId), JSON.stringify(result), 'EX', CANDIDATES_TTL); return { candidates: result };
@@ -64,7 +64,7 @@ export async function searchLove(userId: string, query: string): Promise<{ query
   const blocked = await blockedIds(userId);
   const existingRows = await db.select({ candidateId: schema.loveMatches.candidateId }).from(schema.loveMatches).where(eq(schema.loveMatches.userId, userId));
   const excluded = new Set([userId, ...blocked, ...existingRows.map((r) => r.candidateId)]);
-  const candidates = await db.select({ id: schema.users.id, name: schema.users.name, username: schema.users.username, avatar: schema.users.avatar, bio: schema.users.bio, location: schema.users.location, country: schema.users.country, region: schema.users.region, birthdate: schema.users.birthdate, gender: schema.users.gender, values: schema.users.values, languages: schema.users.languages, profileCompleted: schema.users.profileCompleted }).from(schema.users).where(eq(schema.users.profileCompleted, true)).limit(500);
+  const candidates = await db.select({ id: schema.users.id, name: schema.users.name, username: schema.users.username, avatar: schema.users.avatar, bio: schema.users.bio, location: schema.users.location, country: schema.users.country, region: schema.users.region, birthdate: schema.users.birthdate, gender: schema.users.gender, values: schema.users.values, languages: schema.users.languages, profileCompleted: schema.users.profileCompleted }).from(schema.users).where(and(eq(schema.users.profileCompleted, true), isNull(schema.users.bannedAt))).limit(500);
   const visible = [] as typeof candidates;
   for (const c of candidates) {
     const age = computeAge(c.birthdate) ?? 0;
@@ -109,7 +109,7 @@ export async function getLoveSearchQuota(userId: string): Promise<{ limit: numbe
 export async function getActiveLoveMatches(userId: string): Promise<{ candidates: Array<LoveCandidateDto & { connected: boolean; conversationId: string | null }> }> {
   const rows = await db.select({ candidateId: schema.loveMatches.candidateId, conversationId: schema.loveMatches.conversationId, matchScore: schema.loveMatches.matchScore }).from(schema.loveMatches).where(and(eq(schema.loveMatches.userId, userId), eq(schema.loveMatches.isMutual, true))); if (rows.length === 0) return { candidates: [] };
   const blockedSet = new Set(await blockedIds(userId)); const activeRows = rows.filter((r) => !blockedSet.has(r.candidateId)); if (activeRows.length === 0) return { candidates: [] };
-  const ids = activeRows.map((r) => r.candidateId); const users = await db.select({ id: schema.users.id, name: schema.users.name, username: schema.users.username, avatar: schema.users.avatar, bio: schema.users.bio, country: schema.users.country, location: schema.users.location, gender: schema.users.gender, birthdate: schema.users.birthdate }).from(schema.users).where(inArray(schema.users.id, ids)); const byId = new Map(users.map((u) => [u.id, u]));
+  const ids = activeRows.map((r) => r.candidateId); const users = await db.select({ id: schema.users.id, name: schema.users.name, username: schema.users.username, avatar: schema.users.avatar, bio: schema.users.bio, country: schema.users.country, location: schema.users.location, gender: schema.users.gender, birthdate: schema.users.birthdate }).from(schema.users).where(and(inArray(schema.users.id, ids), isNull(schema.users.bannedAt))); const byId = new Map(users.map((u) => [u.id, u]));
   return { candidates: activeRows.flatMap((r) => { const u = byId.get(r.candidateId); if (!u) return []; return [{ id: u.id, name: u.name, username: u.username, avatar: u.avatar, bio: u.bio, location: u.location, country: u.country, gender: u.gender, age: computeAge(u.birthdate), matchScore: r.matchScore, sharedValues: [], connected: true, conversationId: r.conversationId }]; }) };
 }
 export async function getLoveCandidate(userId: string, candidateId: string): Promise<{ candidate: LoveCandidateDto }> { const { candidates } = await getLoveCandidates(userId); const candidate = candidates.find((c) => c.id === candidateId); if (!candidate) throw AppError.notFound('Candidat introuvable', 'CANDIDATE_NOT_FOUND'); return { candidate }; }
@@ -165,7 +165,7 @@ export async function getIncomingLoveRequests(userId: string): Promise<{ request
   if (pending.length === 0) return { requests: [] };
 
   const rows = await db.select({ id: schema.users.id, name: schema.users.name, username: schema.users.username, avatar: schema.users.avatar, bio: schema.users.bio, country: schema.users.country, location: schema.users.location, birthdate: schema.users.birthdate })
-    .from(schema.users).where(inArray(schema.users.id, pending.map((r) => r.fromId)));
+    .from(schema.users).where(and(inArray(schema.users.id, pending.map((r) => r.fromId)), isNull(schema.users.bannedAt)));
   const byId = new Map(rows.map((u) => [u.id, u]));
   const requests = pending.flatMap((r): LoveRequestDto[] => {
     const u = byId.get(r.fromId);
