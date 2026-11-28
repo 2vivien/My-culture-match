@@ -126,6 +126,7 @@ export const PostDetailPage: React.FC = () => {
   const currentUser = useAppStore((s) => s.currentUser);
   const isAuthenticated = useAppStore((s) => s.isAuthenticated);
   const setActiveTab = useUIStore((s) => s.setActiveTab);
+  const openAuthModal = useUIStore((s) => s.openAuthModal);
   const queryClient = useQueryClient();
   const [commentSort, setCommentSort] = useState<CommentSort>('best');
   const { comments, isLoading: loadingComments, hasMore, loadingMore, loadMore, addComment, voteComment } = useComments(postId, commentSort);
@@ -293,6 +294,16 @@ export const PostDetailPage: React.FC = () => {
 
         {/* Même rangée d'actions que PostActions : like · commentaire · repost · share — tout à droite */}
         <div className="flex items-center justify-end gap-5 mt-4 pt-3 border-t border-app-border dark:border-zinc-800 text-app-gray text-sm font-semibold px-1">
+          {!isAuthenticated ? (
+            <button
+              type="button"
+              onClick={openAuthModal}
+              className="rounded-full bg-[#8B4A2B] hover:bg-[#6F3A22] text-white text-xs font-black px-4 py-2 cursor-pointer border-none"
+            >
+              Connecte-toi pour interagir
+            </button>
+          ) : (
+          <>
           <button
             type="button"
             onClick={toggleLike}
@@ -327,6 +338,8 @@ export const PostDetailPage: React.FC = () => {
           >
             <IconShare3 size={20} />
           </button>
+          </>
+          )}
         </div>
       </article>
 
@@ -530,7 +543,8 @@ export const PostDetailPage: React.FC = () => {
         </div>
       )}
 
-      {/* Composer un commentaire */}
+      {/* Composer un commentaire — réservé aux membres. */}
+      {isAuthenticated && (
       <div className="mt-3 flex items-center gap-2.5">
         <ProfileAvatar src={currentUser.avatar} alt={currentUser.name} size="md" glow="none" />
         <div className="flex-1 bg-[#FCFCFC] dark:bg-zinc-900 rounded-full px-4 py-2.5 flex items-center gap-1 border border-app-border focus-within:ring-1 focus-within:ring-[#8B4A2B]/30 transition-all relative">
@@ -561,6 +575,7 @@ export const PostDetailPage: React.FC = () => {
           {addComment.isPending ? '...' : 'Publier'}
         </button>
       </div>
+      )}
     </motion.div>
   );
 };

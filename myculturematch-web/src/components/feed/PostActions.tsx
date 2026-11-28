@@ -6,6 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import { api } from '@/src/services/api';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAppStore } from '@/src/stores/useAppStore';
+import { useUIStore } from '@/src/stores/useUIStore';
 import { Avatar } from '@/src/components/ui/avatar';
 import { Button } from '@/src/components/ui/button';
 import { EmojiPicker } from '@/src/components/ui/EmojiPicker';
@@ -37,6 +38,7 @@ interface MyTribe {
  */
 export const PostActions = ({ postId, commentsCount, likes, liked, authorId, onLike }: PostActionsProps) => {
   const { currentUser, isAuthenticated } = useAppStore();
+  const { openAuthModal } = useUIStore();
   const queryClient = useQueryClient();
   const { addComment } = useComments(postId);
   const [comment, setComment] = useState('');
@@ -108,6 +110,32 @@ export const PostActions = ({ postId, commentsCount, likes, liked, authorId, onL
     if (num >= 1000) return `${(num / 1000).toFixed(1)}k`.replace('.0', '');
     return num;
   };
+
+  // Visiteur : lecture seule, seule l'ouverture du détail reste possible.
+  if (!isAuthenticated) {
+    return (
+      <div className="flex flex-col gap-3 w-full">
+        <div className="flex items-center justify-end gap-4 text-app-gray px-1">
+          <button
+            type="button"
+            onClick={openPostDetail}
+            className="flex items-center gap-1.5 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors font-semibold text-sm cursor-pointer bg-transparent border-none"
+            title="Voir la publication et tous les commentaires"
+          >
+            <IconMessageCircle size={20} />
+            <span>{commentsCount > 0 ? commentsCount : ''}</span>
+          </button>
+          <button
+            type="button"
+            onClick={openAuthModal}
+            className="rounded-full bg-[#8B4A2B] hover:bg-[#6F3A22] text-white text-xs font-black px-4 py-2 cursor-pointer border-none"
+          >
+            Connecte-toi pour interagir
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-3 w-full">
