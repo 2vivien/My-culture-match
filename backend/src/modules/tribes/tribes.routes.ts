@@ -5,6 +5,7 @@ import {
   createTribeSchema,
   patchTribeSchema,
   listTribesQuerySchema,
+  sanctionSchema,
   tribePostsQuerySchema,
   voteSchema,
   promoteModeratorSchema,
@@ -12,6 +13,7 @@ import {
   createRuleSchema,
   patchRuleSchema,
 } from './tribes.schemas';
+import { sanctionMember, liftSanction, listSanctions } from './tribes.sanctions.service';
 import {
   listTribes,
   listMyTribes,
@@ -210,6 +212,20 @@ tribesModule.get('/:id/reports', zValidator('query', listTribesQuerySchema), asy
   const { cursor, limit } = c.req.valid('query');
   const result = await listTribeReports(c.req.param('id'), userId, cursor, limit);
   return c.json(result, 200);
+});
+
+// Sanctions de tribu (modérateur+)
+tribesModule.get('/:id/sanctions', async (c) => {
+  const { userId } = c.get('auth');
+  return c.json(await listSanctions(c.req.param('id'), userId), 200);
+});
+tribesModule.post('/:id/sanctions', zValidator('json', sanctionSchema), async (c) => {
+  const { userId } = c.get('auth');
+  return c.json(await sanctionMember(c.req.param('id'), userId, c.req.valid('json')), 201);
+});
+tribesModule.delete('/:id/sanctions/:userId', async (c) => {
+  const { userId } = c.get('auth');
+  return c.json(await liftSanction(c.req.param('id'), userId, c.req.param('userId')), 200);
 });
 
 // POST /api/tribu/posts/:id/upvote — toggle upvote/downvote

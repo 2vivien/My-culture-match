@@ -458,6 +458,75 @@ describe('Signalements', () => {
   });
 });
 
+describe('Sanctions de tribu (ban / mute)', () => {
+  const post = (token: string, path: string, body: unknown) =>
+    app.request(path, { method: 'POST', headers: { 'content-type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(body) });
+  const userIdOf = async (token: string) => ((await (await app.request('/api/users/me', { headers: { Authorization: `Bearer ${token}` } })).json()) as { id: string }).id;
+
+  async function seed() {
+    const owner = await login();
+    const member = await login();
+    const { id } = (await (await createTribe(owner)).json()) as { id: string };
+    await app.request(`/api/tribes/${id}/join`, { method: 'POST', headers: { Authorization: `Bearer ${member}` } });
+    return { owner, member, id, memberId: await userIdOf(member) };
+  }
+
+  it('un membre muet ne peut plus publier (403) mais reste membre', async () => {
+    const { owner, member, id, memberId } = await seed();
+    const res = await post(owner, `/api/tribes/${id}/sanctions`, { userId: memberId, kind: 'mute', days: 3 });
+    expect(res.status).toBe(201);
+    const attempt = await post(member, `/api/tribes/${id}/posts`, { type: 'Text', title: 'Je parle quand même', body: 'Contenu' });
+    expect(attempt.status).toBe(403);
+  });
+
+  it('un membre banni est retiré de la tribu et ne peut pas la rejoindre', async () => {
+    const { owner, member, id, memberId } = await seed();
+    expect((await post(owner, `/api/tribes/${id}/sanctions`, { userId: memberId, kind: 'ban', reason: 'spam' })).status).toBe(201);
+    const rejoin = await app.request(`/api/tribes/${id}/join`, { method: 'POST', headers: { Authorization: `Bearer ${member}` } });
+    expect(rejoin.status).toBe(403);
+  });
+
+  it('lever la sanction rétablit l’accès', async () => {
+    const { owner, member, id, memberId } = await seed();
+    await post(owner, `/api/tribes/${id}/sanctions`, { userId: memberId, kind: 'ban' });
+    const lift = await app.request(`/api/tribes/${id}/sanctions/${memberId}`, { method: 'DELETE', headers: { Authorization: `Bearer ${owner}` } });
+    expect(lift.status).toBe(200);
+    const rejoin = await app.request(`/api/tribes/${id}/join`, { method: 'POST', headers: { Authorization: `Bearer ${member}` } });
+    expect(rejoin.status).toBe(200);
+  });
+
+  it('un simple membre ne peut ni sanctionner ni lister les sanctions (403)', async () => {
+    const { owner, member, id } = await seed();
+    const ownerId = await userIdOf(owner);
+    expect((await post(member, `/api/tribes/${id}/sanctions`, { userId: ownerId, kind: 'mute' })).status).toBe(403);
+    expect((await app.request(`/api/tribes/${id}/sanctions`, { headers: { Authorization: `Bearer ${member}` } })).status).toBe(403);
+  });
+
+  it('l’owner ne peut pas être sanctionné', async () => {
+    const { owner, id } = await seed();
+    const ownerId = await userIdOf(owner);
+    expect((await post(owner, `/api/tribes/${id}/sanctions`, { userId: ownerId, kind: 'ban' })).status).toBe(403);
+  });
+});
+
+describe('Sanctions de tribu — levée', () => {
+  it('un modérateur ne peut pas lever la sanction d’un autre modérateur (403), l’owner le peut', async () => {
+    const j = (t: string, body?: unknown, method = 'POST') => ({ method, headers: { 'content-type': 'application/json', Authorization: `Bearer ${t}` }, ...(body ? { body: JSON.stringify(body) } : {}) });
+    const me = async (t: string) => ((await (await app.request('/api/users/me', { headers: { Authorization: `Bearer ${t}` } })).json()) as { id: string }).id;
+    const owner = await login();
+    const modA = await login();
+    const modB = await login();
+    const { id } = (await (await createTribe(owner)).json()) as { id: string };
+    for (const t of [modA, modB]) await app.request(`/api/tribes/${id}/join`, j(t));
+    const [aId, bId] = [await me(modA), await me(modB)];
+    for (const uid of [aId, bId]) await app.request(`/api/tribes/${id}/moderators`, j(owner, { userId: uid }));
+
+    expect((await app.request(`/api/tribes/${id}/sanctions`, j(owner, { userId: bId, kind: 'mute' }))).status).toBe(201);
+    expect((await app.request(`/api/tribes/${id}/sanctions/${bId}`, j(modA, undefined, 'DELETE'))).status).toBe(403);
+    expect((await app.request(`/api/tribes/${id}/sanctions/${bId}`, j(owner, undefined, 'DELETE'))).status).toBe(200);
+  });
+});
+
 describe('Tri des posts de tribu (sort=hot|top|controversial|new)', () => {
   const json = (token: string, body: unknown) => ({
     method: 'POST',

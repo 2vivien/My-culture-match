@@ -4,6 +4,7 @@ import { redis } from '../../infrastructure/redis';
 import { AppError } from '../../shared/utils/AppError';
 import { recordAudit } from '../audit/audit.service';
 import { getPostsByIds } from '../posts/posts.service';
+import { assertCanJoinTribe } from './tribes.sanctions.service';
 import type { CreateTribeInput, PatchTribeInput, CreateRuleInput, PatchRuleInput } from './tribes.schemas';
 
 const MAX_TRIBES_PER_USER = 5;
@@ -243,6 +244,7 @@ export async function deleteTribe(tribeId: string, userId: string): Promise<void
 
 /** POST /api/tribes/:id/join. */
 export async function joinTribe(tribeId: string, userId: string): Promise<{ joined: boolean; membersCount: number }> {
+  await assertCanJoinTribe(tribeId, userId);
   const existing = await isMember(tribeId, userId);
   if (existing) return { joined: false, membersCount: await memberCount(tribeId) };
 

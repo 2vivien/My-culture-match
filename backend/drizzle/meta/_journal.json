@@ -21,6 +21,7 @@
     { "idx": 16, "version": "7", "when": 1790000002000, "tag": "0016_chat_v2", "breakpoints": true },
     { "idx": 17, "version": "7", "when": 1790000003000, "tag": "0017_shared_memory_box", "breakpoints": true },
     { "idx": 18, "version": "7", "when": 1790000004000, "tag": "0018_temporal_messages", "breakpoints": true },
-    { "idx": 19, "version": "7", "when": 1790000005000, "tag": "0019_temporal_message_processing", "breakpoints": true }
+    { "idx": 19, "version": "7", "when": 1790000005000, "tag": "0019_temporal_message_processing", "breakpoints": true },
+    { "idx": 20, "version": "7", "when": 1790000006000, "tag": "0020_tribe_sanctions", "breakpoints": true }
   ]
 }

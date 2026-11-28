@@ -229,6 +229,25 @@ export const tribeMembers = pgTable(
   ],
 );
 
+/** Sanctions de tribu (ban / mute), un seul état par membre et par tribu ; `expiresAt` null = permanent. */
+export const tribeSanctions = pgTable(
+  'tribe_sanctions',
+  {
+    tribeId: text('tribe_id')
+      .notNull()
+      .references(() => tribes.id, { onDelete: 'cascade' }),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    kind: text('kind').notNull(),
+    reason: text('reason'),
+    createdBy: text('created_by').references(() => users.id, { onDelete: 'set null' }),
+    expiresAt: timestamp('expires_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.tribeId, t.userId] }), index('tribe_sanctions_user_idx').on(t.userId)],
+);
+
 export const tribeRules = pgTable('tribe_rules', {
   id: text('id').primaryKey().$defaultFn(generateId),
   tribeId: text('tribe_id')
