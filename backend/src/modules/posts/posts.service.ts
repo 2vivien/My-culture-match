@@ -226,9 +226,17 @@ async function hydratePost(
 }
 
 /** GET /api/posts/:id — détail (exclut les posts non publiés pour les tiers). */
+/** Reconstitue en Date les champs date d'un post relu depuis le cache JSON. */
+function reviveDates(post: schema.Post): schema.Post {
+  const revive = (v: unknown) => (typeof v === 'string' ? new Date(v) : v);
+  return { ...post, createdAt: revive(post.createdAt), updatedAt: revive(post.updatedAt), deletedAt: revive(post.deletedAt) } as schema.Post;
+}
+
 export async function getPostById(postId: string, viewerId: string): Promise<HydratedPost> {  const cached = await redis.get(postCacheKey(postId));
   if (cached) {
-    const post = JSON.parse(cached) as schema.Post;
+    // JSON.parse rend les dates en chaînes : hydratePost appelle toISOString(), qui lèverait une exception (500) à chaque
+    // lecture répétée d'un post dans la fenêtre du cache. On les reconstitue donc en Date.
+    const post = reviveDates(JSON.parse(cached) as schema.Post);
     if (post.status !== 'deleted') {
       await assertCanReadTribePost(post.tribeId, viewerId);
       const rel = await postRelations(postId, viewerId);

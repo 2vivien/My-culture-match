@@ -129,7 +129,8 @@ describe('D1 — Export et suppression de compte', () => {
     expect(del.status).toBe(200);
 
     expect((await app.request('/api/users/me', authed(a.token))).status).toBe(401);
-    expect((await app.request(`/api/users/${a.userId}`, authed(b.token))).status).toBe(404);
+    // Un compte supprimé répond comme un profil masqué (403) : aucun oracle d'existence.
+    expect((await app.request(`/api/users/${a.userId}`, authed(b.token))).status).toBe(403);
   });
 
   it('planifie puis exécute la suppression des fichiers MinIO de la personne, sans toucher aux autres', async () => {

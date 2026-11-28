@@ -113,7 +113,8 @@ const surfaces: Array<{ name: string; call: (w: World, t: string) => Response | 
   { name: 'POST publier dans la tribu', call: (w, t) => app.request(`/api/tribes/${w.tribeId}/posts`, { method: 'POST', headers: auth(t), body: JSON.stringify({ type: 'Text', title: 'Intrusion', body: 'x' }) }), denied: 403, memberOk: [201] },
   { name: 'PUT flair d’un post', call: (w, t) => app.request(`/api/tribes/${w.tribeId}/posts/${w.postId}/flair`, { method: 'PUT', headers: auth(t), body: JSON.stringify({ flairId: null }) }), denied: 403, memberOk: [403, 200] },
   { name: 'POST signalement de post (tribu)', call: (w, t) => app.request(`/api/tribes/${w.tribeId}/posts/${w.postId}/report`, { method: 'POST', headers: auth(t), body: JSON.stringify({ reason: 'Contenu douteux' }) }), denied: 403, memberOk: [200] },
-  { name: 'POST signalement de post (global)', call: (w, t) => app.request('/api/reports', { method: 'POST', headers: auth(t), body: JSON.stringify({ targetType: 'post', targetId: w.postId, reason: 'spam' }) }), denied: 404, memberOk: [200, 201] },
+  // 409 : le membre a déjà signalé ce post par la route de la tribu (doublon refusé, donc non bloqué).
+  { name: 'POST signalement de post (global)', call: (w, t) => app.request('/api/reports', { method: 'POST', headers: auth(t), body: JSON.stringify({ targetType: 'post', targetId: w.postId, reason: 'spam' }) }), denied: 404, memberOk: [200, 201, 409] },
   { name: 'POST signalement de commentaire (global)', call: (w, t) => app.request('/api/reports', { method: 'POST', headers: auth(t), body: JSON.stringify({ targetType: 'comment', targetId: w.commentId, reason: 'spam' }) }), denied: 404, memberOk: [200, 201] },
 ];
 
