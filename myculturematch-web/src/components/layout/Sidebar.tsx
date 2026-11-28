@@ -35,16 +35,21 @@ export const Sidebar = () => {
           "bg-white dark:bg-zinc-950 border-r border-app-border dark:border-zinc-900 flex flex-col pt-0 pb-6 select-none transition-all duration-300 ease-in-out overflow-y-auto overflow-x-hidden hide-scrollbar w-full h-full",
           isCollapsed ? "px-2" : "px-4"
         )}>
-          <SidebarLogo />
-
-          <hr className="border-app-border dark:border-zinc-800 mx-4 mt-0 mb-3" />
-          <SidebarNav />
-          <div className="mt-8">
-            <SidebarFooter />
-          </div>
-
-          {/* Visiteur non connecté : accueil + carrousel éditorial en bas de la sidebar. */}
-          {!isAuthenticated && !isCollapsed ? <GuestSidebarPanel /> : null}
+          {/* Visiteur : toute la sidebar est le panneau d'accueil + carrousel. */}
+          {!isAuthenticated && !isCollapsed ? (
+            <div className="h-full overflow-y-auto hide-scrollbar py-4">
+              <GuestSidebarPanel />
+            </div>
+          ) : (
+            <>
+              <SidebarLogo />
+              <hr className="border-app-border dark:border-zinc-800 mx-4 mt-0 mb-3" />
+              <SidebarNav />
+              <div className="mt-8">
+                <SidebarFooter />
+              </div>
+            </>
+          )}
         </aside>
 
         {/* Circular resize/fold handle button positioned over the right border */}

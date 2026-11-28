@@ -31,8 +31,8 @@ export const GuestSidebarPanel = () => {
     setIndex((current) => (current + direction + SLIDES.length) % SLIDES.length);
 
   return (
-    <div className="mt-4 rounded-[20px] border border-app-border bg-[#FAF8F4] p-3 shadow-sm">
-      <h3 className="text-center text-[13px] font-black leading-tight text-app-black">
+    <div className="flex min-h-full flex-col rounded-[20px] border border-app-border bg-[#FAF8F4] p-4 shadow-sm">
+      <h3 className="text-center text-[15px] font-black leading-tight text-app-black">
         Rejoins l&apos;endroit le plus authentique du Web
       </h3>
 
@@ -70,7 +70,7 @@ export const GuestSidebarPanel = () => {
         <img
           src={slide.image}
           alt={slide.title}
-          className="w-full h-32 object-cover object-center rounded-2xl select-none"
+          className="w-full h-44 object-cover object-center rounded-2xl select-none"
         />
         <button
           type="button"
