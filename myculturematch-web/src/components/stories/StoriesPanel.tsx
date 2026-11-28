@@ -3,6 +3,7 @@ import { Image as ImageIcon, ChevronRight } from 'lucide-react';
 import { useStories } from '@/src/hooks/useStories';
 import { uploadService } from '@/src/services/uploadService';
 import { mediaUrl } from '@/src/lib/media';
+import { storyMediaType } from '@/src/lib/storyMedia';
 import { StoryAvatar } from './StoryAvatar';
 import { StoryPlaceDialog, type StoryPlace } from './StoryPlaceDialog';
 import { ApiError } from '@/src/services/api';
@@ -13,6 +14,8 @@ export const StoriesPanel = () => {
   const [uploading, setUploading] = useState(false);
   /** URL du média téléversé, en attente du choix d'un lieu (facultatif). */
   const [pendingUrl, setPendingUrl] = useState<string | null>(null);
+  /** Type du média en attente : une vidéo doit être publiée comme telle, sinon elle s'affiche en image cassée. */
+  const [pendingType, setPendingType] = useState<'image' | 'video'>('image');
   const [placeError, setPlaceError] = useState<string | null>(null);
 
   const handleAddNewStory = () => {
@@ -31,6 +34,7 @@ export const StoriesPanel = () => {
       if (uploaded?.objectKey) {
         const url = mediaUrl(uploaded.objectKey);
         setPlaceError(null);
+        setPendingType(storyMediaType(file.type));
         setPendingUrl(url);
       }
     } catch {
@@ -44,7 +48,7 @@ export const StoriesPanel = () => {
     if (!pendingUrl) return;
     setPlaceError(null);
     addStory(
-      { img: pendingUrl, place },
+      { img: pendingUrl, type: pendingType, place },
       {
         onSuccess: () => setPendingUrl(null),
         onError: (err) => {
