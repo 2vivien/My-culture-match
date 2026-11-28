@@ -10,12 +10,13 @@ import { matchesCreatedTotal, loveAiSearchesTotal, loveCardsDisplayedTotal, love
 import { canLikeForLove } from '../consent/consent.service';
 import { parseLoveQuery } from './love.ai';
 import { consumeLoveQuota, getLoveQuota } from './love.quota.service';
+import { counterpartsBlockedWith, loveCandidatesKey } from './love.blocks';
 
 const CANDIDATES_TTL = 60 * 60;
 const PASS_TTL = 30 * 24 * 60 * 60;
 const SWIPED_TTL = 30 * 24 * 60 * 60;
 const MAX_CANDIDATES = 50;
-const candidatesKey = (userId: string) => `love:candidates:${userId}`;
+const candidatesKey = loveCandidatesKey;
 const swipedKey = (userId: string) => `love:swiped:${userId}`;
 const pairLock = (a: string, b: string) => `love:pair:${[a, b].sort().join(':')}`;
 
@@ -25,7 +26,8 @@ export interface LoveSearchResult extends LoveCandidateDto { rank: number; reaso
 function computeAge(birthdate: Date | null): number | null { if (!birthdate) return null; return Math.floor((Date.now() - birthdate.getTime()) / (365.25 * 24 * 60 * 60 * 1000)); }
 function toUserFeatures(row: { values: string[] | null; languages: string[] | null; ethnicity: string | null; country: string | null; region: string | null; interests?: string[] }) { return { id: '', values: row.values, languages: row.languages, ethnicity: row.ethnicity, country: row.country, region: row.region, interests: row.interests ?? row.values ?? [] }; }
 function normalized(value: string | null | undefined): string { return (value ?? '').toLocaleLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); }
-async function blockedIds(userId: string): Promise<string[]> { const rows = await db.select({ blockedId: schema.blocks.blockedId }).from(schema.blocks).where(eq(schema.blocks.blockerId, userId)); return rows.map((r) => r.blockedId); }
+/** Blocages dans les DEUX sens : si B bloque A, A ne voit plus B (et inversement). */
+async function blockedIds(userId: string): Promise<string[]> { const rows = await db.select({ blockerId: schema.blocks.blockerId, blockedId: schema.blocks.blockedId }).from(schema.blocks).where(or(eq(schema.blocks.blockerId, userId), eq(schema.blocks.blockedId, userId))); return [...counterpartsBlockedWith(userId, rows)]; }
 async function isBlockedBetween(a: string, b: string): Promise<boolean> { const rows = await db.select({ blockerId: schema.blocks.blockerId }).from(schema.blocks).where(or(and(eq(schema.blocks.blockerId, a), eq(schema.blocks.blockedId, b)), and(eq(schema.blocks.blockerId, b), eq(schema.blocks.blockedId, a)))).limit(1); return rows.length > 0; }
 
 export async function getLoveCandidates(userId: string): Promise<{ candidates: LoveCandidateDto[] }> {
@@ -99,8 +101,9 @@ export async function getLoveSearchQuota(userId: string): Promise<{ limit: numbe
 
 export async function getActiveLoveMatches(userId: string): Promise<{ candidates: Array<LoveCandidateDto & { connected: boolean; conversationId: string | null }> }> {
   const rows = await db.select({ candidateId: schema.loveMatches.candidateId, conversationId: schema.loveMatches.conversationId, matchScore: schema.loveMatches.matchScore }).from(schema.loveMatches).where(and(eq(schema.loveMatches.userId, userId), eq(schema.loveMatches.isMutual, true))); if (rows.length === 0) return { candidates: [] };
-  const ids = rows.map((r) => r.candidateId); const users = await db.select({ id: schema.users.id, name: schema.users.name, username: schema.users.username, avatar: schema.users.avatar, bio: schema.users.bio, country: schema.users.country, location: schema.users.location, gender: schema.users.gender, birthdate: schema.users.birthdate }).from(schema.users).where(inArray(schema.users.id, ids)); const byId = new Map(users.map((u) => [u.id, u]));
-  return { candidates: rows.flatMap((r) => { const u = byId.get(r.candidateId); if (!u) return []; return [{ id: u.id, name: u.name, username: u.username, avatar: u.avatar, bio: u.bio, location: u.location, country: u.country, gender: u.gender, age: computeAge(u.birthdate), matchScore: r.matchScore, sharedValues: [], connected: true, conversationId: r.conversationId }]; }) };
+  const blockedSet = new Set(await blockedIds(userId)); const activeRows = rows.filter((r) => !blockedSet.has(r.candidateId)); if (activeRows.length === 0) return { candidates: [] };
+  const ids = activeRows.map((r) => r.candidateId); const users = await db.select({ id: schema.users.id, name: schema.users.name, username: schema.users.username, avatar: schema.users.avatar, bio: schema.users.bio, country: schema.users.country, location: schema.users.location, gender: schema.users.gender, birthdate: schema.users.birthdate }).from(schema.users).where(inArray(schema.users.id, ids)); const byId = new Map(users.map((u) => [u.id, u]));
+  return { candidates: activeRows.flatMap((r) => { const u = byId.get(r.candidateId); if (!u) return []; return [{ id: u.id, name: u.name, username: u.username, avatar: u.avatar, bio: u.bio, location: u.location, country: u.country, gender: u.gender, age: computeAge(u.birthdate), matchScore: r.matchScore, sharedValues: [], connected: true, conversationId: r.conversationId }]; }) };
 }
 export async function getLoveCandidate(userId: string, candidateId: string): Promise<{ candidate: LoveCandidateDto }> { const { candidates } = await getLoveCandidates(userId); const candidate = candidates.find((c) => c.id === candidateId); if (!candidate) throw AppError.notFound('Candidat introuvable', 'CANDIDATE_NOT_FOUND'); return { candidate }; }
 
@@ -144,8 +147,6 @@ export async function getIncomingLoveRequests(userId: string): Promise<{ request
   const answered = await db.select({ candidateId: schema.loveMatches.candidateId }).from(schema.loveMatches).where(eq(schema.loveMatches.userId, userId));
   const answeredIds = new Set(answered.map((r) => r.candidateId));
   const blocked = new Set(await blockedIds(userId));
-  const blockedMe = await db.select({ blockerId: schema.blocks.blockerId }).from(schema.blocks).where(eq(schema.blocks.blockedId, userId));
-  for (const b of blockedMe) blocked.add(b.blockerId);
 
   const open = incoming.filter((r) => !answeredIds.has(r.fromId) && !blocked.has(r.fromId));
   if (open.length === 0) return { requests: [] };

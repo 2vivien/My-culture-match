@@ -1,6 +1,8 @@
 import { and, eq } from 'drizzle-orm';
 import { db, schema } from '../../infrastructure/database';
 import { AppError } from '../../shared/utils/AppError';
+import { redis } from '../../infrastructure/redis';
+import { loveCachesToInvalidate } from '../love/love.blocks';
 import { createReport } from '../reports/reports.service';
 import type { CreateReportInput } from '../reports/reports.schemas';
 
@@ -13,6 +15,8 @@ async function assertOther(userId: string, targetId: string): Promise<void> {
 export async function blockUser(userId: string, targetId: string) {
   await assertOther(userId, targetId);
   await db.insert(schema.blocks).values({ blockerId: userId, blockedId: targetId }).onConflictDoNothing();
+  // Les suggestions Love en cache (1 h) des deux personnes contiennent l'autre : on les vide tout de suite.
+  try { await redis.del(...loveCachesToInvalidate(userId, targetId)); } catch { /* le cache expire de lui-même */ }
   return { success: true, blocked: true };
 }
 

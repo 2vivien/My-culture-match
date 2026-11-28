@@ -7,6 +7,7 @@ import { createNotification } from '../notifications/notifications.service';
 import { hashEmbedding, tokenize, cosineSimilarity } from '../culture-engine/embedding';
 import { emitToUser } from '../../infrastructure/websocket';
 import { locationAudience } from '../location/location.schema';
+import { loveCachesToInvalidate } from '../love/love.blocks';
 
 const SUGGESTIONS_PER_DAY = 20;
 const DECLINED_TTL = 30 * 24 * 60 * 60; // 30j
@@ -468,6 +469,7 @@ export async function blockRequester(userId: string, requestId: string): Promise
   await db.insert(schema.blocks).values({ blockerId: userId, blockedId: requestId }).onConflictDoNothing();
   await removeAudienceLinks(userId, requestId);
   await redis.sadd(blockedKey(userId), requestId);
+  await redis.del(...loveCachesToInvalidate(userId, requestId)).catch(() => 0);
   await db
     .delete(schema.connections)
     .where(or(and(eq(schema.connections.fromUserId, requestId), eq(schema.connections.toUserId, userId)), and(eq(schema.connections.fromUserId, userId), eq(schema.connections.toUserId, requestId))));
