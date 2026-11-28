@@ -16,6 +16,7 @@ import { startStoriesCleanup, stopStoriesCleanup } from './modules/stories/stori
 import { startModerationWorker, closeModerationQueue, moderationQueue, moderationDlq } from './modules/moderation/moderation.queue';
 import { startCultureEngineWorker, scheduleNightlyCultureBatch, closeCultureEngineQueue, cultureBatchQueue } from './modules/culture-engine/batch.queue';
 import { startEmbeddingWorker, closeEmbeddingQueue, embeddingQueue } from './modules/culture-engine/embedding.queue';
+import { startAccountCleanupWorker, closeAccountCleanupQueue } from './modules/users/account-cleanup.queue';
 import { startMediaWorker, closeMediaQueue, mediaQueue } from './modules/media/media.queue';
 import { startSearchWorker, closeSearchQueue, searchQueue } from './modules/search/search.queue';
 import { startFeedFanoutWorker, closeFeedFanoutQueue, feedFanoutQueue } from './modules/feed/feed.queue';
@@ -57,6 +58,9 @@ async function bootstrap() {
   // Worker traitement média (thumbnails, dimensions, détection)
   startMediaWorker();
 
+  // Worker suppression des fichiers MinIO d'un compte supprimé (RGPD)
+  startAccountCleanupWorker();
+
   // Worker indexation Meilisearch (recherche posts/tribus)
   startSearchWorker();
 
@@ -95,7 +99,7 @@ async function bootstrap() {
     logger.info(`Signal ${signal} reçu, arrêt en cours…`);
     clearInterval(queueSampler);
     server.close(async () => {
-      await Promise.allSettled([closeDatabase(), closeRedis(), closeMeilisearch(), closeEmailQueue(), closeCountersFlushQueue(), closeModerationQueue(), closeCultureEngineQueue(), closeEmbeddingQueue(), closeMediaQueue(), closeSearchQueue(), closeFeedFanoutQueue(), closeCronQueues()]);
+      await Promise.allSettled([closeDatabase(), closeRedis(), closeMeilisearch(), closeEmailQueue(), closeCountersFlushQueue(), closeModerationQueue(), closeCultureEngineQueue(), closeEmbeddingQueue(), closeMediaQueue(), closeAccountCleanupQueue(), closeSearchQueue(), closeFeedFanoutQueue(), closeCronQueues()]);
       stopStoriesCleanup();
       process.exit(0);
     });
