@@ -12,7 +12,7 @@ export const CulturalProfileColumn: React.FC<ProfileColumnProps> = ({ partner, o
   return (
     <div className="w-full md:w-80 border border-app-border dark:border-zinc-800 bg-white dark:bg-zinc-950 rounded-[24px] flex flex-col h-full select-none shadow-soft shrink-0 overflow-hidden relative animate-slide-in">
       {/* Cover Banner */}
-      <div className="h-24 bg-[#E27D60] dark:bg-[#c66b50] relative shrink-0">
+      <div className="h-24 bg-[#8B4A2B] dark:bg-[#6F3A22] relative shrink-0">
         <button
           onClick={onClose}
           className="absolute top-3 right-3 w-7 h-7 bg-black/30 hover:bg-black/50 text-white rounded-full flex items-center justify-center cursor-pointer transition-colors z-20"
@@ -45,7 +45,7 @@ export const CulturalProfileColumn: React.FC<ProfileColumnProps> = ({ partner, o
         {/* Culture & Languages */}
         <div className="space-y-2 border-t border-app-border dark:border-zinc-800 pt-4">
           <h4 className="font-bold text-xs text-app-black dark:text-zinc-200 flex items-center gap-1.5 uppercase tracking-wider">
-            <Globe className="w-4 h-4 text-[#E27D60]" />
+            <Globe className="w-4 h-4 text-[#8B4A2B]" />
             Culture & Language
           </h4>
           <p className="text-xs text-app-gray dark:text-zinc-300">
@@ -84,7 +84,7 @@ export const CulturalProfileColumn: React.FC<ProfileColumnProps> = ({ partner, o
             {partner.tribes.map((tribe) => (
               <span
                 key={tribe}
-                className="text-[10px] font-bold bg-[#E27D60]/10 text-[#E27D60] dark:bg-[#E27D60]/10 dark:text-[#E27D60] border border-[#E27D60]/15 rounded-full px-2.5 py-1"
+                className="text-[10px] font-bold bg-[#8B4A2B]/10 text-[#8B4A2B] dark:bg-[#8B4A2B]/10 dark:text-[#8B4A2B] border border-[#8B4A2B]/15 rounded-full px-2.5 py-1"
               >
                 #{tribe}
               </span>

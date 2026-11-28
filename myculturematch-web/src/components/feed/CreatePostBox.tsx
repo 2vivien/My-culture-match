@@ -93,7 +93,7 @@ export const CreatePostBox = () => {
           <Button variant="ghost" size="sm" className="p-2 hover:bg-[#FCFCFC] dark:hover:bg-zinc-900 rounded-full text-app-gray hover:text-app-black dark:hover:text-zinc-100"><Camera className="w-5 h-5" /></Button>
           <Button variant="ghost" size="sm" className="p-2 hover:bg-[#FCFCFC] dark:hover:bg-zinc-900 rounded-full text-app-gray hover:text-app-black dark:hover:text-zinc-100"><Smile className="w-5 h-5" /></Button>
         </div>
-        <Button onClick={handleSubmit} disabled={(!text.trim() && !imageUrl) || isCreating || isUploading} size="icon" className="w-10 h-10 sm:w-12 sm:h-12 bg-[#E27D60] hover:bg-[#c66b50] text-white hover:scale-105 rounded-xl flex items-center justify-center cursor-pointer">
+        <Button onClick={handleSubmit} disabled={(!text.trim() && !imageUrl) || isCreating || isUploading} size="icon" className="w-10 h-10 sm:w-12 sm:h-12 bg-[#8B4A2B] hover:bg-[#6F3A22] text-white hover:scale-105 rounded-xl flex items-center justify-center cursor-pointer">
           {isUploading ? (
             <div className="w-4.5 h-4.5 border-2 border-white dark:border-app-black border-t-transparent rounded-full animate-spin" />
           ) : (

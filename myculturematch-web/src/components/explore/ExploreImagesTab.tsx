@@ -43,7 +43,7 @@ export const ExploreImagesTab: React.FC<ExploreImagesTabProps> = ({
               </h4>
               <div className="flex items-center gap-3 text-[10px] font-bold">
                 <span className="flex items-center gap-1">
-                  <Heart className="w-3.5 h-3.5 fill-[#E27D60] text-[#E27D60]" />
+                  <Heart className="w-3.5 h-3.5 fill-[#8B4A2B] text-[#8B4A2B]" />
                   {img.likes}
                 </span>
                 <span className="flex items-center gap-1">

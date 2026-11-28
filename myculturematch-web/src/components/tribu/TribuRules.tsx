@@ -30,7 +30,7 @@ export const TribuRules: React.FC<TribuRulesProps> = ({
             <div key={rule.number} className="text-xs border-b border-app-border/20 dark:border-zinc-800/40 pb-2.5 last:border-b-0 last:pb-0">
               <button
                 onClick={() => setExpandedRule(isExpanded ? null : rule.number)}
-                className="w-full text-left font-black text-app-black dark:text-zinc-200 hover:text-[#E27D60] dark:hover:text-[#E27D60] cursor-pointer flex items-center justify-between py-1 transition-colors"
+                className="w-full text-left font-black text-app-black dark:text-zinc-200 hover:text-[#8B4A2B] dark:hover:text-[#8B4A2B] cursor-pointer flex items-center justify-between py-1 transition-colors"
               >
                 <span>{rule.number}. {rule.title}</span>
                 <span className="text-app-gray text-[9px] font-bold">{isExpanded ? '▲' : '▼'}</span>

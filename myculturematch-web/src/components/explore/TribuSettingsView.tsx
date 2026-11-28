@@ -193,7 +193,7 @@ export const TribuSettingsView: React.FC = () => {
                       onClick={() => !selected && visibilityMutation.mutate(v)}
                       className={`text-left p-3.5 rounded-2xl border transition-all disabled:cursor-not-allowed ${
                         selected
-                          ? 'bg-[#E27D60]/5 border-[#E27D60] dark:bg-[#E27D60]/10'
+                          ? 'bg-[#8B4A2B]/5 border-[#8B4A2B] dark:bg-[#8B4A2B]/10'
                           : 'bg-zinc-50 dark:bg-zinc-900 border-app-border dark:border-zinc-800 enabled:hover:bg-zinc-100/50 enabled:cursor-pointer'
                       }`}
                     >
@@ -345,10 +345,10 @@ export const TribuSettingsView: React.FC = () => {
                   type="checkbox"
                   checked={tempPermissions.canDeletePosts}
                   onChange={(e) => setTempPermissions((prev) => ({ ...prev, canDeletePosts: e.target.checked }))}
-                  className="mt-0.5 rounded border-app-border dark:border-zinc-800 text-[#E27D60] focus:ring-[#E27D60] w-4 h-4"
+                  className="mt-0.5 rounded border-app-border dark:border-zinc-800 text-[#8B4A2B] focus:ring-[#8B4A2B] w-4 h-4"
                 />
                 <div>
-                  <span className="text-xs font-bold text-app-black dark:text-zinc-300 group-hover:text-[#E27D60] transition-colors">
+                  <span className="text-xs font-bold text-app-black dark:text-zinc-300 group-hover:text-[#8B4A2B] transition-colors">
                     Can delete tribe posts
                   </span>
                 </div>
@@ -359,10 +359,10 @@ export const TribuSettingsView: React.FC = () => {
                   type="checkbox"
                   checked={tempPermissions.canEditNameEmblem}
                   onChange={(e) => setTempPermissions((prev) => ({ ...prev, canEditNameEmblem: e.target.checked }))}
-                  className="mt-0.5 rounded border-app-border dark:border-zinc-800 text-[#E27D60] focus:ring-[#E27D60] w-4 h-4"
+                  className="mt-0.5 rounded border-app-border dark:border-zinc-800 text-[#8B4A2B] focus:ring-[#8B4A2B] w-4 h-4"
                 />
                 <div>
-                  <span className="text-xs font-bold text-app-black dark:text-zinc-300 group-hover:text-[#E27D60] transition-colors">
+                  <span className="text-xs font-bold text-app-black dark:text-zinc-300 group-hover:text-[#8B4A2B] transition-colors">
                     Can edit tribe name & emblem logo
                   </span>
                 </div>
@@ -373,10 +373,10 @@ export const TribuSettingsView: React.FC = () => {
                   type="checkbox"
                   checked={tempPermissions.canEditBanner}
                   onChange={(e) => setTempPermissions((prev) => ({ ...prev, canEditBanner: e.target.checked }))}
-                  className="mt-0.5 rounded border-app-border dark:border-zinc-800 text-[#E27D60] focus:ring-[#E27D60] w-4 h-4"
+                  className="mt-0.5 rounded border-app-border dark:border-zinc-800 text-[#8B4A2B] focus:ring-[#8B4A2B] w-4 h-4"
                 />
                 <div>
-                  <span className="text-xs font-bold text-app-black dark:text-zinc-300 group-hover:text-[#E27D60] transition-colors">
+                  <span className="text-xs font-bold text-app-black dark:text-zinc-300 group-hover:text-[#8B4A2B] transition-colors">
                     Can edit tribe background banner
                   </span>
                 </div>
@@ -394,7 +394,7 @@ export const TribuSettingsView: React.FC = () => {
               <button
                 type="button"
                 onClick={savePermissions}
-                className="flex-1 py-2 text-xs font-black bg-[#E27D60] hover:bg-[#c66b50] text-white rounded-xl cursor-pointer border-none"
+                className="flex-1 py-2 text-xs font-black bg-[#8B4A2B] hover:bg-[#6F3A22] text-white rounded-xl cursor-pointer border-none"
               >
                 Apply Rights
               </button>

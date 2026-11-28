@@ -32,10 +32,10 @@ export const TribuJoinRequests: React.FC<TribuJoinRequestsProps> = ({
     className="bg-white dark:bg-zinc-900/60 border border-app-border dark:border-zinc-800 rounded-[20px] p-5 shadow-xs"
   >
     <h3 className="font-extrabold text-sm text-app-black dark:text-zinc-200 flex items-center gap-2">
-      <UserPlus className="w-4 h-4 text-[#E27D60]" aria-hidden="true" />
+      <UserPlus className="w-4 h-4 text-[#8B4A2B]" aria-hidden="true" />
       Demandes d’adhésion
       {requests.length > 0 && (
-        <span className="text-[10px] font-black px-1.5 py-0.5 rounded-full bg-[#E27D60]/10 text-[#E27D60]">
+        <span className="text-[10px] font-black px-1.5 py-0.5 rounded-full bg-[#8B4A2B]/10 text-[#8B4A2B]">
           {requests.length}
         </span>
       )}
@@ -86,7 +86,7 @@ export const TribuJoinRequests: React.FC<TribuJoinRequestsProps> = ({
                   disabled={busy}
                   onClick={() => onResolve(r.userId, true)}
                   aria-label={`Approuver la demande de ${r.name}`}
-                  className="px-2.5 py-1.5 rounded-full bg-[#E27D60] hover:bg-[#c66b50] text-white text-[10px] font-black flex items-center gap-1 cursor-pointer disabled:opacity-50"
+                  className="px-2.5 py-1.5 rounded-full bg-[#8B4A2B] hover:bg-[#6F3A22] text-white text-[10px] font-black flex items-center gap-1 cursor-pointer disabled:opacity-50"
                 >
                   {busy ? <Loader2 className="w-3 h-3 animate-spin" aria-hidden="true" /> : <Check className="w-3 h-3" aria-hidden="true" />}
                   Approuver

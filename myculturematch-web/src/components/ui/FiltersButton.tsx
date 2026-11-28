@@ -17,10 +17,10 @@ export const FiltersButton: React.FC<FiltersButtonProps> = ({ onClick, active = 
         className
       )}
     >
-      <SlidersHorizontal className="w-4 h-4 md:w-3.5 md:h-3.5 text-[#E27D60]" />
+      <SlidersHorizontal className="w-4 h-4 md:w-3.5 md:h-3.5 text-[#8B4A2B]" />
       <span className="hidden md:inline">Filters</span>
       {active && (
-        <span className="w-1.5 h-1.5 rounded-full bg-[#E27D60] animate-pulse" />
+        <span className="w-1.5 h-1.5 rounded-full bg-[#8B4A2B] animate-pulse" />
       )}
     </button>
   );

@@ -15,7 +15,7 @@ export const FiltersAgeRange: React.FC<FiltersAgeRangeProps> = ({
         <label className="text-[10px] font-bold text-app-gray dark:text-zinc-400 uppercase tracking-widest">
           Age Range
         </label>
-        <span className="text-[11px] font-black text-[#E27D60] bg-[#E27D60]/10 dark:bg-[#E27D60]/20 px-2 py-0.5 rounded-lg">
+        <span className="text-[11px] font-black text-[#8B4A2B] bg-[#8B4A2B]/10 dark:bg-[#8B4A2B]/20 px-2 py-0.5 rounded-lg">
           {ageRange[0]} - {ageRange[1]}+
         </span>
       </div>
@@ -28,7 +28,7 @@ export const FiltersAgeRange: React.FC<FiltersAgeRangeProps> = ({
           onChange={(e) =>
             setAgeRange([parseInt(e.target.value), ageRange[1]])
           }
-          className="w-full h-1 bg-zinc-400 dark:bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-[#E27D60]"
+          className="w-full h-1 bg-zinc-400 dark:bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-[#8B4A2B]"
         />
         <input
           type="range"
@@ -38,7 +38,7 @@ export const FiltersAgeRange: React.FC<FiltersAgeRangeProps> = ({
           onChange={(e) =>
             setAgeRange([ageRange[0], parseInt(e.target.value)])
           }
-          className="w-full h-1 bg-zinc-400 dark:bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-[#E27D60]"
+          className="w-full h-1 bg-zinc-400 dark:bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-[#8B4A2B]"
         />
       </div>
     </div>

@@ -133,7 +133,7 @@ export const AboutTab: React.FC<AboutTabProps> = ({ user, getCityAndCountry }) =
           </div>
           <div className="flex flex-col gap-1">
             <span className="text-[10px] font-black uppercase tracking-wider text-[#9aa3b8] flex items-center gap-1.5">
-              <Globe className="w-3.5 h-3.5 text-[#E27D60]" /> Country
+              <Globe className="w-3.5 h-3.5 text-[#8B4A2B]" /> Country
             </span>
             <span className="font-black text-[#2e3552] dark:text-white">{country}</span>
           </div>

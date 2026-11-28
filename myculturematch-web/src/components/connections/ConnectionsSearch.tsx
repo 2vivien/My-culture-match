@@ -57,7 +57,7 @@ export const ConnectionsSearch: React.FC<ConnectionsSearchProps> = ({
         type="button"
         className="px-5 py-3.5 bg-zinc-100 dark:bg-zinc-900 border border-transparent dark:border-zinc-800 rounded-2xl flex items-center gap-2 hover:bg-zinc-200 dark:hover:bg-zinc-800 text-app-gray hover:text-app-black dark:hover:text-white cursor-pointer font-black text-xs transition-colors shrink-0"
       >
-        <FunnelPlus className="w-3.5 h-3.5 text-[#E27D60]" />
+        <FunnelPlus className="w-3.5 h-3.5 text-[#8B4A2B]" />
         <span className="hidden sm:inline">Filtres</span>
       </button>
     </div>

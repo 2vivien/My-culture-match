@@ -29,7 +29,7 @@ const glowStops: Record<string, { stop1: string; stop2: string; stop3: string }>
   blue: { stop1: '#2563eb', stop2: '#7c3aed', stop3: '#a855f7' },
   turquoise: { stop1: '#2563eb', stop2: '#7c3aed', stop3: '#a855f7' }, // Premium Blue-Violet halo glow stop
   violet: { stop1: '#4f46e5', stop2: '#8b5cf6', stop3: '#d946ef' },
-  sunset: { stop1: '#ff7e5f', stop2: '#feb47b', stop3: '#ff7e5f' },
+  sunset: { stop1: '#8B4A2B', stop2: '#C08A62', stop3: '#8B4A2B' },
   citrus: { stop1: '#a8ff78', stop2: '#78ffd6', stop3: '#a8ff78' },
   none: { stop1: '#cbd5e1', stop2: '#e2e8f0', stop3: '#94a3b8' },
 };
@@ -138,7 +138,7 @@ export const ProfileAvatar = ({
     blue: '#2563eb',
     turquoise: '#06b6d4',
     violet: '#8b5cf6',
-    sunset: '#ff7e5f',
+    sunset: '#8B4A2B',
     citrus: '#a8ff78',
     none: '#cbd5e1',
   };

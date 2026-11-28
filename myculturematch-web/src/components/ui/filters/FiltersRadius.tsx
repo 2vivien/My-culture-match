@@ -24,7 +24,7 @@ export const FiltersRadius: React.FC<FiltersRadiusProps> = ({
             className={cn(
               'py-2 rounded-xl text-[10px] font-black transition-all cursor-pointer border select-none text-center',
               distance === d
-                ? 'bg-[#E27D60] border-[#E27D60] text-white'
+                ? 'bg-[#8B4A2B] border-[#8B4A2B] text-white'
                 : 'bg-zinc-50 dark:bg-zinc-900 border-app-border dark:border-zinc-800 text-app-gray hover:text-app-black dark:hover:text-white'
             )}
           >

@@ -32,7 +32,7 @@ export const RequestRow: React.FC<RequestRowProps> = ({ user, onAccept, onDeclin
         <button onClick={() => onDecline(user.id)} className="w-10 h-10 rounded-2xl border border-app-border dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-950 text-app-gray hover:text-app-black dark:hover:text-white flex items-center justify-center cursor-pointer transition-all hover:scale-105 active:scale-95">
           <X className="w-4 h-4 text-app-gray dark:text-zinc-400 stroke-[2.5]" />
         </button>
-        <button onClick={() => onAccept(user.id)} className="w-10 h-10 rounded-2xl bg-[#E27D60] text-white hover:bg-[#c66b50] flex items-center justify-center shadow-md shadow-orange-500/10 cursor-pointer transition-all hover:scale-105 active:scale-95">
+        <button onClick={() => onAccept(user.id)} className="w-10 h-10 rounded-2xl bg-[#8B4A2B] text-white hover:bg-[#6F3A22] flex items-center justify-center shadow-md shadow-orange-500/10 cursor-pointer transition-all hover:scale-105 active:scale-95">
           <Check className="w-4 h-4 stroke-[2.5]" />
         </button>
       </div>

@@ -28,7 +28,7 @@ export const CreatePostLinkForm: React.FC<CreatePostLinkFormProps> = ({
           disabled={!linkUrl.trim() || isSubmitting}
           className={`px-8 py-2 rounded-full font-black text-sm tracking-wider transition-all cursor-pointer ${
             linkUrl.trim() && !isSubmitting
-              ? 'bg-[#E27D60] hover:bg-[#c66b50] text-white' 
+              ? 'bg-[#8B4A2B] hover:bg-[#6F3A22] text-white' 
               : 'bg-zinc-200 text-zinc-400 dark:bg-zinc-800 dark:text-zinc-600 cursor-not-allowed'
           }`}
         >

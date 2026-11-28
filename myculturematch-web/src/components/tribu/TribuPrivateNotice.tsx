@@ -36,7 +36,7 @@ export const TribuPrivateNotice: React.FC<TribuPrivateNoticeProps> = ({
         } ${
           joinAction.tone === 'secondary'
             ? 'bg-[#E4E6EB] hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-app-black dark:text-zinc-200'
-            : 'bg-[#E27D60] hover:bg-[#c66b50] text-white shadow-sm'
+            : 'bg-[#8B4A2B] hover:bg-[#6F3A22] text-white shadow-sm'
         }`}
       >
         {joinAction.label}

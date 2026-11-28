@@ -12,7 +12,7 @@ export const NotificationFooter: React.FC<NotificationFooterProps> = ({
       <button
         type="button"
         onClick={onMarkAllRead}
-        className="text-xs font-bold text-[#E27D60] dark:text-[#E27D60] hover:underline cursor-pointer"
+        className="text-xs font-bold text-[#8B4A2B] dark:text-[#8B4A2B] hover:underline cursor-pointer"
       >
         Mark all as read
       </button>

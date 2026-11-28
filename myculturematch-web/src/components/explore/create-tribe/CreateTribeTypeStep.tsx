@@ -30,12 +30,12 @@ export const CreateTribeTypeStep: React.FC<CreateTribeTypeStepProps> = ({
           className={cn(
             "flex items-center justify-between p-4 rounded-2xl border transition-all cursor-pointer select-none",
             tribeType === 'public'
-              ? "bg-[#E27D60]/5 border-[#E27D60] dark:bg-[#E27D60]/10"
+              ? "bg-[#8B4A2B]/5 border-[#8B4A2B] dark:bg-[#8B4A2B]/10"
               : "bg-zinc-50 dark:bg-zinc-900 border-app-border dark:border-zinc-800 hover:bg-zinc-100/50"
           )}
         >
           <div className="flex items-center gap-3.5">
-            <Compass className={cn("w-5 h-5", tribeType === 'public' ? "text-[#E27D60]" : "text-app-gray")} />
+            <Compass className={cn("w-5 h-5", tribeType === 'public' ? "text-[#8B4A2B]" : "text-app-gray")} />
             <div>
               <span className="font-extrabold text-xs text-app-black dark:text-white block">Publique</span>
               <span className="text-[10px] text-app-gray dark:text-zinc-400 font-medium block mt-0.5">
@@ -45,9 +45,9 @@ export const CreateTribeTypeStep: React.FC<CreateTribeTypeStepProps> = ({
           </div>
           <div className={cn(
             "w-4 h-4 rounded-full border flex items-center justify-center transition-all",
-            tribeType === 'public' ? "border-[#E27D60]" : "border-app-border dark:border-zinc-700"
+            tribeType === 'public' ? "border-[#8B4A2B]" : "border-app-border dark:border-zinc-700"
           )}>
-            {tribeType === 'public' && <div className="w-2 h-2 rounded-full bg-[#E27D60]" />}
+            {tribeType === 'public' && <div className="w-2 h-2 rounded-full bg-[#8B4A2B]" />}
           </div>
         </div>
 
@@ -66,7 +66,7 @@ export const CreateTribeTypeStep: React.FC<CreateTribeTypeStepProps> = ({
           className={cn(
             "flex items-center justify-between p-4 rounded-2xl border transition-all cursor-pointer select-none",
             tribeType === 'private'
-              ? "bg-[#E27D60]/5 border-[#E27D60] dark:bg-[#E27D60]/10"
+              ? "bg-[#8B4A2B]/5 border-[#8B4A2B] dark:bg-[#8B4A2B]/10"
               : "bg-zinc-50 dark:bg-zinc-900 border-app-border dark:border-zinc-800 hover:bg-zinc-100/50"
           )}
         >
@@ -81,15 +81,15 @@ export const CreateTribeTypeStep: React.FC<CreateTribeTypeStepProps> = ({
           </div>
           <div className={cn(
             "w-4 h-4 rounded-full border flex items-center justify-center transition-all",
-            tribeType === 'private' ? "border-[#E27D60]" : "border-app-border dark:border-zinc-700"
+            tribeType === 'private' ? "border-[#8B4A2B]" : "border-app-border dark:border-zinc-700"
           )}>
-            {tribeType === 'private' && <div className="w-2 h-2 rounded-full bg-[#E27D60]" />}
+            {tribeType === 'private' && <div className="w-2 h-2 rounded-full bg-[#8B4A2B]" />}
           </div>
         </div>
       </div>
 
       <p className="text-[9px] text-app-gray dark:text-zinc-500 leading-normal font-semibold">
-        By continuing, you agree to our <span className="text-[#E27D60] underline cursor-pointer">Tribu Code of Conduct</span> and acknowledge that you understand the <span className="text-[#E27D60] underline cursor-pointer">My Culture Match Rules</span>.
+        By continuing, you agree to our <span className="text-[#8B4A2B] underline cursor-pointer">Tribu Code of Conduct</span> and acknowledge that you understand the <span className="text-[#8B4A2B] underline cursor-pointer">My Culture Match Rules</span>.
       </p>
     </div>
   );

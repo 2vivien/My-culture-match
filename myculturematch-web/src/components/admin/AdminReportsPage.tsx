@@ -174,7 +174,7 @@ export const AdminReportsPage: React.FC = () => {
                   'px-4 py-2 rounded-xl text-sm font-semibold text-white cursor-pointer border-none transition-colors disabled:opacity-50',
                   actionModal.action === 'ban' ? 'bg-red-500 hover:bg-red-600' :
                   actionModal.action === 'warn' ? 'bg-amber-500 hover:bg-amber-600' :
-                  'bg-[#E27D60] hover:bg-[#c66b50]'
+                  'bg-[#8B4A2B] hover:bg-[#6F3A22]'
                 )}
               >
                 Confirmer

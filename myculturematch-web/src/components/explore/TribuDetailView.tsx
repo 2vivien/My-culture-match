@@ -127,13 +127,13 @@ export const TribuDetailView: React.FC = () => {
                   onClick={() => setSortType(type)}
                   className={`px-4.5 py-1.5 rounded-full text-xs font-black cursor-pointer tracking-wider flex items-center gap-1.5 transition-colors ${
                     isActive
-                      ? 'bg-zinc-100 dark:bg-zinc-800 text-[#E27D60] dark:text-[#E27D60]'
+                      ? 'bg-zinc-100 dark:bg-zinc-800 text-[#8B4A2B] dark:text-[#8B4A2B]'
                       : 'text-app-gray hover:text-app-black dark:hover:text-zinc-200'
                   }`}
                 >
-                  {type === 'Best' && <Award className="w-3.5 h-3.5 text-[#E27D60] fill-[#E27D60]" />}
-                  {type === 'Hot' && <Flame className="w-3.5 h-3.5 text-[#E27D60] fill-[#E27D60]" />}
-                  {type === 'New' && <TrendingUp className="w-3.5 h-3.5 text-[#E27D60]" />}
+                  {type === 'Best' && <Award className="w-3.5 h-3.5 text-[#8B4A2B] fill-[#8B4A2B]" />}
+                  {type === 'Hot' && <Flame className="w-3.5 h-3.5 text-[#8B4A2B] fill-[#8B4A2B]" />}
+                  {type === 'New' && <TrendingUp className="w-3.5 h-3.5 text-[#8B4A2B]" />}
                   {SORT_LABELS[type]}
                 </button>
               );
@@ -156,7 +156,7 @@ export const TribuDetailView: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => refetchPosts()}
-                  className="px-4 py-2 rounded-full bg-[#E27D60] hover:bg-[#c66b50] text-white text-xs font-black cursor-pointer"
+                  className="px-4 py-2 rounded-full bg-[#8B4A2B] hover:bg-[#6F3A22] text-white text-xs font-black cursor-pointer"
                 >
                   Réessayer
                 </button>

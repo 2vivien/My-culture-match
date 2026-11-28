@@ -63,7 +63,7 @@ export const TribuFlairBar: React.FC<TribuFlairBarProps> = ({
           onClick={() => onSelect(null)}
           className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border cursor-pointer transition-colors ${
             activeFlairId === null
-              ? 'bg-zinc-100 dark:bg-zinc-800 text-[#E27D60] border-[#E27D60]/40'
+              ? 'bg-zinc-100 dark:bg-zinc-800 text-[#8B4A2B] border-[#8B4A2B]/40'
               : 'text-app-gray border-app-border dark:border-zinc-800 hover:text-app-black dark:hover:text-zinc-200'
           }`}
         >
@@ -132,7 +132,7 @@ export const TribuFlairBar: React.FC<TribuFlairBarProps> = ({
                 maxLength={24}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Ex. Recette"
-                className="px-3 py-2 text-xs rounded-xl border border-app-border dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 text-app-black dark:text-zinc-200 focus:outline-none focus:border-[#E27D60]"
+                className="px-3 py-2 text-xs rounded-xl border border-app-border dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 text-app-black dark:text-zinc-200 focus:outline-none focus:border-[#8B4A2B]"
               />
             </label>
             <label className="flex flex-col gap-1">
@@ -148,7 +148,7 @@ export const TribuFlairBar: React.FC<TribuFlairBarProps> = ({
             <button
               type="submit"
               disabled={creating}
-              className="flex items-center gap-1 px-4 py-2 rounded-xl bg-[#E27D60] hover:bg-[#c66b50] text-white text-xs font-black cursor-pointer disabled:opacity-60"
+              className="flex items-center gap-1 px-4 py-2 rounded-xl bg-[#8B4A2B] hover:bg-[#6F3A22] text-white text-xs font-black cursor-pointer disabled:opacity-60"
             >
               {creating ? <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" /> : <Plus className="w-3.5 h-3.5" aria-hidden="true" />}
               Ajouter

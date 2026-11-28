@@ -14,7 +14,7 @@ export const FiltersHeader: React.FC<FiltersHeaderProps> = ({ onReset, onClose }
         <button
           type="button"
           onClick={onReset}
-          className="text-[#E27D60] text-[10px] font-black uppercase tracking-wider mt-1 hover:underline cursor-pointer"
+          className="text-[#8B4A2B] text-[10px] font-black uppercase tracking-wider mt-1 hover:underline cursor-pointer"
         >
           Reset all
         </button>

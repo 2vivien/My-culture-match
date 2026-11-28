@@ -50,7 +50,7 @@ export const PhotosTab: React.FC<PhotosTabProps> = ({ posts = [] }) => {
             <img src={post.image} alt={post.text?.slice(0, 60) || 'Photo'} className="w-full h-full object-cover" />
             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4 text-white">
               <span className="flex items-center gap-1 text-xs">
-                <Heart className="w-4 h-4 fill-current text-[#E27D60]" /> {post.likes}
+                <Heart className="w-4 h-4 fill-current text-[#8B4A2B]" /> {post.likes}
               </span>
               <span className="flex items-center gap-1 text-xs">
                 <MessageCircle className="w-4 h-4 fill-current text-white" /> {post.comments}

@@ -31,11 +31,11 @@ export const UserCard: React.FC<UserCardProps> = ({ user, onConnect }) => {
         {/* Companion & Interests stats using MousePointerClick and Unplug icons */}
         <div className="flex flex-col items-center gap-1.5 text-[10px] text-app-gray dark:text-zinc-400 font-bold mt-4 mb-3.5 select-none">
           <div className="flex items-center gap-1.5">
-            <MousePointerClick className="w-3.5 h-3.5 text-[#E27D60] shrink-0" />
+            <MousePointerClick className="w-3.5 h-3.5 text-[#8B4A2B] shrink-0" />
             <span>{user.interestedCount} Interested</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <Unplug className="w-3.5 h-3.5 text-[#E27D60] shrink-0" />
+            <Unplug className="w-3.5 h-3.5 text-[#8B4A2B] shrink-0" />
             <span>{user.compagnonsCount} Compagnons</span>
           </div>
         </div>
@@ -45,7 +45,7 @@ export const UserCard: React.FC<UserCardProps> = ({ user, onConnect }) => {
         disabled={requested}
         className={cn(
           "w-full py-2.5 rounded-xl text-xs font-black cursor-pointer tracking-wider flex items-center justify-center gap-1.5 transition-all",
-          requested ? 'bg-zinc-100 dark:bg-zinc-800 text-app-gray' : 'bg-[#E27D60] text-white hover:opacity-90'
+          requested ? 'bg-zinc-100 dark:bg-zinc-800 text-app-gray' : 'bg-[#8B4A2B] text-white hover:opacity-90'
         )}
       >
         {requested ? (

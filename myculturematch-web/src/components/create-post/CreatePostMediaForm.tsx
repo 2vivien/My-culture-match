@@ -18,7 +18,7 @@ export const CreatePostMediaForm: React.FC<CreatePostMediaFormProps> = ({
   return (
     <div className="animate-fade-in flex flex-col gap-4">
       {!mediaPreview ? (
-        <div className="h-[300px] border-2 border-dashed border-app-border dark:border-zinc-800 rounded-2xl flex flex-col items-center justify-center gap-4 text-app-gray relative overflow-hidden group hover:border-[#E27D60] hover:bg-[#E27D60]/5 transition-all">
+        <div className="h-[300px] border-2 border-dashed border-app-border dark:border-zinc-800 rounded-2xl flex flex-col items-center justify-center gap-4 text-app-gray relative overflow-hidden group hover:border-[#8B4A2B] hover:bg-[#8B4A2B]/5 transition-all">
           <input 
             type="file" 
             accept="image/*,video/*" 
@@ -28,7 +28,7 @@ export const CreatePostMediaForm: React.FC<CreatePostMediaFormProps> = ({
           <p className="text-sm font-bold group-hover:text-app-black dark:group-hover:text-white transition-colors">
             Drag and drop images or video here
           </p>
-          <button type="button" className="px-6 py-2 rounded-full border border-app-border dark:border-zinc-700 font-extrabold text-sm group-hover:bg-[#E27D60] group-hover:text-white group-hover:border-[#E27D60] transition-colors relative z-0">
+          <button type="button" className="px-6 py-2 rounded-full border border-app-border dark:border-zinc-700 font-extrabold text-sm group-hover:bg-[#8B4A2B] group-hover:text-white group-hover:border-[#8B4A2B] transition-colors relative z-0">
             Select Media
           </button>
         </div>
@@ -52,7 +52,7 @@ export const CreatePostMediaForm: React.FC<CreatePostMediaFormProps> = ({
           disabled={!mediaPreview || isSubmitting}
           className={`px-8 py-2 rounded-full font-black text-sm tracking-wider transition-all cursor-pointer ${
             mediaPreview && !isSubmitting
-              ? 'bg-[#E27D60] hover:bg-[#c66b50] text-white' 
+              ? 'bg-[#8B4A2B] hover:bg-[#6F3A22] text-white' 
               : 'bg-zinc-200 text-zinc-400 dark:bg-zinc-800 dark:text-zinc-600 cursor-not-allowed'
           }`}
         >

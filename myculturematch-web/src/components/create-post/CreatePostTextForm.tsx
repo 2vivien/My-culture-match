@@ -88,7 +88,7 @@ export const CreatePostTextForm: React.FC<CreatePostTextFormProps> = ({
                 input.value = '';
               }
             }}
-            className="px-4 py-2.5 rounded-2xl bg-[#E27D60] hover:bg-[#c66b50] text-white font-extrabold text-xs cursor-pointer transition-all flex items-center justify-center border-none"
+            className="px-4 py-2.5 rounded-2xl bg-[#8B4A2B] hover:bg-[#6F3A22] text-white font-extrabold text-xs cursor-pointer transition-all flex items-center justify-center border-none"
           >
             Add
           </button>
@@ -97,7 +97,7 @@ export const CreatePostTextForm: React.FC<CreatePostTextFormProps> = ({
         {/* Display currently selected tags */}
         <div className="flex flex-wrap gap-2 mt-1">
           {selectedTags.map(tag => (
-            <span key={tag} className="px-3 py-1 rounded-full bg-[#E27D60]/10 text-[#E27D60] text-xs font-bold flex items-center gap-1 select-none border border-[#E27D60]/10">
+            <span key={tag} className="px-3 py-1 rounded-full bg-[#8B4A2B]/10 text-[#8B4A2B] text-xs font-bold flex items-center gap-1 select-none border border-[#8B4A2B]/10">
               <span>{tag}</span>
               <button 
                 type="button" 
@@ -115,19 +115,19 @@ export const CreatePostTextForm: React.FC<CreatePostTextFormProps> = ({
       <div className="border border-app-border dark:border-zinc-800 rounded-2xl overflow-hidden mt-2 bg-transparent focus-within:border-zinc-400 dark:focus-within:border-zinc-600 transition-colors">
         {/* Toolbar */}
         <div className="flex flex-wrap items-center gap-1 p-2 bg-zinc-50/50 dark:bg-zinc-900/30 border-b border-app-border dark:border-zinc-800">
-          <button type="button" onClick={() => toggleFormat('bold')} className={`p-1.5 rounded transition-colors ${formats.bold ? 'bg-[#E27D60]/20 text-[#E27D60]' : 'hover:bg-zinc-200 dark:hover:bg-zinc-800 text-app-gray dark:text-zinc-300'}`}><Bold className="w-4 h-4" /></button>
-          <button type="button" onClick={() => toggleFormat('italic')} className={`p-1.5 rounded transition-colors ${formats.italic ? 'bg-[#E27D60]/20 text-[#E27D60]' : 'hover:bg-zinc-200 dark:hover:bg-zinc-800 text-app-gray dark:text-zinc-300'}`}><Italic className="w-4 h-4" /></button>
-          <button type="button" onClick={() => toggleFormat('strikethrough')} className={`p-1.5 rounded transition-colors ${formats.strikethrough ? 'bg-[#E27D60]/20 text-[#E27D60]' : 'hover:bg-zinc-200 dark:hover:bg-zinc-800 text-app-gray dark:text-zinc-300'}`}><Strikethrough className="w-4 h-4" /></button>
-          <button type="button" onClick={() => toggleFormat('superscript')} className={`p-1.5 rounded transition-colors ${formats.superscript ? 'bg-[#E27D60]/20 text-[#E27D60]' : 'hover:bg-zinc-200 dark:hover:bg-zinc-800 text-app-gray dark:text-zinc-300'}`}><Superscript className="w-4 h-4" /></button>
+          <button type="button" onClick={() => toggleFormat('bold')} className={`p-1.5 rounded transition-colors ${formats.bold ? 'bg-[#8B4A2B]/20 text-[#8B4A2B]' : 'hover:bg-zinc-200 dark:hover:bg-zinc-800 text-app-gray dark:text-zinc-300'}`}><Bold className="w-4 h-4" /></button>
+          <button type="button" onClick={() => toggleFormat('italic')} className={`p-1.5 rounded transition-colors ${formats.italic ? 'bg-[#8B4A2B]/20 text-[#8B4A2B]' : 'hover:bg-zinc-200 dark:hover:bg-zinc-800 text-app-gray dark:text-zinc-300'}`}><Italic className="w-4 h-4" /></button>
+          <button type="button" onClick={() => toggleFormat('strikethrough')} className={`p-1.5 rounded transition-colors ${formats.strikethrough ? 'bg-[#8B4A2B]/20 text-[#8B4A2B]' : 'hover:bg-zinc-200 dark:hover:bg-zinc-800 text-app-gray dark:text-zinc-300'}`}><Strikethrough className="w-4 h-4" /></button>
+          <button type="button" onClick={() => toggleFormat('superscript')} className={`p-1.5 rounded transition-colors ${formats.superscript ? 'bg-[#8B4A2B]/20 text-[#8B4A2B]' : 'hover:bg-zinc-200 dark:hover:bg-zinc-800 text-app-gray dark:text-zinc-300'}`}><Superscript className="w-4 h-4" /></button>
           <div className="w-px h-4 bg-app-border dark:bg-zinc-700 mx-1" />
           <button type="button" className="p-1.5 rounded hover:bg-zinc-200 dark:hover:bg-zinc-800 text-app-gray dark:text-zinc-300 transition-colors"><Link2 className="w-4 h-4" /></button>
           <button type="button" className="p-1.5 rounded hover:bg-zinc-200 dark:hover:bg-zinc-800 text-app-gray dark:text-zinc-300 transition-colors"><ImageIcon className="w-4 h-4" /></button>
           <button type="button" className="p-1.5 rounded hover:bg-zinc-200 dark:hover:bg-zinc-800 text-app-gray dark:text-zinc-300 transition-colors"><PlaySquare className="w-4 h-4" /></button>
-          <button type="button" onClick={() => toggleFormat('list')} className={`p-1.5 rounded transition-colors ${formats.list ? 'bg-[#E27D60]/20 text-[#E27D60]' : 'hover:bg-zinc-200 dark:hover:bg-zinc-800 text-app-gray dark:text-zinc-300'}`}><List className="w-4 h-4" /></button>
-          <button type="button" onClick={() => toggleFormat('orderedList')} className={`p-1.5 rounded transition-colors ${formats.orderedList ? 'bg-[#E27D60]/20 text-[#E27D60]' : 'hover:bg-zinc-200 dark:hover:bg-zinc-800 text-app-gray dark:text-zinc-300'}`}><ListOrdered className="w-4 h-4" /></button>
+          <button type="button" onClick={() => toggleFormat('list')} className={`p-1.5 rounded transition-colors ${formats.list ? 'bg-[#8B4A2B]/20 text-[#8B4A2B]' : 'hover:bg-zinc-200 dark:hover:bg-zinc-800 text-app-gray dark:text-zinc-300'}`}><List className="w-4 h-4" /></button>
+          <button type="button" onClick={() => toggleFormat('orderedList')} className={`p-1.5 rounded transition-colors ${formats.orderedList ? 'bg-[#8B4A2B]/20 text-[#8B4A2B]' : 'hover:bg-zinc-200 dark:hover:bg-zinc-800 text-app-gray dark:text-zinc-300'}`}><ListOrdered className="w-4 h-4" /></button>
           <div className="w-px h-4 bg-app-border dark:bg-zinc-700 mx-1" />
-          <button type="button" onClick={() => toggleFormat('quote')} className={`p-1.5 rounded transition-colors ${formats.quote ? 'bg-[#E27D60]/20 text-[#E27D60]' : 'hover:bg-zinc-200 dark:hover:bg-zinc-800 text-app-gray dark:text-zinc-300'}`}><Quote className="w-4 h-4" /></button>
-          <button type="button" onClick={() => toggleFormat('code')} className={`p-1.5 rounded transition-colors ${formats.code ? 'bg-[#E27D60]/20 text-[#E27D60]' : 'hover:bg-zinc-200 dark:hover:bg-zinc-800 text-app-gray dark:text-zinc-300'}`}><Code className="w-4 h-4" /></button>
+          <button type="button" onClick={() => toggleFormat('quote')} className={`p-1.5 rounded transition-colors ${formats.quote ? 'bg-[#8B4A2B]/20 text-[#8B4A2B]' : 'hover:bg-zinc-200 dark:hover:bg-zinc-800 text-app-gray dark:text-zinc-300'}`}><Quote className="w-4 h-4" /></button>
+          <button type="button" onClick={() => toggleFormat('code')} className={`p-1.5 rounded transition-colors ${formats.code ? 'bg-[#8B4A2B]/20 text-[#8B4A2B]' : 'hover:bg-zinc-200 dark:hover:bg-zinc-800 text-app-gray dark:text-zinc-300'}`}><Code className="w-4 h-4" /></button>
           <div className="ml-auto">
             <button type="button" className="p-1.5 rounded hover:bg-zinc-200 dark:hover:bg-zinc-800 text-app-gray dark:text-zinc-300 transition-colors"><MoreHorizontal className="w-4 h-4" /></button>
           </div>
@@ -148,7 +148,7 @@ export const CreatePostTextForm: React.FC<CreatePostTextFormProps> = ({
           disabled={!title.trim() || isSubmitting}
           className={`px-8 py-2 rounded-full font-black text-sm tracking-wider transition-all cursor-pointer ${
             title.trim() && !isSubmitting
-              ? 'bg-[#E27D60] hover:bg-[#c66b50] text-white' 
+              ? 'bg-[#8B4A2B] hover:bg-[#6F3A22] text-white' 
               : 'bg-zinc-200 text-zinc-400 dark:bg-zinc-800 dark:text-zinc-600 cursor-not-allowed'
           }`}
         >

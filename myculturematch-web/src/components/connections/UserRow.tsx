@@ -32,9 +32,9 @@ export const UserRow: React.FC<UserRowProps> = ({ user, onConnect, isInterested 
             <h4 className="font-extrabold text-sm text-app-black dark:text-zinc-300 truncate leading-tight">{user.name}</h4>
           </div>
           <div className="flex items-center gap-1.5 text-[10px] text-app-gray dark:text-zinc-400 font-bold mt-1.5">
-            <span className="flex items-center gap-0.5"><MousePointerClick className="w-3.5 h-3.5 text-[#E27D60] shrink-0" /> {user.interestedCount} Interested</span>
+            <span className="flex items-center gap-0.5"><MousePointerClick className="w-3.5 h-3.5 text-[#8B4A2B] shrink-0" /> {user.interestedCount} Interested</span>
             <span>•</span>
-            <span className="flex items-center gap-0.5"><Unplug className="w-3.5 h-3.5 text-[#E27D60] shrink-0" /> {user.compagnonsCount} Compagnons</span>
+            <span className="flex items-center gap-0.5"><Unplug className="w-3.5 h-3.5 text-[#8B4A2B] shrink-0" /> {user.compagnonsCount} Compagnons</span>
           </div>
           <p className="text-[11px] text-app-gray dark:text-zinc-405 font-medium mt-1 truncate">
             {isInterested 
@@ -43,7 +43,7 @@ export const UserRow: React.FC<UserRowProps> = ({ user, onConnect, isInterested 
           </p>
         </div>
       </div>
-      <button onClick={handleConnect} disabled={requested} className={cn("w-10 h-10 shrink-0 rounded-2xl flex items-center justify-center shadow-md cursor-pointer transition-all hover:scale-105 active:scale-95 ml-2.5", requested ? "bg-zinc-100 dark:bg-zinc-800 text-app-gray shadow-none" : "bg-[#E27D60] text-white hover:bg-[#c66b50] shadow-orange-500/10")}>
+      <button onClick={handleConnect} disabled={requested} className={cn("w-10 h-10 shrink-0 rounded-2xl flex items-center justify-center shadow-md cursor-pointer transition-all hover:scale-105 active:scale-95 ml-2.5", requested ? "bg-zinc-100 dark:bg-zinc-800 text-app-gray shadow-none" : "bg-[#8B4A2B] text-white hover:bg-[#6F3A22] shadow-orange-500/10")}>
         {requested ? <Check className="w-4 h-4 text-green-600 stroke-[3.5]" /> : <Unplug className="w-4 h-4 text-white stroke-[2.5]" />}
       </button>
     </div>

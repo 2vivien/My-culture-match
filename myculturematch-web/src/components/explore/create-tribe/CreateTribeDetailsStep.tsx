@@ -36,7 +36,7 @@ export const CreateTribeDetailsStep: React.FC<CreateTribeDetailsStepProps> = ({
                 setTribeName(val);
               }
             }}
-            className="w-full bg-[#FCFCFC] dark:bg-zinc-900 text-sm text-app-black dark:text-white border border-app-border dark:border-zinc-800 rounded-2xl py-3 px-4 outline-none focus:border-[#E27D60] focus:ring-1 focus:ring-[#E27D60]/20 transition-all placeholder:text-app-gray/50"
+            className="w-full bg-[#FCFCFC] dark:bg-zinc-900 text-sm text-app-black dark:text-white border border-app-border dark:border-zinc-800 rounded-2xl py-3 px-4 outline-none focus:border-[#8B4A2B] focus:ring-1 focus:ring-[#8B4A2B]/20 transition-all placeholder:text-app-gray/50"
           />
           <span className="text-[9px] text-app-gray dark:text-zinc-500 text-right font-black tracking-wider">
             {tribeName.length}/21
@@ -53,7 +53,7 @@ export const CreateTribeDetailsStep: React.FC<CreateTribeDetailsStepProps> = ({
             value={tribeDescription}
             onChange={(e) => setTribeDescription(e.target.value)}
             rows={4}
-            className="w-full bg-[#FCFCFC] dark:bg-zinc-900 text-sm text-app-black dark:text-white border border-app-border dark:border-zinc-800 rounded-2xl py-3 px-4 outline-none resize-none focus:border-[#E27D60] focus:ring-1 focus:ring-[#E27D60]/20 transition-all placeholder:text-app-gray/50"
+            className="w-full bg-[#FCFCFC] dark:bg-zinc-900 text-sm text-app-black dark:text-white border border-app-border dark:border-zinc-800 rounded-2xl py-3 px-4 outline-none resize-none focus:border-[#8B4A2B] focus:ring-1 focus:ring-[#8B4A2B]/20 transition-all placeholder:text-app-gray/50"
           />
           <span className="text-[9px] text-app-gray dark:text-zinc-500 text-right font-black tracking-wider">
             {tribeDescription.length} characters
@@ -70,7 +70,7 @@ export const CreateTribeDetailsStep: React.FC<CreateTribeDetailsStepProps> = ({
           <div>
             <div className="flex items-center gap-3.5 mb-3.5">
               <div className="w-12 h-12 rounded-2xl bg-zinc-200 dark:bg-zinc-800 flex items-center justify-center text-app-gray dark:text-zinc-400 border border-app-border dark:border-zinc-700">
-                <Landmark className="w-6 h-6 text-[#E27D60]" />
+                <Landmark className="w-6 h-6 text-[#8B4A2B]" />
               </div>
               <div className="min-w-0">
                 <h4 className="font-extrabold text-sm text-app-black dark:text-zinc-100 truncate leading-tight">
@@ -85,7 +85,7 @@ export const CreateTribeDetailsStep: React.FC<CreateTribeDetailsStepProps> = ({
               {tribeDescription || 'Your community description will appear here. Talk about heritage posts, arts, writing, or festivals.'}
             </p>
           </div>
-          <div className="text-[9px] font-bold text-[#E27D60] uppercase tracking-wider">
+          <div className="text-[9px] font-bold text-[#8B4A2B] uppercase tracking-wider">
             {tribeType.toUpperCase()}
           </div>
         </div>

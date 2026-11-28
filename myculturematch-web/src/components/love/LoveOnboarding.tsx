@@ -81,9 +81,9 @@ export const LoveOnboarding: React.FC<Props> = ({ onDone, initialAnswers, onCanc
   return (
     <main className="mx-auto flex h-full w-full max-w-3xl flex-col px-4 py-6">
       <header className="mb-4 flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#E27D60]/10 text-[#E27D60]"><Sparkles className="h-5 w-5" /></div>
+        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#8B4A2B]/10 text-[#8B4A2B]"><Sparkles className="h-5 w-5" /></div>
         <div>
-          <p className="text-xs font-bold uppercase tracking-[.16em] text-[#E27D60]">Love AI</p>
+          <p className="text-xs font-bold uppercase tracking-[.16em] text-[#8B4A2B]">Love AI</p>
           <h1 className="text-lg font-semibold text-app-text">{editing ? 'Modifier mes préférences Love' : 'Faisons connaissance'} ({index + 1}/{STEPS.length})</h1>
         </div>
         {editing && onCancel && <button type="button" disabled={saving} onClick={onCancel} className="ml-auto rounded-full border border-app-border px-4 py-1.5 text-xs font-semibold text-app-gray disabled:opacity-40">Annuler</button>}
@@ -104,7 +104,7 @@ export const LoveOnboarding: React.FC<Props> = ({ onDone, initialAnswers, onCanc
               return (
                 <button key={value} type="button" disabled={saving}
                   onClick={() => (step.kind === 'single' ? advance(value) : toggle(value))}
-                  className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors ${active ? 'border-[#E27D60] bg-[#E27D60] text-white' : 'border-app-border text-app-text hover:border-[#E27D60]/60'}`}>
+                  className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors ${active ? 'border-[#8B4A2B] bg-[#8B4A2B] text-white' : 'border-app-border text-app-text hover:border-[#8B4A2B]/60'}`}>
                   {label}
                 </button>
               );
@@ -114,7 +114,7 @@ export const LoveOnboarding: React.FC<Props> = ({ onDone, initialAnswers, onCanc
         {step.kind === 'multi' && (
           <button type="button" disabled={saving || selection.length < step.min}
             onClick={() => advance(selection)}
-            className="rounded-full bg-[#E27D60] px-5 py-2 text-xs font-bold text-white disabled:opacity-40">
+            className="rounded-full bg-[#8B4A2B] px-5 py-2 text-xs font-bold text-white disabled:opacity-40">
             Valider{selection.length > 0 ? ` (${selection.length}/${step.max})` : ''}
           </button>
         )}
@@ -123,7 +123,7 @@ export const LoveOnboarding: React.FC<Props> = ({ onDone, initialAnswers, onCanc
             <textarea value={text} onChange={(e) => setText(e.target.value)} maxLength={500} rows={3} placeholder="Ta réponse (facultative)…"
               className="w-full resize-none rounded-2xl border border-app-border bg-app-bg p-3 text-sm text-app-text outline-none" />
             <div className="flex gap-2">
-              <button type="button" disabled={saving} onClick={() => advance(text.trim())} className="rounded-full bg-[#E27D60] px-5 py-2 text-xs font-bold text-white disabled:opacity-40">{saving ? 'Enregistrement…' : editing ? 'Enregistrer' : 'Terminer'}</button>
+              <button type="button" disabled={saving} onClick={() => advance(text.trim())} className="rounded-full bg-[#8B4A2B] px-5 py-2 text-xs font-bold text-white disabled:opacity-40">{saving ? 'Enregistrement…' : editing ? 'Enregistrer' : 'Terminer'}</button>
               <button type="button" disabled={saving} onClick={() => advance('')} className="rounded-full border border-app-border px-5 py-2 text-xs font-semibold text-app-gray">Passer</button>
             </div>
           </div>
@@ -137,6 +137,6 @@ export const LoveOnboarding: React.FC<Props> = ({ onDone, initialAnswers, onCanc
 
 const Bubble: React.FC<{ role: 'assistant' | 'user'; children: React.ReactNode }> = ({ role, children }) => (
   <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className={`flex ${role === 'user' ? 'justify-end' : 'justify-start'}`}>
-    <div className={`max-w-[88%] rounded-[24px] px-4 py-3 text-sm leading-6 ${role === 'user' ? 'rounded-br-md bg-[#E27D60] text-white' : 'rounded-bl-md bg-app-muted text-app-text'}`}>{children}</div>
+    <div className={`max-w-[88%] rounded-[24px] px-4 py-3 text-sm leading-6 ${role === 'user' ? 'rounded-br-md bg-[#8B4A2B] text-white' : 'rounded-bl-md bg-app-muted text-app-text'}`}>{children}</div>
   </motion.div>
 );

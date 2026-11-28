@@ -53,17 +53,17 @@ export const TribuPostCard: React.FC<TribuPostCardProps> = ({
             onClick={onFlagClick}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-black transition-colors cursor-pointer ${
               post.hasUpvoted
-                ? 'bg-[#E27D60]/10 border-[#E27D60]/30 text-[#E27D60] dark:bg-[#E27D60]/10 dark:text-[#E27D60] dark:border-[#E27D60]/30'
+                ? 'bg-[#8B4A2B]/10 border-[#8B4A2B]/30 text-[#8B4A2B] dark:bg-[#8B4A2B]/10 dark:text-[#8B4A2B] dark:border-[#8B4A2B]/30'
                 : 'bg-zinc-50 dark:bg-zinc-800 border-app-border dark:border-zinc-800 text-app-gray hover:text-app-black dark:hover:text-zinc-200'
             }`}
             title="Add match flag"
           >
-            <FlagTriangleLeft className={`w-4 h-4 fill-current ${post.hasUpvoted ? 'text-[#E27D60]' : 'text-app-gray'}`} />
+            <FlagTriangleLeft className={`w-4 h-4 fill-current ${post.hasUpvoted ? 'text-[#8B4A2B]' : 'text-app-gray'}`} />
             <span>{post.upvotes}</span>
           </button>
 
           <div className="flex items-center gap-1.5 text-xs text-app-gray dark:text-zinc-400 font-medium">
-            <span className="font-black text-[#E27D60] dark:text-[#E27D60]">
+            <span className="font-black text-[#8B4A2B] dark:text-[#8B4A2B]">
               t/{tribeName ?? 'Communauté'}
             </span>
             <span>•</span>
@@ -100,7 +100,7 @@ export const TribuPostCard: React.FC<TribuPostCardProps> = ({
                     <Bookmark className="w-4 h-4 text-app-gray" />
                     {isSaved ? 'Post Saved!' : 'Save this Post'}
                   </span>
-                  {isSaved && <Check className="w-3.5 h-3.5 text-[#E27D60]" />}
+                  {isSaved && <Check className="w-3.5 h-3.5 text-[#8B4A2B]" />}
                 </button>
 
                 <button
@@ -111,7 +111,7 @@ export const TribuPostCard: React.FC<TribuPostCardProps> = ({
                     <Share2 className="w-4 h-4 text-app-gray" />
                     {isCopied ? 'Copied Link!' : 'Copy Link'}
                   </span>
-                  {isCopied && <Check className="w-3.5 h-3.5 text-[#E27D60]" />}
+                  {isCopied && <Check className="w-3.5 h-3.5 text-[#8B4A2B]" />}
                 </button>
 
                 <button
@@ -119,10 +119,10 @@ export const TribuPostCard: React.FC<TribuPostCardProps> = ({
                   className="w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold text-app-black dark:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-900 flex items-center justify-between cursor-pointer transition-colors"
                 >
                   <span className="flex items-center gap-2">
-                    <BellOff className={`w-4 h-4 ${isMuted ? 'text-[#E27D60]' : 'text-app-gray'}`} />
+                    <BellOff className={`w-4 h-4 ${isMuted ? 'text-[#8B4A2B]' : 'text-app-gray'}`} />
                     {isMuted ? 'Muted Author' : 'Mute Notifications'}
                   </span>
-                  {isMuted && <Check className="w-3.5 h-3.5 text-[#E27D60]" />}
+                  {isMuted && <Check className="w-3.5 h-3.5 text-[#8B4A2B]" />}
                 </button>
 
                 {onSetFlair && flairs && flairs.length > 0 && (
@@ -147,7 +147,7 @@ export const TribuPostCard: React.FC<TribuPostCardProps> = ({
 
                 <button
                   onClick={onReport}
-                  className="w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold text-[#E27D60] dark:text-[#E27D60] hover:bg-[#E27D60]/10 dark:hover:bg-[#E27D60]/20 flex items-center gap-2 cursor-pointer transition-colors"
+                  className="w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold text-[#8B4A2B] dark:text-[#8B4A2B] hover:bg-[#8B4A2B]/10 dark:hover:bg-[#8B4A2B]/20 flex items-center gap-2 cursor-pointer transition-colors"
                 >
                   <AlertTriangle className="w-4 h-4" />
                   <span>Report Content</span>
@@ -193,11 +193,11 @@ export const TribuPostCard: React.FC<TribuPostCardProps> = ({
               onKeyDown={(e) => {
                 if (e.key === 'Enter') onCommentSubmit();
               }}
-              className="flex-1 px-4 py-2 text-xs rounded-xl border border-app-border dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 text-app-black dark:text-zinc-300 focus:outline-none focus:border-[#E27D60] focus:ring-1 focus:ring-[#E27D60]"
+              className="flex-1 px-4 py-2 text-xs rounded-xl border border-app-border dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 text-app-black dark:text-zinc-300 focus:outline-none focus:border-[#8B4A2B] focus:ring-1 focus:ring-[#8B4A2B]"
             />
             <button
               onClick={onCommentSubmit}
-              className="p-2 bg-[#E27D60] hover:bg-[#c66b50] text-white rounded-xl cursor-pointer transition-colors flex items-center justify-center shrink-0 w-8.5 h-8.5"
+              className="p-2 bg-[#8B4A2B] hover:bg-[#6F3A22] text-white rounded-xl cursor-pointer transition-colors flex items-center justify-center shrink-0 w-8.5 h-8.5"
               title="Send comment"
             >
               <MessageCircle className="w-4.5 h-4.5 fill-current text-white" />

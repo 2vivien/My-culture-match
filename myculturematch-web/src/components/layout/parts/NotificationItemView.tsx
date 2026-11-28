@@ -35,8 +35,8 @@ export const NotificationItemView: React.FC<NotificationItemViewProps> = ({
         />
         <span className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full flex items-center justify-center border border-white dark:border-zinc-950 bg-white dark:bg-zinc-950 shadow-sm">
           {item.type === 'comment' && (
-            <span className="w-4.5 h-4.5 rounded-full flex items-center justify-center bg-[#E27D60]/10 dark:bg-[#E27D60]/20">
-              <MessageCircle className="w-3 h-3 text-[#E27D60] dark:text-[#E27D60]" />
+            <span className="w-4.5 h-4.5 rounded-full flex items-center justify-center bg-[#8B4A2B]/10 dark:bg-[#8B4A2B]/20">
+              <MessageCircle className="w-3 h-3 text-[#8B4A2B] dark:text-[#8B4A2B]" />
             </span>
           )}
           {item.type === 'generation' && (
@@ -52,8 +52,8 @@ export const NotificationItemView: React.FC<NotificationItemViewProps> = ({
           )}
           {item.type === 'like' && (
             // Like → cœur simple
-            <span className="w-4.5 h-4.5 rounded-full flex items-center justify-center bg-[#E27D60]/10 dark:bg-[#E27D60]/20">
-              <Heart className="w-3 h-3 text-[#E27D60] dark:text-[#E27D60] fill-[#E27D60] dark:fill-[#E27D60]" />
+            <span className="w-4.5 h-4.5 rounded-full flex items-center justify-center bg-[#8B4A2B]/10 dark:bg-[#8B4A2B]/20">
+              <Heart className="w-3 h-3 text-[#8B4A2B] dark:text-[#8B4A2B] fill-[#8B4A2B] dark:fill-[#8B4A2B]" />
             </span>
           )}
           {item.type === 'match' && (
@@ -101,7 +101,7 @@ export const NotificationItemView: React.FC<NotificationItemViewProps> = ({
                 e.stopPropagation();
                 onAction(item.id, 'accept');
               }}
-              className="px-5 py-2.5 text-sm font-bold bg-[#E27D60] hover:bg-[#c66b50] text-white rounded-xl cursor-pointer transition-colors"
+              className="px-5 py-2.5 text-sm font-bold bg-[#8B4A2B] hover:bg-[#6F3A22] text-white rounded-xl cursor-pointer transition-colors"
             >
               Accept
             </button>

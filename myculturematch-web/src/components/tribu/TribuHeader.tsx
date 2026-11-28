@@ -30,7 +30,7 @@ export const TribuHeader: React.FC<TribuHeaderProps> = ({
   return (
     <>
       {/* 1. Header Banner Image */}
-      <div className="relative h-36 md:h-48 rounded-[24px] overflow-hidden bg-[#E27D60] dark:bg-[#c66b50] mt-4 shadow-sm shrink-0">
+      <div className="relative h-36 md:h-48 rounded-[24px] overflow-hidden bg-[#8B4A2B] dark:bg-[#6F3A22] mt-4 shadow-sm shrink-0">
         <div className="absolute inset-0 flex items-center justify-between px-10 select-none pointer-events-none">
           <Landmark className="w-24 h-24 text-white opacity-20 transform -rotate-12" />
           <Compass className="w-20 h-20 text-white opacity-15 transform rotate-45" />
@@ -87,7 +87,7 @@ export const TribuHeader: React.FC<TribuHeaderProps> = ({
               onClick={() => setNotificationsOn(!notificationsOn)}
               className={`w-9.5 h-9.5 rounded-full border border-app-border dark:border-zinc-800 flex items-center justify-center cursor-pointer transition-colors ${
                 notificationsOn
-                  ? 'bg-zinc-50 dark:bg-zinc-800 text-[#E27D60] dark:text-[#E27D60]'
+                  ? 'bg-zinc-50 dark:bg-zinc-800 text-[#8B4A2B] dark:text-[#8B4A2B]'
                   : 'bg-white dark:bg-zinc-900 text-app-gray hover:text-app-black dark:hover:text-zinc-200'
               }`}
               title={notificationsOn ? "Mute notifications" : "Receive notifications"}
@@ -110,7 +110,7 @@ export const TribuHeader: React.FC<TribuHeaderProps> = ({
                 } ${
                   joinAction.tone === 'secondary'
                     ? 'bg-[#E4E6EB] hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-app-black dark:text-zinc-200'
-                    : 'bg-[#E27D60] hover:bg-[#c66b50] text-white shadow-sm'
+                    : 'bg-[#8B4A2B] hover:bg-[#6F3A22] text-white shadow-sm'
                 }`}
               >
                 {membershipPending && <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" />}

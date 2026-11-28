@@ -26,7 +26,7 @@ export const FiltersInputs: React.FC<FiltersInputsProps> = ({
             placeholder="Entrez l'origine souhaitée (ex: Fon, Yoruba, Celte...)"
             value={origin}
             onChange={(e) => setOrigin(e.target.value)}
-            className="w-full bg-[#FCFCFC] dark:bg-zinc-900 text-sm text-app-black dark:text-white border border-app-border dark:border-zinc-800 rounded-2xl py-2.5 px-4 outline-none focus:border-[#E27D60] focus:ring-1 focus:ring-[#E27D60]/20 transition-all placeholder:text-app-gray/60"
+            className="w-full bg-[#FCFCFC] dark:bg-zinc-900 text-sm text-app-black dark:text-white border border-app-border dark:border-zinc-800 rounded-2xl py-2.5 px-4 outline-none focus:border-[#8B4A2B] focus:ring-1 focus:ring-[#8B4A2B]/20 transition-all placeholder:text-app-gray/60"
           />
         </div>
       </div>
@@ -42,7 +42,7 @@ export const FiltersInputs: React.FC<FiltersInputsProps> = ({
             placeholder="City, region, or country..."
             value={location}
             onChange={(e) => setLocation(e.target.value)}
-            className="w-full bg-[#FCFCFC] dark:bg-zinc-900 text-sm text-app-black dark:text-white border border-app-border dark:border-zinc-800 rounded-2xl py-2.5 px-4 outline-none focus:border-[#E27D60] focus:ring-1 focus:ring-[#E27D60]/20 transition-all placeholder:text-app-gray/60"
+            className="w-full bg-[#FCFCFC] dark:bg-zinc-900 text-sm text-app-black dark:text-white border border-app-border dark:border-zinc-800 rounded-2xl py-2.5 px-4 outline-none focus:border-[#8B4A2B] focus:ring-1 focus:ring-[#8B4A2B]/20 transition-all placeholder:text-app-gray/60"
           />
         </div>
       </div>

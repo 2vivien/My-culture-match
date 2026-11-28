@@ -10,7 +10,7 @@ export const CreateTribeSuccessStep: React.FC<CreateTribeSuccessStepProps> = ({
 }) => {
   return (
     <div className="flex flex-col items-center text-center py-8 gap-4 select-none">
-      <div className="w-16 h-16 rounded-full bg-[#E27D60]/10 text-[#E27D60] flex items-center justify-center border border-[#E27D60]/20 mb-2">
+      <div className="w-16 h-16 rounded-full bg-[#8B4A2B]/10 text-[#8B4A2B] flex items-center justify-center border border-[#8B4A2B]/20 mb-2">
         <Check className="w-8 h-8 stroke-[3.5]" />
       </div>
       <h4 className="text-lg font-extrabold text-app-black dark:text-white">

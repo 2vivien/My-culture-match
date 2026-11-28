@@ -29,7 +29,7 @@ export const Header = () => {
   const iconButton =
     'w-10 h-10 flex items-center justify-center text-app-black dark:text-zinc-100 hover:text-zinc-500 dark:hover:text-zinc-400 transition-colors cursor-pointer relative shrink-0';
   const badge =
-    'absolute -top-0.5 -right-0.5 min-w-[15px] h-[15px] px-0.5 rounded-full flex items-center justify-center bg-[#E27D60] text-[9px] font-black text-white';
+    'absolute -top-0.5 -right-0.5 min-w-[15px] h-[15px] px-0.5 rounded-full flex items-center justify-center bg-[#8B4A2B] text-[9px] font-black text-white';
 
   return (
     <header className="h-20 md:h-24 px-4 sm:px-6 md:px-10 flex items-center justify-between gap-4 shrink-0 bg-[#FEFEFE]/85 dark:bg-[#0d1117]/80 backdrop-blur-md sticky top-0 z-40 w-full border-b border-app-border/40 dark:border-zinc-800/40">
@@ -98,7 +98,7 @@ export const Header = () => {
               onClick={openAuthModal}
               aria-label="Connexion"
               title="Connexion"
-              className="h-10 flex items-center px-3 sm:px-4 rounded-md bg-[#E27D60] hover:bg-[#c66b50] text-white font-bold text-sm transition-colors cursor-pointer shrink-0"
+              className="h-10 flex items-center px-3 sm:px-4 rounded-md bg-[#8B4A2B] hover:bg-[#6F3A22] text-white font-bold text-sm transition-colors cursor-pointer shrink-0"
             >
               Connexion
             </button>

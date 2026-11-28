@@ -48,7 +48,7 @@ export const ExploreVideosTab: React.FC<ExploreVideosTabProps> = ({ filteredVide
 
           {/* Title Info */}
           <div className="p-4">
-            <span className="text-[9px] font-extrabold text-[#E27D60] dark:text-[#E27D60] uppercase tracking-widest">
+            <span className="text-[9px] font-extrabold text-[#8B4A2B] dark:text-[#8B4A2B] uppercase tracking-widest">
               {video.category}
             </span>
             <h4 className="font-extrabold text-xs text-app-black dark:text-zinc-100 mt-1 line-clamp-2">

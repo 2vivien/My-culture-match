@@ -25,11 +25,11 @@ export const RequestCard: React.FC<RequestCardProps> = ({ user, onAccept, onDecl
         {/* Companion & Interests stats using MousePointerClick and Unplug icons */}
         <div className="flex flex-col items-center gap-1.5 text-[10px] text-app-gray dark:text-zinc-400 font-bold mt-4 mb-3.5 select-none">
           <div className="flex items-center gap-1.5">
-            <MousePointerClick className="w-3.5 h-3.5 text-[#E27D60] shrink-0" />
+            <MousePointerClick className="w-3.5 h-3.5 text-[#8B4A2B] shrink-0" />
             <span>{user.interestedCount} Interested</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <Unplug className="w-3.5 h-3.5 text-[#E27D60] shrink-0" />
+            <Unplug className="w-3.5 h-3.5 text-[#8B4A2B] shrink-0" />
             <span>{user.compagnonsCount} Compagnons</span>
           </div>
         </div>
@@ -39,7 +39,7 @@ export const RequestCard: React.FC<RequestCardProps> = ({ user, onAccept, onDecl
           <X className="w-4 h-4 text-app-gray" />
           Refuse
         </button>
-        <button onClick={() => onAccept(user.id)} className="flex-1 py-2.5 bg-[#E27D60] text-white hover:opacity-90 cursor-pointer rounded-xl flex items-center justify-center gap-1.5 transition-all">
+        <button onClick={() => onAccept(user.id)} className="flex-1 py-2.5 bg-[#8B4A2B] text-white hover:opacity-90 cursor-pointer rounded-xl flex items-center justify-center gap-1.5 transition-all">
           <Check className="w-4 h-4 text-white" />
           Accept
         </button>

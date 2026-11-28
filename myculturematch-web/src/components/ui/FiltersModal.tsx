@@ -93,7 +93,7 @@ export const FiltersModal: React.FC<FiltersModalProps> = ({
             <button
               type="button"
               onClick={handleApply}
-              className="w-full bg-[#E27D60] text-white py-3 rounded-2xl text-xs font-black uppercase tracking-wider shadow-lg hover:brightness-105 transition-all cursor-pointer select-none mt-2"
+              className="w-full bg-[#8B4A2B] text-white py-3 rounded-2xl text-xs font-black uppercase tracking-wider shadow-lg hover:brightness-105 transition-all cursor-pointer select-none mt-2"
             >
               Apply Filters
             </button>

@@ -205,7 +205,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({ open, shareUrl, shareTex
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Rechercher"
-                  className="w-full bg-zinc-50 dark:bg-zinc-900 border border-app-border/60 dark:border-zinc-800 rounded-2xl py-3 pl-11 pr-4 text-sm text-app-black dark:text-zinc-200 placeholder:text-app-gray outline-none focus:ring-1 focus:ring-[#E27D60]/40 transition-all"
+                  className="w-full bg-zinc-50 dark:bg-zinc-900 border border-app-border/60 dark:border-zinc-800 rounded-2xl py-3 pl-11 pr-4 text-sm text-app-black dark:text-zinc-200 placeholder:text-app-gray outline-none focus:ring-1 focus:ring-[#8B4A2B]/40 transition-all"
                 />
               </div>
             </div>
@@ -240,7 +240,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({ open, shareUrl, shareTex
                           )}
                           {state === 'sending' && (
                             <span className="absolute inset-0 rounded-full bg-white/60 dark:bg-black/50 flex items-center justify-center">
-                              <Loader2 className="w-4 h-4 animate-spin text-[#E27D60]" />
+                              <Loader2 className="w-4 h-4 animate-spin text-[#8B4A2B]" />
                             </span>
                           )}
                         </div>

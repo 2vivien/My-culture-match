@@ -45,7 +45,7 @@ export const ExploreLightbox: React.FC<ExploreLightboxProps> = ({
             <div className="p-6 bg-zinc-950 border-t border-zinc-900 text-white">
               <div className="flex justify-between items-start gap-4">
                 <div>
-                  <span className="text-[10px] font-black uppercase text-[#E27D60] tracking-wider">
+                  <span className="text-[10px] font-black uppercase text-[#8B4A2B] tracking-wider">
                     {lightboxImage.category}
                   </span>
                   <h3 className="font-black text-lg mt-1 tracking-tight leading-snug">
@@ -54,7 +54,7 @@ export const ExploreLightbox: React.FC<ExploreLightboxProps> = ({
                 </div>
                 <div className="flex items-center gap-3.5 text-xs font-black shrink-0 pt-1">
                   <span className="flex items-center gap-1.5 px-3 py-1 bg-zinc-900 border border-zinc-800 rounded-full">
-                    <Heart className="w-4 h-4 fill-[#E27D60] text-[#E27D60]" />
+                    <Heart className="w-4 h-4 fill-[#8B4A2B] text-[#8B4A2B]" />
                     {lightboxImage.likes}
                   </span>
                   <span className="flex items-center gap-1.5 px-3 py-1 bg-zinc-900 border border-zinc-800 rounded-full">

@@ -39,7 +39,7 @@ export const ConversationListItem: React.FC<ListItemProps> = ({
 
       <div className="flex-1 min-w-0 select-none">
         <div className="flex justify-between items-baseline mb-0.5">
-          <span className="font-bold text-sm truncate text-app-black dark:text-zinc-100 group-hover:text-[#E27D60] transition-colors">
+          <span className="font-bold text-sm truncate text-app-black dark:text-zinc-100 group-hover:text-[#8B4A2B] transition-colors">
             {conversation.name}
           </span>
           <span className="text-[11px] text-app-gray dark:text-zinc-500 shrink-0">
@@ -52,7 +52,7 @@ export const ConversationListItem: React.FC<ListItemProps> = ({
       </div>
 
       {conversation.unreadCount > 0 && (
-        <span className="w-4 h-4 rounded-full bg-[#E27D60] text-[9px] font-bold text-white flex items-center justify-center shrink-0">
+        <span className="w-4 h-4 rounded-full bg-[#8B4A2B] text-[9px] font-bold text-white flex items-center justify-center shrink-0">
           {conversation.unreadCount}
         </span>
       )}

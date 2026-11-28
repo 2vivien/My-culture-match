@@ -182,7 +182,7 @@ export const PostHeader = ({ author, date, tribe }: PostHeaderProps) => {
                   alert('Thank you for making this community safe. The cultural guardians team will review this post.');
                   setIsOpen(false);
                 }}
-                className="w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold text-[#E27D60] hover:bg-[#E27D60]/10 dark:hover:bg-[#E27D60]/20 flex items-center gap-2 cursor-pointer transition-colors"
+                className="w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold text-[#8B4A2B] hover:bg-[#8B4A2B]/10 dark:hover:bg-[#8B4A2B]/20 flex items-center gap-2 cursor-pointer transition-colors"
               >
                 <AlertTriangle className="w-4 h-4" />
                 <span>Report Content</span>

@@ -93,7 +93,7 @@ export const TRIBE_PRIVATE_NOTICE = 'Tribu privée : demande à rejoindre pour v
 
 // ── Flairs ───────────────────────────────────────────────────
 
-export const FLAIR_DEFAULT_COLOR = '#E27D60';
+export const FLAIR_DEFAULT_COLOR = '#8B4A2B';
 const HEX_COLOR = /^#[0-9a-fA-F]{6}$/;
 
 export function isValidFlairColor(color: unknown): color is string {

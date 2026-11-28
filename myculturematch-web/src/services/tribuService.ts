@@ -49,7 +49,7 @@ export interface JoinResult {
 }
 
 const TAG_COLORS = [
-  'bg-[#E27D60]/10 text-[#E27D60]',
+  'bg-[#8B4A2B]/10 text-[#8B4A2B]',
   'bg-violet-500/10 text-violet-500',
   'bg-emerald-500/10 text-emerald-600',
   'bg-sky-500/10 text-sky-600',

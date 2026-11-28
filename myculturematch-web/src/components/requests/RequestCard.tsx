@@ -65,8 +65,8 @@ export const RequestCard = () => {
         <div className="relative">
           <ProfileAvatar src={current.avatar} alt={current.name} size="md" glow="turquoise" onClick={handleClick} />
           <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center border border-white dark:border-zinc-950 bg-white dark:bg-zinc-950 shadow-sm select-none z-20">
-            <span className="w-3.5 h-3.5 rounded-full flex items-center justify-center bg-[#E27D60]/10 dark:bg-[#E27D60]/20">
-              <Heart className="w-2 h-2 text-[#E27D60] dark:text-[#E27D60] fill-[#E27D60] dark:fill-[#E27D60]" />
+            <span className="w-3.5 h-3.5 rounded-full flex items-center justify-center bg-[#8B4A2B]/10 dark:bg-[#8B4A2B]/20">
+              <Heart className="w-2 h-2 text-[#8B4A2B] dark:text-[#8B4A2B] fill-[#8B4A2B] dark:fill-[#8B4A2B]" />
             </span>
           </div>
         </div>
@@ -78,7 +78,7 @@ export const RequestCard = () => {
 
       <div className="flex gap-2">
         <Button variant="outline" onClick={() => respondToRequest({ id: current.id, action: 'block' })} className="flex-1 py-2.5 dark:border-zinc-800 dark:text-zinc-200">Decline</Button>
-        <Button onClick={() => respondToRequest({ id: current.id, action: 'okay' })} className="flex-1 py-2.5 bg-[#E27D60] text-white hover:bg-[#c66b50] shadow-md">Connect</Button>
+        <Button onClick={() => respondToRequest({ id: current.id, action: 'okay' })} className="flex-1 py-2.5 bg-[#8B4A2B] text-white hover:bg-[#6F3A22] shadow-md">Connect</Button>
       </div>
 
 

@@ -34,7 +34,7 @@ export const MessagesPanel = () => {
         </div>
         <div className="flex items-center gap-2">
           {(unreadMessages ?? 0) > 0 && (
-            <span className="min-w-[20px] h-5 px-1.5 rounded-full flex items-center justify-center bg-[#E27D60] text-[9px] font-black text-white shadow-sm">
+            <span className="min-w-[20px] h-5 px-1.5 rounded-full flex items-center justify-center bg-[#8B4A2B] text-[9px] font-black text-white shadow-sm">
               {(unreadMessages ?? 0) > 99 ? '99+' : unreadMessages}
             </span>
           )}

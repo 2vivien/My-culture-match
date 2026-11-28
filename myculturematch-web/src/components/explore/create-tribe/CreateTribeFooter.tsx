@@ -29,7 +29,7 @@ export const CreateTribeFooter: React.FC<CreateTribeFooterProps> = ({
   return (
     <div className="flex flex-col gap-2.5 pt-3 border-t border-app-border/40 dark:border-zinc-800/40 select-none">
       {tribeCreateError && (
-        <p className="text-[11px] font-bold text-[#E27D60] bg-[#E27D60]/10 border border-[#E27D60]/25 rounded-xl px-3 py-2">
+        <p className="text-[11px] font-bold text-[#8B4A2B] bg-[#8B4A2B]/10 border border-[#8B4A2B]/25 rounded-xl px-3 py-2">
           {tribeCreateError}
         </p>
       )}
@@ -42,7 +42,7 @@ export const CreateTribeFooter: React.FC<CreateTribeFooterProps> = ({
             className={cn(
               "w-2 h-2 rounded-full transition-all",
               step === stepNum
-                ? "bg-[#E27D60] w-4"
+                ? "bg-[#8B4A2B] w-4"
                 : "bg-zinc-200 dark:bg-zinc-800"
             )}
           />
@@ -78,7 +78,7 @@ export const CreateTribeFooter: React.FC<CreateTribeFooterProps> = ({
             className={cn(
               "px-6 py-2.5 rounded-full text-xs font-black uppercase tracking-wider cursor-pointer transition-all select-none",
               selectedTopicsCount > 0
-                ? "bg-[#E27D60] text-white hover:brightness-105"
+                ? "bg-[#8B4A2B] text-white hover:brightness-105"
                 : "bg-zinc-100 dark:bg-zinc-900 text-app-gray/50 dark:text-zinc-700 cursor-not-allowed border border-app-border/40 dark:border-zinc-800"
             )}
           >
@@ -90,7 +90,7 @@ export const CreateTribeFooter: React.FC<CreateTribeFooterProps> = ({
           <button
             type="button"
             onClick={onNext}
-            className="px-6 py-2.5 bg-[#E27D60] text-white hover:brightness-105 rounded-full text-xs font-black uppercase tracking-wider cursor-pointer transition-all select-none"
+            className="px-6 py-2.5 bg-[#8B4A2B] text-white hover:brightness-105 rounded-full text-xs font-black uppercase tracking-wider cursor-pointer transition-all select-none"
           >
             Next
           </button>
@@ -104,7 +104,7 @@ export const CreateTribeFooter: React.FC<CreateTribeFooterProps> = ({
             className={cn(
               "px-6 py-2.5 rounded-full text-xs font-black uppercase tracking-wider cursor-pointer transition-all select-none",
               tribeName.trim() && tribeDescription.trim()
-                ? "bg-[#E27D60] text-white hover:brightness-105"
+                ? "bg-[#8B4A2B] text-white hover:brightness-105"
                 : "bg-zinc-100 dark:bg-zinc-900 text-app-gray/50 dark:text-zinc-700 cursor-not-allowed border border-app-border/40 dark:border-zinc-800"
             )}
           >
@@ -116,7 +116,7 @@ export const CreateTribeFooter: React.FC<CreateTribeFooterProps> = ({
           <button
             type="button"
             onClick={onDone}
-            className="px-6 py-2.5 bg-[#E27D60] text-white hover:brightness-105 rounded-full text-xs font-black uppercase tracking-wider cursor-pointer transition-all select-none"
+            className="px-6 py-2.5 bg-[#8B4A2B] text-white hover:brightness-105 rounded-full text-xs font-black uppercase tracking-wider cursor-pointer transition-all select-none"
           >
             Done
           </button>

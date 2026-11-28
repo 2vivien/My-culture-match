@@ -25,7 +25,7 @@ export const TribuAbout: React.FC<TribuAboutProps> = ({ tribeInfo }) => {
       {/* Created info */}
       <div className="mt-4 pt-3 border-t border-app-border/70 dark:border-zinc-800 text-[11px] text-app-gray dark:text-zinc-400 font-bold flex justify-between">
         <span>{createdDate ? `Créée le ${createdDate}` : 'Communauté'}</span>
-        <span className="text-[#E27D60] dark:text-[#E27D60]">
+        <span className="text-[#8B4A2B] dark:text-[#8B4A2B]">
           {tribeInfo?.visibility === 'private' ? 'Tribu privée' : 'Tribu publique'}
         </span>
       </div>

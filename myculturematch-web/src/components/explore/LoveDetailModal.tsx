@@ -50,7 +50,7 @@ export const LoveDetailModal: React.FC<LoveDetailModalProps> = ({
         </button>
 
         {/* Photo — plus de pill de score sur la photo */}
-        <div className="relative h-64 w-full bg-gradient-to-br from-[#E27D60]/15 via-[#6c63fc]/10 to-[#2dd9d9]/15">
+        <div className="relative h-64 w-full bg-gradient-to-br from-[#8B4A2B]/15 via-[#6c63fc]/10 to-[#2dd9d9]/15">
           <img
             src={match.avatar}
             alt={match.name}
@@ -93,7 +93,7 @@ export const LoveDetailModal: React.FC<LoveDetailModalProps> = ({
                 'w-full py-3.5 rounded-2xl text-sm font-black shadow-md flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-95',
                 isLoved
                   ? 'bg-emerald-500 text-white'
-                  : 'bg-[#E27D60] text-white hover:brightness-105'
+                  : 'bg-[#8B4A2B] text-white hover:brightness-105'
               )}
             >
               <Flame className={cn('w-4.5 h-4.5', isLoved ? 'fill-white text-white' : 'fill-white text-white')} />
@@ -105,7 +105,7 @@ export const LoveDetailModal: React.FC<LoveDetailModalProps> = ({
                 onClick={onStartChat}
                 className="flex-1 py-3.5 rounded-2xl bg-zinc-100 dark:bg-zinc-800 border border-app-border dark:border-zinc-700 text-app-black dark:text-white text-xs font-black hover:bg-zinc-200 dark:hover:bg-zinc-700 cursor-pointer active:scale-95 transition-all flex items-center justify-center gap-2"
               >
-                <MessageCircle className="w-4.5 h-4.5 text-[#E27D60]" />
+                <MessageCircle className="w-4.5 h-4.5 text-[#8B4A2B]" />
                 Start Conversation
               </button>
               <button

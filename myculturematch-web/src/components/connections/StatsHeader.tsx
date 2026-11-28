@@ -8,7 +8,7 @@ export const StatsHeader: React.FC = () => {
   return (
     <div className="flex gap-4 p-4.5 bg-white dark:bg-zinc-900 border border-app-border dark:border-zinc-800 rounded-2xl shadow-sm">
       <div className="flex-1 flex items-center gap-3">
-        <div className="p-3 bg-[#E27D60]/10 text-[#E27D60] rounded-xl">
+        <div className="p-3 bg-[#8B4A2B]/10 text-[#8B4A2B] rounded-xl">
           <Users className="w-5 h-5" />
         </div>
         <div>

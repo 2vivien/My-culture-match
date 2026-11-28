@@ -83,15 +83,15 @@ export const TemporalMessageComposer: React.FC<Props> = ({ open, conversationId,
     <div className="w-full max-w-xl rounded-[28px] border border-app-border dark:border-zinc-800 bg-white dark:bg-zinc-950 shadow-2xl overflow-hidden">
       <div className="p-5 border-b border-app-border dark:border-zinc-800 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-2xl bg-[#E27D60]/10 text-[#E27D60] flex items-center justify-center"><Clock3 className="w-5 h-5" /></div>
+          <div className="w-11 h-11 rounded-2xl bg-[#8B4A2B]/10 text-[#8B4A2B] flex items-center justify-center"><Clock3 className="w-5 h-5" /></div>
           <div><h2 className="font-bold text-base">Message temporel</h2><p className="text-xs text-app-gray">Écrire aujourd'hui pour être lu plus tard</p></div>
         </div>
         <button type="button" onClick={onClose} className="w-9 h-9 rounded-full border border-app-border dark:border-zinc-800 flex items-center justify-center text-app-gray"><X className="w-4 h-4" /></button>
       </div>
 
       <div className="p-5 space-y-4">
-        <div className="rounded-2xl border border-[#E27D60]/20 bg-[#E27D60]/5 p-4 flex gap-3">
-          <LockKeyhole className="w-4 h-4 mt-0.5 text-[#E27D60] shrink-0" />
+        <div className="rounded-2xl border border-[#8B4A2B]/20 bg-[#8B4A2B]/5 p-4 flex gap-3">
+          <LockKeyhole className="w-4 h-4 mt-0.5 text-[#8B4A2B] shrink-0" />
           <div><p className="text-xs font-bold">{partnerName} ne verra pas le contenu avant la date choisie.</p><p className="text-[11px] text-app-gray mt-1">Une notification peut indiquer qu'un message temporel attend, mais son contenu reste verrouillé jusqu'au jour J.</p></div>
         </div>
 
@@ -112,7 +112,7 @@ export const TemporalMessageComposer: React.FC<Props> = ({ open, conversationId,
 
         {error && <p className="text-xs text-red-500">{error}</p>}
 
-        <button type="button" onClick={() => void schedule()} disabled={saving || !text.trim()} className="w-full rounded-2xl bg-[#E27D60] text-white py-3.5 text-sm font-bold flex items-center justify-center gap-2 disabled:opacity-50">
+        <button type="button" onClick={() => void schedule()} disabled={saving || !text.trim()} className="w-full rounded-2xl bg-[#8B4A2B] text-white py-3.5 text-sm font-bold flex items-center justify-center gap-2 disabled:opacity-50">
           <Send className="w-4 h-4" />
           {saving ? 'Le temps est en train de garder ton message…' : 'Garder ce message dans le temps'}
         </button>

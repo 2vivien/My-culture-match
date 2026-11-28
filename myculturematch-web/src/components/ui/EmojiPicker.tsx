@@ -5,7 +5,7 @@ import { Search, Clock } from 'lucide-react';
 /**
  * Boîte complète d'emojis : 9 catégories, recherche instantanée, emojis
  * récents (persistés en localStorage). Léger, sans dépendance, design clair
- * cohérent avec l'app (blanc, arrondis 3xl, accent #E27D60).
+ * cohérent avec l'app (blanc, arrondis 3xl, accent #8B4A2B).
  */
 const CATEGORIES: { label: string; emojis: string[] }[] = [
   {
@@ -135,7 +135,7 @@ export const EmojiPicker: React.FC<EmojiPickerProps> = ({ onSelect, onClose }) =
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Rechercher un emoji..."
-            className="w-full bg-zinc-50 dark:bg-zinc-900 border border-app-border/60 dark:border-zinc-800 rounded-xl py-1.5 pl-8 pr-3 text-xs text-app-black dark:text-zinc-200 placeholder:text-app-gray outline-none focus:ring-1 focus:ring-[#E27D60]/40 transition-all"
+            className="w-full bg-zinc-50 dark:bg-zinc-900 border border-app-border/60 dark:border-zinc-800 rounded-xl py-1.5 pl-8 pr-3 text-xs text-app-black dark:text-zinc-200 placeholder:text-app-gray outline-none focus:ring-1 focus:ring-[#8B4A2B]/40 transition-all"
           />
         </div>
 
@@ -149,7 +149,7 @@ export const EmojiPicker: React.FC<EmojiPickerProps> = ({ onSelect, onClose }) =
                 onClick={() => { setActiveCat(i); setSearch(''); }}
                 title={c.label}
                 className={`w-8 h-8 shrink-0 rounded-lg flex items-center justify-center text-base transition-colors cursor-pointer ${
-                  i === activeCat && !search ? 'bg-[#E27D60]/15' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                  i === activeCat && !search ? 'bg-[#8B4A2B]/15' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800'
                 }`}
               >
                 {c.label === 'Récents' ? <Clock className="w-4 h-4 text-app-gray" /> : c.emojis[0]}
