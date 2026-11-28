@@ -4,6 +4,7 @@ import { requireAuth } from '../auth/require-auth';
 import { requireAdmin } from '../auth/require-admin';
 import { analyticsQuerySchema, banUserSchema, listAdminUsersQuerySchema, listReportsQuerySchema, reportActionSchema, unbanUserSchema } from './admin.schemas';
 import { banUser, getAdminStats, getAnalytics, getRecentActivity, getSystemHealth, listAdminUsers, listAuditLogs, listReports, logAudit, takeReportAction, unbanUser } from './admin.service';
+import { getLoveMetricsSummary } from '../love/love.metrics.service';
 
 const adminRoutes = new Hono();
 
@@ -61,6 +62,11 @@ adminRoutes.get('/analytics', zValidator('query', analyticsQuerySchema), async (
   const { period } = c.req.valid('query');
   const result = await getAnalytics(period);
   return c.json(result, 200);
+});
+
+/** GET /api/admin/love/metrics — entonnoir Love agrégé (aucun identifiant ni contenu). */
+adminRoutes.get('/love/metrics', async (c) => {
+  return c.json(await getLoveMetricsSummary(), 200);
 });
 
 /** GET /api/admin/logs — journal d'audit. */

@@ -4,6 +4,7 @@ import { redis } from '../../infrastructure/redis';
 import { AppError } from '../../shared/utils/AppError';
 import { followingKey } from './fanout';
 import { getPostsByIds, type HydratedPost } from '../posts/posts.service';
+import { readablePostCondition } from '../tribes/tribes.access';
 import { sortHot, HOME_WINDOW_MS } from './feed.home';
 import { scoreFeed, type FeedContext, type PostFeatures, type UserFeatures } from '../culture-engine/scoring';
 
@@ -90,7 +91,7 @@ export async function getFeed(
     const rows = await db
       .select({ id: schema.posts.id, authorId: schema.posts.authorId })
       .from(schema.posts)
-      .where(and(eq(schema.posts.status, 'published'), gt(schema.posts.createdAt, new Date(Date.now() - FOR_YOU_WINDOW_MS))))
+      .where(and(eq(schema.posts.status, 'published'), readablePostCondition(userId), gt(schema.posts.createdAt, new Date(Date.now() - FOR_YOU_WINDOW_MS))))
       .orderBy(desc(schema.posts.createdAt))
       .limit(FEED_CANDIDATES);
     postIds = rows.map((r) => r.id);

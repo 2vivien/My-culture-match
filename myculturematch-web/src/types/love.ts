@@ -44,7 +44,10 @@ export interface LoveSearchResponse {
 }
 
 export interface LoveSearchQuota {
+  /** Plafond quotidien (0 = illimité). */
   limit: number;
   used: number;
+  /** Recherches restantes aujourd'hui ; -1 quand c'est illimité. */
   remaining: number;
+  unlimited?: boolean;
 }

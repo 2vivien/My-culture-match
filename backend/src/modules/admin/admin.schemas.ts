@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 export const REPORT_ACTIONS = ['warn', 'suspend', 'ban', 'dismiss'] as const;
 export const REPORT_STATUSES = ['open', 'reviewed', 'dismissed', 'actioned'] as const;
-export const REPORT_TARGET_TYPES = ['user', 'post', 'comment', 'message'] as const;
+export const REPORT_TARGET_TYPES = ['user', 'post', 'comment', 'message', 'place'] as const;
 export const REPORT_REASONS = ['harassment', 'spam', 'hate_speech', 'nsfw', 'violence', 'other'] as const;
 
 export type ReportAction = (typeof REPORT_ACTIONS)[number];

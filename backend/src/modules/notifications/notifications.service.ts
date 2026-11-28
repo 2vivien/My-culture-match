@@ -35,6 +35,7 @@ const ACTION_LABEL: Record<NotificationType, string> = {
 
 const SYSTEM_ACTION_LABEL: Record<string, string> = {
   temporal_pending: 'vous a écrit un message temporel à découvrir plus tard',
+  nearby_person: 'est près de toi',
   temporal_revealed: 'un message temporel vient d’être révélé dans votre conversation',
 };
 

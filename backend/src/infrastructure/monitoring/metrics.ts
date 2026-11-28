@@ -50,6 +50,28 @@ export const matchesCreatedTotal = new Counter({
   help: 'Nombre de matchs mutuels créés (love).',
   registers: [registry],
 });
+// Love (L8) : compteurs agrégés, sans label utilisateur ni contenu.
+export const loveQuestionnairesCompletedTotal = new Counter({
+  name: 'love_questionnaires_completed_total',
+  help: 'Questionnaires Love complétés pour la première fois.',
+  registers: [registry],
+});
+export const loveAiSearchesTotal = new Counter({
+  name: 'love_ai_searches_total',
+  help: 'Recherches Love par IA lancées (quota consommé).',
+  registers: [registry],
+});
+export const loveCardsDisplayedTotal = new Counter({
+  name: 'love_cards_displayed_total',
+  help: 'Cartes de profil Love renvoyées dans la conversation.',
+  registers: [registry],
+});
+export const loveRequestsTotal = new Counter({
+  name: 'love_requests_total',
+  help: 'Requêtes Love par issue : sent, accepted, declined.',
+  labelNames: ['outcome'] as const,
+  registers: [registry],
+});
 export const notificationsSentTotal = new Counter({
   name: 'notifications_sent_total',
   help: 'Nombre de notifications créées.',

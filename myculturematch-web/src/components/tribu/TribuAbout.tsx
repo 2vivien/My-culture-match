@@ -1,5 +1,6 @@
 import React from 'react';
 import type { TribeInfo } from '@/src/hooks/useTribu';
+import { visibilityLabel } from '@/src/lib/tribeAccess';
 
 interface TribuAboutProps {
   tribeInfo?: TribeInfo | null;
@@ -24,7 +25,9 @@ export const TribuAbout: React.FC<TribuAboutProps> = ({ tribeInfo }) => {
       {/* Created info */}
       <div className="mt-4 pt-3 border-t border-app-border/70 dark:border-zinc-800 text-[11px] text-app-gray dark:text-zinc-400 font-bold flex justify-between">
         <span>{createdDate ? `Created ${createdDate}` : 'Communauté'}</span>
-        <span className="text-[#E27D60] dark:text-[#E27D60]">Public Hub</span>
+        <span className="text-[#E27D60] dark:text-[#E27D60]">
+          {tribeInfo?.visibility === 'private' ? 'Tribu privée' : 'Public Hub'}
+        </span>
       </div>
 
       {/* Stats row */}
@@ -39,7 +42,7 @@ export const TribuAbout: React.FC<TribuAboutProps> = ({ tribeInfo }) => {
         </div>
         <div>
           <span className="font-black text-base text-app-black dark:text-zinc-100">
-            Public
+            {visibilityLabel(tribeInfo?.visibility)}
           </span>
           <p className="text-[10px] text-app-gray dark:text-zinc-500 font-bold uppercase mt-0.5">
             Accès

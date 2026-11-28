@@ -12,6 +12,8 @@ import {
   reportSchema,
   createRuleSchema,
   patchRuleSchema,
+  createFlairSchema,
+  setPostFlairSchema,
 } from './tribes.schemas';
 import { sanctionMember, liftSanction, listSanctions } from './tribes.sanctions.service';
 import {
@@ -23,7 +25,14 @@ import {
   deleteTribe,
   joinTribe,
   leaveTribe,
+  cancelJoinRequest,
+  listJoinRequests,
+  resolveJoinRequest,
   tribePosts,
+  listFlairs,
+  createFlair,
+  deleteFlair,
+  setPostFlair,
   votePost,
   pinTribePost,
   promoteModerator,
@@ -50,7 +59,8 @@ tribesModule.use('*', requireAuth);
 // GET /api/tribes
 tribesModule.get('/', zValidator('query', listTribesQuerySchema), async (c) => {
   const { search, cursor, limit } = c.req.valid('query');
-  const result = await listTribes(search, cursor, limit);
+  const { userId } = c.get('auth');
+  const result = await listTribes(search, cursor, limit, userId);
   return c.json(result, 200);
 });
 
@@ -102,6 +112,28 @@ tribesModule.post('/:id/join', async (c) => {
   return c.json(result, 200);
 });
 
+// DELETE /api/tribes/:id/join-request — retirer sa demande d'adhésion (tribu privée)
+tribesModule.delete('/:id/join-request', async (c) => {
+  const { userId } = c.get('auth');
+  return c.json(await cancelJoinRequest(c.req.param('id'), userId), 200);
+});
+
+// GET /api/tribes/:id/join-requests — demandes en attente (modérateur+)
+tribesModule.get('/:id/join-requests', async (c) => {
+  const { userId } = c.get('auth');
+  return c.json(await listJoinRequests(c.req.param('id'), userId), 200);
+});
+
+// POST /api/tribes/:id/join-requests/:userId/approve | decline (modérateur+)
+tribesModule.post('/:id/join-requests/:userId/approve', async (c) => {
+  const { userId } = c.get('auth');
+  return c.json(await resolveJoinRequest(c.req.param('id'), userId, c.req.param('userId'), true), 200);
+});
+tribesModule.post('/:id/join-requests/:userId/decline', async (c) => {
+  const { userId } = c.get('auth');
+  return c.json(await resolveJoinRequest(c.req.param('id'), userId, c.req.param('userId'), false), 200);
+});
+
 // DELETE /api/tribes/:id/leave
 tribesModule.delete('/:id/leave', async (c) => {
   const { userId } = c.get('auth');
@@ -112,9 +144,34 @@ tribesModule.delete('/:id/leave', async (c) => {
 // GET /api/tribes/:id/posts
 tribesModule.get('/:id/posts', zValidator('query', tribePostsQuerySchema), async (c) => {
   const { userId } = c.get('auth');
-  const { cursor, limit, sort, t } = c.req.valid('query');
-  const result = await tribePosts(c.req.param('id'), userId, cursor, limit, sort, t);
+  const { cursor, limit, sort, t, flairId } = c.req.valid('query');
+  const result = await tribePosts(c.req.param('id'), userId, cursor, limit, sort, t, flairId);
   return c.json(result, 200);
+});
+
+// GET /api/tribes/:id/flairs
+tribesModule.get('/:id/flairs', async (c) => {
+  const { userId } = c.get('auth');
+  return c.json(await listFlairs(c.req.param('id'), userId), 200);
+});
+
+// POST /api/tribes/:id/flairs — modérateur+
+tribesModule.post('/:id/flairs', zValidator('json', createFlairSchema), async (c) => {
+  const { userId } = c.get('auth');
+  return c.json(await createFlair(c.req.param('id'), userId, c.req.valid('json')), 201);
+});
+
+// DELETE /api/tribes/:id/flairs/:flairId — modérateur+
+tribesModule.delete('/:id/flairs/:flairId', async (c) => {
+  const { userId } = c.get('auth');
+  return c.json(await deleteFlair(c.req.param('id'), userId, c.req.param('flairId')), 200);
+});
+
+// PUT /api/tribes/:id/posts/:postId/flair — auteur ou modérateur
+tribesModule.put('/:id/posts/:postId/flair', zValidator('json', setPostFlairSchema), async (c) => {
+  const { userId } = c.get('auth');
+  const { flairId } = c.req.valid('json');
+  return c.json(await setPostFlair(c.req.param('id'), c.req.param('postId'), userId, flairId), 200);
 });
 
 // GET /api/tribes/:id/rules

@@ -1,4 +1,5 @@
-import { and, desc, eq, ilike, inArray, ne, or } from 'drizzle-orm';
+import { and, desc, eq, ilike, inArray, ne, or, sql } from 'drizzle-orm';
+import { readablePostCondition } from '../tribes/tribes.access';
 import { db, schema } from '../../infrastructure/database';
 import { redis } from '../../infrastructure/redis';
 import { AppError } from '../../shared/utils/AppError';
@@ -99,6 +100,7 @@ export async function search(
       .where(
         and(
           eq(schema.posts.status, 'published'),
+          readablePostCondition(userId),
           or(ilike(schema.posts.title, pattern), ilike(schema.posts.body, pattern)),
         ),
       )
@@ -135,7 +137,11 @@ export async function search(
         memberCount: schema.tribes.memberCount,
       })
       .from(schema.tribes)
-      .where(or(ilike(schema.tribes.name, pattern), ilike(schema.tribes.tag, pattern), ilike(schema.tribes.desc, pattern)))
+      .where(and(
+        // Une tribu privée n'apparaît pas dans la recherche, sauf pour ses membres.
+        sql`(${schema.tribes.visibility} = 'public' OR EXISTS (SELECT 1 FROM tribe_members m WHERE m.tribe_id = ${schema.tribes.id} AND m.user_id = ${userId}))`,
+        or(ilike(schema.tribes.name, pattern), ilike(schema.tribes.tag, pattern), ilike(schema.tribes.desc, pattern)),
+      ))
       .orderBy(desc(schema.tribes.memberCount))
       .limit(limit)
       .offset(offset);

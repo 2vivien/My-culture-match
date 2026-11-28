@@ -11,6 +11,8 @@ export interface PostItem {
   upvotes: number;
   commentsCount: number;
   hasUpvoted?: boolean;
+  /** Flair de la tribu (couleur déjà validée #RRGGBB). */
+  flair?: { id: string; name: string; color: string } | null;
 }
 
 export interface TribeRule {

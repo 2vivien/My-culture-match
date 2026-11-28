@@ -202,6 +202,8 @@ export const tribes = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
     memberCount: integer('member_count').notNull().default(0),
+    /** 'public' (défaut) ou 'private' : contenu réservé aux membres, adhésion sur demande. */
+    visibility: text('visibility').notNull().default('public'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
@@ -209,6 +211,34 @@ export const tribes = pgTable(
     uniqueIndex('tribes_name_unique_idx').on(t.name),
     uniqueIndex('tribes_tag_unique_idx').on(t.tag),
   ],
+);
+
+export const tribeFlairs = pgTable(
+  'tribe_flairs',
+  {
+    id: text('id').primaryKey().$defaultFn(generateId),
+    tribeId: text('tribe_id')
+      .notNull()
+      .references(() => tribes.id, { onDelete: 'cascade' }),
+    name: text('name').notNull(),
+    color: text('color').notNull().default('#E27D60'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index('tribe_flairs_tribe_idx').on(t.tribeId)],
+);
+
+export const tribeJoinRequests = pgTable(
+  'tribe_join_requests',
+  {
+    tribeId: text('tribe_id')
+      .notNull()
+      .references(() => tribes.id, { onDelete: 'cascade' }),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.tribeId, t.userId] }), index('tribe_join_requests_tribe_idx').on(t.tribeId, t.createdAt)],
 );
 
 export const tribeMembers = pgTable(
@@ -278,6 +308,7 @@ export const posts = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
     tribeId: text('tribe_id').references(() => tribes.id, { onDelete: 'set null' }),
+    flairId: text('flair_id').references(() => tribeFlairs.id, { onDelete: 'set null' }),
     type: postTypeEnum('type').notNull().default('Text'),
     title: text('title'),
     text: text('text'),
@@ -358,6 +389,22 @@ export const comments = pgTable(
   (t) => [index('comments_post_idx').on(t.postId)],
 );
 
+export const commentVotes = pgTable(
+  'comment_votes',
+  {
+    commentId: text('comment_id')
+      .notNull()
+      .references(() => comments.id, { onDelete: 'cascade' }),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    value: integer('value').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.commentId, t.userId] }), index('comment_votes_user_idx').on(t.userId)],
+);
+
 export const saves = pgTable(
   'saves',
   {
@@ -397,6 +444,10 @@ export const stories = pgTable(
     type: storyTypeEnum('type').notNull().default('image'),
     url: text('url').notNull(),
     caption: text('caption'),
+    /** Lieu choisi (centre de cellule de grille), jamais le GPS brut. */
+    placeLat: doublePrecision('place_lat'),
+    placeLon: doublePrecision('place_lon'),
+    placeLabel: text('place_label'),
     viewers: integer('viewers').notNull().default(0),
     expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
@@ -405,6 +456,73 @@ export const stories = pgTable(
 );
 
 // ── Connections (suggestions → interested → request → companion) ──
+export const culturalPlaces = pgTable(
+  'cultural_places',
+  {
+    id: text('id').primaryKey().$defaultFn(generateId),
+    name: text('name').notNull(),
+    category: text('category').notNull(),
+    description: text('description'),
+    country: text('country'),
+    latitude: doublePrecision('latitude').notNull(),
+    longitude: doublePrecision('longitude').notNull(),
+    /** 'pending' (défaut) | 'published' | 'rejected' : seule une modération publie. */
+    status: text('status').notNull().default('pending'),
+    rejectionReason: text('rejection_reason'),
+    createdById: text('created_by_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    reviewedById: text('reviewed_by_id').references(() => users.id, { onDelete: 'set null' }),
+    reviewedAt: timestamp('reviewed_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index('cultural_places_status_idx').on(t.status, t.createdAt),
+    index('cultural_places_creator_idx').on(t.createdById, t.createdAt),
+  ],
+);
+
+export const events = pgTable(
+  'events',
+  {
+    id: text('id').primaryKey().$defaultFn(generateId),
+    title: text('title').notNull(),
+    description: text('description'),
+    startsAt: timestamp('starts_at', { withTimezone: true }).notNull(),
+    endsAt: timestamp('ends_at', { withTimezone: true }),
+    /** 'public' (lieu culturel modéré) | 'tribe' (membres) | 'friends' (compagnons). */
+    visibility: text('visibility').notNull(),
+    /** 'active' | 'cancelled'. */
+    status: text('status').notNull().default('active'),
+    organizerId: text('organizer_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    tribeId: text('tribe_id').references(() => tribes.id, { onDelete: 'cascade' }),
+    placeId: text('place_id').references(() => culturalPlaces.id, { onDelete: 'set null' }),
+    locationLabel: text('location_label'),
+    latitude: doublePrecision('latitude').notNull(),
+    longitude: doublePrecision('longitude').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index('events_start_idx').on(t.startsAt), index('events_organizer_idx').on(t.organizerId, t.createdAt)],
+);
+
+export const eventRsvps = pgTable(
+  'event_rsvps',
+  {
+    eventId: text('event_id')
+      .notNull()
+      .references(() => events.id, { onDelete: 'cascade' }),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    /** 'going' | 'interested'. */
+    status: text('status').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.eventId, t.userId] }), index('event_rsvps_user_idx').on(t.userId)],
+);
+
 export const connections = pgTable(
   'connections',
   {
@@ -448,6 +566,16 @@ export const loveMatches = pgTable(
     index('love_matches_candidate_idx').on(t.candidateId),
   ],
 );
+
+/** Réponses au questionnaire Love (première utilisation) — une ligne par utilisateur. */
+export const loveProfiles = pgTable('love_profiles', {
+  userId: text('user_id')
+    .primaryKey()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  answers: jsonb('answers').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+});
 
 // ── Chat / Messagerie ──────────────────────────────────────
 export const conversations = pgTable('conversations', {

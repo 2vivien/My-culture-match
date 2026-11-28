@@ -1,6 +1,7 @@
 # Plan de travail — Communauté, Friend/Maps, Love IA
 
 > Date : 27 novembre 2026. Base : transcription vocale du fondateur + lecture du code (aucune exécution, aucun test lancé).
+> Mise à jour : l'affirmation initiale « pas de downvote sur les posts » était **fausse** (voir 2.1) ; l'avancement des PR ouvertes est résumé en 2.5.
 > Légende : ✅ fait · 🟡 partiel · ❌ absent · 🔎 à vérifier à l'exécution.
 > Hors périmètre à ce stade (demande explicite) : la messagerie (« pas encore le temps de toucher ») et la page Work/UI.
 
@@ -22,7 +23,7 @@ Priorité donnée : **Communauté, Friend, puis Love si le temps le permet.**
 |---|---|---|
 | CRUD tribu, join/leave, règles, modérateurs, épinglage | ✅ | `tribes.routes.ts` (≈25 routes) |
 | Signalement tribu / post, file de reports | ✅ | `/:id/report`, `/:id/posts/:postId/report`, `/:id/reports` |
-| Upvote de post | 🟡 | `POST /posts/:id/upvote` ; **pas de downvote** |
+| Vote de post (upvote **et** downvote) | 🟡 | `POST /api/tribu/posts/:id/upvote` accepte `value` = `+1` ou `-1` (`tribes.schemas.ts`), table `post_votes` (un vote par utilisateur, bascule/annulation), score net recalculé par `votePost` (`tribes.service.ts`). Backend ✅ ; 🔎 l'UI (`TribuPostCard`) ne semble exposer que le vote positif : le downvote n'a pas de bouton repéré |
 | Commentaires imbriqués | 🟡 | `comments.parentId` en base et service ; 🔎 UI d'arborescence non vérifiée |
 | **Tri Hot / Top / New / Controversial** | ❌ | tri figé : `pinned desc, createdAt desc` (`tribes.service.ts:279`) |
 | **Karma / score d'utilisateur, flairs, awards** | ❌ | aucun code |
@@ -71,6 +72,41 @@ Existant : `POST /love/conversation` (clarification puis résultats), quota **3 
 | **La personne doit accepter la requête** (Tinder) | Un **like** n'ouvre une conversation que si l'autre a aussi liké (✅). **Mais** le bouton Message appelle `ensureConversationWith` → **ouvre une conversation sans accord** : contourne le consentement (🔎 à confirmer côté `/conversations`) | ❌ **bloquant** |
 | Requêtes Love dans l'onglet des demandes | L'onglet Demandes ne traite que les `connections` (Friend). Un like Love n'y apparaît pas ; il génère seulement une notification `love:like` | ❌ |
 | Quota 3/semaine | Compatible avec la vision « qualité » mais peut frustrer la boucle « je veux une fille telle… » : décision produit à confirmer | 🟡 |
+
+### 2.5 État d'avancement — PR ouvertes (#63 à #89)
+
+Aucune de ces PR n'est fusionnée à la date de rédaction : « en PR » ne veut pas dire « livré ». Plusieurs PR sont **empilées** (la base d'une PR est la branche d'une autre) et doivent être fusionnées dans l'ordre. Rien n'a été exécuté de bout en bout ici (tests d'intégration non lancés faute de Docker).
+
+| Issue du backlog | PR | Remarque |
+|---|---|---|
+| F1 (tuiles) + L0 côté UI (plus de chat Love vide si consentement requis) | #63 | base : `main` |
+| L1 / L2 / L7 (requêtes Love à accepter) | #64 | base : `main` |
+| C2 (tri Hot / Top / Controversial / New) | #66 | base : `main` ; le vote de post `+1/-1` (table `post_votes`) existait déjà dans `main` |
+| F2 (cartes dupliquées, XSS marqueurs) | #67 | empilée sur #63 |
+| Typecheck backend (45 erreurs → 0) | #68 | base : `main` |
+| D2 / D5 (CI web, README) | #69 | base : `main` |
+| D3 (mocks d'upload) | #70 | base : `main` |
+| F6 / F10 (position par grille, tests) | #71 | empilée sur #68 |
+| F3 (proxy de géocodage) | #72 | empilée sur #67 |
+| C5 (ban / mute de membre) | #73 | base : `main` |
+| L3 (profil + questionnaire Love) | #74 | empilée sur #73 |
+| L4 / L5 (garde-fous IA, cartes dans la discussion) | #75 | empilée sur #74 |
+| D1 (export / suppression de compte) | #76 | base : `main` |
+| F4 API (audience de partage) | #77 | empilée sur #74 |
+| C3 (votes de commentaires, tri best/top/new/old) | #78 | repli et pagination par branche restent à faire (voir C3) |
+| C4 (fil d'accueil des tribus rejointes) | #79 | base : `main` |
+| C7 (tribus privées) | #80 | empilée sur #79 |
+| C8 (flairs) | #81 | empilée sur #80 |
+| C9 (matrice d'accès croisés) | #82 | empilée sur #81 |
+| C6 (karma) | #83 | empilée sur #78 |
+| F5 (opt-in position) | #84 | empilée sur #77 |
+| F4 UI (sélecteur d'audience) | #85 | empilée sur #84 |
+| F7 (états carte, clusters) | #86 | empilée sur #85 |
+| F8 (score d'affinité carte) | #87 | empilée sur #86 |
+| F11 (conception du contenu carte) | #88 | document de conception uniquement, pas de code |
+| Correctif : sanctions appliquées au vote de post de tribu | #89 | empilée sur #78 ; fermait un contournement du ban/mute (C5) |
+
+Non couvert par une PR à ce jour : F0 (recherche Snap/Instagram Map), F9 (notifications de position), F12 (e2e Friend), le correctif serveur de L0 (le contournement du consentement côté API est traité par les requêtes Love #64, 🔎 à confirmer), L6, L8, D4, et la décision produit sur l'affichage du downvote.
 
 ### 2.4 Transversal (rappel de l'audit 360)
 
@@ -148,6 +184,6 @@ Tout ce backlog dépasse « l'heure ». Réaliste dans l'heure : cette cartograp
 
 1. Quota Love : garder 3 recherches/7 jours ?
 2. Carte : quel fournisseur de tuiles (coût vs contrôle) ?
-3. Communauté : downvote visible (Reddit) ou score d'utilité seulement ?
+3. Communauté : le downvote existe déjà côté API (`+1`/`-1`) ; faut-il l'**afficher** dans l'UI (Reddit) ou ne montrer qu'un score d'utilité ?
 4. Le mail/la photo annoncés : à transmettre pour réviser ce plan.
 5. Messagerie : confirmer qu'elle reste gelée même pour L0 (qui touche `/api/conversations`).
