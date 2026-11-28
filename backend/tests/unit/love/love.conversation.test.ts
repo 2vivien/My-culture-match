@@ -5,11 +5,13 @@ const h = vi.hoisted(() => ({
   searchLove: vi.fn(),
   getLoveSearchQuota: vi.fn(),
   getLoveProfileAnswers: vi.fn(),
+  assertLoveAdultUser: vi.fn(),
 }));
 vi.mock('../../../src/modules/love/love.ai', () => ({ parseLoveQuery: h.parseLoveQuery }));
 vi.mock('../../../src/modules/love/love.service', () => ({
   searchLove: h.searchLove,
   getLoveSearchQuota: h.getLoveSearchQuota,
+  assertLoveAdultUser: h.assertLoveAdultUser,
 }));
 vi.mock('../../../src/modules/love/love.profile.service', () => ({ getLoveProfileAnswers: h.getLoveProfileAnswers }));
 
@@ -27,6 +29,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   h.getLoveSearchQuota.mockResolvedValue({ limit: 5, used: 2, remaining: 3, unlimited: false });
   h.getLoveProfileAnswers.mockResolvedValue(null);
+  h.assertLoveAdultUser.mockResolvedValue(undefined);
 });
 
 describe('loveConversationSchema', () => {

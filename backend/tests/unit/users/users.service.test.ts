@@ -33,6 +33,8 @@ beforeEach(() => {
   h.redis.set.mockResolvedValue('OK');
   h.addFollower.mockResolvedValue(undefined);
   h.removeFollower.mockResolvedValue(undefined);
+  // enableLocationSharing crée la ligne de réglages si elle manque.
+  h.insert.mockReturnValue(chain(undefined));
 });
 
 describe('haversineKm', () => {
@@ -128,7 +130,7 @@ describe('updateLocation', () => {
       success: true, latitude: 48.8, longitude: 2.3, locationSharingEnabled: true,
     });
     expect(upd.args.set![0]).toMatchObject({ latitude: 48.8, longitude: 2.3, locationSharingEnabled: true });
-    expect(h.redis.del).toHaveBeenCalledWith('user:u1');
+    expect(h.redis.del).toHaveBeenCalledWith('location:settings:u1', 'user:u1');
   });
 
   it('met à jour la position sans nouveau consentement quand le partage est déjà actif', async () => {
@@ -138,12 +140,14 @@ describe('updateLocation', () => {
   });
 
   it('désactiver le partage efface les coordonnées renvoyées, sans demander de consentement', async () => {
-    const upd = chain(undefined);
-    h.update.mockReturnValue(upd);
+    const usersUpd = chain(undefined);
+    const storiesUpd = chain(undefined);
+    h.update.mockReturnValueOnce(usersUpd).mockReturnValueOnce(storiesUpd);
     await expect(updateLocation('u1', { enabled: false })).resolves.toEqual({ success: true, latitude: null, longitude: null, locationSharingEnabled: false });
     expect(h.select).not.toHaveBeenCalled();
-    expect(upd.args.set![0]).toMatchObject({ locationSharingEnabled: false });
-    expect(h.redis.del).toHaveBeenCalledWith('user:u1');
+    expect(usersUpd.args.set![0]).toMatchObject({ locationSharingEnabled: false });
+    expect(storiesUpd.args.set![0]).toMatchObject({ placeLat: null, placeLon: null, placeLabel: null });
+    expect(h.redis.del).toHaveBeenCalledWith('location:settings:u1', 'user:u1');
   });
 });
 
