@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { X } from 'lucide-react';
+import loginIllustration from '@/assets/login.png';
 import { useUIStore } from '@/src/stores/useUIStore';
 import { AuthPage } from '@/src/pages/AuthPage';
 
@@ -95,10 +96,19 @@ export const AuthModal = () => {
               onClick={closeAuthModal}
               aria-label="Fermer la connexion"
               title="Fermer"
-              className="absolute top-4 right-4 w-9 h-9 rounded-full flex items-center justify-center text-app-gray hover:text-app-black dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors cursor-pointer"
+              className="absolute top-4 right-4 z-10 w-9 h-9 rounded-full flex items-center justify-center bg-white/90 text-zinc-700 border border-zinc-200 shadow-sm hover:bg-white hover:text-black transition-colors cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
+
+            {/* Bandeau d'accueil : collage de portraits, sans texte superposé. */}
+            <div className="mb-6 h-32 sm:h-40 w-full overflow-hidden rounded-[20px] bg-[#FAF8F4]">
+              <img
+                src={loginIllustration}
+                alt="Portraits de la communauté MyCultureMatch"
+                className="w-full h-full object-cover object-center select-none"
+              />
+            </div>
 
             <AuthPage variant="modal" onClose={closeAuthModal} />
           </motion.div>
