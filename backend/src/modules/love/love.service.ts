@@ -1,4 +1,4 @@
-import { and, eq, inArray, or, sql } from 'drizzle-orm';
+import { and, eq, inArray, or, sql, gt } from 'drizzle-orm';
 import { db, schema } from '../../infrastructure/database';
 import { redis } from '../../infrastructure/redis';
 import { AppError } from '../../shared/utils/AppError';
@@ -136,7 +136,7 @@ export async function getIncomingLoveRequests(userId: string): Promise<{ request
   const since = new Date(Date.now() - LOVE_REQUEST_TTL_DAYS * 24 * 60 * 60 * 1000);
   const incoming = await db.select({ fromId: schema.loveMatches.userId, matchScore: schema.loveMatches.matchScore, createdAt: schema.loveMatches.createdAt })
     .from(schema.loveMatches)
-    .where(and(eq(schema.loveMatches.candidateId, userId), eq(schema.loveMatches.action, 'like'), eq(schema.loveMatches.isMutual, false), sql`${schema.loveMatches.createdAt} > ${since}`));
+    .where(and(eq(schema.loveMatches.candidateId, userId), eq(schema.loveMatches.action, 'like'), eq(schema.loveMatches.isMutual, false), gt(schema.loveMatches.createdAt, since)));
   if (incoming.length === 0) return { requests: [] };
 
   const answered = await db.select({ candidateId: schema.loveMatches.candidateId }).from(schema.loveMatches).where(eq(schema.loveMatches.userId, userId));
@@ -182,6 +182,6 @@ async function assertPendingLoveRequest(userId: string, fromUserId: string): Pro
   if (userId === fromUserId) throw AppError.badRequest('Requête invalide', 'SELF_REQUEST');
   const since = new Date(Date.now() - LOVE_REQUEST_TTL_DAYS * 24 * 60 * 60 * 1000);
   const [row] = await db.select({ id: schema.loveMatches.id }).from(schema.loveMatches)
-    .where(and(eq(schema.loveMatches.userId, fromUserId), eq(schema.loveMatches.candidateId, userId), eq(schema.loveMatches.action, 'like'), eq(schema.loveMatches.isMutual, false), sql`${schema.loveMatches.createdAt} > ${since}`)).limit(1);
+    .where(and(eq(schema.loveMatches.userId, fromUserId), eq(schema.loveMatches.candidateId, userId), eq(schema.loveMatches.action, 'like'), eq(schema.loveMatches.isMutual, false), gt(schema.loveMatches.createdAt, since))).limit(1);
   if (!row) throw AppError.notFound('Requête Love introuvable ou expirée', 'LOVE_REQUEST_NOT_FOUND');
 }
