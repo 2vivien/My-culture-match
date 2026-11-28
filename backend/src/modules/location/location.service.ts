@@ -6,7 +6,7 @@ import { userLocationSettings, locationAudience, audienceModes, locationPrecisio
 import { requiresConsent, computeReach, type Reach } from './location.policy';
 import { AppError } from '../../shared/utils/AppError';
 import { haversineKm } from '../users/users.service';
-import { evaluateNearbyCandidate, NEARBY_RADIUS_KM } from './location.nearby.filter';
+import { evaluateNearbyCandidate, DEFAULT_LOCATION_VISIBILITY, NEARBY_RADIUS_KM } from './location.nearby.filter';
 import { computeMatchScore } from '../users/match-score';
 import { obfuscatePosition } from './location.privacy';
 import { env } from '../../config/env';
@@ -47,7 +47,7 @@ export async function getLocationSettings(userId: string): Promise<LocationSetti
   const row = await rowFor(userId);
   const dto: LocationSettingsDto = {
     sharingEnabled: user.sharingEnabled,
-    visibility: validVisibility(row.visibility) ? row.visibility : 'nearby',
+    visibility: validVisibility(row.visibility) ? row.visibility : DEFAULT_LOCATION_VISIBILITY,
     precision: validPrecision(row.precision) ? row.precision : 'approximate',
     ghostMode: row.ghostMode,
     audienceMode: validAudience(row.audienceMode) ? row.audienceMode : 'default',

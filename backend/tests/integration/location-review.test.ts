@@ -49,10 +49,27 @@ afterAll(async () => {
 const auth = (token: string) => ({ 'content-type': 'application/json', Authorization: `Bearer ${token}` });
 const json = async <T>(res: Response) => (await res.json()) as T;
 
+const coords = { latitude: 6.37, longitude: 2.39 };
+const patchLocation = (token: string, body: Record<string, unknown>) =>
+  app.request('/api/users/me/location', { method: 'PATCH', headers: auth(token), body: JSON.stringify(body) });
+const getSettings = async (token: string) =>
+  (await json<{ settings: Record<string, unknown> }>(await app.request('/api/location/settings', { headers: auth(token) }))).settings;
+
 describe('C1 - GET /api/connections/nearby supprimée', () => {
   it('ne renvoie plus de coordonnées brutes d’inconnus : la route n’existe plus', async () => {
     const token = await login();
     const res = await app.request('/api/connections/nearby', { headers: auth(token) });
     expect(res.status).toBe(404);
+  });
+});
+
+describe('E5 - défaut de visibilité « friends »', () => {
+  it('activer le partage via PATCH /users/me/location crée des réglages en « friends », pas « nearby »', async () => {
+    const token = await login();
+    const res = await patchLocation(token, { ...coords, enabled: true, consent: true });
+    expect(res.status).toBe(200);
+    const settings = await getSettings(token);
+    expect(settings.sharingEnabled).toBe(true);
+    expect(settings.visibility).toBe('friends');
   });
 });

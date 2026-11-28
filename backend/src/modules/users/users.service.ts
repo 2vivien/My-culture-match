@@ -3,6 +3,7 @@ import { db, schema } from '../../infrastructure/database';
 import { redis } from '../../infrastructure/redis';
 import { AppError } from '../../shared/utils/AppError';
 import { requiresConsent } from '../location/location.policy';
+import { ensureLocationSettingsRow } from '../location/location.sharing';
 import type { ProfilePatchInput } from './users.schemas';
 import { addFollower, removeFollower, followingKey } from '../feed/fanout';
 
@@ -170,6 +171,8 @@ export async function updateLocation(
     return { success: true, latitude: null, longitude: null, locationSharingEnabled: false };
   }
 
+  // Les réglages de confidentialité existent dès que le partage est actif (défaut : visibilité « friends »).
+  await ensureLocationSettingsRow(userId);
   await db
     .update(schema.users)
     .set({
