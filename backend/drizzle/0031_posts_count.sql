@@ -2,7 +2,13 @@
 -- Les migrations historiques sont laissées intactes ; celle-ci porte le
 -- changement de schéma et la migration des valeurs déjà stockées.
 
-ALTER TABLE "users" RENAME COLUMN "traditions_count" TO "posts_count";
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'traditions_count')
+     AND NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'posts_count') THEN
+    ALTER TABLE "users" RENAME COLUMN "traditions_count" TO "posts_count";
+  END IF;
+END $$;
 
 UPDATE "tribes" SET "topic" = 'posts' WHERE "topic" = 'traditions';
 

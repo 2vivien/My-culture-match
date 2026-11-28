@@ -1,5 +1,5 @@
 -- Migration de données : le vocabulaire stocké ("tradition") devient "post".
--- Le schéma n'est pas modifié ici (voir 0020_posts_count.sql).
+-- Le schéma n'est pas modifié ici (voir 0031_posts_count.sql).
 
 -- Remplacements ciblés d'abord (tournures complètes), puis génériques.
 UPDATE "posts"

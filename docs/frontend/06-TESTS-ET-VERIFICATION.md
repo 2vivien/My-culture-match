@@ -28,7 +28,7 @@ Le script `backend/scripts/verify-feed.ts` utilisé pendant l'audit était tempo
 | Diff des erreurs vs `baseline/post-profil` | ✅ 2 erreurs héritées corrigées dans `ChatMessageBubble.tsx` |
 | `npm run build` | ✅ build OK (~2,6 Mo JS, warning de taille de chunk uniquement) |
 | `npx eslint src --ext .ts` (backend) | 0 erreur, 4 warnings préexistants |
-| `npm run migrate` | ✅ migrations `0020_posts_count` + `0021_posts_vocabulary` appliquées |
+| `npm run migrate` | ✅ migrations `0031_posts_count` + `0032_posts_vocabulary` appliquées |
 | Seed SQL | ✅ users existants réutilisés, 8 posts insérés, dates rafraîchies |
 | `npm run seed:feed` | ✅ 4 posts poussés dans `feed:following:<me>` (hors posts de l'utilisateur courant) |
 | API `/api/feed?filter=for-you` (test.flow) | ✅ 200, `total = 8` |

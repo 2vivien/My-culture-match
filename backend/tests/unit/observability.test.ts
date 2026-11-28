@@ -3,6 +3,7 @@ import { createApp } from '../../src/app';
 import * as database from '../../src/infrastructure/database';
 import * as redisInfra from '../../src/infrastructure/redis';
 import * as sentryModule from '../../src/infrastructure/monitoring/sentry';
+import * as meilisearchModule from '../../src/infrastructure/meilisearch';
 
 const app = createApp();
 
@@ -30,6 +31,8 @@ describe('Health checks (MP18)', () => {
   it('GET /health/ready → 200 dégradé si une dépendance est KO', async () => {
     vi.spyOn(database, 'checkDatabase').mockRejectedValueOnce(new Error('db down'));
     vi.spyOn(redisInfra, 'checkRedis').mockRejectedValueOnce(new Error('redis down'));
+    // Meilisearch n'est pas démarré en local : ce test vérifie la dégradation, pas Meilisearch.
+    vi.spyOn(meilisearchModule, 'checkMeilisearch').mockResolvedValueOnce(undefined);
     const res = await app.request('/health/ready');
     expect(res.status).toBe(503);
     const body = (await res.json()) as { status: string; checks: Record<string, string> };

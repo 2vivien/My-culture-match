@@ -55,7 +55,7 @@ Tester aussi le **chemin de mise à jour** : appliquer le journal de `main`, pui
 
 ## Collisions de numéros entre branches
 
-À la date de rédaction, des branches en cours utilisent le même numéro pour des migrations différentes : `0020_posts_count` / `0020_tribe_sanctions`, `0021_love_profiles` / `0021_posts_vocabulary`. Le contrôle échoue dès que les deux fichiers sont dans le même arbre. Résolution : la branche fusionnée en second renumérote (fichier, `tag`, `idx`) et ajuste `when` pour dépasser l'entrée précédente. Si la migration a déjà été appliquée quelque part sous l'ancien nom, ne pas renommer : prendre un nouveau numéro et rendre le SQL idempotent.
+Conflit de numéros résolu : `0020_posts_count` et `0021_posts_vocabulary` ont été renumérotées `0031_posts_count` / `0032_posts_vocabulary` (fichier, `tag`, `idx`, `when`). Le SQL de renommage est idempotent car ces migrations avaient déjà été appliquées sous leur ancien nom sur certaines bases.
 
 ## Pourquoi les snapshots manquent
 
