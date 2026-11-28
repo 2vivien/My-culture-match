@@ -1,6 +1,8 @@
 import { z } from 'zod';
 import { parseLoveQuery, type LoveSearchCriteria } from './love.ai';
 import { searchLove } from './love.service';
+import { profileSearchDefaults } from './love.profile';
+import { getLoveProfileAnswers } from './love.profile.service';
 
 export const loveConversationSchema = z.object({
   messages: z.array(z.string().trim().min(1).max(1000)).min(1).max(12),
@@ -33,7 +35,11 @@ function replyFor(missing: string[], hasResults: boolean): string {
 
 export async function handleLoveConversation(userId: string, messages: string[]): Promise<LoveConversationResult> {
   const combined = messages.join('\n');
-  const criteria = await parseLoveQuery(combined);
+  const parsed = await parseLoveQuery(combined);
+  const profile = await getLoveProfileAnswers(userId);
+  // Le profil ne complète que ce que la personne n'a pas dit : sa demande actuelle prime toujours.
+  const defaults = profile ? profileSearchDefaults(profile) : {};
+  const criteria: LoveSearchCriteria = { ...defaults, ...Object.fromEntries(Object.entries(parsed).filter(([, v]) => v !== undefined)) };
   const missing = missingCriteria(criteria);
   if (missing.length > 0) {
     const quota = await import('./love.service').then((m) => m.getLoveSearchQuota(userId));

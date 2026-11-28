@@ -16,7 +16,20 @@ function mapResult(c: any): LoveSearchResult {
 
 export type LoveConversationResponse = { reply: string; phase: 'clarifying' | 'results'; criteria: Record<string, unknown>; missing: string[]; remainingSearches: number; results?: LoveSearchResult[] };
 
+/** Réponses au questionnaire de première utilisation (vocabulaires définis côté serveur). */
+export interface LoveProfileAnswers {
+  goals: string[];
+  relationship: string;
+  values: string[];
+  lifestyle: string[];
+  distance: string;
+  understood?: string;
+}
+
 export const loveService = {
+  /** Questionnaire Love : `completed` est faux tant que la personne n'a pas répondu. */
+  async getProfile(): Promise<{ completed: boolean; answers: LoveProfileAnswers | null }> { return api.get('/api/love/profile'); },
+  async saveProfile(answers: LoveProfileAnswers): Promise<{ completed: boolean; answers: LoveProfileAnswers | null }> { return api.put('/api/love/profile', answers); },
   /** Requêtes Love reçues : l'autre personne doit accepter avant toute conversation. */
   async getRequests(): Promise<ConnectionUser[]> {
     const data = await api.get<{ requests: LoveRequestPayload[] }>('/api/love/requests');

@@ -5,6 +5,8 @@ import { swipeSchema, loveSearchSchema } from './love.schemas';
 import { withIdempotency, idempotencyKeyFrom } from '../../shared/utils/idempotency';
 import { getLoveCandidates, getLoveCandidate, getActiveLoveMatches, swipe, searchLove, getLoveSearchQuota, getIncomingLoveRequests, acceptLoveRequest, declineLoveRequest } from './love.service';
 import { handleLoveConversation, loveConversationSchema } from './love.conversation';
+import { loveProfileSchema } from './love.profile';
+import { getLoveProfile, saveLoveProfile } from './love.profile.service';
 
 const loveRoutes = new Hono();
 loveRoutes.use('*', requireAuth);
@@ -35,6 +37,17 @@ loveRoutes.post('/love/swipe', zValidator('json', swipeSchema), async (c) => {
   const { userId } = c.get('auth');
   const result = await withIdempotency(`love:swipe:${userId}:${candidateId}`, idempotencyKeyFrom(c), () => swipe(userId, candidateId, action));
   return c.json(result, 200);
+});
+
+/** Questionnaire de première utilisation de Love (6 questions, modifiables). */
+loveRoutes.get('/love/profile', async (c) => {
+  const { userId } = c.get('auth');
+  return c.json(await getLoveProfile(userId), 200);
+});
+
+loveRoutes.put('/love/profile', zValidator('json', loveProfileSchema), async (c) => {
+  const { userId } = c.get('auth');
+  return c.json(await saveLoveProfile(userId, c.req.valid('json')), 200);
 });
 
 /** Requêtes Love reçues (type Tinder) : l'autre personne doit accepter avant toute conversation. */

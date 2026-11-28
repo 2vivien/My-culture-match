@@ -6,6 +6,7 @@ import { chatService } from '@/src/services/chat.service';
 import { loveService } from '@/src/services/loveService';
 import { ApiError } from '@/src/services/api';
 import { LoveActiveMatches } from '@/src/components/love/LoveActiveMatches';
+import { LoveOnboarding } from '@/src/components/love/LoveOnboarding';
 import type { LoveMatch, LoveSearchQuota, LoveSearchResult } from '@/src/types/love';
 
 type Role = 'user' | 'assistant';
@@ -54,7 +55,10 @@ export const LoveColumn: React.FC = () => {
   const [liked, setLiked] = useState<Record<string, boolean>>({});
   const [passed, setPassed] = useState<Record<string, boolean>>({});
   const endRef = useRef<HTMLDivElement>(null);
+  // null = inconnu (chargement), false = questionnaire à faire, true = profil Love complété
+  const [profileDone, setProfileDone] = useState<boolean | null>(null);
 
+  useEffect(() => { loveService.getProfile().then((p) => setProfileDone(p.completed)).catch(() => setProfileDone(true)); }, []);
   useEffect(() => { Promise.all([loveService.getSearchQuota(), loveService.fetchActiveMatches()]).then(([q, matches]) => { setQuota(q); setActiveMatches(matches); }).catch(() => undefined); }, []);
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }, [messages, typing]);
 
@@ -92,6 +96,10 @@ export const LoveColumn: React.FC = () => {
     }
   };
   const visibleResults = useMemo(() => results.filter((r) => !passed[r.id]), [results, passed]);
+
+  // Première utilisation de Love : questionnaire en discussion avant toute recherche.
+  if (profileDone === null) return null;
+  if (profileDone === false) return <LoveOnboarding onDone={() => setProfileDone(true)} />;
 
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col overflow-hidden px-4 pb-8 pt-4 lg:px-6">
