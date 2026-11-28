@@ -7,6 +7,11 @@ export const CELL_DEGREES: Record<LocationPrecision, number> = { approximate: 0.
 /** Le décalage reste dans ±OFFSET_RATIO × cellule autour du centre : jamais hors de la cellule. */
 const OFFSET_RATIO = 0.35;
 
+/** Secret du floutage : variable dédiée si elle est définie, sinon repli sur le secret d'authentification. */
+export function jitterSecret(config: { LOCATION_JITTER_SECRET?: string | undefined; BETTER_AUTH_SECRET: string }): string {
+  return config.LOCATION_JITTER_SECRET ? config.LOCATION_JITTER_SECRET : config.BETTER_AUTH_SECRET;
+}
+
 function unit(secret: string, label: string): number {
   const digest = createHmac('sha256', secret).update(label).digest();
   return digest.readUInt32BE(0) / 0xffffffff; // [0, 1]

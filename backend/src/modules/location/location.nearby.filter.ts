@@ -1,5 +1,11 @@
 import { canSeeLocation, shouldHideLocation, type AudienceMode, type LocationVisibility } from './location.policy';
 
+/**
+ * Visibilité appliquée quand la ligne de réglages manque ou est invalide. Identique au défaut de la base
+ * (`user_location_settings.visibility`, migration 0026) : en cas de doute, on ne montre qu'aux compagnons.
+ */
+export const DEFAULT_LOCATION_VISIBILITY: LocationVisibility = 'friends';
+
 /** Rayon maximal de la carte « People Nearby ». */
 export const NEARBY_RADIUS_KM = 50;
 
@@ -50,7 +56,7 @@ export function evaluateNearbyCandidate(
   if (shouldHideLocation({ sharingEnabled: true, ghostMode: candidate.ghost ?? false, expiresAt: candidate.expiresAt }, now)) {
     return { visible: false, reason: 'hidden' };
   }
-  const visibility: LocationVisibility = isLocationVisibility(candidate.visibility) ? candidate.visibility : 'nearby';
+  const visibility: LocationVisibility = isLocationVisibility(candidate.visibility) ? candidate.visibility : DEFAULT_LOCATION_VISIBILITY;
   const mode: AudienceMode = isAudienceMode(candidate.audienceMode) ? candidate.audienceMode : 'default';
   const allowed = canSeeLocation({
     visibility,

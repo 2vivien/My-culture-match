@@ -61,11 +61,14 @@ describe('évaluation d’un candidat « People Nearby »', () => {
       const d = run(candidate({ visibility: 'nobody', audienceMode: 'selected' }), relations({ friends: ['cand'], listedBy: ['cand'] }));
       expect(d).toEqual({ visible: false, reason: 'not_allowed' });
     });
-    it('sans ligne de réglages (LEFT JOIN nul) : visibilité par défaut « nearby »', () => {
-      expect(run(candidate({ visibility: null, audienceMode: null, ghost: null }), relations()).visible).toBe(true);
+    it('sans ligne de réglages (LEFT JOIN nul) : visibilité par défaut « friends » (comme la base)', () => {
+      const c = candidate({ visibility: null, audienceMode: null, ghost: null });
+      expect(run(c, relations())).toEqual({ visible: false, reason: 'not_allowed' });
+      expect(run(c, relOf('friend')).visible).toBe(true);
     });
-    it('visibilité inconnue : retombe sur « nearby » (comportement historique)', () => {
-      expect(run(candidate({ visibility: 'galaxy' }), relations()).visible).toBe(true);
+    it('visibilité inconnue : retombe sur « friends », jamais sur une visibilité plus large', () => {
+      expect(run(candidate({ visibility: 'galaxy' }), relations())).toEqual({ visible: false, reason: 'not_allowed' });
+      expect(run(candidate({ visibility: 'galaxy' }), relOf('friend')).visible).toBe(true);
     });
     it('audience inconnue : retombe sur « default »', () => {
       expect(run(candidate({ visibility: 'friends', audienceMode: 'bizarre' }), relOf('friend')).visible).toBe(true);

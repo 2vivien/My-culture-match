@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CELL_DEGREES, obfuscatePosition } from '../../../src/modules/location/location.privacy';
+import { CELL_DEGREES, jitterSecret, obfuscatePosition } from '../../../src/modules/location/location.privacy';
 
 const SECRET = 'test-secret-test-secret-test-secret-32';
 const km = (a: { latitude: number; longitude: number }, b: { latitude: number; longitude: number }) =>
@@ -55,5 +55,23 @@ describe('obfuscatePosition', () => {
     const p = obfuscatePosition(-33.8688, -70.6693, 'u1', 'approximate', SECRET);
     expect(Math.floor(p.latitude / size)).toBe(Math.floor(-33.8688 / size));
     expect(Math.floor(p.longitude / size)).toBe(Math.floor(-70.6693 / size));
+  });
+});
+
+describe('jitterSecret (F8)', () => {
+  const AUTH = 'auth-secret-auth-secret-auth-secret-32';
+  const JITTER = 'jitter-secret-jitter-secret-jitter-32';
+  it('utilise LOCATION_JITTER_SECRET quand il est défini', () => {
+    expect(jitterSecret({ LOCATION_JITTER_SECRET: JITTER, BETTER_AUTH_SECRET: AUTH })).toBe(JITTER);
+  });
+  it('retombe sur BETTER_AUTH_SECRET sinon (variable absente ou vide)', () => {
+    expect(jitterSecret({ BETTER_AUTH_SECRET: AUTH })).toBe(AUTH);
+    expect(jitterSecret({ LOCATION_JITTER_SECRET: undefined, BETTER_AUTH_SECRET: AUTH })).toBe(AUTH);
+    expect(jitterSecret({ LOCATION_JITTER_SECRET: '', BETTER_AUTH_SECRET: AUTH })).toBe(AUTH);
+  });
+  it('un secret dédié change le décalage publié (donc un autre secret ne peut pas le recalculer)', () => {
+    const a = obfuscatePosition(6.36536, 2.41833, 'u1', 'approximate', AUTH);
+    const b = obfuscatePosition(6.36536, 2.41833, 'u1', 'approximate', JITTER);
+    expect(a).not.toEqual(b);
   });
 });
