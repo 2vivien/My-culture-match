@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { useCreateTradition } from '@/src/hooks/useCreateTradition';
 import { CreateTraditionHeader } from '../create-tradition/CreateTraditionHeader';
 import { TribuSelector } from '../create-tradition/TribuSelector';
+import { FlairSelector } from '../create-tradition/FlairSelector';
 import { CreateTraditionTabs } from '../create-tradition/CreateTraditionTabs';
 import { CreateTraditionTextForm } from '../create-tradition/CreateTraditionTextForm';
 import { CreateTraditionMediaForm } from '../create-tradition/CreateTraditionMediaForm';
@@ -32,6 +33,10 @@ export const CreateTraditionView: React.FC = () => {
     handleSubmit,
     selectedTags,
     toggleTag,
+    flairs,
+    flairsLoading,
+    selectedFlairId,
+    setSelectedFlairId,
   } = useCreateTradition();
 
   return (
@@ -52,7 +57,16 @@ export const CreateTraditionView: React.FC = () => {
           onSelect={selectTribe}
         />
 
-        <CreateTraditionTabs 
+        {selectedTribe && (
+          <FlairSelector
+            flairs={flairs}
+            loading={flairsLoading}
+            selectedFlairId={selectedFlairId}
+            onSelect={setSelectedFlairId}
+          />
+        )}
+
+        <CreateTraditionTabs
           activeTab={activeSubTab} 
           setActiveTab={setActiveSubTab} 
         />

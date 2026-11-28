@@ -11,6 +11,8 @@ const basePostFields = {
   mediaUrls: z.array(z.string().url()).min(1, 'Au moins un média requis').max(10, '10 médias maximum').optional(),
   linkUrl: z.string().url('URL invalide').optional(),
   tribeId: z.string().trim().min(1).optional(),
+  /** Flair de la tribu (nécessite tribeId). */
+  flairId: z.string().trim().min(1).optional(),
   tags: z.array(z.string().regex(TAG_REGEX, 'Tag : lettres minuscules, chiffres ou tirets uniquement')).max(5, '5 tags maximum').optional(),
 };
 

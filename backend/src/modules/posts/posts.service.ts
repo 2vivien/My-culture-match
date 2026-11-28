@@ -10,6 +10,7 @@ import { enqueueFeedFanout, enqueueSearchIndex, enqueuePostEmbedding } from './p
 import { enqueueModerationScan } from '../moderation/moderation.queue';
 import { assertCanWriteInTribe } from '../tribes/tribes.sanctions.service';
 import { postsCreatedTotal } from '../../infrastructure/monitoring/metrics';
+import { assertCanReadTribePost, unreadableTribeIds } from '../tribes/tribes.access';
 import type { CreatePostInput, CreateCommentInput } from './posts.schemas';
 import { sortCommentTree, type CommentSort } from './comments.ranking';
 
@@ -30,6 +31,7 @@ export interface HydratedPost {
     glow: string;
   };
   tribe: { id: string; name: string; tag: string } | null;
+  flair: { id: string; name: string; color: string } | null;
   type: string;
   title: string | null;
   body: string | null;
@@ -71,12 +73,19 @@ export async function createPost(userId: string, input: CreatePostInput): Promis
     if (!input.tribeId) throw AppError.badRequest('Choisissez une communauté pour reposter', 'TRIBE_REQUIRED');
     if (!input.originalPostId) throw AppError.badRequest('Post original manquant', 'ORIGINAL_POST_REQUIRED');
     const [original] = await db
-      .select({ id: schema.posts.id, status: schema.posts.status, authorId: schema.posts.authorId })
+      .select({ id: schema.posts.id, status: schema.posts.status, authorId: schema.posts.authorId, tribeId: schema.posts.tribeId })
       .from(schema.posts)
       .where(eq(schema.posts.id, input.originalPostId))
       .limit(1);
     if (!original || original.status === 'deleted') {
       throw AppError.notFound('Post original introuvable', 'POST_NOT_FOUND');
+    }
+    await assertCanReadTribePost(original.tribeId, userId);
+    if (original.tribeId) {
+      const [originTribe] = await db.select({ visibility: schema.tribes.visibility }).from(schema.tribes).where(eq(schema.tribes.id, original.tribeId)).limit(1);
+      if (originTribe?.visibility === 'private') {
+        throw AppError.forbidden('Un post d’une tribu privée ne peut pas être reposté', 'PRIVATE_REPOST_FORBIDDEN');
+      }
     }
     if (original.authorId === userId) {
       throw AppError.badRequest('Vous ne pouvez pas reposter votre propre publication', 'SELF_REPOST_NOT_ALLOWED');
@@ -92,6 +101,11 @@ export async function createPost(userId: string, input: CreatePostInput): Promis
     if (!member[0]) throw AppError.forbidden('Vous devez être membre de cette tribu pour y poster', 'TRIBE_MEMBERSHIP_REQUIRED');
     await assertCanWriteInTribe(input.tribeId, userId);
   }
+  if (input.flairId) {
+    if (!input.tribeId) throw AppError.badRequest('Un flair nécessite une tribu', 'FLAIR_REQUIRES_TRIBE');
+    const [flair] = await db.select({ id: schema.tribeFlairs.id }).from(schema.tribeFlairs).where(and(eq(schema.tribeFlairs.id, input.flairId), eq(schema.tribeFlairs.tribeId, input.tribeId))).limit(1);
+    if (!flair) throw AppError.badRequest('Flair inconnu pour cette tribu', 'FLAIR_NOT_FOUND');
+  }
 
   const moderation = moderatePost(input.title ?? '', input.body);
   const status = moderation.flag ? 'flagged' : 'published';
@@ -106,6 +120,7 @@ export async function createPost(userId: string, input: CreatePostInput): Promis
     .values({
       authorId: userId,
       tribeId: input.tribeId ?? null,
+      flairId: input.flairId ?? null,
       type: input.type,
       title: input.title ?? null,
       body: input.body ?? null,
@@ -129,7 +144,9 @@ export async function createPost(userId: string, input: CreatePostInput): Promis
   // Jobs async : fanout followers, indexation search, embedding post, scan modération
   if (!post) throw AppError.badRequest('Échec de création du post', 'POST_CREATE_FAILED');
   await enqueueFeedFanout(post.id, userId);
-  if (status === 'published') {
+  // Les posts d'une tribu privée ne sont jamais indexés pour la recherche.
+  const [tribeRow] = input.tribeId ? await db.select({ visibility: schema.tribes.visibility }).from(schema.tribes).where(eq(schema.tribes.id, input.tribeId)).limit(1) : [];
+  if (status === 'published' && tribeRow?.visibility !== 'private') {
     await enqueueSearchIndex(post.id);
   }
   await enqueuePostEmbedding(post.id);
@@ -157,6 +174,9 @@ async function hydratePost(
   const tribe = post.tribeId
     ? (await db.select().from(schema.tribes).where(eq(schema.tribes.id, post.tribeId)).limit(1))[0] ?? null
     : null;
+  const flair = post.flairId
+    ? (await db.select({ id: schema.tribeFlairs.id, name: schema.tribeFlairs.name, color: schema.tribeFlairs.color }).from(schema.tribeFlairs).where(eq(schema.tribeFlairs.id, post.flairId)).limit(1))[0] ?? null
+    : null;
   const deltas = await getCounterDeltas(post.id);
 
   // Repost : hydrate le post original (auteur + contenu complet) pour l'affichage.
@@ -167,7 +187,9 @@ async function hydratePost(
       .from(schema.posts)
       .where(and(eq(schema.posts.id, post.originalPostId), ne(schema.posts.status, 'deleted')))
       .limit(1);
-    if (original) {
+    // Reposts anciens d'un post devenu privé : l'original n'est exposé qu'à ceux qui peuvent le lire.
+    const originalHidden = original?.tribeId ? (await unreadableTribeIds([original.tribeId], viewerId)).has(original.tribeId) : false;
+    if (original && !originalHidden) {
       const origRel = await postRelations(original.id, viewerId);
       originalPost = await hydratePost(original, viewerId, origRel, true);
     }
@@ -179,6 +201,7 @@ async function hydratePost(
       ? { id: author.id, name: author.name, username: author.username, avatar: author.avatar, level: author.level, glow: author.glow }
       : { id: post.authorId, name: 'Utilisateur', username: 'user', avatar: null, level: 1, glow: 'none' },
     tribe: tribe ? { id: tribe.id, name: tribe.name, tag: tribe.tag ?? '' } : null,
+    flair,
     type: post.type,
     title: post.title,
     body: post.body,
@@ -207,6 +230,7 @@ export async function getPostById(postId: string, viewerId: string): Promise<Hyd
   if (cached) {
     const post = JSON.parse(cached) as schema.Post;
     if (post.status !== 'deleted') {
+      await assertCanReadTribePost(post.tribeId, viewerId);
       const rel = await postRelations(postId, viewerId);
       return hydratePost(post, viewerId, rel);
     }
@@ -218,6 +242,7 @@ export async function getPostById(postId: string, viewerId: string): Promise<Hyd
   if (post.status === 'flagged' && post.authorId !== viewerId) {
     throw AppError.forbidden('Ce post est en attente de modération', 'POST_FLAGGED');
   }
+  await assertCanReadTribePost(post.tribeId, viewerId);
 
   await redis.set(postCacheKey(postId), JSON.stringify(post), 'EX', POST_CACHE_TTL);
   const rel = await postRelations(postId, viewerId);
@@ -229,7 +254,8 @@ export async function getPostsByIds(postIds: string[], viewerId: string): Promis
   if (postIds.length === 0) return [];
 
   const rows = await db.select().from(schema.posts).where(inArray(schema.posts.id, postIds));
-  const visible = rows.filter((p) => p.status !== 'deleted' && (p.status !== 'flagged' || p.authorId === viewerId));
+  const hiddenTribes = await unreadableTribeIds(rows.map((p) => p.tribeId).filter((id): id is string => Boolean(id)), viewerId);
+  const visible = rows.filter((p) => p.status !== 'deleted' && (p.status !== 'flagged' || p.authorId === viewerId) && !(p.tribeId && hiddenTribes.has(p.tribeId)));
   // L'ordre des ids reçus fait foi (tri hot/top/épinglage, feed classé) ; la lecture SQL `inArray` n'a pas d'ordre garanti.
   const rank = new Map(postIds.map((id, i) => [id, i]));
   const posts = [...visible].sort((a, b) => (rank.get(a.id) ?? 0) - (rank.get(b.id) ?? 0));
@@ -248,8 +274,9 @@ export async function getPostsByIds(postIds: string[], viewerId: string): Promis
 
 /** POST /api/posts/:id/like — toggle. */
 export async function toggleLike(userId: string, postId: string): Promise<{ liked: boolean; likes: number }> {
-  const [post] = await db.select({ status: schema.posts.status, authorId: schema.posts.authorId }).from(schema.posts).where(eq(schema.posts.id, postId)).limit(1);
+  const [post] = await db.select({ status: schema.posts.status, authorId: schema.posts.authorId, tribeId: schema.posts.tribeId }).from(schema.posts).where(eq(schema.posts.id, postId)).limit(1);
   if (!post || post.status === 'deleted') throw AppError.notFound('Post introuvable', 'POST_NOT_FOUND');
+  await assertCanReadTribePost(post.tribeId, userId);
 
   const existing = await db.select().from(schema.postLikes).where(and(eq(schema.postLikes.postId, postId), eq(schema.postLikes.userId, userId))).limit(1);
   if (existing[0]) {
@@ -285,6 +312,7 @@ async function counterValue(postId: string, counter: 'likes' | 'saves' | 'shares
 export async function addComment(userId: string, postId: string, input: CreateCommentInput): Promise<{ commentId: string }> {
   const [post] = await db.select({ status: schema.posts.status, authorId: schema.posts.authorId, tribeId: schema.posts.tribeId }).from(schema.posts).where(eq(schema.posts.id, postId)).limit(1);
   if (!post || post.status === 'deleted') throw AppError.notFound('Post introuvable', 'POST_NOT_FOUND');
+  await assertCanReadTribePost(post.tribeId, userId);
   if (post.tribeId) await assertCanWriteInTribe(post.tribeId, userId);
 
   if (input.parentId) {
@@ -318,9 +346,10 @@ export async function addComment(userId: string, postId: string, input: CreateCo
  * (racines puis réponses) trié par `best` / `top` / `old` ; le curseur est alors un décalage numérique.
  * Chaque commentaire porte `ups`, `downs`, `score` et le vote du lecteur (`myVote`).
  */
-export async function listComments(postId: string, cursor: string | undefined, limit: number, viewerId?: string, sort: CommentSort = 'new'): Promise<{ comments: Array<Record<string, unknown>>; nextCursor: string | null }> {
-  const [post] = await db.select({ status: schema.posts.status }).from(schema.posts).where(eq(schema.posts.id, postId)).limit(1);
+export async function listComments(postId: string, cursor: string | undefined, limit: number, viewerId: string, sort: CommentSort = 'new'): Promise<{ comments: Array<Record<string, unknown>>; nextCursor: string | null }> {
+  const [post] = await db.select({ status: schema.posts.status, tribeId: schema.posts.tribeId }).from(schema.posts).where(eq(schema.posts.id, postId)).limit(1);
   if (!post || post.status === 'deleted') throw AppError.notFound('Post introuvable', 'POST_NOT_FOUND');
+  await assertCanReadTribePost(post.tribeId, viewerId);
 
   const baseSelect = {
     id: schema.comments.id,
@@ -401,8 +430,9 @@ export async function voteComment(userId: string, postId: string, commentId: str
 
 /** POST /api/posts/:id/share — une seule fois par utilisateur. */
 export async function sharePost(userId: string, postId: string): Promise<{ shared: boolean; shares: number }> {
-  const [post] = await db.select({ status: schema.posts.status }).from(schema.posts).where(eq(schema.posts.id, postId)).limit(1);
+  const [post] = await db.select({ status: schema.posts.status, tribeId: schema.posts.tribeId }).from(schema.posts).where(eq(schema.posts.id, postId)).limit(1);
   if (!post || post.status === 'deleted') throw AppError.notFound('Post introuvable', 'POST_NOT_FOUND');
+  await assertCanReadTribePost(post.tribeId, userId);
 
   try {
     await db.insert(schema.shares).values({ postId, userId });
@@ -415,8 +445,9 @@ export async function sharePost(userId: string, postId: string): Promise<{ share
 
 /** POST /api/posts/:id/save — toggle signet. */
 export async function toggleSave(userId: string, postId: string): Promise<{ saved: boolean; saves: number }> {
-  const [post] = await db.select({ status: schema.posts.status }).from(schema.posts).where(eq(schema.posts.id, postId)).limit(1);
+  const [post] = await db.select({ status: schema.posts.status, tribeId: schema.posts.tribeId }).from(schema.posts).where(eq(schema.posts.id, postId)).limit(1);
   if (!post || post.status === 'deleted') throw AppError.notFound('Post introuvable', 'POST_NOT_FOUND');
+  await assertCanReadTribePost(post.tribeId, userId);
 
   const existing = await db.select().from(schema.saves).where(and(eq(schema.saves.postId, postId), eq(schema.saves.userId, userId))).limit(1);
   if (existing[0]) {

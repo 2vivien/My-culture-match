@@ -202,6 +202,8 @@ export const tribes = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
     memberCount: integer('member_count').notNull().default(0),
+    /** 'public' (défaut) ou 'private' : contenu réservé aux membres, adhésion sur demande. */
+    visibility: text('visibility').notNull().default('public'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
@@ -209,6 +211,34 @@ export const tribes = pgTable(
     uniqueIndex('tribes_name_unique_idx').on(t.name),
     uniqueIndex('tribes_tag_unique_idx').on(t.tag),
   ],
+);
+
+export const tribeFlairs = pgTable(
+  'tribe_flairs',
+  {
+    id: text('id').primaryKey().$defaultFn(generateId),
+    tribeId: text('tribe_id')
+      .notNull()
+      .references(() => tribes.id, { onDelete: 'cascade' }),
+    name: text('name').notNull(),
+    color: text('color').notNull().default('#E27D60'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index('tribe_flairs_tribe_idx').on(t.tribeId)],
+);
+
+export const tribeJoinRequests = pgTable(
+  'tribe_join_requests',
+  {
+    tribeId: text('tribe_id')
+      .notNull()
+      .references(() => tribes.id, { onDelete: 'cascade' }),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.tribeId, t.userId] }), index('tribe_join_requests_tribe_idx').on(t.tribeId, t.createdAt)],
 );
 
 export const tribeMembers = pgTable(
@@ -278,6 +308,7 @@ export const posts = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
     tribeId: text('tribe_id').references(() => tribes.id, { onDelete: 'set null' }),
+    flairId: text('flair_id').references(() => tribeFlairs.id, { onDelete: 'set null' }),
     type: postTypeEnum('type').notNull().default('Text'),
     title: text('title'),
     text: text('text'),
