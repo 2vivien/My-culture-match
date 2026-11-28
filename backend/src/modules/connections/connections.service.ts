@@ -5,6 +5,7 @@ import { AppError } from '../../shared/utils/AppError';
 import { createNotification } from '../notifications/notifications.service';
 import { hashEmbedding, tokenize, cosineSimilarity } from '../culture-engine/embedding';
 import { emitToUser } from '../../infrastructure/websocket';
+import { locationAudience } from '../location/location.schema';
 
 const SUGGESTIONS_PER_DAY = 20;
 const DECLINED_TTL = 30 * 24 * 60 * 60; // 30j
@@ -449,8 +450,17 @@ export async function declineRequest(userId: string, requestId: string): Promise
 }
 
 /** POST /api/requests/:id/block — bloquer l'émetteur de la demande. */
+/** Retire les deux sens de la liste d'audience de position quand le lien entre deux personnes disparaît. */
+async function removeAudienceLinks(a: string, b: string): Promise<void> {
+  await db.delete(locationAudience).where(or(
+    and(eq(locationAudience.ownerId, a), eq(locationAudience.memberId, b)),
+    and(eq(locationAudience.ownerId, b), eq(locationAudience.memberId, a)),
+  ));
+}
+
 export async function blockRequester(userId: string, requestId: string): Promise<{ success: true }> {
   await db.insert(schema.blocks).values({ blockerId: userId, blockedId: requestId }).onConflictDoNothing();
+  await removeAudienceLinks(userId, requestId);
   await redis.sadd(blockedKey(userId), requestId);
   await db
     .delete(schema.connections)
@@ -474,6 +484,7 @@ export async function removeCompanion(userId: string, targetId: string): Promise
     .returning({ fromUserId: schema.connections.fromUserId });
 
   if (deleted.length === 0) throw AppError.notFound('Connexion introuvable', 'CONNECTION_NOT_FOUND');
+  await removeAudienceLinks(userId, targetId);
   await redis.srem(companionsKey(userId), targetId);
   await redis.srem(companionsKey(targetId), userId);
 

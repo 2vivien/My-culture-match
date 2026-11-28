@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, FlagTriangleLeft, Smile, Loader2, X, Repeat2, Check, Users } from 'lucide-react';
+import { ArrowLeft, ArrowBigUp, ArrowBigDown, FlagTriangleLeft, Smile, Loader2, X, Repeat2, Check, Users } from 'lucide-react';
 import { IconMessageCircle, IconReplace, IconShare3 } from '@tabler/icons-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/src/services/api';
@@ -8,7 +8,8 @@ import { PostHeader } from '@/src/components/feed/PostHeader';
 import { ShareModal } from '@/src/components/feed/ShareModal';
 import { TotemAvatar } from '@/src/components/ui/TotemAvatar';
 import { EmojiPicker } from '@/src/components/ui/EmojiPicker';
-import { useComments, type CommentNode } from '@/src/hooks/useComments';
+import { useComments, type CommentNode, type CommentSort } from '@/src/hooks/useComments';
+import { countAll, findNode, flattenVisible, MAX_COMMENT_DEPTH, toggleCollapsed, type VisibleComment } from '@/src/lib/commentTree';
 import { useAppStore } from '@/src/stores/useAppStore';
 import { useUIStore } from '@/src/stores/useUIStore';
 import { fallbackAvatar } from '@/src/lib/media';
@@ -20,11 +21,6 @@ import type { Post } from '@/src/types/post';
  * tags, like réel) + TOUS les commentaires (arbre avec réponses), réponse par
  * commentaire, emoji picker complet.
  */
-
-/** Compte TOUS les commentaires (racines + réponses). */
-function countAll(nodes: CommentNode[]): number {
-  return nodes.reduce((acc, n) => acc + 1 + countAll(n.replies), 0);
-}
 
 function timeAgo(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -38,12 +34,25 @@ function timeAgo(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
 }
 
+/** Retrait par niveau : 0 pour une racine, puis un pas réduit pour ne pas écraser le texte en profondeur. */
+function indentPx(depth: number): number {
+  return depth === 0 ? 0 : 40 + (depth - 1) * 16;
+}
+
+const linkButton = 'hover:text-app-black dark:hover:text-zinc-300 transition-colors cursor-pointer bg-transparent border-none p-0';
+
+/** Un commentaire de la liste aplatie : le repli et le plafond de profondeur sont calculés par flattenVisible. */
 const CommentItem: React.FC<{
-  node: CommentNode;
-  depth: number;
+  item: VisibleComment<CommentNode>;
   onReply: (node: CommentNode) => void;
-}> = ({ node, depth, onReply }) => (
-  <div className={cn('flex flex-col', depth > 0 && 'ml-14')}>
+  onVote: (commentId: string, value: 1 | -1) => void;
+  onToggle: (commentId: string) => void;
+  onContinue: (commentId: string) => void;
+}> = ({ item, onReply, onVote, onToggle, onContinue }) => {
+  const { node, depth, descendants, collapsed, continueThread } = item;
+  const hasReplies = node.replies.length > 0;
+  return (
+  <div className="flex flex-col" style={{ marginLeft: indentPx(depth) }}>
     <div className="flex items-start gap-3">
       {/* Style Instagram : avatar · username en gras · texte · date dessous · Répondre */}
       <TotemAvatar
@@ -61,34 +70,62 @@ const CommentItem: React.FC<{
         </p>
         <div className="flex items-center gap-4 mt-1 text-[11px] font-bold text-app-gray dark:text-zinc-500 select-none">
           <span className="font-medium">{timeAgo(node.createdAt)}</span>
-          {depth === 0 && (
+          <span className="flex items-center gap-0.5" aria-label={`Score ${node.score}`}>
             <button
               type="button"
-              onClick={() => onReply(node)}
-              className="hover:text-app-black dark:hover:text-zinc-300 transition-colors cursor-pointer bg-transparent border-none p-0"
+              aria-label="Voter pour"
+              aria-pressed={node.myVote === 1}
+              onClick={() => onVote(node.id, 1)}
+              className={cn('cursor-pointer bg-transparent border-none p-0 transition-colors', node.myVote === 1 ? 'text-[#E27D60]' : 'hover:text-app-black dark:hover:text-zinc-300')}
             >
-              Répondre
+              <ArrowBigUp className="w-4 h-4" />
+            </button>
+            <span className="min-w-4 text-center tabular-nums">{node.score}</span>
+            <button
+              type="button"
+              aria-label="Voter contre"
+              aria-pressed={node.myVote === -1}
+              onClick={() => onVote(node.id, -1)}
+              className={cn('cursor-pointer bg-transparent border-none p-0 transition-colors', node.myVote === -1 ? 'text-blue-500' : 'hover:text-app-black dark:hover:text-zinc-300')}
+            >
+              <ArrowBigDown className="w-4 h-4" />
+            </button>
+          </span>
+          <button type="button" onClick={() => onReply(node)} className={linkButton}>
+            Répondre
+          </button>
+          {hasReplies && (
+            <button
+              type="button"
+              aria-expanded={!collapsed}
+              aria-label={collapsed ? `Déplier ${descendants} ${descendants > 1 ? 'réponses' : 'réponse'}` : 'Replier les réponses'}
+              onClick={() => onToggle(node.id)}
+              className={linkButton}
+            >
+              {collapsed ? `${descendants} ${descendants > 1 ? 'réponses' : 'réponse'}` : 'Replier'}
             </button>
           )}
         </div>
+        {continueThread && (
+          <button type="button" onClick={() => onContinue(node.id)} className={cn(linkButton, 'mt-1 text-[11px] font-bold text-[#E27D60]')}>
+            Continuer ce fil ({descendants} {descendants > 1 ? 'réponses' : 'réponse'}) →
+          </button>
+        )}
       </div>
     </div>
-    {node.replies.length > 0 && (
-      <div className="flex flex-col gap-4 mt-3">
-        {node.replies.map((r) => (
-          <CommentItem key={r.id} node={r} depth={depth + 1} onReply={onReply} />
-        ))}
-      </div>
-    )}
   </div>
-);
+  );
+};
 
 export const PostDetailPage: React.FC = () => {
   const postId = useAppStore((s) => s.selectedPostId);
   const currentUser = useAppStore((s) => s.currentUser);
   const setActiveTab = useUIStore((s) => s.setActiveTab);
   const queryClient = useQueryClient();
-  const { comments, isLoading: loadingComments, addComment } = useComments(postId);
+  const [commentSort, setCommentSort] = useState<CommentSort>('best');
+  const { comments, isLoading: loadingComments, hasMore, loadingMore, loadMore, addComment, voteComment } = useComments(postId, commentSort);
+  const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(() => new Set());
+  const [focusId, setFocusId] = useState<string | null>(null);
   const [replyTo, setReplyTo] = useState<CommentNode | null>(null);
   const [text, setText] = useState('');
   const [showEmoji, setShowEmoji] = useState(false);
@@ -174,6 +211,9 @@ export const PostDetailPage: React.FC = () => {
   const tags = (p.tags as string[]) ?? [];
   const images = (p.mediaUrls as string[]) ?? [];
   const totalComments = countAll(comments);
+  // « Continuer ce fil » : on affiche le sous-arbre du commentaire choisi, repartant à la profondeur 0.
+  const focusNode = focusId ? findNode(comments, focusId) : null;
+  const visibleComments = flattenVisible(focusNode ? [focusNode] : comments, collapsed, MAX_COMMENT_DEPTH);
   const goBack = () => {
     window.location.hash = '#/';
     setActiveTab('Home');
@@ -412,8 +452,21 @@ export const PostDetailPage: React.FC = () => {
 
       {/* Commentaires */}
       <h3 className="text-xs font-black uppercase tracking-wider text-app-gray mt-6 mb-3 px-1">
-        Commentaires ({totalComments})
+        Commentaires ({totalComments}{hasMore ? '+' : ''})
       </h3>
+      <div className="flex gap-1.5 mb-3" role="group" aria-label="Trier les commentaires">
+        {([['best', 'Meilleurs'], ['top', 'Top'], ['new', 'Récents'], ['old', 'Anciens']] as const).map(([value, label]) => (
+          <button
+            key={value}
+            type="button"
+            aria-pressed={commentSort === value}
+            onClick={() => setCommentSort(value)}
+            className={cn('px-3 py-1 rounded-full text-[11px] font-black cursor-pointer border-none transition-colors', commentSort === value ? 'bg-zinc-100 dark:bg-zinc-800 text-[#E27D60]' : 'bg-transparent text-app-gray hover:text-app-black dark:hover:text-zinc-200')}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
 
       <div className="flex-1 overflow-y-auto flex flex-col gap-5 pr-1 hide-scrollbar">
         {loadingComments ? (
@@ -425,7 +478,33 @@ export const PostDetailPage: React.FC = () => {
             Aucun commentaire pour l'instant. Soyez le premier à répondre !
           </p>
         ) : (
-          comments.map((c) => <CommentItem key={c.id} node={c} depth={0} onReply={setReplyTo} />)
+          <>
+            {focusNode && (
+              <button type="button" onClick={() => setFocusId(null)} className={cn(linkButton, 'self-start text-[11px] font-bold text-[#E27D60]')}>
+                ← Tous les commentaires
+              </button>
+            )}
+            {visibleComments.map((item) => (
+              <CommentItem
+                key={item.node.id}
+                item={item}
+                onReply={setReplyTo}
+                onVote={(commentId, value) => voteComment.mutate({ commentId, value })}
+                onToggle={(id) => setCollapsed((prev) => toggleCollapsed(prev, id))}
+                onContinue={setFocusId}
+              />
+            ))}
+            {hasMore && !focusNode && (
+              <button
+                type="button"
+                onClick={loadMore}
+                disabled={loadingMore}
+                className="self-center text-[12px] font-black text-[#E27D60] bg-transparent border-none cursor-pointer disabled:opacity-60 py-1"
+              >
+                {loadingMore ? 'Chargement…' : 'Voir plus de commentaires'}
+              </button>
+            )}
+          </>
         )}
       </div>
 

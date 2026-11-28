@@ -358,6 +358,22 @@ export const comments = pgTable(
   (t) => [index('comments_post_idx').on(t.postId)],
 );
 
+export const commentVotes = pgTable(
+  'comment_votes',
+  {
+    commentId: text('comment_id')
+      .notNull()
+      .references(() => comments.id, { onDelete: 'cascade' }),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    value: integer('value').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.commentId, t.userId] }), index('comment_votes_user_idx').on(t.userId)],
+);
+
 export const saves = pgTable(
   'saves',
   {

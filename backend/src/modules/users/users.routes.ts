@@ -3,6 +3,7 @@ import { zValidator } from '@hono/zod-validator';
 import { requireAuth } from '../auth/require-auth';
 import { profilePatchSchema, locationUpdateSchema } from './users.schemas';
 import { getCurrentUser, getPublicUser, updateProfile, updateLocation, followUser, unfollowUser } from './users.service';
+import { getKarma } from './users.karma';
 import { canDiscover, canViewField } from '../consent/consent.service';
 import { AppError } from '../../shared/utils/AppError';
 import { rateLimitHit } from '../../shared/utils/rate-limit';
@@ -35,6 +36,16 @@ usersModule.delete('/me', async (c) => {
   const rate = await rateLimitHit(`delete-account:${userId}`, 3, 3600);
   if (!rate.allowed) throw AppError.tooMany('Trop de tentatives, réessaie plus tard', 'RATE_LIMITED');
   return c.json(await deleteAccount(userId), 200);
+});
+
+usersModule.get('/me/karma', async (c) => { const { userId } = c.get('auth'); return c.json(await getKarma(userId), 200); });
+
+// Karma public d'un profil : même contrôle d'accès que le profil lui-même.
+usersModule.get('/:id/karma', async (c) => {
+  const targetId = c.req.param('id');
+  const viewerId = c.get('auth').userId;
+  if (viewerId !== targetId && !(await canDiscover(viewerId, targetId))) throw AppError.forbidden('Ce profil n’est pas accessible avec ses préférences de confidentialité', 'PROFILE_DISCOVERY_FORBIDDEN');
+  return c.json(await getKarma(targetId), 200);
 });
 
 usersModule.get('/:id', async (c) => {
