@@ -20,7 +20,7 @@ export const RequestCard: React.FC<RequestCardProps> = ({ user, onAccept, onDecl
         <h4 className="font-extrabold text-base text-app-black dark:text-zinc-100 flex items-center gap-1.5 justify-center leading-tight">
           {user.name}
         </h4>
-        <p className="text-[10px] text-app-gray dark:text-zinc-400 font-bold uppercase tracking-wider mt-1">{user.mode === 'love' ? 'Love request' : 'wants to connect'}</p>
+        <p className="text-[10px] text-app-gray dark:text-zinc-400 font-bold uppercase tracking-wider mt-1">{user.mode === 'love' ? 'Demande Love' : 'souhaite se connecter'}</p>
         
         {/* Companion & Interests stats using MousePointerClick and Unplug icons */}
         <div className="flex flex-col items-center gap-1.5 text-[10px] text-app-gray dark:text-zinc-400 font-bold mt-4 mb-3.5 select-none">

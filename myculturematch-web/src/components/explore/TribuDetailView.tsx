@@ -10,6 +10,9 @@ import { TribuPrivateNotice } from '../tribu/TribuPrivateNotice';
 import { TribuFlairBar } from '../tribu/TribuFlairBar';
 import { TribuJoinRequests } from '../tribu/TribuJoinRequests';
 
+/** Libellés français des tris (les valeurs internes restent celles du hook). */
+const SORT_LABELS = { Best: 'Meilleurs', Hot: 'Tendance', New: 'Récents', Controversial: 'Controversés' } as const;
+
 export const TribuDetailView: React.FC = () => {
   const {
     isMod,
@@ -112,13 +115,15 @@ export const TribuDetailView: React.FC = () => {
             deletingId={deletingFlairId}
           />
 
-          {/* Sorting controls Best/Hot/New */}
-          <div className="bg-white dark:bg-zinc-900/60 p-2.5 border border-app-border dark:border-zinc-800 rounded-[16px] flex items-center gap-1.5 shadow-xs w-fit">
+          {/* Tri : Meilleurs / Tendance / Récents / Controversés */}
+          <div role="group" aria-label="Trier les publications" className="bg-white dark:bg-zinc-900/60 p-2.5 border border-app-border dark:border-zinc-800 rounded-[16px] flex items-center gap-1.5 shadow-xs w-fit">
             {(['Best', 'Hot', 'New', 'Controversial'] as const).map((type) => {
               const isActive = sortType === type;
               return (
                 <button
                   key={type}
+                  type="button"
+                  aria-pressed={isActive}
                   onClick={() => setSortType(type)}
                   className={`px-4.5 py-1.5 rounded-full text-xs font-black cursor-pointer tracking-wider flex items-center gap-1.5 transition-colors ${
                     isActive
@@ -129,7 +134,7 @@ export const TribuDetailView: React.FC = () => {
                   {type === 'Best' && <Award className="w-3.5 h-3.5 text-[#E27D60] fill-[#E27D60]" />}
                   {type === 'Hot' && <Flame className="w-3.5 h-3.5 text-[#E27D60] fill-[#E27D60]" />}
                   {type === 'New' && <TrendingUp className="w-3.5 h-3.5 text-[#E27D60]" />}
-                  {type}
+                  {SORT_LABELS[type]}
                 </button>
               );
             })}
