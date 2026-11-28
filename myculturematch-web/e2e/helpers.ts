@@ -100,5 +100,17 @@ export async function forceAdminRole(page: Page): Promise<void> {
     const body = (await response.json()) as Record<string, unknown>;
     await route.fulfill({ response, json: { ...body, role: 'admin' } });
   });
+  // Le store persiste le rôle : on l'injecte aussi pour éviter une course avec restoreSession().
+  await page.evaluate(() => {
+    const raw = localStorage.getItem('app-store');
+    const s = raw ? JSON.parse(raw) : { state: {} };
+    s.state = {
+      ...(s.state ?? {}),
+      currentUser: { ...(s.state?.currentUser ?? {}), role: 'admin' },
+      isAuthenticated: true,
+      isOnboarded: true,
+    };
+    localStorage.setItem('app-store', JSON.stringify(s));
+  });
   await page.reload();
 }

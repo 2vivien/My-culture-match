@@ -20,7 +20,7 @@ test.describe('Application connectée', () => {
   test('navigation : Love, Explore, Connexion, Profile', async ({ page }) => {
     const nav = page.locator('nav');
     await nav.getByTitle('Love').click();
-    await expect(page.getByRole('heading', { name: 'AI Love Chat', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Faisons connaissance|Matchmaking conversationnel/ })).toBeVisible();
 
     await nav.getByTitle('Explore').click();
     await expect(page.getByRole('heading', { name: 'Explore Communities' })).toBeVisible();
