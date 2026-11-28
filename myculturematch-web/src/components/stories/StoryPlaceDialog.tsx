@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { MapPin, Loader2, X } from 'lucide-react';
+import { Dialog } from '@/src/components/ui/Dialog';
 import { searchPlaces, type PlaceSearchResult } from '@/src/lib/placeSearch';
 
 export interface StoryPlace {
@@ -46,7 +47,7 @@ export const StoryPlaceDialog = ({ onConfirm, onCancel, busy = false, error = nu
   };
 
   return (
-    <div className="fixed inset-0 z-[80] bg-black/50 flex items-end sm:items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="story-place-title">
+    <Dialog onClose={busy ? () => {} : onCancel} labelledBy="story-place-title" className="fixed inset-0 z-[80] bg-black/50 flex items-end sm:items-center justify-center p-4">
       <div className="w-full max-w-md bg-white dark:bg-zinc-950 rounded-3xl p-5 shadow-2xl">
         <div className="flex items-start justify-between gap-3">
           <div>
@@ -58,6 +59,7 @@ export const StoryPlaceDialog = ({ onConfirm, onCancel, busy = false, error = nu
 
         <form onSubmit={submit} className="mt-4 flex gap-2">
           <input
+            data-autofocus
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Ville, quartier ou lieu"
@@ -105,6 +107,6 @@ export const StoryPlaceDialog = ({ onConfirm, onCancel, busy = false, error = nu
           </button>
         </div>
       </div>
-    </div>
+    </Dialog>
   );
 };
