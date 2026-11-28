@@ -35,6 +35,10 @@ async function resolveReportTargetUser(targetType: string, targetId: string): Pr
     const [row] = await db.select({ userId: schema.comments.userId }).from(schema.comments).where(eq(schema.comments.id, targetId)).limit(1);
     return row?.userId ?? null;
   }
+  if (targetType === 'place') {
+    const [row] = await db.select({ createdById: schema.culturalPlaces.createdById }).from(schema.culturalPlaces).where(eq(schema.culturalPlaces.id, targetId)).limit(1);
+    return row?.createdById ?? null;
+  }
   if (targetType === 'message') {
     const [row] = await db.select({ senderId: schema.messages.senderId }).from(schema.messages).where(eq(schema.messages.id, targetId)).limit(1);
     return row?.senderId ?? null;

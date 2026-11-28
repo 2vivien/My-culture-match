@@ -3,13 +3,13 @@ import { db, schema } from '../../infrastructure/database';
 import { redis } from '../../infrastructure/redis';
 import { emitToUser } from '../../infrastructure/websocket';
 import { userLocationSettings, locationAudience, audienceModes, locationPrecision, locationVisibility, type AudienceMode, type LocationPrecision, type LocationVisibility } from './location.schema';
-import { canSeeLocation, shouldHideLocation, requiresConsent, computeReach, type Reach } from './location.policy';
+import { requiresConsent, computeReach, type Reach } from './location.policy';
 import { AppError } from '../../shared/utils/AppError';
 import { haversineKm } from '../users/users.service';
+import { evaluateNearbyCandidate, NEARBY_RADIUS_KM } from './location.nearby.filter';
 import { computeMatchScore } from '../users/match-score';
 
 const cacheKey = (id: string) => `location:settings:${id}`;
-const NEARBY_RADIUS_KM = 50;
 const LOCATION_EVENT = 'location:nearby:update';
 
 export interface LocationSettingsDto {
@@ -89,6 +89,10 @@ export async function updateLocationSettings(userId: string, input: Partial<Loca
     },
   });
 
+  if (input.sharingEnabled === false) {
+    // Retrait total : couper le partage efface le lieu des stories de la personne (pas seulement leur affichage).
+    await db.update(schema.stories).set({ placeLat: null, placeLon: null, placeLabel: null }).where(eq(schema.stories.userId, userId));
+  }
   if (input.sharingEnabled !== undefined) {
     await db.update(schema.users).set({
       locationSharingEnabled: input.sharingEnabled,
@@ -113,20 +117,20 @@ function fuzz(lat: number, lon: number, id: string, precision: LocationPrecision
   const magnitude = precision === 'area' ? 0.02 : 0.006;
   return { latitude: jitter(lat, `${id}:lat`, magnitude), longitude: jitter(lon, `${id}:lon`, magnitude) };
 }
-function boundingBox(latitude: number, longitude: number, radiusKm: number) {
+export function boundingBox(latitude: number, longitude: number, radiusKm: number) {
   const latDelta = radiusKm / 111;
   const lonDelta = radiusKm / (111 * Math.max(Math.cos((latitude * Math.PI) / 180), 0.2));
   return { minLat: latitude - latDelta, maxLat: latitude + latDelta, minLon: longitude - lonDelta, maxLon: longitude + lonDelta };
 }
 
-async function companionIds(userId: string): Promise<Set<string>> {
+export async function companionIds(userId: string): Promise<Set<string>> {
   const rows = await db.select({ fromUserId: schema.connections.fromUserId, toUserId: schema.connections.toUserId })
     .from(schema.connections)
     .where(and(or(eq(schema.connections.fromUserId, userId), eq(schema.connections.toUserId, userId)), eq(schema.connections.status, 'companion')));
   return new Set(rows.map(r => r.fromUserId === userId ? r.toUserId : r.fromUserId));
 }
 
-async function friendsOfFriendsIds(friendIds: Set<string>, userId: string): Promise<Set<string>> {
+export async function friendsOfFriendsIds(friendIds: Set<string>, userId: string): Promise<Set<string>> {
   if (friendIds.size === 0) return new Set();
   const ids = [...friendIds];
   const rows = await db.select({ fromUserId: schema.connections.fromUserId, toUserId: schema.connections.toUserId })
@@ -140,7 +144,7 @@ async function friendsOfFriendsIds(friendIds: Set<string>, userId: string): Prom
   return result;
 }
 
-async function blockedBetween(userId: string): Promise<Set<string>> {
+export async function blockedBetween(userId: string): Promise<Set<string>> {
   const rows = await db.select({ blockerId: schema.blocks.blockerId, blockedId: schema.blocks.blockedId })
     .from(schema.blocks)
     .where(or(eq(schema.blocks.blockerId, userId), eq(schema.blocks.blockedId, userId)));
@@ -177,13 +181,9 @@ export async function getPeopleNearby(userId: string, viewerLocation?: { latitud
 
   const people: Array<Record<string, unknown>> = [];
   for (const c of candidates) {
-    if (c.id === userId || blocked.has(c.id) || c.latitude === null || c.longitude === null) continue;
-    const visibility = validVisibility(c.visibility) ? c.visibility : 'nearby';
-    if (shouldHideLocation({ sharingEnabled: true, ghostMode: c.ghost ?? false, expiresAt: c.expiresAt })) continue;
-    const mode: AudienceMode = validAudience(c.audienceMode) ? c.audienceMode : 'default';
-    if (!canSeeLocation({ visibility, mode, listed: listedBy.has(c.id), isFriend: friends.has(c.id), isFriendOfFriend: fof.has(c.id) })) continue;
-    const distance = haversineKm(origin.latitude, origin.longitude, c.latitude, c.longitude);
-    if (distance > NEARBY_RADIUS_KM) continue;
+    const distance = c.latitude !== null && c.longitude !== null ? haversineKm(origin.latitude, origin.longitude, c.latitude, c.longitude) : null;
+    const decision = evaluateNearbyCandidate(userId, c, { friendIds: friends, friendOfFriendIds: fof, blockedIds: blocked, listedByIds: listedBy }, distance);
+    if (!decision.visible || distance === null || c.latitude === null || c.longitude === null) continue;
     const precision = validPrecision(c.precision) ? c.precision : 'approximate';
     const distanceKm = c.showDistance ? (distance < 1 ? Number(distance.toFixed(1)) : Math.round(distance)) : null;
     const position = fuzz(c.latitude, c.longitude, c.id, precision);

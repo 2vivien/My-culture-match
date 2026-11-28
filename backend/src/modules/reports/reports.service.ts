@@ -15,6 +15,11 @@ async function assertTargetExists(targetType: string, targetId: string): Promise
   } else if (targetType === 'comment') {
     const [row] = await db.select({ id: schema.comments.id }).from(schema.comments).where(eq(schema.comments.id, targetId)).limit(1);
     exists = Boolean(row);
+  } else if (targetType === 'place') {
+    // Seul un lieu publié (donc visible de tous) se signale ; un lieu en attente ou refusé répond « introuvable ».
+    const [row] = await db.select({ id: schema.culturalPlaces.id }).from(schema.culturalPlaces)
+      .where(and(eq(schema.culturalPlaces.id, targetId), eq(schema.culturalPlaces.status, 'published'))).limit(1);
+    exists = Boolean(row);
   } else if (targetType === 'message') {
     const [row] = await db.select({ id: schema.messages.id }).from(schema.messages).where(eq(schema.messages.id, targetId)).limit(1);
     exists = Boolean(row);
