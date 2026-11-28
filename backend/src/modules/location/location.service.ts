@@ -3,9 +3,10 @@ import { db, schema } from '../../infrastructure/database';
 import { redis } from '../../infrastructure/redis';
 import { emitToUser } from '../../infrastructure/websocket';
 import { userLocationSettings, locationAudience, audienceModes, locationPrecision, locationVisibility, type AudienceMode, type LocationPrecision, type LocationVisibility } from './location.schema';
-import { canSeeLocation, shouldHideLocation } from './location.policy';
+import { canSeeLocation, shouldHideLocation, requiresConsent, computeReach, type Reach } from './location.policy';
 import { AppError } from '../../shared/utils/AppError';
 import { haversineKm } from '../users/users.service';
+import { computeMatchScore } from '../users/match-score';
 
 const cacheKey = (id: string) => `location:settings:${id}`;
 const NEARBY_RADIUS_KM = 50;
@@ -54,8 +55,14 @@ export async function getLocationSettings(userId: string): Promise<LocationSetti
   return dto;
 }
 
-export async function updateLocationSettings(userId: string, input: Partial<LocationSettingsDto>): Promise<LocationSettingsDto> {
+export async function updateLocationSettings(userId: string, input: Partial<LocationSettingsDto> & { consent?: boolean }): Promise<LocationSettingsDto> {
   const current = await rowFor(userId);
+  if (input.sharingEnabled !== undefined) {
+    const [me] = await db.select({ enabled: schema.users.locationSharingEnabled }).from(schema.users).where(eq(schema.users.id, userId)).limit(1);
+    if (requiresConsent({ currentlyEnabled: Boolean(me?.enabled), wantsEnabled: input.sharingEnabled, consent: input.consent === true })) {
+      throw AppError.badRequest('Active le partage de position explicitement (consent: true)', 'LOCATION_CONSENT_REQUIRED');
+    }
+  }
   const visibility = input.visibility ?? current.visibility;
   const precision = input.precision ?? current.precision;
   const audienceMode = input.audienceMode ?? (validAudience(current.audienceMode) ? current.audienceMode : 'default');
@@ -141,7 +148,7 @@ async function blockedBetween(userId: string): Promise<Set<string>> {
 }
 
 export async function getPeopleNearby(userId: string, viewerLocation?: { latitude: number; longitude: number }) {
-  const [viewer] = await db.select({ latitude: schema.users.latitude, longitude: schema.users.longitude, sharingEnabled: schema.users.locationSharingEnabled })
+  const [viewer] = await db.select({ latitude: schema.users.latitude, longitude: schema.users.longitude, sharingEnabled: schema.users.locationSharingEnabled, values: schema.users.values, languages: schema.users.languages, country: schema.users.country })
     .from(schema.users).where(eq(schema.users.id, userId)).limit(1);
   if (!viewer) throw AppError.notFound('Utilisateur introuvable', 'USER_NOT_FOUND');
   const origin = viewer.sharingEnabled && viewer.latitude !== null && viewer.longitude !== null ? { latitude: viewer.latitude, longitude: viewer.longitude } : viewerLocation;
@@ -182,7 +189,7 @@ export async function getPeopleNearby(userId: string, viewerLocation?: { latitud
     const position = fuzz(c.latitude, c.longitude, c.id, precision);
     people.push({
       id: c.id, name: c.name, username: c.username, avatar: c.avatar, bio: c.bio, country: c.country, location: c.location,
-      languages: c.languages, values: c.values, intention: c.intention, matchScore: 0, ...position, distanceKm,
+      languages: c.languages, values: c.values, intention: c.intention, matchScore: computeMatchScore(viewer, c), ...position, distanceKm,
       distanceLabel: distanceKm === null ? null : distanceKm < 1 ? 'Nearby' : `~${distanceKm} km away`,
       isCompanion: friends.has(c.id), isFriendOfFriend: fof.has(c.id),
       isActive: c.showActive ? !!c.updated && Date.now() - c.updated.getTime() < 120000 : false,
@@ -227,4 +234,25 @@ export async function setAudience(userId: string, memberIds: string[]): Promise<
   });
   await redis.del(cacheKey(userId));
   return { members: unique.length };
+}
+
+/** GET /location/reach — « Ta position est partagée avec N personnes ». */
+export async function getReach(userId: string): Promise<Reach> {
+  const settings = await getLocationSettings(userId);
+  if (!settings.sharingEnabled) return computeReach({ sharingEnabled: false, ghostMode: settings.ghostMode, expiresAt: null, visibility: settings.visibility, mode: settings.audienceMode, friendIds: new Set(), friendOfFriendIds: new Set(), listedIds: new Set() });
+  const [friends, blocked] = await Promise.all([companionIds(userId), blockedBetween(userId)]);
+  for (const id of blocked) friends.delete(id);
+  const fof = await friendsOfFriendsIds(friends, userId);
+  for (const id of blocked) fof.delete(id);
+  const listedRows = await db.select({ memberId: locationAudience.memberId }).from(locationAudience).where(eq(locationAudience.ownerId, userId));
+  return computeReach({
+    sharingEnabled: true,
+    ghostMode: settings.ghostMode,
+    expiresAt: settings.expiresAt ? new Date(settings.expiresAt) : null,
+    visibility: settings.visibility,
+    mode: settings.audienceMode,
+    friendIds: friends,
+    friendOfFriendIds: fof,
+    listedIds: new Set(listedRows.map((r) => r.memberId)),
+  });
 }

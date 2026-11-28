@@ -12,7 +12,7 @@ export const userLocationSettings = pgTable(
   'user_location_settings',
   {
     userId: text('user_id').primaryKey().references(() => users.id, { onDelete: 'cascade' }),
-    visibility: text('visibility').notNull().default('nearby'),
+    visibility: text('visibility').notNull().default('friends'),
     precision: text('precision').notNull().default('approximate'),
     ghostMode: boolean('ghost_mode').notNull().default(false),
     showDistance: boolean('show_distance').notNull().default(true),

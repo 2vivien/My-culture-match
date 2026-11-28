@@ -1,3 +1,4 @@
+import { computeMatchScore } from '../users/match-score';
 import { and, eq, or, inArray, isNotNull } from 'drizzle-orm';
 import { db, schema } from '../../infrastructure/database';
 import { redis } from '../../infrastructure/redis';
@@ -289,6 +290,9 @@ export async function getNearbyFriends(
       latitude: schema.users.latitude,
       longitude: schema.users.longitude,
       locationSharingEnabled: schema.users.locationSharingEnabled,
+      values: schema.users.values,
+      languages: schema.users.languages,
+      country: schema.users.country,
     })
     .from(schema.users)
     .where(eq(schema.users.id, userId))
@@ -311,6 +315,8 @@ export async function getNearbyFriends(
       bio: schema.users.bio,
       location: schema.users.location,
       country: schema.users.country,
+      values: schema.users.values,
+      languages: schema.users.languages,
       latitude: schema.users.latitude,
       longitude: schema.users.longitude,
       locationUpdatedAt: schema.users.locationUpdatedAt,
@@ -339,7 +345,7 @@ export async function getNearbyFriends(
       bio: r.bio,
       location: r.location,
       country: r.country,
-      matchScore: 0,
+      matchScore: computeMatchScore(me, r),
       latitude: r.latitude as number,
       longitude: r.longitude as number,
       distanceKm: haversineKm(me.latitude as number, me.longitude as number, r.latitude as number, r.longitude as number),

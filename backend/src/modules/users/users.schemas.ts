@@ -54,6 +54,8 @@ export const locationUpdateSchema = z
     latitude: z.number().min(-90).max(90).optional(),
     longitude: z.number().min(-180).max(180).optional(),
     enabled: z.boolean().optional(),
+    /** Requis pour activer le partage depuis l'état désactivé. */
+    consent: z.boolean().optional(),
   })
   .strict()
   .refine(
