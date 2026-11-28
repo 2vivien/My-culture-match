@@ -79,7 +79,7 @@ const CommentItem: React.FC<{
               aria-pressed={node.myVote === 1}
               disabled={voting}
               onClick={() => onVote(node.id, 1)}
-              className={cn('cursor-pointer bg-transparent border-none p-0 transition-colors', node.myVote === 1 ? 'text-[#E27D60]' : 'hover:text-app-black dark:hover:text-zinc-300')}
+              className={cn('cursor-pointer bg-transparent border-none p-0 transition-colors', node.myVote === 1 ? 'text-[#8B4A2B]' : 'hover:text-app-black dark:hover:text-zinc-300')}
             >
               <ArrowBigUp className="w-4 h-4" />
             </button>
@@ -111,7 +111,7 @@ const CommentItem: React.FC<{
           )}
         </div>
         {continueThread && (
-          <button type="button" onClick={() => onContinue(node.id)} className={cn(linkButton, 'mt-1 text-[11px] font-bold text-[#E27D60]')}>
+          <button type="button" onClick={() => onContinue(node.id)} className={cn(linkButton, 'mt-1 text-[11px] font-bold text-[#8B4A2B]')}>
             Continuer ce fil ({descendants} {descendants > 1 ? 'réponses' : 'réponse'}) →
           </button>
         )}
@@ -124,6 +124,7 @@ const CommentItem: React.FC<{
 export const PostDetailPage: React.FC = () => {
   const postId = useAppStore((s) => s.selectedPostId);
   const currentUser = useAppStore((s) => s.currentUser);
+  const isAuthenticated = useAppStore((s) => s.isAuthenticated);
   const setActiveTab = useUIStore((s) => s.setActiveTab);
   const queryClient = useQueryClient();
   const [commentSort, setCommentSort] = useState<CommentSort>('best');
@@ -146,7 +147,7 @@ export const PostDetailPage: React.FC = () => {
       const data = await api.get<{ tribes?: Array<{ id: string; name: string }> }>('/api/tribes/mine');
       return data?.tribes ?? [];
     },
-    enabled: showRepost,
+    enabled: showRepost && isAuthenticated,
     staleTime: 1000 * 60 * 5,
   });
 
@@ -285,7 +286,7 @@ export const PostDetailPage: React.FC = () => {
         {tags.length > 0 && (
           <div className="flex flex-wrap gap-2 mt-3">
             {tags.map((tag) => (
-              <span key={tag} className="text-xs font-black text-[#E27D60]">#{tag}</span>
+              <span key={tag} className="text-xs font-black text-[#8B4A2B]">#{tag}</span>
             ))}
           </div>
         )}
@@ -297,7 +298,7 @@ export const PostDetailPage: React.FC = () => {
             onClick={toggleLike}
             className={cn(
               'flex items-center gap-1.5 cursor-pointer bg-transparent border-none transition-colors font-semibold text-sm',
-              likedByMe ? 'text-[#E27D60]' : 'hover:text-[#E27D60]',
+              likedByMe ? 'text-[#8B4A2B]' : 'hover:text-[#8B4A2B]',
             )}
             title="J'aime"
           >
@@ -312,7 +313,7 @@ export const PostDetailPage: React.FC = () => {
           <button
             type="button"
             onClick={() => setShowRepost(true)}
-            className="flex items-center gap-1.5 hover:text-[#E27D60] transition-colors font-semibold text-sm cursor-pointer bg-transparent border-none text-app-gray"
+            className="flex items-center gap-1.5 hover:text-[#8B4A2B] transition-colors font-semibold text-sm cursor-pointer bg-transparent border-none text-app-gray"
             title="Reposter"
           >
             <IconReplace size={20} />
@@ -321,7 +322,7 @@ export const PostDetailPage: React.FC = () => {
           <button
             type="button"
             onClick={() => setShowShare(true)}
-            className="flex items-center gap-1.5 hover:text-[#E27D60] transition-colors font-semibold text-sm cursor-pointer bg-transparent border-none text-app-gray"
+            className="flex items-center gap-1.5 hover:text-[#8B4A2B] transition-colors font-semibold text-sm cursor-pointer bg-transparent border-none text-app-gray"
             title="Partager"
           >
             <IconShare3 size={20} />
@@ -371,8 +372,8 @@ export const PostDetailPage: React.FC = () => {
               ) : (
                 <>
                   <div className="px-6 pt-5 pb-3 flex flex-col gap-2 text-center">
-                    <span className="mx-auto w-14 h-14 rounded-full bg-[#E27D60]/10 flex items-center justify-center">
-                      <Repeat2 className="w-7 h-7 text-[#E27D60]" />
+                    <span className="mx-auto w-14 h-14 rounded-full bg-[#8B4A2B]/10 flex items-center justify-center">
+                      <Repeat2 className="w-7 h-7 text-[#8B4A2B]" />
                     </span>
                     <p className="text-sm font-semibold text-app-black dark:text-zinc-200 leading-relaxed">
                       {isMyPost
@@ -397,8 +398,8 @@ export const PostDetailPage: React.FC = () => {
                             className={cn(
                               'w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl border text-left transition-all cursor-pointer bg-transparent disabled:opacity-60',
                               selectedTribeId === tribe.id
-                                ? 'border-[#E27D60] bg-[#E27D60]/5'
-                                : 'border-app-border/60 dark:border-zinc-800 hover:border-[#E27D60]/40 hover:bg-zinc-50 dark:hover:bg-zinc-900',
+                                ? 'border-[#8B4A2B] bg-[#8B4A2B]/5'
+                                : 'border-app-border/60 dark:border-zinc-800 hover:border-[#8B4A2B]/40 hover:bg-zinc-50 dark:hover:bg-zinc-900',
                             )}
                           >
                             <span className="w-9 h-9 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center shrink-0">
@@ -408,7 +409,7 @@ export const PostDetailPage: React.FC = () => {
                               {tribe.name}
                             </span>
                             {selectedTribeId === tribe.id && (
-                              <Check className="w-4.5 h-4.5 text-[#E27D60] shrink-0" />
+                              <Check className="w-4.5 h-4.5 text-[#8B4A2B] shrink-0" />
                             )}
                           </button>
                         ))
@@ -433,7 +434,7 @@ export const PostDetailPage: React.FC = () => {
                       type="button"
                       onClick={handleRepost}
                       disabled={!selectedTribeId || repostState === 'pending' || isMyPost}
-                      className="flex-1 py-3 rounded-2xl bg-[#E27D60] hover:bg-[#c66b50] text-white text-sm font-black transition-colors cursor-pointer border-none disabled:opacity-50 flex items-center justify-center gap-2"
+                      className="flex-1 py-3 rounded-2xl bg-[#8B4A2B] hover:bg-[#6F3A22] text-white text-sm font-black transition-colors cursor-pointer border-none disabled:opacity-50 flex items-center justify-center gap-2"
                     >
                       {repostState === 'pending' && <Loader2 className="w-4 h-4 animate-spin" />}
                       Reposter
@@ -465,7 +466,7 @@ export const PostDetailPage: React.FC = () => {
             type="button"
             aria-pressed={commentSort === value}
             onClick={() => setCommentSort(value)}
-            className={cn('px-3 py-1 rounded-full text-[11px] font-black cursor-pointer border-none transition-colors', commentSort === value ? 'bg-zinc-100 dark:bg-zinc-800 text-[#E27D60]' : 'bg-transparent text-app-gray hover:text-app-black dark:hover:text-zinc-200')}
+            className={cn('px-3 py-1 rounded-full text-[11px] font-black cursor-pointer border-none transition-colors', commentSort === value ? 'bg-zinc-100 dark:bg-zinc-800 text-[#8B4A2B]' : 'bg-transparent text-app-gray hover:text-app-black dark:hover:text-zinc-200')}
           >
             {label}
           </button>
@@ -484,7 +485,7 @@ export const PostDetailPage: React.FC = () => {
         ) : (
           <>
             {focusNode && (
-              <button type="button" onClick={() => setFocusId(null)} className={cn(linkButton, 'self-start text-[11px] font-bold text-[#E27D60]')}>
+              <button type="button" onClick={() => setFocusId(null)} className={cn(linkButton, 'self-start text-[11px] font-bold text-[#8B4A2B]')}>
                 ← Tous les commentaires
               </button>
             )}
@@ -504,7 +505,7 @@ export const PostDetailPage: React.FC = () => {
                 type="button"
                 onClick={loadMore}
                 disabled={loadingMore}
-                className="self-center text-[12px] font-black text-[#E27D60] bg-transparent border-none cursor-pointer disabled:opacity-60 py-1"
+                className="self-center text-[12px] font-black text-[#8B4A2B] bg-transparent border-none cursor-pointer disabled:opacity-60 py-1"
               >
                 {loadingMore ? 'Chargement…' : 'Voir plus de commentaires'}
               </button>
@@ -515,8 +516,8 @@ export const PostDetailPage: React.FC = () => {
 
       {/* Répondre à */}
       {replyTo && (
-        <div className="flex items-center justify-between bg-[#E27D60]/10 border border-[#E27D60]/30 rounded-xl px-3 py-1.5 mt-3">
-          <span className="text-[11px] font-bold text-[#E27D60] truncate">
+        <div className="flex items-center justify-between bg-[#8B4A2B]/10 border border-[#8B4A2B]/30 rounded-xl px-3 py-1.5 mt-3">
+          <span className="text-[11px] font-bold text-[#8B4A2B] truncate">
             Réponse à {replyTo.author.name}
           </span>
           <button
@@ -532,7 +533,7 @@ export const PostDetailPage: React.FC = () => {
       {/* Composer un commentaire */}
       <div className="mt-3 flex items-center gap-2.5">
         <ProfileAvatar src={currentUser.avatar} alt={currentUser.name} size="md" glow="none" />
-        <div className="flex-1 bg-[#FCFCFC] dark:bg-zinc-900 rounded-full px-4 py-2.5 flex items-center gap-1 border border-app-border focus-within:ring-1 focus-within:ring-[#E27D60]/30 transition-all relative">
+        <div className="flex-1 bg-[#FCFCFC] dark:bg-zinc-900 rounded-full px-4 py-2.5 flex items-center gap-1 border border-app-border focus-within:ring-1 focus-within:ring-[#8B4A2B]/30 transition-all relative">
           <input
             type="text"
             value={text}
@@ -555,7 +556,7 @@ export const PostDetailPage: React.FC = () => {
           type="button"
           onClick={handleSend}
           disabled={!text.trim() || addComment.isPending}
-          className="h-10 px-5 rounded-full bg-[#E27D60] hover:bg-[#c66b50] disabled:opacity-50 text-white text-sm font-black cursor-pointer border-none shrink-0"
+          className="h-10 px-5 rounded-full bg-[#8B4A2B] hover:bg-[#6F3A22] disabled:opacity-50 text-white text-sm font-black cursor-pointer border-none shrink-0"
         >
           {addComment.isPending ? '...' : 'Publier'}
         </button>

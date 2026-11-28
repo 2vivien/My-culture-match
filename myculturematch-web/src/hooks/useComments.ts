@@ -3,6 +3,7 @@ import { useInfiniteQuery, useMutation, useQueryClient, type InfiniteData } from
 import { api } from '@/src/services/api';
 import { applyVoteToPages } from '@/src/lib/commentVote';
 import { buildCommentTree, mergeCommentPages, type WithReplies } from '@/src/lib/commentTree';
+import { useAppStore } from '@/src/stores/useAppStore';
 
 /** Commentaire backend (liste plate avec parentId — replies inclus). */
 export interface BackendComment {
@@ -28,6 +29,7 @@ export type CommentSort = 'best' | 'top' | 'new' | 'old';
 
 export function useComments(postId: string, sort: CommentSort = 'best') {
   const queryClient = useQueryClient();
+  const isAuthenticated = useAppStore((s) => s.isAuthenticated);
   const queryKey = ['comments', postId, sort];
 
   // Chargement progressif : le curseur est une date (sort=new) ou un décalage numérique (best/top/old),
@@ -41,7 +43,7 @@ export function useComments(postId: string, sort: CommentSort = 'best') {
       return api.get<{ comments: BackendComment[]; nextCursor: string | null }>(`/api/posts/${postId}/comments?${qs.toString()}`);
     },
     getNextPageParam: (last) => last.nextCursor ?? undefined,
-    enabled: !!postId,
+    enabled: !!postId && isAuthenticated,
   });
 
   // Le serveur renvoie les commentaires déjà triés : l'ordre des pages est conservé par la fusion.

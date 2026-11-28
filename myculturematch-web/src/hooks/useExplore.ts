@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { exploreService } from '@/src/services/exploreService';
 import { useUIStore } from '@/src/stores/useUIStore';
+import { useAppStore } from '@/src/stores/useAppStore';
 import { launchThemes } from '@/src/lib/themes';
 import type { ExploreTab, TribeItem, VideoPost } from '@/src/types/explore';
 import type { Post } from '@/src/types/post';
@@ -12,10 +13,12 @@ export function useExplore(posts: Post[] = []) {
 
   const searchQuery = useUIStore((s) => s.searchQuery);
   const setSearchQuery = useUIStore((s) => s.setSearchQuery);
+  const isAuthenticated = useAppStore((s) => s.isAuthenticated);
 
   const { data } = useQuery({
     queryKey: ['explore'],
     queryFn: exploreService.getExploreData,
+    enabled: isAuthenticated,
     staleTime: 1000 * 60 * 5,
   });
 

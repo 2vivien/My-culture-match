@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { MessageCircle } from 'lucide-react';
 import { api } from '@/src/services/api';
+import { useAppStore } from '@/src/stores/useAppStore';
 import type { Post } from '@/src/types/post';
 
 interface CommentsTabProps {
@@ -18,12 +19,13 @@ interface UserComment {
 }
 
 export const CommentsTab: React.FC<CommentsTabProps> = ({ user, posts }) => {
+  const isAuthenticated = useAppStore((s) => s.isAuthenticated);
   const ownPosts = posts.filter((post) => post.author.id === user.id).slice(0, 8);
   const postsKey = ownPosts.map((post) => post.id).join(',');
 
   const { data: comments = [], isLoading } = useQuery<UserComment[]>({
     queryKey: ['profile-comments', user.id, postsKey],
-    enabled: ownPosts.length > 0,
+    enabled: ownPosts.length > 0 && isAuthenticated,
     queryFn: async () => {
       const groups = await Promise.all(
         ownPosts.map(async (post) => {

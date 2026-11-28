@@ -36,7 +36,7 @@ interface MyTribe {
  * à la Instagram), et ouverture de la page détail (/post/:id).
  */
 export const PostActions = ({ postId, commentsCount, likes, liked, authorId, onLike }: PostActionsProps) => {
-  const { currentUser } = useAppStore();
+  const { currentUser, isAuthenticated } = useAppStore();
   const queryClient = useQueryClient();
   const { addComment } = useComments(postId);
   const [comment, setComment] = useState('');
@@ -56,7 +56,7 @@ export const PostActions = ({ postId, commentsCount, likes, liked, authorId, onL
       const data = await api.get<{ tribes?: MyTribe[] }>('/api/tribes/mine');
       return data?.tribes ?? [];
     },
-    enabled: showRepost,
+    enabled: showRepost && isAuthenticated,
     staleTime: 1000 * 60 * 5,
   });
 
@@ -117,8 +117,8 @@ export const PostActions = ({ postId, commentsCount, likes, liked, authorId, onL
           onClick={onLike}
           className={`flex items-center gap-1.5 transition-colors font-semibold text-sm cursor-pointer bg-transparent border-none ${
             liked
-              ? 'text-[#E27D60]'
-              : 'text-[#E27D60]/80 hover:text-[#E27D60] dark:text-[#E27D60]/70'
+              ? 'text-[#8B4A2B]'
+              : 'text-[#8B4A2B]/80 hover:text-[#8B4A2B] dark:text-[#8B4A2B]/70'
           }`}
           title="J'aime"
         >

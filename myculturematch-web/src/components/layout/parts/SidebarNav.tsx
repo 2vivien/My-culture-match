@@ -60,7 +60,7 @@ const isAdminRole = (role?: string) => role === 'admin' || role === 'superadmin'
 
 export const SidebarNav = () => {
   const { activeTab, setActiveTab, isSidebarOpen, toggleSidebar, isSidebarCollapsed, openChat } = useUIStore();
-  const { setSelectedProfileUserId, setFeedSort, currentUser, setSelectedTribeId } = useAppStore();
+  const { setSelectedProfileUserId, setFeedSort, currentUser, setSelectedTribeId, isAuthenticated } = useAppStore();
   const { tribes } = useExplore();
   const queryClient = useQueryClient();
   const isCollapsed = isSidebarCollapsed;
@@ -75,6 +75,7 @@ export const SidebarNav = () => {
   const { data: myTribesData = [] } = useQuery<OwnedTribe[]>({
     queryKey: ['my-tribes'],
     queryFn: postService.getMyTribes,
+    enabled: isAuthenticated,
     staleTime: 1000 * 30,
   });
   const myTribes = myTribesData.slice(0, 4);
