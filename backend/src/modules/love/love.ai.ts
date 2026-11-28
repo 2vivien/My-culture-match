@@ -37,7 +37,9 @@ function deterministicParse(query: string): LoveSearchCriteria {
   if (parsed.success) return parsed.data;
   // Âges incohérents ou hors bornes saisis par l'utilisateur (« entre 40 et 30 », « entre 12 et 15 ») :
   // on ignore la tranche d'âge plutôt que de faire échouer toute la recherche.
-  const { ageMin: _ageMin, ageMax: _ageMax, ...withoutAges } = criteria;
+  const withoutAges = { ...criteria };
+  delete withoutAges.ageMin;
+  delete withoutAges.ageMax;
   return criteriaSchema.parse(withoutAges);
 }
 

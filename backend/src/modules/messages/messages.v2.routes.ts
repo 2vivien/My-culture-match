@@ -75,8 +75,9 @@ routes.patch('/conversations/:id/messages/:messageId', async (c) => {
   if (row.deleted_at) throw AppError.badRequest('Message supprimé', 'MESSAGE_DELETED');
   if (Date.now() - new Date(row.created_at).getTime() > 15 * 60 * 1000) throw AppError.forbidden('Un message ne peut être modifié que pendant 15 minutes', 'MESSAGE_EDIT_WINDOW_EXPIRED');
   const updated = await db.execute(sql`UPDATE messages SET text=${text}, edited_at=NOW() WHERE id=${messageId} RETURNING id,text,edited_at`);
-  for (const id of await participantIds(conversationId)) emitToUser(id, 'message:updated', { conversationId, messageId, text, editedAt: (updated[0] as any)?.edited_at });
-  return c.json({ id: messageId, text, editedAt: (updated[0] as any)?.edited_at ?? null });
+  const editedAt = (updated[0] as { edited_at: Date | string | null } | undefined)?.edited_at ?? null;
+  for (const id of await participantIds(conversationId)) emitToUser(id, 'message:updated', { conversationId, messageId, text, editedAt });
+  return c.json({ id: messageId, text, editedAt });
 });
 
 routes.delete('/conversations/:id/messages/:messageId', async (c) => {

@@ -56,7 +56,6 @@ export function isValidUserId(userId: unknown): userId is string {
 export function isOwnedObjectKey(key: string, userId: string): boolean {
   if (!isValidUserId(userId)) return false;
   if (typeof key !== 'string' || key.length === 0 || key.length > MAX_KEY_LENGTH) return false;
-  // eslint-disable-next-line no-control-regex
   if (/[\\\u0000-\u001f\u007f]/.test(key)) return false;
   const segments = key.split('/');
   if (segments.some((s) => s === '' || s === '.' || s === '..')) return false;
