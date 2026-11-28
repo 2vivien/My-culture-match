@@ -27,12 +27,16 @@ function formatDate(value: string): string {
 }
 
 export const PostHeader = ({ author, date, tribe }: PostHeaderProps) => {
-  const { setSelectedProfileUserId, currentUser, joinTribe } = useAppStore();
-  const { setActiveTab } = useUIStore();
+  const { setSelectedProfileUserId, currentUser, joinTribe, isAuthenticated } = useAppStore();
+  const { setActiveTab, openAuthModal } = useUIStore();
   const isMember = tribe ? currentUser.tribes.includes(tribe.name) : false;
 
   const handleJoin = (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (!isAuthenticated) {
+      openAuthModal();
+      return;
+    }
     if (tribe) {
       joinTribe(tribe.name);
     }
@@ -45,6 +49,10 @@ export const PostHeader = ({ author, date, tribe }: PostHeaderProps) => {
   const menuRef = useRef<HTMLDivElement>(null);
 
   const handleClick = () => {
+    if (!isAuthenticated) {
+      openAuthModal();
+      return;
+    }
     setSelectedProfileUserId(author.id);
     setActiveTab('Profil');
   };
@@ -107,7 +115,7 @@ export const PostHeader = ({ author, date, tribe }: PostHeaderProps) => {
             t/{tribe.name}
           </span>
         )}
-        {tribe && (
+        {tribe && isAuthenticated && (
           <button
             type="button"
             onClick={handleJoin}
@@ -122,7 +130,9 @@ export const PostHeader = ({ author, date, tribe }: PostHeaderProps) => {
         )}
         <span className="whitespace-nowrap">{formatDate(date)}</span>
         
-        {/* Toggle standard menu */}
+        {/* Menu réservé aux membres connectés. */}
+        {isAuthenticated && (
+          <>
         <Button 
           variant="ghost" 
           size="sm" 
@@ -190,6 +200,8 @@ export const PostHeader = ({ author, date, tribe }: PostHeaderProps) => {
             </motion.div>
           )}
         </AnimatePresence>
+          </>
+        )}
       </div>
     </div>
   );
