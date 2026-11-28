@@ -23,11 +23,3 @@ export function apiErrorMessage(err: unknown, fallback: string): string {
   if (e instanceof TypeError) return 'Connexion impossible. Vérifie ton réseau puis réessaie.';
   return fallback;
 }
-
-/** Vrai pour une erreur de géolocalisation du navigateur (code numérique 1 à 3), faux pour une erreur d'API. */
-export function isGeolocationError(err: unknown): boolean {
-  if (typeof err !== 'object' || err === null) return false;
-  const e = err as ErrorLike;
-  if (typeof e.status === 'number') return false;
-  return typeof e.code === 'number' && e.code >= 1 && e.code <= 3;
-}
