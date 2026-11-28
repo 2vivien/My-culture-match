@@ -5,6 +5,7 @@ import {
   createTribeSchema,
   patchTribeSchema,
   listTribesQuerySchema,
+  tribePostsQuerySchema,
   voteSchema,
   promoteModeratorSchema,
   reportSchema,
@@ -107,10 +108,10 @@ tribesModule.delete('/:id/leave', async (c) => {
 });
 
 // GET /api/tribes/:id/posts
-tribesModule.get('/:id/posts', zValidator('query', listTribesQuerySchema), async (c) => {
+tribesModule.get('/:id/posts', zValidator('query', tribePostsQuerySchema), async (c) => {
   const { userId } = c.get('auth');
-  const { cursor, limit } = c.req.valid('query');
-  const result = await tribePosts(c.req.param('id'), userId, cursor, limit);
+  const { cursor, limit, sort, t } = c.req.valid('query');
+  const result = await tribePosts(c.req.param('id'), userId, cursor, limit, sort, t);
   return c.json(result, 200);
 });
 

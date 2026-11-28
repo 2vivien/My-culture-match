@@ -52,7 +52,7 @@ export const TribuDetailView: React.FC = () => {
         <div className="flex-1 w-full flex flex-col gap-6">
           {/* Sorting controls Best/Hot/New */}
           <div className="bg-white dark:bg-zinc-900/60 p-2.5 border border-app-border dark:border-zinc-800 rounded-[16px] flex items-center gap-1.5 shadow-xs w-fit">
-            {(['Best', 'Hot', 'New'] as const).map((type) => {
+            {(['Best', 'Hot', 'New', 'Controversial'] as const).map((type) => {
               const isActive = sortType === type;
               return (
                 <button

@@ -4,6 +4,10 @@ import { tribuService } from '@/src/services/tribuService';
 import { useAppStore } from '@/src/stores/useAppStore';
 import type { PostItem, TribeRule, TribeModerator } from '@/src/types/tribu';
 
+/** Tri affiché → tri serveur (Best = les mieux notés, Hot = montée récente, New, Controversial). */
+export type TribeSortType = 'Best' | 'Hot' | 'New' | 'Controversial';
+const SERVER_SORT = { Best: 'top', Hot: 'hot', New: 'new', Controversial: 'controversial' } as const;
+
 export interface TribeInfo {
   id: string;
   name: string;
@@ -19,7 +23,7 @@ export function useTribu() {
   const queryClient = useQueryClient();
   const [joined, setJoined] = useState(true);
   const [notificationsOn, setNotificationsOn] = useState(true);
-  const [sortType, setSortType] = useState<'Best' | 'Hot' | 'New'>('Best');
+  const [sortType, setSortType] = useState<TribeSortType>('Best');
   const [commentInputs, setCommentInputs] = useState<Record<string, string>>({});
   const [expandedRule, setExpandedRule] = useState<number | null>(null);
 
@@ -29,8 +33,8 @@ export function useTribu() {
   const [mutedPostIds, setMutedPostIds] = useState<Record<string, boolean>>({});
 
   const { data: posts = [] } = useQuery<PostItem[]>({
-    queryKey: ['tribu-posts', tribeId],
-    queryFn: () => tribuService.fetchPosts(tribeId ?? undefined),
+    queryKey: ['tribu-posts', tribeId, sortType],
+    queryFn: () => tribuService.fetchPosts(tribeId ?? undefined, SERVER_SORT[sortType]),
     staleTime: 1000 * 60 * 5,
     enabled: !!tribeId,
   });
@@ -85,6 +89,11 @@ export function useTribu() {
           p.id === postId ? { ...p, upvotes: result.score, hasUpvoted: result.myVote === 1 } : p,
         );
       });
+      // Tris classés (Best/Hot/Controversial) : un vote change le rang → on recharge l'ordre serveur
+      // puis on abandonne la copie locale pour afficher ce nouvel ordre.
+      if (sortType !== 'New') {
+        void queryClient.invalidateQueries({ queryKey: ['tribu-posts', tribeId] }).then(() => setLocalPosts([]));
+      }
     },
   });
 
@@ -126,11 +135,8 @@ export function useTribu() {
 
   const safeRules = Array.isArray(rules) ? rules : [];
 
-  const sortedPosts = [...effectivePosts].sort((a, b) => {
-    if (sortType === 'Hot') return b.commentsCount - a.commentsCount;
-    if (sortType === 'New') return b.id.localeCompare(a.id);
-    return b.upvotes - a.upvotes;
-  });
+  // Le tri est fait par le serveur (épinglés en tête, pagination cohérente).
+  const sortedPosts = effectivePosts;
 
   return {
     joined,

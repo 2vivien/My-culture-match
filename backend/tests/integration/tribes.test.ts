@@ -457,3 +457,64 @@ describe('Signalements', () => {
     expect(body.reports.map((r) => r.targetType)).toContain('tribe');
   });
 });
+
+describe('Tri des posts de tribu (sort=hot|top|controversial|new)', () => {
+  const json = (token: string, body: unknown) => ({
+    method: 'POST',
+    headers: { 'content-type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify(body),
+  });
+
+  async function seed() {
+    const owner = await login();
+    const voterA = await login();
+    const voterB = await login();
+    const { id } = (await (await createTribe(owner)).json()) as { id: string };
+    for (const t of [voterA, voterB]) await app.request(`/api/tribes/${id}/join`, { method: 'POST', headers: { Authorization: `Bearer ${t}` } });
+    const mk = async (title: string) =>
+      ((await (await app.request(`/api/tribes/${id}/posts`, json(owner, { type: 'Text', title, body: 'Contenu' }))).json()) as { id: string }).id;
+    const vote = (token: string, postId: string, value: 1 | -1) => app.request(`/api/tribu/posts/${postId}/upvote`, json(token, { value }));
+    return { owner, voterA, voterB, id, mk, vote };
+  }
+  const order = async (token: string, id: string, query: string) =>
+    (((await (await app.request(`/api/tribes/${id}/posts?${query}`, { headers: { Authorization: `Bearer ${token}` } })).json()) as { posts: Array<{ id: string }> }).posts).map((p) => p.id);
+
+  it('top : le post le mieux noté vient en premier', async () => {
+    const { owner, voterA, voterB, id, mk, vote } = await seed();
+    const low = await mk('Bas');
+    const high = await mk('Haut');
+    await vote(voterA, high, 1); await vote(voterB, high, 1); await vote(voterA, low, -1);
+    expect((await order(owner, id, 'sort=top'))[0]).toBe(high);
+  });
+
+  it('controversial : camps équilibrés avant consensus', async () => {
+    const { owner, voterA, voterB, id, mk, vote } = await seed();
+    const consensus = await mk('Consensus');
+    const split = await mk('Partagé');
+    await vote(voterA, consensus, 1); await vote(voterB, consensus, 1); await vote(owner, consensus, 1);
+    await vote(voterA, split, 1); await vote(voterB, split, -1);
+    expect((await order(owner, id, 'sort=controversial'))[0]).toBe(split);
+  });
+
+  it('new (défaut) : le plus récent en premier', async () => {
+    const { owner, id, mk } = await seed();
+    await mk('Ancien');
+    const recent = await mk('Récent');
+    expect((await order(owner, id, ''))[0]).toBe(recent);
+  });
+
+  it('un post épinglé reste en tête quel que soit le tri', async () => {
+    const { owner, voterA, id, mk, vote } = await seed();
+    const pinned = await mk('Épinglé');
+    const popular = await mk('Populaire');
+    await vote(voterA, popular, 1);
+    await app.request(`/api/tribes/${id}/posts/${pinned}/pin`, { method: 'POST', headers: { Authorization: `Bearer ${owner}` } });
+    for (const sort of ['hot', 'top', 'controversial']) expect((await order(owner, id, `sort=${sort}`))[0]).toBe(pinned);
+  });
+
+  it('refuse un tri inconnu (400)', async () => {
+    const { owner, id } = await seed();
+    const res = await app.request(`/api/tribes/${id}/posts?sort=bogus`, { headers: { Authorization: `Bearer ${owner}` } });
+    expect(res.status).toBe(400);
+  });
+});
